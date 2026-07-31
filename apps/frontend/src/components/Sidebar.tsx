@@ -102,6 +102,12 @@ const menuItems: MenuItem[] = [
     minPlan: 'STARTER',
   },
   {
+    name: 'Pricing & Plans',
+    icon: Sparkles,
+    href: '/pricing',
+    minPlan: 'STARTER',
+  },
+  {
     name: 'Settings',
     icon: Settings,
     href: '/dashboard/settings',
@@ -214,6 +220,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                           <Link
                             key={child.name}
                             href={child.href}
+                            onClick={onClose}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                               isChildActive
                                 ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200/80 shadow-subtle'
@@ -231,6 +238,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
               ) : (
                 <Link
                   href={item.href || '#'}
+                  onClick={onClose}
                   className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                     isActive
                       ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20 font-bold'

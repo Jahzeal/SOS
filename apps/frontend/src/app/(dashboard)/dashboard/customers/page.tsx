@@ -18,10 +18,12 @@ import {
   Award,
   MoreVertical,
   ChevronRight,
+  ChevronLeft,
   Clock,
   CheckCircle2,
   AlertTriangle,
   ShoppingCart,
+  X,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -136,7 +138,9 @@ const mockCustomers: Customer[] = [
 export default function CustomersManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('ALL');
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(mockCustomers[0]);
+  
+  // Selected Customer state
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
 
   // Filtered Customers
   const filteredCustomers = useMemo(() => {
@@ -156,7 +160,114 @@ export default function CustomersManagementPage() {
   return (
     <div className="space-y-6 font-sans pb-24 md:pb-8">
       
-      {/* Page Header */}
+      {/* Mobile Full-Screen Profile View */}
+      {selectedCustomer && (
+        <div className="md:hidden fixed inset-x-0 top-16 bottom-16 z-30 bg-white overflow-y-auto p-4 space-y-5 shadow-2xl">
+          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+            <button
+              onClick={() => setSelectedCustomer(null)}
+              className="flex items-center gap-1.5 text-xs font-extrabold text-blue-600 hover:text-blue-700"
+            >
+              <ChevronLeft className="w-4 h-4" /> Back to Directory
+            </button>
+            <span className="text-[10px] font-mono text-slate-400">{selectedCustomer.id}</span>
+          </div>
+
+          {/* Customer Identity */}
+          <div className="text-center space-y-2">
+            <img
+              src={selectedCustomer.avatar}
+              alt={selectedCustomer.name}
+              className="w-20 h-20 rounded-2xl object-cover border-2 border-slate-200 shadow-md mx-auto"
+            />
+            <div>
+              <h2 className="text-xl font-extrabold text-slate-900">{selectedCustomer.name}</h2>
+              <p className="text-xs text-slate-500 font-medium">{selectedCustomer.branch}</p>
+            </div>
+
+            <div className="flex items-center gap-2 justify-center pt-2">
+              <Link href="/dashboard/sales/new" className="flex-1">
+                <Button variant="primary" fullWidth size="md" className="bg-blue-600 hover:bg-blue-500 font-bold">
+                  + New Sale
+                </Button>
+              </Link>
+              <button className="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600">
+                <Phone className="w-4 h-4" />
+              </button>
+              <button className="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600">
+                <Mail className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Stats Snapshot */}
+          <div className="grid grid-cols-2 gap-3 text-center text-xs">
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <p className="text-[10px] text-slate-400 font-bold uppercase">Lifetime Spend</p>
+              <p className="text-base font-extrabold text-blue-600 mt-0.5">
+                ${selectedCustomer.totalSpending.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+              <p className="text-[10px] text-slate-400 font-bold uppercase">Trust Score</p>
+              <p className="text-base font-extrabold text-emerald-600 mt-0.5">
+                {selectedCustomer.trustScore}/100
+              </p>
+            </div>
+          </div>
+
+          {/* Phones Owned */}
+          <div className="space-y-2 text-xs">
+            <h3 className="font-extrabold text-slate-900 uppercase text-[11px] tracking-wider">
+              Phones Owned ({selectedCustomer.devices.length})
+            </h3>
+            <div className="space-y-2">
+              {selectedCustomer.devices.map((dev, idx) => (
+                <div key={idx} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-blue-600">
+                      <Smartphone className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-slate-900">{dev.model}</p>
+                      <p className={`text-[10px] font-extrabold ${
+                        dev.warrantyStatus === 'ACTIVE'
+                          ? 'text-emerald-600'
+                          : dev.warrantyStatus === 'EXPIRED'
+                          ? 'text-rose-600'
+                          : 'text-amber-600'
+                      }`}>
+                        {dev.warrantyStatus === 'ACTIVE' && 'Under Warranty'}
+                        {dev.warrantyStatus === 'EXPIRED' && 'Warranty Expired'}
+                        {dev.warrantyStatus === 'PENDING' && 'Trade-In Pending'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Activity */}
+          <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
+            <h3 className="font-extrabold text-slate-900 uppercase text-[11px] tracking-wider">
+              Recent Activity
+            </h3>
+            <div className="space-y-3 border-l-2 border-slate-200 pl-3">
+              {selectedCustomer.recentActivity.map((act, idx) => (
+                <div key={idx} className="space-y-0.5">
+                  <p className="font-bold text-slate-900">{act.title}</p>
+                  <p className="text-[11px] text-slate-500">{act.desc}</p>
+                  <p className="text-[10px] font-mono text-slate-400">{act.time}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
           <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
@@ -168,7 +279,7 @@ export default function CustomersManagementPage() {
             Customer Directory
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
-            Customers created automatically upon completed Checkout POS sales. View purchase history, warranties, and trust scores.
+            Customers created automatically upon completed Checkout POS sales. Click any customer row to inspect their profile.
           </p>
         </div>
 
@@ -266,18 +377,18 @@ export default function CustomersManagementPage() {
         </div>
       </div>
 
-      {/* Main Grid: Data Table & Selected Customer Profile Drawer */}
+      {/* Main Grid: Data Table & Desktop Slide-Over Profile Drawer */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* LEFT 8 COLUMNS: CUSTOMER TABLE */}
-        <div className="lg:col-span-8 space-y-4">
+        {/* CUSTOMERS CONTAINER */}
+        <div className={selectedCustomer ? 'lg:col-span-8 space-y-4 transition-all' : 'lg:col-span-12 space-y-4 transition-all'}>
           
-          <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
             
             {/* Filter & Search Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
               
-              <div className="relative w-full sm:w-72">
+              <div className="relative w-full md:w-72">
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
@@ -289,7 +400,7 @@ export default function CustomersManagementPage() {
               </div>
 
               {/* Type Filter Pills */}
-              <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
                 {['ALL', 'VIP', 'BUSINESS', 'REGULAR', 'NEW'].map((type) => (
                   <button
                     key={type}
@@ -306,8 +417,68 @@ export default function CustomersManagementPage() {
               </div>
             </div>
 
-            {/* Customers Table */}
-            <div className="overflow-x-auto">
+            {/* MOBILE CUSTOMER CARD VIEW (block md:hidden) */}
+            <div className="block md:hidden space-y-3">
+              {filteredCustomers.map((cust) => (
+                <div
+                  key={cust.id}
+                  onClick={() => setSelectedCustomer(cust)}
+                  className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 cursor-pointer hover:border-blue-300 transition"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={cust.avatar}
+                        alt={cust.name}
+                        className="w-10 h-10 rounded-full object-cover border border-slate-200 shadow-subtle shrink-0"
+                      />
+                      <div>
+                        <p className="font-extrabold text-slate-900 text-xs">{cust.name}</p>
+                        <p className="text-[10px] font-mono text-slate-400">{cust.id}</p>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                        cust.type === 'VIP'
+                          ? 'bg-purple-100 text-purple-700'
+                          : cust.type === 'BUSINESS'
+                          ? 'bg-indigo-100 text-indigo-700'
+                          : cust.type === 'NEW'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : 'bg-slate-100 text-slate-700'
+                      }`}
+                    >
+                      {cust.type}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-1 border-t border-slate-200/80">
+                    <div>
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Phone & Email</p>
+                      <p className="font-bold text-slate-800 text-[11px]">{cust.phone}</p>
+                      <p className="text-[10px] text-slate-500 truncate max-w-[140px]">{cust.email}</p>
+                    </div>
+
+                    <div className="text-right">
+                      <p className="text-[9px] text-slate-400 font-bold uppercase">Devices / Spend</p>
+                      <p className="font-extrabold text-slate-900 text-[11px]">{cust.devicesCount} Devices</p>
+                      <p className="font-extrabold text-blue-600 text-[11px]">
+                        ${cust.totalSpending.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] pt-1 text-slate-500">
+                    <span className="truncate">Last: <strong className="text-slate-800">{cust.lastPurchaseItem}</strong></span>
+                    <span className="shrink-0 font-semibold">{cust.lastPurchaseDate}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* DESKTOP CUSTOMERS TABLE (hidden md:block) */}
+            <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
                   <tr>
@@ -327,7 +498,7 @@ export default function CustomersManagementPage() {
                         key={cust.id}
                         onClick={() => setSelectedCustomer(cust)}
                         className={`cursor-pointer transition ${
-                          isSelected ? 'bg-blue-50/70 font-semibold' : 'hover:bg-slate-50/80'
+                          isSelected ? 'bg-blue-50/80 font-semibold border-l-4 border-l-blue-600' : 'hover:bg-slate-50/80'
                         }`}
                       >
                         <td className="py-3.5 px-3">
@@ -383,11 +554,22 @@ export default function CustomersManagementPage() {
 
         </div>
 
-        {/* RIGHT 4 COLUMNS: SELECTED CUSTOMER PROFILE DRAWER */}
-        <div className="lg:col-span-4 space-y-4">
-          {selectedCustomer ? (
+        {/* DESKTOP PROFILE DRAWER (Only renders when a customer is clicked on desktop) */}
+        {selectedCustomer && (
+          <div className="hidden lg:block lg:col-span-4 space-y-4">
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xl space-y-5 text-xs font-sans animate-in fade-in duration-200 sticky top-20">
               
+              {/* Close Action */}
+              <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Customer Profile</span>
+                <button
+                  onClick={() => setSelectedCustomer(null)}
+                  className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
               {/* Profile Header */}
               <div className="text-center space-y-2 border-b border-slate-100 pb-4">
                 <div className="relative inline-block">
@@ -492,12 +674,8 @@ export default function CustomersManagementPage() {
               </div>
 
             </div>
-          ) : (
-            <div className="p-8 rounded-2xl bg-white border border-slate-200 text-center text-slate-400 text-xs">
-              Select a customer from the directory to view full profile details.
-            </div>
-          )}
-        </div>
+          </div>
+        )}
 
       </div>
 

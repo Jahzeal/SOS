@@ -1,3 +1,5 @@
-import ReceiptInvoiceTemplatesPage from '../(dashboard)/dashboard/templates/page';
+'use client';
 
-export default ReceiptInvoiceTemplatesPage;
+import TemplatesPage from '@/app/(dashboard)/dashboard/templates/page';
+
+export default TemplatesPage;

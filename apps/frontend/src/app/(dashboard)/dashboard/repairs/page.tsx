@@ -21,9 +21,13 @@ import {
   TrendingUp,
   RotateCcw,
   Zap,
+  Activity,
+  Calendar,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+
+export type RepairStatus = 'Diagnosing' | 'Fixing' | 'Fixed';
 
 interface RepairTicket {
   id: string;
@@ -31,27 +35,23 @@ interface RepairTicket {
   customerInitials: string;
   deviceModel: string;
   deviceSpecs: string;
-  status: 'DIAGNOSING' | 'PARTS_WAIT' | 'READY' | 'COMPLETED';
-  priority: 'HIGH' | 'MEDIUM' | 'NORMAL';
+  status: RepairStatus;
   technicianName: string;
-  technicianAvatar: string;
   estimatedCost: number;
-  date: string;
+  dropInDate: string;
 }
 
-const mockRepairs: RepairTicket[] = [
+const initialRepairs: RepairTicket[] = [
   {
     id: 'REP-9284',
     customerName: 'Sarah Connor',
     customerInitials: 'SC',
     deviceModel: 'iPhone 15 Pro',
     deviceSpecs: 'Apple • 512GB Blue',
-    status: 'PARTS_WAIT',
-    priority: 'HIGH',
+    status: 'Fixing',
     technicianName: 'Dave Miller',
-    technicianAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
     estimatedCost: 349.0,
-    date: 'Oct 24, 2023',
+    dropInDate: 'Oct 24, 2023',
   },
   {
     id: 'REP-9285',
@@ -59,12 +59,10 @@ const mockRepairs: RepairTicket[] = [
     customerInitials: 'MW',
     deviceModel: 'Galaxy S24 Ultra',
     deviceSpecs: 'Samsung • Titanium Gray',
-    status: 'DIAGNOSING',
-    priority: 'MEDIUM',
+    status: 'Diagnosing',
     technicianName: 'Jane Burke',
-    technicianAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&auto=format&fit=crop&q=80',
     estimatedCost: 189.5,
-    date: 'Oct 25, 2023',
+    dropInDate: 'Oct 25, 2023',
   },
   {
     id: 'REP-9271',
@@ -72,12 +70,10 @@ const mockRepairs: RepairTicket[] = [
     customerInitials: 'KR',
     deviceModel: 'Pixel 8 Pro',
     deviceSpecs: 'Google • Porcelain',
-    status: 'READY',
-    priority: 'NORMAL',
+    status: 'Fixed',
     technicianName: 'Alex Rivera',
-    technicianAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
     estimatedCost: 125.0,
-    date: 'Oct 23, 2023',
+    dropInDate: 'Oct 23, 2023',
   },
   {
     id: 'REP-9290',
@@ -85,12 +81,10 @@ const mockRepairs: RepairTicket[] = [
     customerInitials: 'JD',
     deviceModel: 'MacBook Air M3',
     deviceSpecs: 'Apple • Silver 16GB',
-    status: 'PARTS_WAIT',
-    priority: 'HIGH',
+    status: 'Fixing',
     technicianName: 'Stan Marsh',
-    technicianAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&auto=format&fit=crop&q=80',
     estimatedCost: 1299.0,
-    date: 'Oct 26, 2023',
+    dropInDate: 'Oct 26, 2023',
   },
   {
     id: 'REP-9260',
@@ -98,16 +92,15 @@ const mockRepairs: RepairTicket[] = [
     customerInitials: 'AW',
     deviceModel: 'iPad Pro 11"',
     deviceSpecs: 'Apple • Space Gray',
-    status: 'COMPLETED',
-    priority: 'NORMAL',
+    status: 'Fixed',
     technicianName: 'Lisa Ray',
-    technicianAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&auto=format&fit=crop&q=80',
     estimatedCost: 210.0,
-    date: 'Oct 22, 2023',
+    dropInDate: 'Oct 22, 2023',
   },
 ];
 
 export default function RepairsDashboardPage() {
+  const [repairsList, setRepairsList] = useState<RepairTicket[]>(initialRepairs);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('ALL');
   const [showNewTicketModal, setShowNewTicketModal] = useState(false);
@@ -118,9 +111,16 @@ export default function RepairsDashboardPage() {
   const [ticketIssue, setTicketIssue] = useState('');
   const [ticketEstCost, setTicketEstCost] = useState('');
 
+  // Status Change Handler
+  const handleStatusChange = (ticketId: string, newStatus: RepairStatus) => {
+    setRepairsList((prev) =>
+      prev.map((item) => (item.id === ticketId ? { ...item, status: newStatus } : item))
+    );
+  };
+
   // Filtered Repairs
   const filteredRepairs = useMemo(() => {
-    return mockRepairs.filter((r) => {
+    return repairsList.filter((r) => {
       const matchesSearch =
         r.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -130,7 +130,18 @@ export default function RepairsDashboardPage() {
 
       return matchesSearch && matchesStatus;
     });
-  }, [searchTerm, selectedStatusFilter]);
+  }, [repairsList, searchTerm, selectedStatusFilter]);
+
+  // Counts for KPI Summary
+  const stats = useMemo(() => {
+    const total = repairsList.length;
+    const diagnosing = repairsList.filter((r) => r.status === 'Diagnosing').length;
+    const fixing = repairsList.filter((r) => r.status === 'Fixing').length;
+    const fixed = repairsList.filter((r) => r.status === 'Fixed').length;
+    const totalRevenue = repairsList.reduce((sum, r) => sum + r.estimatedCost, 0);
+
+    return { total, diagnosing, fixing, fixed, totalRevenue };
+  }, [repairsList]);
 
   const handleCreateTicketSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -142,15 +153,13 @@ export default function RepairsDashboardPage() {
       customerInitials: ticketCustomer.split(' ').map((n) => n[0]).join('').toUpperCase() || 'CU',
       deviceModel: ticketDevice,
       deviceSpecs: ticketIssue || 'Hardware Inspection',
-      status: 'DIAGNOSING',
-      priority: 'MEDIUM',
+      status: 'Diagnosing',
       technicianName: 'Alex Rivera',
-      technicianAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
       estimatedCost: parseFloat(ticketEstCost) || 150.0,
-      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      dropInDate: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     };
 
-    mockRepairs.unshift(newTicket);
+    setRepairsList((prev) => [newTicket, ...prev]);
     setShowNewTicketModal(false);
     setTicketCustomer('');
     setTicketDevice('');
@@ -169,11 +178,11 @@ export default function RepairsDashboardPage() {
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-blue-600 font-bold">Repair Tickets</span>
           </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Repairs Dashboard
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2.5">
+            <Wrench className="w-7 h-7 text-blue-600" /> Repairs Dashboard
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
-            Track repair tickets, hardware inspection status, replacement parts inventory, and customer updates.
+            Track and update repair ticket statuses (Diagnosing, Fixing, Fixed) with direct status selection.
           </p>
         </div>
 
@@ -193,8 +202,8 @@ export default function RepairsDashboardPage() {
         </div>
       </div>
 
-      {/* 6 KPI Stat Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* 5 KPI Stat Cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
@@ -204,57 +213,44 @@ export default function RepairsDashboardPage() {
             <span className="text-[10px] font-extrabold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">+12%</span>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Repairs</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-0.5">42</p>
+            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Active</p>
+            <p className="text-xl font-extrabold text-slate-900 mt-0.5">{stats.total}</p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center">
               <Search className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Diagnosing</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-0.5">12</p>
+            <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Diagnosing</p>
+            <p className="text-xl font-extrabold text-amber-900 mt-0.5">{stats.diagnosing}</p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-rose-50/60 border border-rose-200 shadow-sm flex flex-col justify-between">
+        <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center">
-              <AlertCircle className="w-4 h-4" />
+            <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+              <Activity className="w-4 h-4" />
             </div>
-            <span className="text-[10px] font-extrabold text-rose-700 bg-rose-100 border border-rose-300 px-1.5 py-0.5 rounded">ALERT</span>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-rose-800 uppercase tracking-wider">Waiting Parts</p>
-            <p className="text-xl font-extrabold text-rose-900 mt-0.5">8</p>
+            <p className="text-[11px] font-bold text-blue-800 uppercase tracking-wider">Fixing</p>
+            <p className="text-xl font-extrabold text-blue-900 mt-0.5">{stats.fixing}</p>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
+        <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Ready Pickup</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-0.5">15</p>
-          </div>
-        </div>
-
-        <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
-          <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <Clock className="w-4 h-4" />
-            </div>
-          </div>
-          <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Completed Today</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-0.5">24</p>
+            <p className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Fixed</p>
+            <p className="text-xl font-extrabold text-emerald-900 mt-0.5">{stats.fixed}</p>
           </div>
         </div>
 
@@ -266,19 +262,21 @@ export default function RepairsDashboardPage() {
           </div>
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Est. Revenue</p>
-            <p className="text-xl font-extrabold text-white mt-0.5">$8,450.00</p>
+            <p className="text-xl font-extrabold text-white mt-0.5">
+              ${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
+            </p>
           </div>
         </div>
 
       </div>
 
-      {/* Main Repair Table Section */}
-      <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+      {/* Main Repair Management Section */}
+      <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
         
         {/* Search & Filter Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
           
-          <div className="relative w-full sm:w-80">
+          <div className="relative w-full md:w-80">
             <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
@@ -289,14 +287,13 @@ export default function RepairsDashboardPage() {
             />
           </div>
 
-          <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-            <span className="text-slate-400 font-bold uppercase text-[10px] mr-1">Filter:</span>
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
+            <span className="text-slate-400 font-bold uppercase text-[10px] shrink-0 mr-1">Filter:</span>
             {[
               { id: 'ALL', label: 'All Repairs' },
-              { id: 'DIAGNOSING', label: 'Diagnosing' },
-              { id: 'PARTS_WAIT', label: 'Parts Delay' },
-              { id: 'READY', label: 'Ready for Pickup' },
-              { id: 'COMPLETED', label: 'Completed' },
+              { id: 'Diagnosing', label: 'Diagnosing' },
+              { id: 'Fixing', label: 'Fixing' },
+              { id: 'Fixed', label: 'Fixed' },
             ].map((f) => (
               <button
                 key={f.id}
@@ -313,8 +310,77 @@ export default function RepairsDashboardPage() {
           </div>
         </div>
 
-        {/* Repair Tickets Table */}
-        <div className="overflow-x-auto">
+        {/* MOBILE CARD VIEW (block md:hidden - Optimized for Mobile Touch) */}
+        <div className="block md:hidden space-y-3">
+          {filteredRepairs.map((r) => (
+            <div key={r.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+              
+              {/* Header: ID, Customer, & Status Selector */}
+              <div className="flex items-center justify-between gap-2 border-b border-slate-200/80 pb-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center font-bold text-xs text-slate-700 shadow-subtle shrink-0">
+                    {r.customerInitials}
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-900 text-xs">{r.customerName}</p>
+                    <p className="text-[10px] font-mono font-bold text-blue-600">{r.id}</p>
+                  </div>
+                </div>
+
+                <select
+                  value={r.status}
+                  onChange={(e) => handleStatusChange(r.id, e.target.value as RepairStatus)}
+                  className={`text-[11px] font-extrabold px-2.5 py-1 rounded-lg border transition-all cursor-pointer focus:outline-none ${
+                    r.status === 'Diagnosing'
+                      ? 'bg-amber-100 text-amber-800 border-amber-300'
+                      : r.status === 'Fixing'
+                      ? 'bg-blue-100 text-blue-800 border-blue-300'
+                      : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                  }`}
+                >
+                  <option value="Diagnosing">Diagnosing</option>
+                  <option value="Fixing">Fixing</option>
+                  <option value="Fixed">Fixed</option>
+                </select>
+              </div>
+
+              {/* Device & Tech */}
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="flex items-start gap-2 bg-white p-2.5 rounded-xl border border-slate-200">
+                  <Smartphone className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-extrabold text-slate-900 leading-tight">{r.deviceModel}</p>
+                    <p className="text-[9px] text-slate-400 mt-0.5">{r.deviceSpecs}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 bg-white p-2.5 rounded-xl border border-slate-200">
+                  <User className="w-4 h-4 text-slate-500 shrink-0" />
+                  <div>
+                    <p className="text-[9px] text-slate-400 font-bold uppercase">Tech</p>
+                    <p className="font-extrabold text-slate-800 text-xs">{r.technicianName}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer: Est Cost & Drop-in Date */}
+              <div className="flex items-center justify-between text-xs pt-1">
+                <div>
+                  <span className="text-[10px] text-slate-400 uppercase font-bold mr-1">Cost:</span>
+                  <span className="font-extrabold text-slate-900">${r.estimatedCost.toFixed(2)}</span>
+                </div>
+                <div className="flex items-center gap-1 text-[11px] font-bold text-slate-600">
+                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                  <span>{r.dropInDate}</span>
+                </div>
+              </div>
+
+            </div>
+          ))}
+        </div>
+
+        {/* DESKTOP TABLE VIEW (hidden md:block - Enterprise Table) */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
               <tr>
@@ -322,15 +388,14 @@ export default function RepairsDashboardPage() {
                 <th className="py-3 px-3">Customer</th>
                 <th className="py-3 px-3">Device / Model</th>
                 <th className="py-3 px-3">Status</th>
-                <th className="py-3 px-3 text-center">Priority</th>
                 <th className="py-3 px-3">Technician</th>
                 <th className="py-3 px-3 text-right">Est. Cost</th>
-                <th className="py-3 px-3 text-right">Date</th>
+                <th className="py-3 px-3 text-right">Drop-in Date</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredRepairs.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-50/80 transition cursor-pointer">
+                <tr key={r.id} className="hover:bg-slate-50/80 transition">
                   <td className="py-3.5 px-3 font-mono font-extrabold text-blue-600">{r.id}</td>
                   <td className="py-3.5 px-3 font-bold text-slate-900">
                     <div className="flex items-center gap-2">
@@ -341,52 +406,51 @@ export default function RepairsDashboardPage() {
                     </div>
                   </td>
                   <td className="py-3.5 px-3">
-                    <p className="font-extrabold text-slate-900">{r.deviceModel}</p>
-                    <p className="text-[10px] text-slate-400">{r.deviceSpecs}</p>
+                    <div className="flex items-center gap-2">
+                      <Smartphone className="w-4 h-4 text-blue-600 shrink-0" />
+                      <div>
+                        <p className="font-extrabold text-slate-900">{r.deviceModel}</p>
+                        <p className="text-[10px] text-slate-400">{r.deviceSpecs}</p>
+                      </div>
+                    </div>
                   </td>
+
+                  {/* Status Dropdown */}
                   <td className="py-3.5 px-3">
-                    <span
-                      className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold inline-flex items-center gap-1 ${
-                        r.status === 'PARTS_WAIT'
-                          ? 'bg-rose-100 text-rose-700'
-                          : r.status === 'DIAGNOSING'
-                          ? 'bg-blue-100 text-blue-700'
-                          : r.status === 'READY'
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-slate-100 text-slate-700'
+                    <select
+                      value={r.status}
+                      onChange={(e) => handleStatusChange(r.id, e.target.value as RepairStatus)}
+                      className={`text-[11px] font-extrabold px-3 py-1.5 rounded-xl border transition-all cursor-pointer focus:outline-none ${
+                        r.status === 'Diagnosing'
+                          ? 'bg-amber-50 text-amber-700 border-amber-300 focus:ring-2 focus:ring-amber-500'
+                          : r.status === 'Fixing'
+                          ? 'bg-blue-50 text-blue-700 border-blue-300 focus:ring-2 focus:ring-blue-500'
+                          : 'bg-emerald-50 text-emerald-700 border-emerald-300 focus:ring-2 focus:ring-emerald-500'
                       }`}
                     >
-                      {r.status === 'PARTS_WAIT' && 'Waiting for Parts'}
-                      {r.status === 'DIAGNOSING' && 'Diagnosing'}
-                      {r.status === 'READY' && 'Ready for Pickup'}
-                      {r.status === 'COMPLETED' && 'Completed'}
-                    </span>
+                      <option value="Diagnosing">Diagnosing</option>
+                      <option value="Fixing">Fixing</option>
+                      <option value="Fixed">Fixed</option>
+                    </select>
                   </td>
-                  <td className="py-3.5 px-3 text-center">
-                    <span
-                      className={`w-2.5 h-2.5 rounded-full inline-block ${
-                        r.priority === 'HIGH'
-                          ? 'bg-rose-500 animate-pulse ring-4 ring-rose-100'
-                          : r.priority === 'MEDIUM'
-                          ? 'bg-amber-500'
-                          : 'bg-emerald-500'
-                      }`}
-                    />
-                  </td>
+
                   <td className="py-3.5 px-3">
                     <div className="flex items-center gap-2">
-                      <img
-                        src={r.technicianAvatar}
-                        alt={r.technicianName}
-                        className="w-6 h-6 rounded-full object-cover border border-slate-200"
-                      />
+                      <div className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center border border-slate-200 shrink-0">
+                        <User className="w-3.5 h-3.5" />
+                      </div>
                       <span className="font-bold text-slate-800">{r.technicianName}</span>
                     </div>
                   </td>
                   <td className="py-3.5 px-3 text-right font-extrabold text-slate-900">
                     ${r.estimatedCost.toFixed(2)}
                   </td>
-                  <td className="py-3.5 px-3 text-right font-semibold text-slate-500">{r.date}</td>
+                  <td className="py-3.5 px-3 text-right font-semibold text-slate-600">
+                    <div className="inline-flex items-center justify-end gap-1 text-slate-700 font-bold">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                      <span>{r.dropInDate}</span>
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
