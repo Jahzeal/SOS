@@ -1,0 +1,229 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Plan {
+  STARTER
+  BUSINESS
+  ENTERPRISE
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  OWNER
+  MANAGER
+  TECHNICIAN
+  SALES_REP
+}
+
+enum PhoneCondition {
+  NEW
+  LIKE_NEW
+  EXCELLENT
+  GOOD
+  FAIR
+  REFURBISHED
+  FOR_PARTS
+}
+
+enum PhoneStatus {
+  IN_STOCK
+  SOLD
+  IN_REPAIR
+  RESERVED
+  DISPOSED
+  RETURNED
+}
+
+enum RepairStatus {
+  DIAGNOSING
+  WAITING_PARTS
+  IN_PROGRESS
+  READY_FOR_PICKUP
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  BANK_TRANSFER
+  POS
+  SPLIT
+}
+
+model Business {
+  id                        String         @id @default(uuid())
+  name                      String
+  slug                      String         @unique
+  logoUrl                   String?
+  address                   String?
+  phone                     String?
+  email                     String?
+  plan                      Plan           @default(STARTER)
+  publicVerificationEnabled Boolean        @default(true)
+  customSuccessMessage      String?        @default("This phone is verified and authentic.")
+  warrantyTerms             String?
+  receiptFooter             String?        @default("Thank you for shopping with us!")
+  receiptTerms              String?
+  receiptPaperSize          String         @default("80mm")
+
+  users                     User[]
+  phoneRecords              PhoneRecord[]
+  customers                 Customer[]
+  sales                     Sale[]
+  repairs                   RepairTicket[]
+
+  createdAt                 DateTime       @default(now())
+  updatedAt                 DateTime       @updatedAt
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  password      String
+  firstName     String
+  lastName      String
+  role          UserRole       @default(OWNER)
+  businessId    String
+  business      Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  refreshTokens RefreshToken[]
+  registeredPhones PhoneRecord[]
+
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model PhoneRecord {
+  id                     String         @id @default(uuid())
+  businessId             String
+  business               Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  imei1                  String
+  imei2                  String?
+  serialNumber           String?
+  brand                  String
+  model                  String
+  color                  String?
+  storageCapacity        String?
+  condition              PhoneCondition @default(NEW)
+  status                 PhoneStatus    @default(IN_STOCK)
+  
+  purchasePrice          Float?
+  sellingPrice           Float?
+  
+  warrantyDurationMonths Int            @default(0)
+  warrantyExpiryDate     DateTime?
+  qrCodeUrl              String?
+
+  registeredById         String?
+  registeredBy           User?          @relation(fields: [registeredById], references: [id], onDelete: SetNull)
+
+  customerId             String?
+  customer               Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  repairs                RepairTicket[]
+  saleItems              SaleItem[]
+
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  @@index([imei1])
+  @@index([imei2])
+  @@index([serialNumber])
+}
+
+model Customer {
+  id           String         @id @default(uuid())
+  businessId   String
+  business     Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  name         String
+  phone        String
+  email        String?
+  address      String?
+  notes        String?
+
+  phoneRecords PhoneRecord[]
+  sales        Sale[]
+  repairs      RepairTicket[]
+
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+}
+
+model RepairTicket {
+  id               String       @id @default(uuid())
+  ticketNumber     String
+  businessId       String
+  business         Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  phoneRecordId    String?
+  phoneRecord      PhoneRecord? @relation(fields: [phoneRecordId], references: [id], onDelete: SetNull)
+
+  customerId       String
+  customer         Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  issueDescription String
+  technicianNotes  String?
+  estimatedCost    Float?
+  finalCost        Float?
+  status           RepairStatus @default(DIAGNOSING)
+  technicianId     String?
+  completedAt      DateTime?
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model Sale {
+  id            String        @id @default(uuid())
+  invoiceNumber String
+  businessId    String
+  business      Business      @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  customerId    String?
+  customer      Customer?     @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  totalAmount   Float
+  discount      Float         @default(0)
+  paymentMethod PaymentMethod @default(CASH)
+  paymentStatus String        @default("PAID")
+  notes         String?
+
+  items         SaleItem[]
+  soldById      String
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model SaleItem {
+  id            String       @id @default(uuid())
+  saleId        String
+  sale          Sale         @relation(fields: [saleId], references: [id], onDelete: Cascade)
+
+  phoneRecordId String?
+  phoneRecord   PhoneRecord? @relation(fields: [phoneRecordId], references: [id], onDelete: SetNull)
+
+  description   String
+  unitPrice     Float
+  quantity      Int          @default(1)
+  totalPrice    Float
+}

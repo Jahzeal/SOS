@@ -1,0 +1,21 @@
+{
+  "name": "verifyflow-monorepo",
+  "private": true,
+  "packageManager": "npm@10.2.4",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:backend": "npm --prefix apps/backend run start:dev",
+    "dev:frontend": "npm --prefix apps/frontend run dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "prisma:generate": "npm --prefix apps/backend run prisma:generate",
+    "prisma:push": "npm --prefix apps/backend run prisma:push"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0"
+  }
+}
