@@ -162,10 +162,8 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-screen">
         
-        {/* ========================================================================= */}
-        {/* LEFT PANEL — BRAND EXPERIENCE (40% Desktop = 5 cols)                      */}
-        {/* ========================================================================= */}
-        <div className="lg:col-span-5 bg-gradient-to-b from-slate-900 via-slate-850 to-slate-900 text-white p-8 lg:p-12 flex flex-col justify-between relative overflow-hidden border-r border-slate-800">
+        {/* LEFT PANEL — BRAND EXPERIENCE (Desktop Only: hidden lg:flex lg:col-span-5) */}
+        <div className="hidden lg:flex lg:col-span-5 bg-gradient-to-b from-slate-900 via-slate-850 to-slate-900 text-white p-6 lg:p-10 lg:py-8 flex-col justify-between relative overflow-hidden border-r border-slate-800">
           
           {/* Background Ambient Accents */}
           <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
@@ -184,38 +182,38 @@ export default function OnboardingPage() {
             </span>
           </div>
 
-          {/* Center Brand Dynamic Content Area */}
-          <div className="relative z-10 my-12 space-y-8 max-w-lg">
+          {/* Brand Dynamic Content Area (Comfortable top spacing below logo header) */}
+          <div className="relative z-10 mt-12 mb-auto space-y-5 max-w-lg">
             
             {/* Icon Box */}
-            <div className="w-16 h-16 rounded-2xl bg-slate-800/90 border border-slate-700/80 flex items-center justify-center shadow-xl">
-              {currentStep === 1 && <Building className="w-8 h-8 text-blue-400" />}
-              {currentStep === 2 && <Mail className="w-8 h-8 text-emerald-400" />}
-              {currentStep === 3 && <Store className="w-8 h-8 text-indigo-400" />}
-              {currentStep === 4 && <Award className="w-8 h-8 text-amber-400" />}
-              {currentStep === 5 && <CheckCircle2 className="w-8 h-8 text-emerald-400" />}
+            <div className="w-14 h-14 rounded-2xl bg-slate-800/90 border border-slate-700/80 flex items-center justify-center shadow-xl">
+              {currentStep === 1 && <Building className="w-7 h-7 text-blue-400" />}
+              {currentStep === 2 && <Mail className="w-7 h-7 text-emerald-400" />}
+              {currentStep === 3 && <Store className="w-7 h-7 text-indigo-400" />}
+              {currentStep === 4 && <Award className="w-7 h-7 text-amber-400" />}
+              {currentStep === 5 && <CheckCircle2 className="w-7 h-7 text-emerald-400" />}
             </div>
 
-            <div className="space-y-3">
-              <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white leading-tight">
+            <div className="space-y-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
                 {currentBrand.headline}
               </h2>
-              <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed">
+              <p className="text-xs sm:text-sm text-slate-300 font-medium leading-relaxed">
                 {currentBrand.description}
               </p>
             </div>
 
             {/* Testimonial Card */}
-            <div className="p-5 rounded-2xl bg-slate-800/70 border border-slate-700/80 text-xs space-y-3 shadow-xl backdrop-blur-md">
+            <div className="p-4 rounded-2xl bg-slate-800/70 border border-slate-700/80 text-xs space-y-2.5 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <div className="flex text-amber-400 gap-0.5 text-xs">★★★★★</div>
                 <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Store Owner Review</span>
               </div>
-              <p className="text-slate-200 font-medium italic leading-relaxed">
+              <p className="text-slate-200 font-medium italic leading-relaxed text-[11px]">
                 "Setting up our 3 store locations on VerifyFlow took less than 5 minutes. The IMEI receipt verification stopped warranty disputes instantly."
               </p>
-              <div className="flex items-center gap-3 pt-1 border-t border-slate-700/60">
-                <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
+              <div className="flex items-center gap-2.5 pt-1 border-t border-slate-700/60">
+                <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
                   M
                 </div>
                 <div>
@@ -227,7 +225,7 @@ export default function OnboardingPage() {
           </div>
 
           {/* Left Footer Info */}
-          <div className="relative z-10 text-xs text-slate-400 font-semibold flex items-center justify-between border-t border-slate-800/80 pt-6">
+          <div className="relative z-10 text-xs text-slate-400 font-semibold flex items-center justify-between border-t border-slate-800/80 pt-4">
             <span>© 2026 VerifyFlow Inc.</span>
             <span className="flex items-center gap-1.5 text-slate-300">
               <Lock className="w-3.5 h-3.5 text-emerald-400" /> 256-Bit SSL Encrypted
@@ -235,16 +233,60 @@ export default function OnboardingPage() {
           </div>
         </div>
 
-        {/* ========================================================================= */}
-        {/* RIGHT PANEL — CONTENT CONTAINER (60% Desktop = 7 cols)                     */}
-        {/* ========================================================================= */}
-        <div className="lg:col-span-7 p-6 sm:p-10 lg:p-14 flex flex-col justify-between bg-slate-50">
+        {/* RIGHT PANEL — CONTENT CONTAINER */}
+        <div className="w-full lg:col-span-7 p-4 sm:p-6 lg:p-8 lg:py-8 flex flex-col justify-between bg-slate-50 min-h-screen">
           
-          {/* Header & Horizontal Stepper Bar */}
-          <div className={`${currentStep === 4 ? 'max-w-4xl' : 'max-w-2xl'} mx-auto w-full space-y-6 transition-all duration-300`}>
+          {/* Header & Stepper Bar */}
+          <div className={`${currentStep === 4 ? 'max-w-4xl' : 'max-w-2xl'} mx-auto w-full space-y-5 transition-all duration-300`}>
             
-            {/* Top Navigation Row */}
-            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+            {/* Mobile Top Brand & Progress Header (Clean light styling: block lg:hidden) */}
+            <div className="block lg:hidden bg-white -mx-4 -mt-4 p-4 mb-2 border-b border-slate-200 shadow-sm rounded-b-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <Link href="/" className="flex items-center gap-2 font-black text-lg text-slate-900">
+                  <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <span>VerifyFlow</span>
+                </Link>
+                <div className="flex items-center gap-2">
+                  {currentStep > 1 && (
+                    <button
+                      onClick={handleBack}
+                      className="text-xs text-slate-600 hover:text-slate-900 font-bold flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" /> Back
+                    </button>
+                  )}
+                  <span className="text-[11px] font-extrabold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+                    Step {currentStep} of 5
+                  </span>
+                </div>
+              </div>
+
+              {/* Mobile Segmented Progress Bar (- - - - -) */}
+              <div className="grid grid-cols-5 gap-1.5 pt-1">
+                {[1, 2, 3, 4, 5].map((s) => {
+                  const isCompleted = s < currentStep;
+                  const isCurrent = s === currentStep;
+
+                  return (
+                    <div
+                      key={s}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${
+                        isCompleted
+                          ? 'bg-emerald-500'
+                          : isCurrent
+                          ? 'bg-blue-600 ring-2 ring-blue-500/20'
+                          : 'bg-slate-200'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Desktop Top Navigation Row (hidden lg:flex) */}
+            <div className="hidden lg:flex items-center justify-between border-b border-slate-200 pb-4">
               <button
                 onClick={handleBack}
                 disabled={currentStep === 1}
@@ -260,8 +302,8 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            {/* Stepper Bar */}
-            <div className="grid grid-cols-5 gap-2 pt-2">
+            {/* Desktop 5-Column Stepper Bar (hidden lg:grid) */}
+            <div className="hidden lg:grid grid-cols-5 gap-2 pt-2">
               {[
                 { step: 1, label: 'Account' },
                 { step: 2, label: 'Verify' },
@@ -301,8 +343,8 @@ export default function OnboardingPage() {
           </div>
 
           {/* Main Card Content */}
-          <div className="max-w-2xl mx-auto w-full my-8">
-            <div className="vf-card bg-white p-6 sm:p-10 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 space-y-6">
+          <div className="max-w-2xl mx-auto w-full my-4 sm:my-8">
+            <div className="vf-card bg-white p-5 sm:p-10 rounded-2xl border border-slate-200 shadow-xl shadow-slate-200/50 space-y-6">
               
               {/* =================================================================== */}
               {/* STEP 1: CREATE ACCOUNT                                             */}
@@ -805,11 +847,24 @@ export default function OnboardingPage() {
                   {currentStep === 5 && 'Go To Dashboard'}
                 </Button>
               </div>
+
+              {/* Mobile Social Proof Banner (block lg:hidden) */}
+              <div className="block lg:hidden pt-3 border-t border-slate-100 text-center">
+                <p className="text-[11px] font-semibold text-slate-500 flex items-center justify-center gap-1.5 flex-wrap">
+                  <span className="text-amber-500 font-bold">★★★★★</span>
+                  <span>"Setup took &lt;5 mins" — Marcus V., Store Owner</span>
+                  <span className="text-slate-300">•</span>
+                  <span className="text-emerald-600 font-bold flex items-center gap-1">
+                    <Lock className="w-3 h-3" /> 256-Bit SSL Secured
+                  </span>
+                </p>
+              </div>
+
             </div>
           </div>
 
           {/* Right Bottom Footer Link */}
-          <div className="max-w-2xl mx-auto w-full text-center text-xs font-medium text-slate-500">
+          <div className="max-w-2xl mx-auto w-full text-center text-xs font-medium text-slate-500 pb-6 lg:pb-0">
             Need assistance with workspace setup?{' '}
             <a href="#" className="text-blue-600 font-bold hover:underline">Contact Store Support</a>
           </div>

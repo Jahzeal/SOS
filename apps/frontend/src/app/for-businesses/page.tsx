@@ -38,6 +38,8 @@ import {
   Clock,
   Menu,
   LayoutDashboard,
+  ShoppingCart,
+  Package,
 } from 'lucide-react';
 
 export default function ForBusinessesPage() {
@@ -212,54 +214,58 @@ export default function ForBusinessesPage() {
           </div>
         </div>
 
-        {/* Right Side: Realistic Business Workspace Browser Mockup */}
+        {/* Right Side: Photo-Realistic Store Owner & Workspace OS Showcase */}
         <div className="lg:w-1/2 w-full max-w-xl">
-          <div className="vf-card border-2 border-slate-200 shadow-card-hover p-4 sm:p-5 rounded-2xl bg-white space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-rose-500" />
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
-                <div className="w-3 h-3 rounded-full bg-emerald-500" />
-                <span className="text-xs font-mono font-bold text-slate-800 ml-2">TechWorld Mobile Workspace</span>
+          <div className="vf-card border-2 border-slate-200 shadow-2xl p-3 sm:p-4 rounded-3xl bg-white space-y-3">
+            
+            {/* Top Workspace Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 px-2">
+              <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 tracking-tight">
+                <ShieldCheck className="w-4 h-4 text-blue-600" /> VerifyFlow Retail OS
+              </span>
+              <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                LIVE CLOUD POS
+              </span>
+            </div>
+
+            {/* Photo Showcase Container */}
+            <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-lg group">
+              <img
+                src="/images/for_businesses_store_hero.png"
+                alt="Black American smartphone store owner operating VerifyFlow retail software on laptop at store counter"
+                className="w-full h-auto max-h-[380px] object-cover object-center transform group-hover:scale-[1.01] transition-transform duration-500"
+              />
+              
+              {/* Overlay Ambient Gradients */}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent pointer-events-none" />
+
+              {/* Floating Live Badges */}
+              <div className="absolute bottom-3 left-3 right-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs font-bold text-white">
+                <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-xl border border-slate-700/80 shadow-md">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  <span className="text-[11px]">Real-Time Store POS Operations</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-blue-600/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-blue-400/30 shadow-md text-white text-[11px] font-extrabold">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+                  <span>100% Verified Origin</span>
+                </div>
               </div>
             </div>
 
-            {/* Workspace Modules Bar */}
-            <div className="grid grid-cols-3 gap-2 text-center text-xs font-bold text-slate-700">
-              <div className="p-2 rounded-lg bg-blue-50 text-blue-700 border border-blue-200/80 flex items-center justify-center gap-1.5">
-                <LayoutDashboard className="w-3.5 h-3.5" /> Dashboard
+            {/* Live Metrics Summary Pills */}
+            <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                <div className="text-[10px] font-bold text-slate-500 uppercase">Monthly Store Revenue</div>
+                <div className="text-lg font-extrabold text-slate-900 mt-0.5">$124,500.00</div>
+                <div className="text-[10px] text-emerald-600 font-extrabold mt-0.5">1,248 IMEIs Registered</div>
               </div>
-              <div className="p-2 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> Verification
-              </div>
-              <div className="p-2 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center gap-1.5">
-                <Smartphone className="w-3.5 h-3.5 text-blue-600" /> Inventory
-              </div>
-            </div>
-
-            {/* Live Metrics Row */}
-            <div className="grid grid-cols-2 gap-3 pt-1">
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-                <div className="text-[11px] font-semibold text-slate-500 uppercase">Monthly Registered Stock</div>
-                <div className="text-xl font-extrabold text-slate-900 mt-1">1,248 Units</div>
-                <div className="text-[10px] text-emerald-600 font-bold mt-0.5">100% Serial Tracked</div>
-              </div>
-              <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200">
-                <div className="text-[11px] font-semibold text-emerald-800 uppercase">Verified Authentic</div>
-                <div className="text-xl font-extrabold text-emerald-950 mt-1">99.8% Rate</div>
-                <div className="text-[10px] text-emerald-700 font-bold mt-0.5">Zero Fraud Disputes</div>
+              <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200">
+                <div className="text-[10px] font-bold text-emerald-800 uppercase">Verification Rate</div>
+                <div className="text-lg font-extrabold text-emerald-950 mt-0.5">99.8% Trust</div>
+                <div className="text-[10px] text-emerald-700 font-extrabold mt-0.5">Zero Fraud Disputes</div>
               </div>
             </div>
 
-            {/* Recent Phone Ledger Entry */}
-            <div className="p-3.5 rounded-xl bg-slate-900 text-white text-xs space-y-1.5">
-              <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                <span>RECENT REGISTRATION</span>
-                <span className="text-emerald-400 font-bold">VERIFIED</span>
-              </div>
-              <div className="font-bold text-sm text-white">Apple iPhone 16 Pro Max (512GB)</div>
-              <div className="text-[11px] text-slate-300 font-mono">IMEI: 354892019283741 • Buyer: Alex Dev</div>
-            </div>
           </div>
         </div>
       </section>

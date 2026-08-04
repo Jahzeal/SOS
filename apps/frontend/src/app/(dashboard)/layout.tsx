@@ -41,14 +41,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Templates Quick Access Link */}
-            <Link
-              href="/templates"
-              className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-blue-700 bg-blue-50 border border-blue-200/80 hover:bg-blue-100 transition-colors"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
-              <span>Templates Showcase</span>
-            </Link>
 
             {/* Global Search Shortcut Trigger */}
             <button
