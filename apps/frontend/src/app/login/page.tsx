@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
-import { ShieldCheck, Mail, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
@@ -47,27 +47,23 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-blue-500 selection:text-white relative overflow-hidden font-sans">
-      {/* Background Decorator Gradients */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
-
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-blue-600 selection:text-white relative font-sans">
       {/* Header Navigation */}
-      <header className="px-6 py-5 flex items-center justify-between border-b border-slate-800/60 bg-slate-950/80 backdrop-blur-md z-10">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-emerald-500 text-white flex items-center justify-center font-extrabold shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
+      <header className="px-6 py-4 flex items-center justify-between border-b border-slate-200 bg-white shadow-subtle z-10">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-extrabold shadow-md">
             VF
           </div>
           <div>
-            <span className="font-extrabold text-white text-lg tracking-tight">VerifyFlow</span>
-            <span className="block text-[10px] text-blue-400 font-bold uppercase tracking-wider">Enterprise OS</span>
+            <span className="font-extrabold text-slate-900 text-base tracking-tight leading-none block">VerifyFlow</span>
+            <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Enterprise OS</span>
           </div>
         </Link>
 
         <div className="flex items-center gap-4 text-xs font-semibold">
-          <span className="text-slate-400 hidden sm:inline">Don't have a store account?</span>
+          <span className="text-slate-500 hidden sm:inline">Don't have a store account?</span>
           <Link href="/onboarding">
-            <Button variant="secondary" size="sm" className="bg-slate-900 border-slate-700 text-slate-200 hover:bg-slate-800">
+            <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800 font-bold">
               Register Business →
             </Button>
           </Link>
@@ -80,19 +76,19 @@ export default function LoginPage() {
           
           {/* Card Header */}
           <div className="text-center space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               Sign In to Your Workspace
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 max-w-sm mx-auto">
+            <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto font-medium">
               Access your inventory, phone IMEI registry, thermal receipts, and real-time sales ledger.
             </p>
           </div>
 
-          {/* Form Box */}
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl space-y-5 backdrop-blur-xl">
+          {/* White Form Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl space-y-5">
             {error && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                 <div className="font-medium">{error}</div>
               </div>
             )}
@@ -100,7 +96,7 @@ export default function LoginPage() {
             <form onSubmit={handleSubmit} className="space-y-4 text-xs">
               {/* Store Email */}
               <div className="space-y-1.5">
-                <label className="block font-bold text-slate-300">Store Email Address</label>
+                <label className="block font-bold text-slate-800">Store Email Address</label>
                 <div className="relative">
                   <input
                     type="email"
@@ -108,17 +104,17 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="owner@store.com"
                     required
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 text-xs pl-9 focus:outline-none focus:border-blue-500 font-medium placeholder:text-slate-600 transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400 transition"
                   />
-                  <Mail className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 </div>
               </div>
 
               {/* Password */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="block font-bold text-slate-300">Password</label>
-                  <a href="#" onClick={(e) => { e.preventDefault(); alert('Please contact store administrator to reset credentials.'); }} className="text-[11px] text-blue-400 hover:underline">
+                  <label className="block font-bold text-slate-800">Password</label>
+                  <a href="#" onClick={(e) => { e.preventDefault(); alert('Please contact store administrator to reset credentials.'); }} className="text-[11px] text-blue-600 font-bold hover:underline">
                     Forgot password?
                   </a>
                 </div>
@@ -129,9 +125,9 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
                     required
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-slate-100 text-xs pl-9 focus:outline-none focus:border-blue-500 font-medium placeholder:text-slate-600 transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400 transition"
                   />
-                  <Lock className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 </div>
               </div>
 
@@ -141,7 +137,7 @@ export default function LoginPage() {
                 variant="primary"
                 size="md"
                 disabled={loading}
-                className="w-full py-2.5 font-bold text-xs bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 border-none shadow-lg shadow-blue-500/25 mt-2"
+                className="w-full py-2.5 font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white border-none shadow-md mt-2"
               >
                 {loading ? 'Authenticating Store Session...' : 'Sign In to Dashboard →'}
               </Button>
@@ -152,7 +148,7 @@ export default function LoginPage() {
       </main>
 
       {/* Page Footer */}
-      <footer className="py-4 text-center text-[11px] text-slate-600 border-t border-slate-900 bg-slate-950">
+      <footer className="py-4 text-center text-[11px] text-slate-500 border-t border-slate-200 bg-white">
         © {new Date().getFullYear()} VerifyFlow Enterprise Inc. All rights reserved.
       </footer>
     </div>
