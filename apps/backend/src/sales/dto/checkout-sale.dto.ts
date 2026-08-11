@@ -28,6 +28,10 @@ export class CheckoutSaleDto {
   @IsOptional()
   paymentMethod?: PaymentMethod;
 
+  @IsString()
+  @IsOptional()
+  paymentStatus?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SaleItemDto)

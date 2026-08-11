@@ -71,7 +71,7 @@ export class SalesService {
           receiptNumber,
           totalAmount,
           paymentMethod: dto.paymentMethod || PaymentMethod.CASH,
-          paymentStatus: 'PAID',
+          paymentStatus: dto.paymentStatus || 'PAID',
           items: {
             create: dto.items.map((item) => {
               const phone = phones.find((p) => p.id === item.phoneRecordId)!;

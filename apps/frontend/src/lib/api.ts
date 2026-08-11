@@ -117,6 +117,7 @@ class ApiClient {
     customerPhone?: string;
     customerEmail?: string;
     paymentMethod?: string;
+    paymentStatus?: string;
     items: { phoneRecordId: string; price: number }[];
   }) {
     return this.request<any>('/sales/checkout', {
@@ -132,6 +133,58 @@ class ApiClient {
 
   async getReceiptById(id: string) {
     return this.request<any>(`/sales/receipts/${id}`);
+  }
+
+  // --- Customers Endpoints ---
+  async getCustomers(search?: string) {
+    const query = search ? `?search=${encodeURIComponent(search)}` : '';
+    return this.request<any[]>(`/customers${query}`);
+  }
+
+  async getCustomerById(id: string) {
+    return this.request<any>(`/customers/${id}`);
+  }
+
+  async createCustomer(payload: { name: string; phone: string; email?: string; address?: string; notes?: string }) {
+    return this.request<any>('/customers', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  // --- Repairs Endpoints ---
+  async getRepairs(params?: { search?: string; status?: string }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+    return this.request<any[]>(`/repairs${queryString}`);
+  }
+
+  async getRepairById(id: string) {
+    return this.request<any>(`/repairs/${id}`);
+  }
+
+  async createRepairTicket(payload: {
+    customerName: string;
+    customerPhone?: string;
+    deviceModel: string;
+    issueDescription: string;
+    estimatedCost?: number;
+    phoneRecordId?: string;
+  }) {
+    return this.request<any>('/repairs', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateRepairStatus(id: string, status: string, technicianNotes?: string) {
+    return this.request<any>(`/repairs/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status, technicianNotes }),
+    });
   }
 
   // --- Public Verification Endpoint ---

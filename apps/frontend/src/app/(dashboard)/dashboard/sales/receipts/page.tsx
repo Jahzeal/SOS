@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Receipt,
@@ -8,97 +8,101 @@ import {
   Download,
   Plus,
   TrendingUp,
-  TrendingDown,
   Printer,
   Mail,
   CreditCard,
   DollarSign,
   ChevronRight,
   ChevronLeft,
-  Filter,
   CheckCircle2,
   AlertTriangle,
   X,
   FileText,
-  SlidersHorizontal,
+  Loader2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-
-interface ReceiptItem {
-  id: string;
-  customer: string;
-  customerInitials: string;
-  items: string;
-  amount: number;
-  paymentMethod: string;
-  date: string;
-  status: 'PRINTED' | 'PENDING' | 'VOIDED';
-}
-
-const mockReceipts: ReceiptItem[] = [
-  {
-    id: '#RCP-92841',
-    customer: 'John Doe',
-    customerInitials: 'JD',
-    items: 'iPhone 15 Pro, Case',
-    amount: 1150.0,
-    paymentMethod: 'Visa • 4242',
-    date: 'Oct 24, 2023',
-    status: 'PRINTED',
-  },
-  {
-    id: '#RCP-92842',
-    customer: 'Alice Smith',
-    customerInitials: 'AS',
-    items: 'Screen Protector, Adaptor',
-    amount: 45.5,
-    paymentMethod: 'Cash',
-    date: 'Oct 24, 2023',
-    status: 'PENDING',
-  },
-  {
-    id: '#RCP-92843',
-    customer: 'Mark Brown',
-    customerInitials: 'MB',
-    items: 'AirPods Max',
-    amount: 549.0,
-    paymentMethod: 'Amex • 1004',
-    date: 'Oct 23, 2023',
-    status: 'PRINTED',
-  },
-  {
-    id: '#RCP-92844',
-    customer: 'Guest Customer',
-    customerInitials: 'GC',
-    items: 'USB-C Cable (x3)',
-    amount: 75.0,
-    paymentMethod: 'Cash',
-    date: 'Oct 23, 2023',
-    status: 'VOIDED',
-  },
-];
+import { api } from '@/lib/api';
 
 export default function ReceiptsArchivePage() {
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [selectedReceipt, setSelectedReceipt] = useState<ReceiptItem | null>(null);
+  const [receipts, setReceipts] = useState<any[]>([]);
+  const [summaryData, setSummaryData] = useState<any>(null);
 
+  const [search, setSearch] = useState('');
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('ALL');
+  const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [receiptsData, summary] = await Promise.all([
+        api.getReceipts(search.trim() || undefined),
+        api.getDashboardSummary(),
+      ]);
+      setReceipts(receiptsData || []);
+      setSummaryData(summary || null);
+    } catch (err: any) {
+      console.error('Failed to load receipts archive:', err);
+      setError(err.message || 'Failed to load receipts archive.');
+      setReceipts([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [search]);
+
+  // Debounced search trigger
+  useEffect(() => {
+    const t = setTimeout(() => fetchData(), 300);
+    return () => clearTimeout(t);
+  }, [fetchData]);
+
+  // Filtered receipts
   const filteredReceipts = useMemo(() => {
-    return mockReceipts.filter((rcp) => {
-      const matchStatus = statusFilter === 'ALL' || rcp.status === statusFilter;
-      const matchSearch =
-        search === '' ||
-        rcp.id.toLowerCase().includes(search.toLowerCase()) ||
-        rcp.customer.toLowerCase().includes(search.toLowerCase()) ||
-        rcp.items.toLowerCase().includes(search.toLowerCase());
-      return matchStatus && matchSearch;
+    return receipts.filter((rcp) => {
+      if (paymentMethodFilter === 'ALL') return true;
+      return rcp.paymentMethod === paymentMethodFilter;
     });
-  }, [search, statusFilter]);
+  }, [receipts, paymentMethodFilter]);
+
+  const getCustomerInitials = (name?: string) => {
+    if (!name) return 'RB';
+    return name
+      .split(' ')
+      .map((part) => part[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase();
+  };
+
+  const getItemSummary = (items?: any[]) => {
+    if (!items || items.length === 0) return 'No items recorded';
+    return items
+      .map((i) => i.description || (i.phoneRecord ? `${i.phoneRecord.brand} ${i.phoneRecord.model}` : 'Item'))
+      .join(', ');
+  };
+
+  const handlePrintReceipt = () => {
+    window.print();
+  };
+
+  const handleEmailReceipt = (rcp: any) => {
+    if (!rcp) return;
+    const email = rcp.customer?.email || '';
+    const name = rcp.customer?.name || 'Valued Customer';
+    const rcpNum = rcp.receiptNumber || rcp.invoiceNumber || rcp.id;
+    const subject = encodeURIComponent(`Receipt & Sales Record #${rcpNum}`);
+    const body = encodeURIComponent(
+      `Hello ${name},\n\nThank you for your purchase! Your sales receipt #${rcpNum} for $${rcp.totalAmount?.toFixed(2) || '0.00'} is confirmed.\n\nThank you for your business!`
+    );
+    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+  };
 
   return (
     <div className="space-y-6 font-sans pb-24 md:pb-8 relative">
-      
+
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
@@ -129,7 +133,7 @@ export default function ReceiptsArchivePage() {
         </div>
       </div>
 
-      {/* 4 KPI Stat Cards */}
+      {/* KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Receipts */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
@@ -137,28 +141,32 @@ export default function ReceiptsArchivePage() {
             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
               <Receipt className="w-4 h-4" />
             </div>
-            <span className="text-emerald-700 font-extrabold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              +12%
+            <span className="text-emerald-700 font-extrabold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-0.5">
+              <TrendingUp className="w-3 h-3" /> Live
             </span>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Receipts</p>
-          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">1,284</h3>
-          <p className="text-xs text-slate-400 font-medium mt-1">Archived this month</p>
+          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Sales Count</p>
+          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
+            {summaryData?.kpis ? summaryData.kpis.totalSalesCount.toLocaleString() : receipts.length}
+          </h3>
+          <p className="text-xs text-slate-400 font-medium mt-1">Archived in store database</p>
         </div>
 
-        {/* Revenue Today */}
+        {/* Revenue Total */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
               <DollarSign className="w-4 h-4" />
             </div>
             <span className="text-emerald-700 font-extrabold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-              +4.2%
+              Live Revenue
             </span>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Revenue Today</p>
-          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">$14,290</h3>
-          <p className="text-xs text-slate-400 font-medium mt-1">24% of daily target reached</p>
+          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Revenue</p>
+          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
+            {summaryData?.kpis ? `$${summaryData.kpis.totalSalesRevenue.toLocaleString()}` : '$0.00'}
+          </h3>
+          <p className="text-xs text-slate-400 font-medium mt-1">Total settled transactions</p>
         </div>
 
         {/* Average Sale */}
@@ -167,32 +175,34 @@ export default function ReceiptsArchivePage() {
             <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
               <TrendingUp className="w-4 h-4" />
             </div>
-            <span className="text-rose-600 font-extrabold text-[11px] bg-rose-50 px-2 py-0.5 rounded-full border border-rose-200">
-              -1.5%
-            </span>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Average Sale</p>
-          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">$245.00</h3>
-          <p className="text-xs text-slate-400 font-medium mt-1">Per transaction today</p>
+          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
+            {summaryData?.kpis && summaryData.kpis.totalSalesCount > 0
+              ? `$${(summaryData.kpis.totalSalesRevenue / summaryData.kpis.totalSalesCount).toFixed(2)}`
+              : '$0.00'}
+          </h3>
+          <p className="text-xs text-slate-400 font-medium mt-1">Average per sales receipt</p>
         </div>
 
-        {/* Reprints */}
+        {/* Active Store */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <div className="p-2 bg-slate-100 text-slate-600 rounded-xl">
-              <Printer className="w-4 h-4" />
+            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+              <CheckCircle2 className="w-4 h-4" />
             </div>
-            <span className="text-slate-500 font-bold text-[11px]">0 Alerts</span>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Reprints</p>
-          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">18</h3>
+          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Store Status</p>
+          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
+            {summaryData?.business?.name || 'Main Branch'}
+          </h3>
           <p className="text-xs text-slate-400 font-medium mt-1">Audit trail verified</p>
         </div>
       </div>
 
       {/* Main Table Section */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-        
+
         <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
           <div className="relative w-full sm:w-80">
             <input
@@ -206,17 +216,17 @@ export default function ReceiptsArchivePage() {
           </div>
 
           <div className="flex items-center gap-2 text-xs flex-wrap">
-            {['ALL', 'PRINTED', 'PENDING', 'VOIDED'].map((st) => (
+            {['ALL', 'CASH', 'CARD', 'BANK_TRANSFER'].map((method) => (
               <button
-                key={st}
-                onClick={() => setStatusFilter(st)}
+                key={method}
+                onClick={() => setPaymentMethodFilter(method)}
                 className={`px-3 py-1.5 rounded-full font-bold transition-all ${
-                  statusFilter === st
+                  paymentMethodFilter === method
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
                 }`}
               >
-                {st}
+                {method.replace('_', ' ')}
               </button>
             ))}
           </div>
@@ -227,7 +237,7 @@ export default function ReceiptsArchivePage() {
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
               <tr>
-                <th className="py-3 px-4">Receipt #</th>
+                <th className="py-3 px-4">Receipt / Invoice #</th>
                 <th className="py-3 px-4">Customer</th>
                 <th className="py-3 px-4">Items Summary</th>
                 <th className="py-3 px-4">Amount</th>
@@ -238,44 +248,92 @@ export default function ReceiptsArchivePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredReceipts.map((rcp) => (
-                <tr
-                  key={rcp.id}
-                  onClick={() => setSelectedReceipt(rcp)}
-                  className="hover:bg-slate-50/80 transition cursor-pointer group"
-                >
-                  <td className="py-3.5 px-4 font-mono font-bold text-blue-600">{rcp.id}</td>
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-[10px] border border-blue-200">
-                        {rcp.customerInitials}
-                      </div>
-                      <span className="font-extrabold text-slate-900">{rcp.customer}</span>
-                    </div>
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-600 font-medium">{rcp.items}</td>
-                  <td className="py-3.5 px-4 font-extrabold text-slate-900">${rcp.amount.toFixed(2)}</td>
-                  <td className="py-3.5 px-4 text-slate-700 font-semibold flex items-center gap-1.5">
-                    <CreditCard className="w-3.5 h-3.5 text-slate-400" /> {rcp.paymentMethod}
-                  </td>
-                  <td className="py-3.5 px-4 text-slate-500 font-medium">{rcp.date}</td>
-                  <td className="py-3.5 px-4 text-center">
-                    {rcp.status === 'PRINTED' && <Badge variant="verified" size="sm">PRINTED</Badge>}
-                    {rcp.status === 'PENDING' && <Badge variant="starter" size="sm">PENDING</Badge>}
-                    {rcp.status === 'VOIDED' && <Badge variant="sold" size="sm">VOIDED</Badge>}
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <div className="flex items-center justify-end gap-1 text-slate-400 opacity-80 group-hover:opacity-100">
-                      <button className="p-1.5 hover:text-blue-600 rounded" title="Print Thermal">
-                        <Printer className="w-3.5 h-3.5" />
-                      </button>
-                      <button className="p-1.5 hover:text-blue-600 rounded" title="Email Receipt">
-                        <Mail className="w-3.5 h-3.5" />
-                      </button>
+              {loading ? (
+                <tr>
+                  <td colSpan={8} className="py-16 text-center">
+                    <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Loading receipts archive...
                     </div>
                   </td>
                 </tr>
-              ))}
+              ) : error ? (
+                <tr>
+                  <td colSpan={8} className="py-16 text-center">
+                    <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold">
+                      <AlertTriangle className="w-5 h-5" />
+                      {error}
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredReceipts.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-2 text-slate-400">
+                      <Receipt className="w-10 h-10" />
+                      <p className="font-bold text-sm text-slate-600">No receipts found</p>
+                      <p className="text-xs">Process a new sale at the POS terminal to generate receipts.</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredReceipts.map((rcp) => {
+                  const displayNum = rcp.receiptNumber || rcp.invoiceNumber || rcp.id;
+                  const customerName = rcp.customer?.name || 'Retail Buyer';
+                  const dateStr = new Date(rcp.createdAt).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  });
+
+                  return (
+                    <tr
+                      key={rcp.id}
+                      onClick={() => setSelectedReceipt(rcp)}
+                      className="hover:bg-slate-50/80 transition cursor-pointer group"
+                    >
+                      <td className="py-3.5 px-4 font-mono font-bold text-blue-600">{displayNum}</td>
+                      <td className="py-3.5 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-[10px] border border-blue-200">
+                            {getCustomerInitials(customerName)}
+                          </div>
+                          <span className="font-extrabold text-slate-900">{customerName}</span>
+                        </div>
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-600 font-medium">{getItemSummary(rcp.items)}</td>
+                      <td className="py-3.5 px-4 font-extrabold text-slate-900">
+                        ${rcp.totalAmount ? rcp.totalAmount.toFixed(2) : '0.00'}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-700 font-semibold flex items-center gap-1.5">
+                        <CreditCard className="w-3.5 h-3.5 text-slate-400" /> {rcp.paymentMethod || 'CASH'}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500 font-medium">{dateStr}</td>
+                      <td className="py-3.5 px-4 text-center">
+                        <Badge variant="verified" size="sm">{rcp.paymentStatus || 'PAID'}</Badge>
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1 text-slate-400 opacity-80 group-hover:opacity-100">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handlePrintReceipt(); }}
+                            className="p-1.5 hover:text-blue-600 rounded"
+                            title="Print Thermal"
+                          >
+                            <Printer className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); handleEmailReceipt(rcp); }}
+                            className="p-1.5 hover:text-blue-600 rounded"
+                            title="Email Receipt"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -283,7 +341,7 @@ export default function ReceiptsArchivePage() {
         {/* Table Footer */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500 font-medium">
           <div>
-            Showing <strong className="text-slate-900">{filteredReceipts.length}</strong> of <strong className="text-slate-900">1,284</strong> receipts
+            Showing <strong className="text-slate-900">{filteredReceipts.length}</strong> of <strong className="text-slate-900">{receipts.length}</strong> receipts
           </div>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" disabled leftIcon={<ChevronLeft className="w-3.5 h-3.5" />}>
@@ -315,42 +373,44 @@ export default function ReceiptsArchivePage() {
               {/* Thermal Receipt Preview Card */}
               <div className="p-5 rounded-2xl bg-slate-50 border border-dashed border-slate-300 font-mono text-xs text-slate-800 space-y-3">
                 <div className="text-center space-y-1">
-                  <p className="font-extrabold text-sm text-slate-900">CELLULAR SUITE</p>
-                  <p className="text-[10px] text-slate-500 font-sans">Store #402 - NYC Branch<br />5th Ave, Manhattan, NY</p>
+                  <p className="font-extrabold text-sm text-slate-900">VERIFYFLOW POS RECEIPT</p>
+                  <p className="text-[10px] text-slate-500 font-sans">
+                    {summaryData?.business?.name || 'Main Branch'}
+                  </p>
                 </div>
 
                 <div className="border-y border-slate-200 py-2 flex justify-between text-[11px]">
-                  <span>{selectedReceipt.id}</span>
-                  <span>{selectedReceipt.date}</span>
+                  <span>{selectedReceipt.receiptNumber || selectedReceipt.invoiceNumber || selectedReceipt.id}</span>
+                  <span>{new Date(selectedReceipt.createdAt).toLocaleDateString('en-US')}</span>
                 </div>
 
                 <div className="space-y-2 py-1">
-                  <div className="flex justify-between">
-                    <span>{selectedReceipt.items}</span>
-                    <span>${(selectedReceipt.amount * 0.9).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-slate-500">
-                    <span>Sales Tax (8%)</span>
-                    <span>${(selectedReceipt.amount * 0.1).toFixed(2)}</span>
-                  </div>
+                  {selectedReceipt.items?.map((item: any) => (
+                    <div key={item.id} className="flex justify-between">
+                      <div>
+                        <p className="font-bold text-slate-900">{item.description || (item.phoneRecord ? `${item.phoneRecord.brand} ${item.phoneRecord.model}` : 'Item')}</p>
+                        {item.phoneRecord?.imei1 && (
+                          <p className="text-[9px] text-slate-500">IMEI: {item.phoneRecord.imei1}</p>
+                        )}
+                      </div>
+                      <span className="font-bold text-slate-900">${(item.unitPrice * item.quantity).toFixed(2)}</span>
+                    </div>
+                  ))}
                 </div>
 
                 <div className="flex justify-between font-extrabold text-sm border-t border-slate-200 pt-2 text-slate-900">
-                  <span>TOTAL</span>
-                  <span>${selectedReceipt.amount.toFixed(2)}</span>
+                  <span>TOTAL PAID</span>
+                  <span className="text-blue-600">${selectedReceipt.totalAmount?.toFixed(2) || '0.00'}</span>
                 </div>
               </div>
             </div>
 
             {/* Modal Actions */}
             <div className="space-y-2 pt-4 border-t border-slate-100">
-              <Button variant="primary" fullWidth size="lg" leftIcon={<Printer className="w-4 h-4" />}>
+              <Button variant="primary" fullWidth size="lg" onClick={handlePrintReceipt} leftIcon={<Printer className="w-4 h-4" />}>
                 Print Thermal Receipt
               </Button>
-              <Button variant="secondary" fullWidth size="md" leftIcon={<FileText className="w-4 h-4" />}>
-                Print A4 Invoice Statement
-              </Button>
-              <Button variant="secondary" fullWidth size="md" leftIcon={<Mail className="w-4 h-4" />}>
+              <Button variant="secondary" fullWidth size="md" onClick={() => handleEmailReceipt(selectedReceipt)} leftIcon={<Mail className="w-4 h-4" />}>
                 Email Receipt to Customer
               </Button>
             </div>

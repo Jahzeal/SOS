@@ -41,6 +41,7 @@ export default function CreateInvoicePage() {
   // Invoice Meta State
   const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentTerms, setPaymentTerms] = useState('NET_15');
+  const [invoicePaymentStatus, setInvoicePaymentStatus] = useState<'PENDING' | 'PAID' | 'DRAFT'>('PENDING');
 
   // Customer Details State
   const [customerName, setCustomerName] = useState('');
@@ -163,6 +164,10 @@ export default function CreateInvoicePage() {
     window.location.href = `mailto:${customerEmail.trim()}?subject=${subject}&body=${body}`;
   };
 
+  const removeItem = (id: string) => {
+    setItems((prev) => prev.filter((i) => i.id !== id));
+  };
+
   const updateItemPrice = (id: string, price: number) => {
     setItems((prev) =>
       prev.map((i) => (i.id === id ? { ...i, unitPrice: Math.max(0, price) } : i))
@@ -184,11 +189,14 @@ export default function CreateInvoicePage() {
         price: item.unitPrice,
       }));
 
+      const finalStatus = status === 'DRAFT' ? 'DRAFT' : invoicePaymentStatus;
+
       const sale = await api.checkoutSale({
         customerName: customerName.trim() || 'Invoice Customer',
         customerPhone: customerPhone.trim() || undefined,
         customerEmail: customerEmail.trim() || undefined,
         paymentMethod: 'CASH',
+        paymentStatus: finalStatus,
         items: payloadItems,
       });
 
@@ -560,6 +568,19 @@ export default function CreateInvoicePage() {
                   <option value="NET_7">Net 7 Days</option>
                   <option value="NET_15">Net 15 Days</option>
                   <option value="NET_30">Net 30 Days</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Payment Status</label>
+                <select
+                  value={invoicePaymentStatus}
+                  onChange={(e) => setInvoicePaymentStatus(e.target.value as any)}
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900"
+                >
+                  <option value="PENDING">PENDING (Awaiting Payment)</option>
+                  <option value="PAID">PAID (Settled Immediately)</option>
+                  <option value="DRAFT">DRAFT (Draft State)</option>
                 </select>
               </div>
 
