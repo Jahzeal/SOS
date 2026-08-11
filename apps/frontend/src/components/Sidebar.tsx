@@ -290,7 +290,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           title="Sign out of store session"
         >
           <LogOut className="w-3.5 h-3.5" />
-          <span>Exit</span>
+          <span>Sign Out</span>
         </button>
       </div>
     </div>

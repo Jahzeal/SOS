@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
-import { ShieldCheck, Mail, Lock, ArrowRight, AlertCircle, CheckCircle2, Store } from 'lucide-react';
+import { ShieldCheck, Mail, Lock, AlertCircle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
 export default function LoginPage() {
@@ -46,11 +46,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleDemoLogin = async () => {
-    setEmail('owner@retailer.com');
-    setPassword('Password123!');
-  };
-
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between selection:bg-blue-500 selection:text-white relative overflow-hidden font-sans">
       {/* Background Decorator Gradients */}
@@ -85,9 +80,6 @@ export default function LoginPage() {
           
           {/* Card Header */}
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-bold">
-              <ShieldCheck className="w-3.5 h-3.5" /> SECURE STORE PORTAL
-            </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               Sign In to Your Workspace
             </h1>
@@ -154,26 +146,6 @@ export default function LoginPage() {
                 {loading ? 'Authenticating Store Session...' : 'Sign In to Dashboard →'}
               </Button>
             </form>
-
-            {/* Quick Demo Fill Button */}
-            <div className="pt-3 border-t border-slate-800/80 text-center space-y-2">
-              <span className="text-[11px] text-slate-500 font-medium">Testing or exploring?</span>
-              <button
-                type="button"
-                onClick={handleDemoLogin}
-                className="w-full py-2 px-3 rounded-xl bg-slate-800/60 hover:bg-slate-800 text-slate-300 text-xs font-bold border border-slate-700/60 transition flex items-center justify-center gap-2"
-              >
-                <Store className="w-3.5 h-3.5 text-emerald-400" />
-                Fill Demo Credentials (owner@retailer.com)
-              </button>
-            </div>
-          </div>
-
-          {/* Footer Info */}
-          <div className="text-center text-[11px] text-slate-500 flex items-center justify-center gap-4">
-            <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500" /> 256-Bit SSL Encrypted</span>
-            <span>•</span>
-            <span className="flex items-center gap-1"><ShieldCheck className="w-3 h-3 text-blue-400" /> Live Database Sync</span>
           </div>
 
         </div>
