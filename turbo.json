@@ -1,9 +1,27 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "globalEnv": [
+    "DATABASE_URL",
+    "JWT_SECRET",
+    "JWT_REFRESH_SECRET",
+    "JWT_EXPIRES_IN",
+    "JWT_REFRESH_EXPIRES_IN",
+    "CORS_ORIGIN",
+    "PORT"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "DATABASE_URL",
+        "JWT_SECRET",
+        "JWT_REFRESH_SECRET",
+        "JWT_EXPIRES_IN",
+        "JWT_REFRESH_EXPIRES_IN",
+        "CORS_ORIGIN",
+        "PORT"
+      ]
     },
     "lint": {
       "dependsOn": ["^lint"]
