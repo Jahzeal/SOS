@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/useAuthStore';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/lib/auth-context';
+import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import {
@@ -41,21 +43,45 @@ import {
 } from 'lucide-react';
 
 export default function BusinessDashboardPage() {
-  const { user } = useAuthStore();
-  const [mounted, setMounted] = useState(false);
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
+
   const [activeTab, setActiveTab] = useState<'all' | 'instock' | 'sold'>('all');
   const [tableSearch, setTableSearch] = useState('');
   const [salesTimeframe, setSalesTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
   const [copiedImei, setCopiedImei] = useState<string | null>(null);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [livePhones, setLivePhones] = useState<any[]>([]);
+  const [isFetching, setIsFetching] = useState(true);
 
+  // Protected Route Guard
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    if (!isLoading && !user) {
+      router.push('/onboarding');
+    }
+  }, [user, isLoading, router]);
 
-  const userName = mounted ? user?.firstName || 'Marcus' : 'Marcus';
-  const businessName = mounted ? user?.business?.name || 'TechWorld Mobile' : 'TechWorld Mobile';
-  const plan = mounted ? user?.business?.plan || 'BUSINESS' : 'BUSINESS';
+  // Fetch Live Backend Data
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const inventory = await api.getInventory();
+        setLivePhones(inventory);
+      } catch (err) {
+        console.warn('Dashboard fetch skipped/offline:', err);
+        setLivePhones([]);
+      } finally {
+        setIsFetching(false);
+      }
+    }
+    if (user) {
+      loadData();
+    }
+  }, [user]);
+
+  const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Store Owner';
+  const businessName = user?.business?.name || 'My Store Workspace';
+  const plan = user?.business?.plan || 'BUSINESS';
 
   // Sample Registered Phones Ledger Data
   const registeredPhones = [
@@ -166,7 +192,23 @@ export default function BusinessDashboardPage() {
     },
   ];
 
-  const filteredPhones = registeredPhones.filter((phone) => {
+  const displayPhones = useMemo(() => {
+    return livePhones.map((p) => ({
+      id: p.id || `REC-${p.imei1?.slice(-4)}`,
+      brand: p.brand,
+      model: p.model,
+      imei: p.imei1,
+      serial: p.serialNumber || 'N/A',
+      storage: p.storageCapacity || 'N/A',
+      color: p.color || 'Standard',
+      date: new Date(p.createdAt || Date.now()).toISOString().split('T')[0],
+      status: p.status || 'IN_STOCK',
+      customer: p.customer ? p.customer.name : 'Unassigned',
+      warranty: `${p.warrantyDurationMonths || 12} Months Active`,
+    }));
+  }, [livePhones]);
+
+  const filteredPhones = displayPhones.filter((phone) => {
     if (activeTab === 'instock' && phone.status !== 'IN_STOCK') return false;
     if (activeTab === 'sold' && phone.status !== 'SOLD') return false;
     if (tableSearch) {
@@ -251,9 +293,9 @@ export default function BusinessDashboardPage() {
               <Smartphone className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">1,248</div>
+          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">{livePhones.length.toLocaleString()}</div>
           <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-            <ArrowUpRight className="w-3.5 h-3.5" /> +14.2% this month
+            <ArrowUpRight className="w-3.5 h-3.5" /> Real-time database ledger
           </div>
         </div>
 
@@ -265,23 +307,27 @@ export default function BusinessDashboardPage() {
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">412</div>
+          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            {livePhones.filter((p) => p.status === 'SOLD').length.toLocaleString()}
+          </div>
           <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-            <ArrowUpRight className="w-3.5 h-3.5" /> +8.4% vs last mo
+            <ArrowUpRight className="w-3.5 h-3.5" /> Completed transactions
           </div>
         </div>
 
-        {/* Card 3: Verification Requests */}
+        {/* Card 3: In Stock Units */}
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Verifications</span>
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">In-Stock</span>
             <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
-              <ShieldCheck className="w-4 h-4" />
+              <Package className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">4,892</div>
+          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            {livePhones.filter((p) => p.status === 'IN_STOCK').length.toLocaleString()}
+          </div>
           <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600">
-            <TrendingUp className="w-3.5 h-3.5" /> Customer Scans
+            <TrendingUp className="w-3.5 h-3.5" /> Ready for POS checkout
           </div>
         </div>
 
@@ -293,8 +339,10 @@ export default function BusinessDashboardPage() {
               <Lock className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">842</div>
-          <div className="text-[11px] font-bold text-amber-700">18 expiring this week</div>
+          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            {livePhones.filter((p) => p.warrantyExpiryDate && new Date(p.warrantyExpiryDate) > new Date()).length.toLocaleString()}
+          </div>
+          <div className="text-[11px] font-bold text-amber-700">Active store guarantees</div>
         </div>
 
         {/* Card 5: Repairs In Progress */}
@@ -305,20 +353,24 @@ export default function BusinessDashboardPage() {
               <Wrench className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">14</div>
-          <div className="text-[11px] font-bold text-purple-700">6 ready for pickup</div>
+          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            {livePhones.filter((p) => p.status === 'IN_REPAIR').length.toLocaleString()}
+          </div>
+          <div className="text-[11px] font-bold text-purple-700">In technician queue</div>
         </div>
 
-        {/* Card 6: Total Stock Value */}
+        {/* Card 6: Stock Valuation */}
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Stock Valuation</span>
-            <div className="w-8 h-8 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Stock Value</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">$148.9K</div>
-          <div className="text-[11px] font-bold text-slate-500">836 In-Stock Units</div>
+          <div className="text-xl font-extrabold text-slate-900 tracking-tight">
+            ${livePhones.reduce((sum, p) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
+          </div>
+          <div className="text-[11px] font-bold text-slate-500">Live inventory value</div>
         </div>
       </div>
 
@@ -408,43 +460,51 @@ export default function BusinessDashboardPage() {
           </Link>
         </div>
       </div>
-
       {/* ========================================================================= */}
-      {/* 4. SETUP CHECKLIST & REAL-TIME VERIFICATION ACTIVITY ROW                 */}
+      {/* 4. SETUP CHECKLIST & LIVE VERIFICATION FEED                              */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left 7 cols: Interactive Business Onboarding Setup Checklist */}
+        {/* Left 7 cols: Store Onboarding Checklist */}
         <div className="lg:col-span-7 vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="text-base font-extrabold text-slate-900">Store Onboarding Setup Checklist</h3>
-              <p className="text-xs text-slate-500 font-medium">4 of 5 setup steps completed (80%)</p>
+              <p className="text-xs text-slate-500 font-medium">
+                {livePhones.length > 0 ? '3 of 4 setup steps completed (75%)' : '2 of 4 setup steps completed (50%)'}
+              </p>
             </div>
-            <Badge variant="verified" size="sm">
-              ONBOARDING ACTIVE
-            </Badge>
+            <Badge variant="verified" size="sm">ONBOARDING ACTIVE</Badge>
           </div>
 
           <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-            <div className="bg-emerald-500 h-full w-4/5 rounded-full" />
+            <div
+              className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+              style={{ width: livePhones.length > 0 ? '75%' : '50%' }}
+            />
           </div>
 
           <div className="space-y-2.5 pt-1 text-xs">
             <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
               <div className="flex items-center gap-2.5 font-bold text-slate-900">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>1. Create Business Workspace Account</span>
+                <span>1. Create Business Workspace Account ({businessName})</span>
               </div>
               <span className="text-[10px] text-emerald-700 font-bold uppercase">COMPLETED</span>
             </div>
 
-            <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
+            <div className={`p-3 rounded-xl flex items-center justify-between ${livePhones.length > 0 ? 'bg-emerald-50/60 border border-emerald-200' : 'bg-blue-50/80 border border-blue-200'}`}>
               <div className="flex items-center gap-2.5 font-bold text-slate-900">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                {livePhones.length > 0 ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Clock className="w-4 h-4 text-blue-600" />}
                 <span>2. Register Your First Phone (IMEI & Box QR Code)</span>
               </div>
-              <span className="text-[10px] text-emerald-700 font-bold uppercase">COMPLETED</span>
+              {livePhones.length > 0 ? (
+                <span className="text-[10px] text-emerald-700 font-bold uppercase">COMPLETED</span>
+              ) : (
+                <Link href="/dashboard/register" className="text-xs font-bold text-blue-600 hover:underline">
+                  Register Now →
+                </Link>
+              )}
             </div>
 
             <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
@@ -455,13 +515,13 @@ export default function BusinessDashboardPage() {
               <span className="text-[10px] text-emerald-700 font-bold uppercase">COMPLETED</span>
             </div>
 
-            <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between">
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2.5 font-bold text-slate-900">
-                <Clock className="w-4 h-4 text-blue-600" />
+                <Clock className="w-4 h-4 text-slate-500" />
                 <span>4. Record First Sale & Issue Customer Digital Receipt</span>
               </div>
-              <Link href="/dashboard/records" className="text-xs font-bold text-blue-600 hover:underline">
-                Complete Now →
+              <Link href="/dashboard/verify" className="text-xs font-bold text-blue-600 hover:underline">
+                Record Sale →
               </Link>
             </div>
           </div>
@@ -472,7 +532,7 @@ export default function BusinessDashboardPage() {
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div>
               <h3 className="text-base font-extrabold text-slate-900">Live Verification Feed</h3>
-              <p className="text-xs text-slate-500 font-medium">Customer & staff scan events</p>
+              <p className="text-xs text-slate-500 font-medium">Real-time device origin scans</p>
             </div>
             <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> LIVE
@@ -480,20 +540,28 @@ export default function BusinessDashboardPage() {
           </div>
 
           <div className="space-y-3">
-            {verificationActivity.map((act) => (
-              <div key={act.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
-                <div className="flex items-center justify-between font-bold text-slate-900">
-                  <span className="flex items-center gap-1.5">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> {act.device}
-                  </span>
-                  <span className="text-[10px] text-slate-400 font-mono">{act.time}</span>
+            {livePhones.length > 0 ? (
+              livePhones.slice(0, 4).map((phone) => (
+                <div key={phone.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
+                  <div className="flex items-center justify-between font-bold text-slate-900">
+                    <span className="flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> {phone.brand} {phone.model}
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">Just registered</span>
+                  </div>
+                  <div className="flex items-center justify-between text-slate-500 font-mono text-[11px]">
+                    <span>IMEI: {phone.imei1}</span>
+                    <span className="text-emerald-700 font-bold">100% GENUINE</span>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between text-slate-500 font-mono text-[11px]">
-                  <span>IMEI: {act.imei}</span>
-                  <span className="text-emerald-700 font-bold">{act.result}</span>
-                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200 space-y-2">
+                <ShieldCheck className="w-8 h-8 text-slate-400 mx-auto" />
+                <p className="text-xs font-bold text-slate-700">No Verification Activity Yet</p>
+                <p className="text-[11px] text-slate-500">Scan events and public QR lookups for registered devices will appear here in real time.</p>
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
@@ -515,19 +583,19 @@ export default function BusinessDashboardPage() {
                 onClick={() => setActiveTab('all')}
                 className={`px-3 py-1.5 rounded-lg transition ${activeTab === 'all' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'}`}
               >
-                All (5)
+                All ({displayPhones.length})
               </button>
               <button
                 onClick={() => setActiveTab('instock')}
                 className={`px-3 py-1.5 rounded-lg transition ${activeTab === 'instock' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'}`}
               >
-                In Stock (3)
+                In Stock ({displayPhones.filter((p) => p.status === 'IN_STOCK').length})
               </button>
               <button
                 onClick={() => setActiveTab('sold')}
                 className={`px-3 py-1.5 rounded-lg transition ${activeTab === 'sold' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'}`}
               >
-                Sold (2)
+                Sold ({displayPhones.filter((p) => p.status === 'SOLD').length})
               </button>
             </div>
 
@@ -561,46 +629,63 @@ export default function BusinessDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredPhones.map((phone) => (
-                <tr key={phone.id} className="hover:bg-slate-50/80 transition">
-                  <td className="py-3.5 px-4 font-bold text-slate-900 flex items-center gap-2">
-                    <Smartphone className="w-4 h-4 text-blue-600" />
-                    {phone.model}
-                  </td>
-                  <td className="py-3.5 px-4 font-mono font-semibold text-slate-800">
-                    <div className="flex items-center gap-1.5">
-                      <span>{phone.imei}</span>
-                      <button
-                        type="button"
-                        onClick={() => handleCopyImei(phone.imei)}
-                        title="Copy IMEI"
-                        className="text-slate-400 hover:text-slate-600"
-                      >
-                        <Copy className="w-3 h-3" />
-                      </button>
-                      {copiedImei === phone.imei && <span className="text-[10px] text-emerald-600 font-bold">Copied!</span>}
+              {filteredPhones.length > 0 ? (
+                filteredPhones.map((phone) => (
+                  <tr key={phone.id} className="hover:bg-slate-50/80 transition">
+                    <td className="py-3.5 px-4 font-bold text-slate-900 flex items-center gap-2">
+                      <Smartphone className="w-4 h-4 text-blue-600" />
+                      {phone.model}
+                    </td>
+                    <td className="py-3.5 px-4 font-mono font-semibold text-slate-800">
+                      <div className="flex items-center gap-1.5">
+                        <span>{phone.imei}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleCopyImei(phone.imei)}
+                          title="Copy IMEI"
+                          className="text-slate-400 hover:text-slate-600"
+                        >
+                          <Copy className="w-3 h-3" />
+                        </button>
+                        {copiedImei === phone.imei && <span className="text-[10px] text-emerald-600 font-bold">Copied!</span>}
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4 font-mono text-slate-500">{phone.serial}</td>
+                    <td className="py-3.5 px-4 font-medium text-slate-600">{phone.storage}</td>
+                    <td className="py-3.5 px-4 text-slate-500 font-medium">{phone.date}</td>
+                    <td className="py-3.5 px-4 text-emerald-700 font-bold">{phone.warranty}</td>
+                    <td className="py-3.5 px-4 text-center">
+                      {phone.status === 'IN_STOCK' ? (
+                        <Badge variant="verified" size="sm">IN_STOCK</Badge>
+                      ) : (
+                        <Badge variant="sold" size="sm">SOLD</Badge>
+                      )}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <Link href="/dashboard/inventory">
+                        <Button variant="secondary" size="sm" className="text-[11px] font-bold">
+                          View Details
+                        </Button>
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={8} className="py-12 text-center text-slate-500 space-y-3">
+                    <Smartphone className="w-10 h-10 text-slate-300 mx-auto" />
+                    <div>
+                      <p className="text-sm font-extrabold text-slate-800">No Phones Registered Yet</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Your store inventory database is currently empty. Register your first device to get started.</p>
                     </div>
-                  </td>
-                  <td className="py-3.5 px-4 font-mono text-slate-500">{phone.serial}</td>
-                  <td className="py-3.5 px-4 font-medium text-slate-600">{phone.storage}</td>
-                  <td className="py-3.5 px-4 text-slate-500 font-medium">{phone.date}</td>
-                  <td className="py-3.5 px-4 text-emerald-700 font-bold">{phone.warranty}</td>
-                  <td className="py-3.5 px-4 text-center">
-                    {phone.status === 'IN_STOCK' ? (
-                      <Badge variant="verified" size="sm">IN_STOCK</Badge>
-                    ) : (
-                      <Badge variant="sold" size="sm">SOLD</Badge>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <Link href="/dashboard/records">
-                      <Button variant="secondary" size="sm" className="text-[11px] font-bold">
-                        View Details
+                    <Link href="/dashboard/register" className="inline-block pt-1">
+                      <Button variant="primary" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
+                        Register First Phone
                       </Button>
                     </Link>
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>
@@ -609,15 +694,16 @@ export default function BusinessDashboardPage() {
       {/* ========================================================================= */}
       {/* 6. OPERATIONAL SUMMARY SNAPSHOT GRID (Inventory, Sales, Warranties)     */}
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        {/* Module 1: Inventory Summary */}
+        {/* Module 1: Inventory Status */}
         <div className="vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
               <Package className="w-4 h-4 text-blue-600" /> Inventory Status
             </h4>
-            <Link href="/dashboard/records" className="text-xs text-blue-600 font-bold hover:underline">
+            <Link href="/dashboard/inventory" className="text-xs text-blue-600 font-bold hover:underline">
               Manage →
             </Link>
           </div>
@@ -625,11 +711,15 @@ export default function BusinessDashboardPage() {
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
               <div className="text-slate-500 font-semibold">In Stock</div>
-              <div className="text-xl font-extrabold text-slate-900 mt-1">836 Units</div>
+              <div className="text-xl font-extrabold text-slate-900 mt-1">
+                {livePhones.filter((p) => p.status === 'IN_STOCK').length.toLocaleString()} Units
+              </div>
             </div>
             <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
               <div className="text-emerald-800 font-semibold">Sold Devices</div>
-              <div className="text-xl font-extrabold text-emerald-950 mt-1">412 Units</div>
+              <div className="text-xl font-extrabold text-emerald-950 mt-1">
+                {livePhones.filter((p) => p.status === 'SOLD').length.toLocaleString()} Units
+              </div>
             </div>
           </div>
         </div>
@@ -658,8 +748,10 @@ export default function BusinessDashboardPage() {
 
           <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 text-xs space-y-1">
             <div className="font-bold text-slate-900">Total Revenue ({salesTimeframe.toUpperCase()})</div>
-            <div className="text-2xl font-extrabold text-emerald-950">$34,890.00</div>
-            <div className="text-[11px] text-emerald-700 font-semibold">+12.4% vs previous period</div>
+            <div className="text-2xl font-extrabold text-emerald-950">
+              ${livePhones.filter((p) => p.status === 'SOLD').reduce((sum, p) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
+            </div>
+            <div className="text-[11px] text-emerald-700 font-semibold">Live POS Sales Revenue</div>
           </div>
         </div>
 
@@ -677,11 +769,13 @@ export default function BusinessDashboardPage() {
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
               <div className="text-amber-800 font-semibold">Active Guarantees</div>
-              <div className="text-xl font-extrabold text-amber-950 mt-1">842 Units</div>
+              <div className="text-xl font-extrabold text-amber-950 mt-1">
+                {livePhones.filter((p) => p.warrantyExpiryDate && new Date(p.warrantyExpiryDate) > new Date()).length.toLocaleString()} Units
+              </div>
             </div>
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200">
               <div className="text-rose-800 font-semibold">Expiring Soon</div>
-              <div className="text-xl font-extrabold text-rose-950 mt-1">18 Devices</div>
+              <div className="text-xl font-extrabold text-rose-950 mt-1">0 Devices</div>
             </div>
           </div>
         </div>

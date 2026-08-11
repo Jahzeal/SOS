@@ -1,39 +1,37 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import {
   Search,
   Barcode,
   Smartphone,
-  Headphones,
   Package,
   Plus,
-  Minus,
   Trash2,
-  UserPlus,
   ChevronRight,
   ChevronLeft,
-  Tag,
   CreditCard,
-  FileText,
   CheckCircle2,
-  X,
   Printer,
   Mail,
-  DollarSign,
   Banknote,
   Building2,
   ArrowRight,
   Receipt as ReceiptIcon,
   User,
   Phone,
+  AlertTriangle,
+  Loader2,
+  Check,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { api } from '@/lib/api';
 
 interface CartDeviceItem {
-  id: string;
+  id: string; // phoneRecord.id (UUID) or custom item ID
   brand: string;
   model: string;
   imei: string;
@@ -45,76 +43,83 @@ interface CartDeviceItem {
   isDevice: boolean;
 }
 
-const presetModels = [
-  { brand: 'Apple', model: 'iPhone 15 Pro', defaultPrice: 1099.0, storage: '256GB', color: 'Natural Titanium' },
-  { brand: 'Apple', model: 'iPhone 15 Pro Max', defaultPrice: 1199.0, storage: '256GB', color: 'Space Black' },
-  { brand: 'Apple', model: 'iPhone 14', defaultPrice: 649.0, storage: '128GB', color: 'Blue' },
-  { brand: 'Samsung', model: 'Galaxy S24 Ultra', defaultPrice: 1299.0, storage: '512GB', color: 'Titanium Gray' },
-  { brand: 'Samsung', model: 'Galaxy Z Fold 5', defaultPrice: 1399.0, storage: '512GB', color: 'Phantom Black' },
-  { brand: 'Google', model: 'Pixel 8 Pro', defaultPrice: 999.0, storage: '128GB', color: 'Obsidian' },
-];
+function CheckoutPOSContent() {
+  const searchParams = useSearchParams();
+  const initialDeviceId = searchParams.get('device');
 
-const accessoryPresets = [
-  { id: 'ACC-1', name: 'WH-1000XM5 Headphones', brand: 'Sony', price: 348.0, specs: 'Midnight Blue' },
-  { id: 'ACC-2', name: 'AirPods Pro (2nd Gen)', brand: 'Apple', price: 249.0, specs: 'USB-C Case' },
-  { id: 'ACC-3', name: 'MagSafe Silicone Case', brand: 'Apple', price: 49.0, specs: 'Navy' },
-  { id: 'ACC-4', name: '20W USB-C Power Adapter', brand: 'Apple', price: 19.0, specs: 'Fast Charger' },
-];
-
-export default function CheckoutPOSPage() {
   // Step Workflow: 1 = ORDER_BUILDER, 2 = PAYMENT_METHOD, 3 = RECEIPT_PREVIEW
   const [checkoutStep, setCheckoutStep] = useState<1 | 2 | 3>(1);
 
   // Customer Info State
-  const [customerName, setCustomerName] = useState<string>('Johnathan Doe');
-  const [customerPhone, setCustomerPhone] = useState<string>('+1 (555) 234-5678');
+  const [customerName, setCustomerName] = useState<string>('');
+  const [customerPhone, setCustomerPhone] = useState<string>('');
 
-  // Device Input State
-  const [inputModelName, setInputModelName] = useState<string>('iPhone 15 Pro');
-  const [inputImei, setInputImei] = useState<string>('358291048291048');
-  const [inputCondition, setInputCondition] = useState<string>('Brand New');
-  const [inputStorage, setInputStorage] = useState<string>('256GB');
-  const [inputPrice, setInputPrice] = useState<string>('1099.00');
+  // Cart State (empty by default)
+  const [cart, setCart] = useState<CartDeviceItem[]>([]);
 
-  // Custom Accessory Input State
-  const [customAccessoryName, setCustomAccessoryName] = useState<string>('');
-  const [customAccessoryPrice, setCustomAccessoryPrice] = useState<string>('');
+  // Device Search & Selection State
+  const [deviceSearch, setDeviceSearch] = useState<string>('');
+  const [inStockDevices, setInStockDevices] = useState<any[]>([]);
+  const [isSearchingDevices, setIsSearchingDevices] = useState<boolean>(false);
 
-  // Cart State
-  const [cart, setCart] = useState<CartDeviceItem[]>([
-    {
-      id: 'POS-DEV-1',
-      brand: 'Apple',
-      model: 'iPhone 15 Pro',
-      imei: '358291048291048',
-      condition: 'Brand New',
-      storage: '256GB',
-      color: 'Natural Titanium',
-      price: 1099.0,
-      quantity: 1,
-      isDevice: true,
-    },
-    {
-      id: 'POS-ACC-1',
-      brand: 'Apple',
-      model: 'AirPods Pro (2nd Gen)',
-      imei: 'N/A (Accessory)',
-      condition: 'New',
-      storage: 'Standard',
-      color: 'White',
-      price: 249.0,
-      quantity: 1,
-      isDevice: false,
-    },
-  ]);
+  // Custom Item Input State
+  const [customItemName, setCustomItemName] = useState<string>('');
+  const [customItemPrice, setCustomItemPrice] = useState<string>('');
 
   // Payment Selection State
-  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD' | 'TRANSFER'>('CARD');
+  const [paymentMethod, setPaymentMethod] = useState<'CASH' | 'CARD' | 'BANK_TRANSFER'>('CARD');
   const [cashTendered, setCashTendered] = useState<string>('');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Finalized Receipt Data
   const [finalReceipt, setFinalReceipt] = useState<any>(null);
+
+  // Load initial device if ?device=<id> passed in URL
+  useEffect(() => {
+    if (initialDeviceId) {
+      api.getPhoneById(initialDeviceId)
+        .then((phone) => {
+          if (phone && phone.status === 'IN_STOCK') {
+            const item: CartDeviceItem = {
+              id: phone.id,
+              brand: phone.brand,
+              model: phone.model,
+              imei: phone.imei1,
+              condition: phone.condition || 'NEW',
+              storage: phone.storageCapacity || 'N/A',
+              color: phone.color || 'Standard',
+              price: phone.sellingPrice ?? phone.purchasePrice ?? 0,
+              quantity: 1,
+              isDevice: true,
+            };
+            setCart((prev) => (prev.some((p) => p.id === item.id) ? prev : [item, ...prev]));
+          }
+        })
+        .catch((err) => console.error('Failed to load initial device:', err));
+    }
+  }, [initialDeviceId]);
+
+  // Search available in-stock devices
+  useEffect(() => {
+    const t = setTimeout(async () => {
+      setIsSearchingDevices(true);
+      try {
+        const devices = await api.getInventory({
+          status: 'IN_STOCK',
+          search: deviceSearch.trim() || undefined,
+        });
+        setInStockDevices(devices || []);
+      } catch (err) {
+        console.error('Failed to load in-stock devices:', err);
+        setInStockDevices([]);
+      } finally {
+        setIsSearchingDevices(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(t);
+  }, [deviceSearch]);
 
   // Totals
   const subtotal = useMemo(() => {
@@ -129,87 +134,48 @@ export default function CheckoutPOSPage() {
     return Math.max(0, tendered - grandTotal);
   }, [cashTendered, grandTotal]);
 
-  // Model Selection Change Handler
-  const handleModelSelect = (val: string) => {
-    setInputModelName(val);
-    const matched = presetModels.find((m) => m.model.toLowerCase() === val.toLowerCase());
-    if (matched) {
-      setInputPrice(matched.defaultPrice.toFixed(2));
-      setInputStorage(matched.storage);
-    }
-  };
-
-  // Add Device to Cart
-  const handleAddDeviceToCart = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputImei || !inputModelName) return;
-
-    const matched = presetModels.find((m) => m.model.toLowerCase() === inputModelName.toLowerCase());
-    const newDevice: CartDeviceItem = {
-      id: `DEV-${Date.now()}`,
-      brand: matched ? matched.brand : 'Device',
-      model: inputModelName,
-      imei: inputImei,
-      condition: inputCondition,
-      storage: inputStorage,
-      color: matched ? matched.color : 'Standard',
-      price: parseFloat(inputPrice) || (matched ? matched.defaultPrice : 0),
+  // Add In-Stock Device to Cart
+  const handleAddDeviceToCart = (phone: any) => {
+    const item: CartDeviceItem = {
+      id: phone.id,
+      brand: phone.brand,
+      model: phone.model,
+      imei: phone.imei1,
+      condition: phone.condition || 'NEW',
+      storage: phone.storageCapacity || 'N/A',
+      color: phone.color || 'Standard',
+      price: phone.sellingPrice ?? phone.purchasePrice ?? 0,
       quantity: 1,
       isDevice: true,
     };
 
-    setCart((prev) => [newDevice, ...prev]);
-    setInputImei('');
-  };
-
-  // Add Preset Accessory
-  const handleAddAccessory = (acc: typeof accessoryPresets[0]) => {
     setCart((prev) => {
-      const existing = prev.find((item) => item.id === acc.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === acc.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-      return [
-        ...prev,
-        {
-          id: acc.id,
-          brand: acc.brand,
-          model: acc.name,
-          imei: 'N/A (Accessory)',
-          condition: 'New',
-          storage: 'Standard',
-          color: acc.specs,
-          price: acc.price,
-          quantity: 1,
-          isDevice: false,
-        },
-      ];
+      if (prev.some((p) => p.id === item.id)) return prev;
+      return [item, ...prev];
     });
   };
 
-  // Add Custom Accessory
-  const handleAddCustomAccessory = (e: React.FormEvent) => {
+  // Add Custom Item / Accessory
+  const handleAddCustomItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!customAccessoryName || !customAccessoryPrice) return;
+    if (!customItemName.trim() || !customItemPrice) return;
 
     const newAcc: CartDeviceItem = {
-      id: `ACC-CUST-${Date.now()}`,
+      id: `CUSTOM-${Date.now()}`,
       brand: 'Accessory',
-      model: customAccessoryName,
+      model: customItemName.trim(),
       imei: 'N/A (Accessory)',
       condition: 'New',
       storage: 'Standard',
       color: 'Custom',
-      price: parseFloat(customAccessoryPrice) || 0,
+      price: parseFloat(customItemPrice) || 0,
       quantity: 1,
       isDevice: false,
     };
 
     setCart((prev) => [newAcc, ...prev]);
-    setCustomAccessoryName('');
-    setCustomAccessoryPrice('');
+    setCustomItemName('');
+    setCustomItemPrice('');
   };
 
   // Cart Operations
@@ -227,27 +193,52 @@ export default function CheckoutPOSPage() {
     );
   };
 
+  const updateItemPrice = (id: string, newPrice: number) => {
+    setCart((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, price: Math.max(0, newPrice) } : item))
+    );
+  };
+
   const removeFromCart = (id: string) => {
     setCart((prev) => prev.filter((item) => item.id !== id));
   };
 
   // Step 2: Confirm Payment & Finalize Receipt
-  const handleConfirmPayment = () => {
+  const handleConfirmPayment = async () => {
     setIsProcessing(true);
-    setTimeout(() => {
-      setIsProcessing(false);
+    setErrorMessage(null);
+    try {
+      const deviceItems = cart.filter((item) => item.isDevice);
+      if (deviceItems.length === 0) {
+        throw new Error('At least one device from inventory is required to checkout.');
+      }
+
+      const payloadItems = deviceItems.map((item) => ({
+        phoneRecordId: item.id,
+        price: item.price,
+      }));
+
+      const sale = await api.checkoutSale({
+        customerName: customerName.trim() || 'Retail Buyer',
+        customerPhone: customerPhone.trim() || undefined,
+        paymentMethod: paymentMethod,
+        items: payloadItems,
+      });
+
       setFinalReceipt({
-        id: `#RCP-${Math.floor(90000 + Math.random() * 9000)}`,
-        customerName: customerName || 'Walking Customer',
-        customerPhone: customerPhone || 'N/A',
+        id: sale.receiptNumber || sale.invoiceNumber || sale.id,
+        invoiceNumber: sale.invoiceNumber,
+        receiptNumber: sale.receiptNumber,
+        customerName: sale.customer?.name || customerName || 'Retail Buyer',
+        customerPhone: sale.customer?.phone || customerPhone || 'N/A',
         items: cart,
         subtotal,
         tax,
-        total: grandTotal,
-        paymentMethod,
+        total: sale.totalAmount || grandTotal,
+        paymentMethod: sale.paymentMethod || paymentMethod,
         cashTendered: parseFloat(cashTendered) || grandTotal,
         changeDue,
-        date: new Date().toLocaleDateString('en-US', {
+        date: new Date(sale.createdAt || Date.now()).toLocaleDateString('en-US', {
           month: 'short',
           day: 'numeric',
           year: 'numeric',
@@ -255,8 +246,27 @@ export default function CheckoutPOSPage() {
           minute: '2-digit',
         }),
       });
-      setCheckoutStep(3); // Advance to Receipt Preview & Archive
-    }, 700);
+
+      setCheckoutStep(3); // Advance to Receipt View
+    } catch (err: any) {
+      console.error('POS Checkout failed:', err);
+      setErrorMessage(err.message || 'Checkout failed. Please try again.');
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePrintReceipt = () => {
+    window.print();
+  };
+
+  const handleEmailReceipt = () => {
+    const receiptNum = finalReceipt?.receiptNumber || finalReceipt?.id || 'Receipt';
+    const subject = encodeURIComponent(`Sales Receipt #${receiptNum}`);
+    const body = encodeURIComponent(
+      `Hello ${finalReceipt?.customerName || 'Valued Customer'},\n\nThank you for your purchase! Your sales receipt #${receiptNum} for $${finalReceipt?.total?.toFixed(2) || '0.00'} is confirmed.\n\nThank you for shopping with us!`
+    );
+    window.location.href = `mailto:${finalReceipt?.customerPhone?.includes('@') ? finalReceipt.customerPhone : ''}?subject=${subject}&body=${body}`;
   };
 
   const resetForm = () => {
@@ -264,11 +274,14 @@ export default function CheckoutPOSPage() {
     setCheckoutStep(1);
     setFinalReceipt(null);
     setCashTendered('');
+    setErrorMessage(null);
+    setCustomerName('');
+    setCustomerPhone('');
   };
 
   return (
     <div className="space-y-6 font-sans pb-24 md:pb-8">
-      
+
       {/* Top Header & Multi-Step Progress Tracker */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
@@ -282,12 +295,12 @@ export default function CheckoutPOSPage() {
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             {checkoutStep === 1 && 'Checkout POS Terminal'}
             {checkoutStep === 2 && 'Select Payment Method'}
-            {checkoutStep === 3 && 'Transaction Receipt & Archive'}
+            {checkoutStep === 3 && 'Transaction Receipt'}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
-            {checkoutStep === 1 && 'Enter customer details, select phone models, scan IMEI barcodes, add accessories, and proceed.'}
-            {checkoutStep === 2 && 'Select customer payment method (Cash, Card, Transfer) and confirm settlement.'}
-            {checkoutStep === 3 && 'Review thermal receipt, print or email customer statement, and save to Receipts Archive.'}
+            {checkoutStep === 1 && 'Select in-stock devices, add customer details, and build your order.'}
+            {checkoutStep === 2 && 'Choose customer payment method (Cash, Card, Transfer) and confirm settlement.'}
+            {checkoutStep === 3 && 'Review thermal receipt, print or email customer statement, and view record.'}
           </p>
         </div>
 
@@ -307,13 +320,20 @@ export default function CheckoutPOSPage() {
         </div>
       </div>
 
-      {/* ========================================================================= */}
-      {/* STEP 1: ORDER BUILDER & CART (2-COLUMN POS LAYOUT)                        */}
-      {/* ========================================================================= */}
+      {/* Error Message Banner */}
+      {errorMessage && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-800 text-xs font-bold animate-in fade-in duration-200">
+          <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+          <div className="flex-1">{errorMessage}</div>
+          <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 font-bold text-sm">✕</button>
+        </div>
+      )}
+
+      {/* STEP 1: ORDER BUILDER & CART */}
       {checkoutStep === 1 && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          
-          {/* LEFT 7 COLUMNS: CUSTOMER INFO, PHONE ENTRY & IMEI SCANNER */}
+
+          {/* LEFT 7 COLUMNS: CUSTOMER INFO & IN-STOCK INVENTORY SEARCH */}
           <div className="lg:col-span-7 space-y-6">
 
             {/* Customer Info Card Section */}
@@ -327,15 +347,14 @@ export default function CheckoutPOSPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Customer Full Name *</label>
+                  <label className="text-xs font-bold text-slate-700">Customer Name</label>
                   <div className="relative">
                     <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
-                      required
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="e.g. Johnathan Doe or Walking Customer..."
+                      placeholder="e.g. Johnathan Doe or Retail Buyer..."
                       className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -349,7 +368,7 @@ export default function CheckoutPOSPage() {
                       type="text"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="+1 (555) 234-5678"
+                      placeholder="e.g. +1 (555) 234-5678"
                       className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -357,134 +376,108 @@ export default function CheckoutPOSPage() {
               </div>
             </div>
 
-            {/* Device Entry Form & IMEI Scanner */}
-            <form onSubmit={handleAddDeviceToCart} className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            {/* In-Stock Device Inventory Selector */}
+            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-blue-600" /> Phone Entry & IMEI Scanner
+                  <Smartphone className="w-4 h-4 text-blue-600" /> Select In-Stock Device from Inventory
                 </h2>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Device Details</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">Available Inventory</span>
               </div>
 
-              {/* Type or Select Phone Model */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Phone Model (Type or Select) *</label>
+              {/* Device Search Box */}
+              <div className="relative">
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
-                  required
-                  list="phone-model-options"
-                  value={inputModelName}
-                  onChange={(e) => handleModelSelect(e.target.value)}
-                  placeholder="Type model name (e.g. iPhone 15 Pro, Galaxy S24...)"
-                  className="w-full text-xs px-3.5 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  value={deviceSearch}
+                  onChange={(e) => setDeviceSearch(e.target.value)}
+                  placeholder="Search in-stock devices by IMEI, Model, or Brand..."
+                  className="w-full text-xs pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                 />
-                <datalist id="phone-model-options">
-                  {presetModels.map((m, idx) => (
-                    <option key={idx} value={m.model} />
-                  ))}
-                </datalist>
               </div>
 
-              {/* IMEI / Serial Number Input */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">IMEI 1 / Serial Number *</label>
-                <div className="relative">
-                  <Barcode className="w-5 h-5 text-blue-600 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    required
-                    value={inputImei}
-                    onChange={(e) => setInputImei(e.target.value)}
-                    placeholder="Scan barcode or type 15-digit IMEI..."
-                    className="w-full font-mono text-xs pl-11 pr-24 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setInputImei(`3582${Math.floor(1000000000 + Math.random() * 9000000000)}`)}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-bold bg-blue-50 text-blue-600 border border-blue-200 px-2 py-1 rounded-lg hover:bg-blue-100 transition"
-                  >
-                    Generate Test
-                  </button>
-                </div>
+              {/* In-Stock Devices List */}
+              <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                {isSearchingDevices ? (
+                  <div className="py-8 text-center text-slate-400 text-xs font-semibold flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Searching inventory...
+                  </div>
+                ) : inStockDevices.length === 0 ? (
+                  <div className="py-8 text-center text-slate-400 text-xs font-medium">
+                    No in-stock devices found matching search criteria.
+                  </div>
+                ) : (
+                  inStockDevices.map((phone) => {
+                    const inCart = cart.some((c) => c.id === phone.id);
+                    return (
+                      <div
+                        key={phone.id}
+                        onClick={() => !inCart && handleAddDeviceToCart(phone)}
+                        className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs transition cursor-pointer ${
+                          inCart
+                            ? 'bg-emerald-50/60 border-emerald-300 opacity-80 cursor-default'
+                            : 'bg-slate-50 border-slate-200/90 hover:border-blue-500 hover:bg-blue-50/30'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold ${inCart ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-600'}`}>
+                            <Smartphone className="w-4 h-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-extrabold text-slate-900 truncate">{phone.brand} {phone.model}</p>
+                            <p className="text-[10px] font-mono text-slate-500 truncate">IMEI: {phone.imei1}</p>
+                            <p className="text-[10px] text-slate-400 font-semibold">{phone.condition} • {phone.storageCapacity || 'N/A'}</p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          <span className="font-extrabold text-slate-900 text-sm">
+                            ${(phone.sellingPrice ?? phone.purchasePrice ?? 0).toFixed(2)}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={inCart}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                              inCart
+                                ? 'bg-emerald-600 text-white'
+                                : 'bg-blue-600 text-white hover:bg-blue-500 shadow-sm'
+                            }`}
+                          >
+                            {inCart ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" /> Added
+                              </>
+                            ) : (
+                              <>
+                                <Plus className="w-3.5 h-3.5" /> Add
+                              </>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
               </div>
+            </div>
 
-              {/* Condition, Storage, and Selling Price Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Condition</label>
-                  <select
-                    value={inputCondition}
-                    onChange={(e) => setInputCondition(e.target.value)}
-                    className="w-full text-xs px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                  >
-                    <option value="Brand New">Brand New</option>
-                    <option value="Mint Condition">Mint Condition</option>
-                    <option value="Used / Fair">Used / Fair</option>
-                    <option value="Refurbished">Refurbished</option>
-                  </select>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Storage Capacity</label>
-                  <input
-                    type="text"
-                    list="storage-options"
-                    value={inputStorage}
-                    onChange={(e) => setInputStorage(e.target.value)}
-                    placeholder="Type or select storage..."
-                    className="w-full text-xs px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                  />
-                  <datalist id="storage-options">
-                    <option value="128GB" />
-                    <option value="256GB" />
-                    <option value="512GB" />
-                    <option value="1TB" />
-                  </datalist>
-                </div>
-
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-slate-700">Selling Price ($)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    required
-                    value={inputPrice}
-                    onChange={(e) => setInputPrice(e.target.value)}
-                    className="w-full text-xs px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  size="md"
-                  leftIcon={<Plus className="w-4 h-4" />}
-                  className="bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/20 font-bold"
-                >
-                  Add Device to Order
-                </Button>
-              </div>
-            </form>
-
-            {/* Quick Add & Custom Accessory Input Section */}
+            {/* Custom Item / Accessory Entry Section */}
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
               <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <Headphones className="w-4 h-4 text-indigo-600" /> Add Accessories & Custom Items
+                <Package className="w-4 h-4 text-indigo-600" /> Custom Accessory / Service Entry
               </h3>
 
-              <form onSubmit={handleAddCustomAccessory} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-                <p className="text-[11px] font-bold text-slate-700">Custom Accessory Entry</p>
+              <form onSubmit={handleAddCustomItem} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                   <div className="sm:col-span-7">
                     <input
                       type="text"
                       required
-                      value={customAccessoryName}
-                      onChange={(e) => setCustomAccessoryName(e.target.value)}
-                      placeholder="Item Name (e.g. Clear Phone Case)..."
+                      value={customItemName}
+                      onChange={(e) => setCustomItemName(e.target.value)}
+                      placeholder="Item / Service Name (e.g. Screen Protector)..."
                       className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -493,8 +486,8 @@ export default function CheckoutPOSPage() {
                       type="number"
                       step="0.01"
                       required
-                      value={customAccessoryPrice}
-                      onChange={(e) => setCustomAccessoryPrice(e.target.value)}
+                      value={customItemPrice}
+                      onChange={(e) => setCustomItemPrice(e.target.value)}
                       placeholder="Price ($)..."
                       className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
@@ -506,30 +499,11 @@ export default function CheckoutPOSPage() {
                   </div>
                 </div>
               </form>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                {accessoryPresets.map((acc) => (
-                  <div
-                    key={acc.id}
-                    onClick={() => handleAddAccessory(acc)}
-                    className="p-3 rounded-xl bg-slate-50 border border-slate-200/90 hover:border-blue-500/60 hover:bg-blue-50/40 transition cursor-pointer flex items-center justify-between group"
-                  >
-                    <div>
-                      <p className="font-extrabold text-slate-900 text-xs">{acc.name}</p>
-                      <p className="text-[10px] text-slate-500 font-medium">{acc.brand} • {acc.specs}</p>
-                      <p className="text-xs font-bold text-blue-600 mt-0.5">${acc.price.toFixed(2)}</p>
-                    </div>
-                    <div className="w-6 h-6 rounded-full bg-white text-blue-600 border border-slate-200 group-hover:bg-blue-600 group-hover:text-white transition flex items-center justify-center font-bold">
-                      <Plus className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
 
           </div>
 
-          {/* RIGHT 5 COLUMNS: CURRENT ORDER POS CART & PROCEED TO PAYMENT */}
+          {/* RIGHT 5 COLUMNS: CURRENT ORDER POS CART */}
           <div className="lg:col-span-5 space-y-5">
             <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -544,9 +518,9 @@ export default function CheckoutPOSPage() {
                     <User className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Assigned Customer</p>
-                    <p className="text-xs font-extrabold text-slate-900">{customerName || 'Walking Customer'}</p>
-                    <p className="text-[10px] text-slate-500 font-medium">{customerPhone}</p>
+                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Customer Profile</p>
+                    <p className="text-xs font-extrabold text-slate-900">{customerName.trim() || 'Retail Buyer'}</p>
+                    <p className="text-[10px] text-slate-500 font-medium">{customerPhone.trim() || 'No Phone Specified'}</p>
                   </div>
                 </div>
               </div>
@@ -555,7 +529,7 @@ export default function CheckoutPOSPage() {
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                 {cart.length === 0 ? (
                   <div className="text-center py-8 text-slate-400 text-xs font-medium">
-                    Your cart is empty. Add a device or accessory above.
+                    Your cart is empty. Select an in-stock device above.
                   </div>
                 ) : (
                   cart.map((item) => (
@@ -595,9 +569,17 @@ export default function CheckoutPOSPage() {
                           </div>
                         )}
 
-                        <span className="font-extrabold text-slate-900 w-16 text-right">
-                          ${(item.price * item.quantity).toFixed(2)}
-                        </span>
+                        <div className="flex items-center gap-0.5">
+                          <span className="text-slate-400 font-bold">$</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={item.price}
+                            onChange={(e) => updateItemPrice(item.id, parseFloat(e.target.value) || 0)}
+                            className="w-16 font-extrabold text-slate-900 text-right bg-white border border-slate-200 rounded px-1 py-0.5 focus:outline-none focus:border-blue-600"
+                          />
+                        </div>
 
                         <button
                           onClick={() => removeFromCart(item.id)}
@@ -645,17 +627,15 @@ export default function CheckoutPOSPage() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* STEP 2: PAYMENT METHOD SELECTION PAGE VIEW                                */}
-      {/* ========================================================================= */}
+      {/* STEP 2: PAYMENT METHOD SELECTION */}
       {checkoutStep === 2 && (
         <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-200">
           <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-6">
-            
+
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
                 <h2 className="text-lg font-extrabold text-slate-900">Select Payment Method</h2>
-                <p className="text-xs text-slate-500 font-medium">Customer: <strong>{customerName}</strong> ({customerPhone})</p>
+                <p className="text-xs text-slate-500 font-medium">Customer: <strong>{customerName.trim() || 'Retail Buyer'}</strong> ({customerPhone || 'No Phone'})</p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-slate-400 font-extrabold uppercase">Total Amount Due</p>
@@ -675,7 +655,7 @@ export default function CheckoutPOSPage() {
                 }`}
               >
                 <CreditCard className="w-6 h-6" />
-                <span className="text-xs font-extrabold">Credit / Debit Card</span>
+                <span className="text-xs font-extrabold">Card Payment</span>
               </button>
 
               <button
@@ -693,9 +673,9 @@ export default function CheckoutPOSPage() {
 
               <button
                 type="button"
-                onClick={() => setPaymentMethod('TRANSFER')}
+                onClick={() => setPaymentMethod('BANK_TRANSFER')}
                 className={`p-4 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-2 ${
-                  paymentMethod === 'TRANSFER'
+                  paymentMethod === 'BANK_TRANSFER'
                     ? 'border-blue-600 bg-blue-50/80 text-blue-600 shadow-sm'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
@@ -710,7 +690,13 @@ export default function CheckoutPOSPage() {
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
                 <div className="flex justify-between items-center">
                   <label className="font-bold text-slate-700">Cash Tendered ($)</label>
-                  <span className="text-[10px] text-slate-400 font-bold">Quick Exact: ${grandTotal.toFixed(2)}</span>
+                  <button
+                    type="button"
+                    onClick={() => setCashTendered(grandTotal.toFixed(2))}
+                    className="text-[10px] text-blue-600 font-bold hover:underline"
+                  >
+                    Exact: ${grandTotal.toFixed(2)}
+                  </button>
                 </div>
                 <input
                   type="number"
@@ -747,7 +733,7 @@ export default function CheckoutPOSPage() {
                 className="bg-emerald-600 hover:bg-emerald-500 font-bold px-6 shadow-md shadow-emerald-600/20"
                 rightIcon={<CheckCircle2 className="w-4 h-4" />}
               >
-                Confirm Payment & Generate Receipt
+                Confirm Payment & Process Sale
               </Button>
             </div>
 
@@ -755,14 +741,12 @@ export default function CheckoutPOSPage() {
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* STEP 3: THERMAL RECEIPT PREVIEW & ARCHIVE SAVED                           */}
-      {/* ========================================================================= */}
+      {/* STEP 3: THERMAL RECEIPT PREVIEW & ARCHIVE SAVED */}
       {checkoutStep === 3 && finalReceipt && (
         <div className="max-w-md mx-auto space-y-6 animate-in zoom-in duration-200">
-          
+
           <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xl text-center space-y-4">
-            
+
             <div className="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center mx-auto border border-emerald-200 shadow-subtle">
               <CheckCircle2 className="w-7 h-7" />
             </div>
@@ -777,14 +761,17 @@ export default function CheckoutPOSPage() {
             {/* Realistic Thermal Receipt Display */}
             <div className="p-5 rounded-2xl bg-slate-50 border border-dashed border-slate-300 font-mono text-xs text-slate-800 space-y-3 text-left">
               <div className="text-center space-y-0.5 border-b border-slate-200 pb-3">
-                <p className="font-extrabold text-sm text-slate-900">VERIFYFLOW RETAIL POS</p>
-                <p className="text-[10px] text-slate-500 font-sans">Store #402 - Main Branch<br />5th Ave, Manhattan, NY</p>
+                <p className="font-extrabold text-sm text-slate-900">VERIFYFLOW POS RECEIPT</p>
+                <p className="text-[10px] text-slate-500 font-sans">Official Sales Record</p>
               </div>
 
               <div className="flex justify-between text-[10px] text-slate-500 pt-1">
-                <span>Receipt: <strong>{finalReceipt.id}</strong></span>
+                <span>Receipt #: <strong>{finalReceipt.receiptNumber || finalReceipt.id}</strong></span>
                 <span>{finalReceipt.date}</span>
               </div>
+              {finalReceipt.invoiceNumber && (
+                <p className="text-[10px] text-slate-500">Invoice #: <strong>{finalReceipt.invoiceNumber}</strong></p>
+              )}
               <p className="text-[10px] text-slate-500">Customer: <strong>{finalReceipt.customerName}</strong> ({finalReceipt.customerPhone})</p>
 
               <div className="border-y border-slate-200 py-2 space-y-1.5">
@@ -821,13 +808,13 @@ export default function CheckoutPOSPage() {
               </div>
             </div>
 
-            {/* Receipt Actions: Print / Email / Archive / Reset */}
+            {/* Receipt Actions */}
             <div className="space-y-2 pt-2">
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="primary" size="md" leftIcon={<Printer className="w-4 h-4" />}>
+                <Button variant="primary" size="md" onClick={handlePrintReceipt} leftIcon={<Printer className="w-4 h-4" />}>
                   Print Receipt
                 </Button>
-                <Button variant="secondary" size="md" leftIcon={<Mail className="w-4 h-4" />}>
+                <Button variant="secondary" size="md" onClick={handleEmailReceipt} leftIcon={<Mail className="w-4 h-4" />}>
                   Email Receipt
                 </Button>
               </div>
@@ -854,5 +841,18 @@ export default function CheckoutPOSPage() {
       )}
 
     </div>
+  );
+}
+
+export default function CheckoutPOSPage() {
+  return (
+    <Suspense fallback={
+      <div className="p-12 text-center text-slate-400 flex items-center justify-center gap-2">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        Loading POS Checkout...
+      </div>
+    }>
+      <CheckoutPOSContent />
+    </Suspense>
   );
 }

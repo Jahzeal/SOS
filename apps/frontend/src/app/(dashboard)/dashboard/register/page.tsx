@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { api } from '@/lib/api';
 
 export default function RegisterPhonePage() {
   const router = useRouter();
@@ -34,19 +35,53 @@ export default function RegisterPhonePage() {
   const [imei, setImei] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
   const [brand, setBrand] = useState('Apple');
-  const [model, setModel] = useState('iPhone 15 Pro Max');
+  const [model, setModel] = useState('iPhone 16 Pro Max');
   const [storage, setStorage] = useState('256 GB');
   const [condition, setCondition] = useState<'New' | 'Used' | 'Refurb'>('New');
+  const [warrantyMonths, setWarrantyMonths] = useState<number>(0);
+  const [purchasePrice, setPurchasePrice] = useState<string>('');
+  const [sellingPrice, setSellingPrice] = useState<string>('');
   const [notes, setNotes] = useState('');
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // UI States
-  const [showDuplicateWarning, setShowDuplicateWarning] = useState(true);
+  const [showDuplicateWarning, setShowDuplicateWarning] = useState(false);
+  const [duplicateDetails, setDuplicateDetails] = useState<any>(null);
   const [showCameraScanner, setShowCameraScanner] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [registeredItem, setRegisteredItem] = useState<any>(null);
+  const [brandOpen, setBrandOpen] = useState(false);
 
-  const handleNextToStep2 = () => {
+  const BRANDS = [
+    'Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Huawei',
+    'Oppo', 'Vivo', 'Realme', 'Tecno', 'Infinix', 'Itel',
+    'Nokia', 'Motorola', 'Sony', 'LG', 'HTC',
+  ];
+
+  const filteredBrands = BRANDS.filter((b) =>
+    b.toLowerCase().includes(brand.toLowerCase())
+  );
+
+  const handleNextToStep2 = async () => {
+    setErrorMessage(null);
+    if (!imei.trim()) {
+      setStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+
+    try {
+      const checkResult = await api.checkImei(imei.trim());
+      if (checkResult.exists) {
+        setShowDuplicateWarning(true);
+        setDuplicateDetails(checkResult.record);
+        return;
+      }
+    } catch (err: any) {
+      console.warn('Backend check skipped/offline:', err);
+    }
+
     setStep(2);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -63,21 +98,46 @@ export default function RegisterPhonePage() {
     }
   };
 
-  const handleCompleteRegistration = () => {
+  const handleCompleteRegistration = async () => {
     setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
+    setErrorMessage(null);
+
+    const conditionMap: Record<string, 'NEW' | 'EXCELLENT' | 'REFURBISHED'> = {
+      New: 'NEW',
+      Used: 'EXCELLENT',
+      Refurb: 'REFURBISHED',
+    };
+
+    try {
+      const registered = await api.registerPhone({
+        imei1: imei.trim(),
+        serialNumber: serialNumber.trim() || undefined,
+        brand: brand.trim(),
+        model: model.trim(),
+        storageCapacity: storage,
+        condition: conditionMap[condition] || 'NEW',
+        warrantyDurationMonths: warrantyMonths,
+        purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
+        sellingPrice: sellingPrice ? parseFloat(sellingPrice) : undefined,
+      });
+
       setRegisteredItem({
-        id: `REC-${Math.floor(100000 + Math.random() * 900000)}`,
-        imei: imei || '358291049281910',
-        model,
-        brand,
-        storage,
-        condition,
-        date: new Date().toISOString().split('T')[0],
+        id: registered.id,
+        imei: registered.imei1,
+        model: registered.model,
+        brand: registered.brand,
+        storage: registered.storageCapacity || storage,
+        condition: registered.condition || condition,
+        qrCodeUrl: registered.qrCodeUrl,
+        date: new Date(registered.createdAt || Date.now()).toISOString().split('T')[0],
       });
       setShowSuccessModal(true);
-    }, 500);
+    } catch (err: any) {
+      console.error('Registration failed:', err);
+      setErrorMessage(err.message || 'Failed to register phone. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -292,19 +352,31 @@ export default function RegisterPhonePage() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                {/* Brand Selector */}
-                <div className="space-y-1.5">
+                {/* Brand Combobox */}
+                <div className="space-y-1.5 relative">
                   <label className="block font-bold text-slate-700 uppercase tracking-wider">Brand *</label>
-                  <select
+                  <input
+                    type="text"
                     value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
+                    onChange={(e) => { setBrand(e.target.value); setBrandOpen(true); }}
+                    onFocus={() => setBrandOpen(true)}
+                    onBlur={() => setTimeout(() => setBrandOpen(false), 150)}
+                    placeholder="e.g. Apple, Samsung…"
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                  >
-                    <option value="Apple">Apple</option>
-                    <option value="Samsung">Samsung</option>
-                    <option value="Google">Google</option>
-                    <option value="OnePlus">OnePlus</option>
-                  </select>
+                  />
+                  {brandOpen && filteredBrands.length > 0 && (
+                    <ul className="absolute z-50 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg overflow-hidden text-xs">
+                      {filteredBrands.map((b) => (
+                        <li
+                          key={b}
+                          onMouseDown={() => { setBrand(b); setBrandOpen(false); }}
+                          className="px-4 py-2.5 font-bold text-slate-800 hover:bg-blue-50 hover:text-blue-700 cursor-pointer transition"
+                        >
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
 
                 {/* Model Input */}
@@ -358,6 +430,51 @@ export default function RegisterPhonePage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Warranty Duration */}
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider">Warranty Duration</label>
+                  <select
+                    value={warrantyMonths}
+                    onChange={(e) => setWarrantyMonths(Number(e.target.value))}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  >
+                    <option value={0}>No Warranty</option>
+                    <option value={1}>1 Month</option>
+                    <option value={3}>3 Months</option>
+                    <option value={6}>6 Months</option>
+                    <option value={12}>12 Months</option>
+                    <option value={18}>18 Months</option>
+                    <option value={24}>24 Months</option>
+                  </select>
+                </div>
+
+                {/* Pricing Inputs: Purchase & Selling Price */}
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider">Purchase Price / Cost ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={purchasePrice}
+                    onChange={(e) => setPurchasePrice(e.target.value)}
+                    placeholder="e.g. 450.00"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider">Selling Price ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={sellingPrice}
+                    onChange={(e) => setSellingPrice(e.target.value)}
+                    placeholder="e.g. 699.00"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
                 </div>
 
                 {/* Optional Notes */}
@@ -452,57 +569,8 @@ export default function RegisterPhonePage() {
             </section>
           )}
 
-          {/* RECENT REGISTRATIONS TABLE */}
-          <section className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="font-extrabold text-sm text-slate-900">Recent Registrations Log</h3>
-              <Link href="/dashboard/records" className="text-xs font-bold text-blue-600 hover:underline">
-                View All →
-              </Link>
-            </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200">
-                  <tr>
-                    <th className="px-4 py-3">Device</th>
-                    <th className="px-4 py-3">IMEI</th>
-                    <th className="px-4 py-3">Registered By</th>
-                    <th className="px-4 py-3">Time</th>
-                    <th className="px-4 py-3 text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  <tr className="hover:bg-slate-50 transition">
-                    <td className="px-4 py-3 font-bold text-slate-900 flex items-center gap-2">
-                      <Smartphone className="w-4 h-4 text-blue-600" /> iPhone 15 Pro
-                    </td>
-                    <td className="px-4 py-3 font-mono text-slate-600">3582 •••• 910</td>
-                    <td className="px-4 py-3 font-medium text-slate-800">S. Miller</td>
-                    <td className="px-4 py-3 text-slate-500 font-medium">2 mins ago</td>
-                    <td className="px-4 py-3 text-right">
-                      <Link href="/dashboard/records" className="text-blue-600 hover:underline font-bold">
-                        Details
-                      </Link>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-slate-50 transition">
-                    <td className="px-4 py-3 font-bold text-slate-900 flex items-center gap-2">
-                      <Smartphone className="w-4 h-4 text-blue-600" /> Galaxy S23 Ultra
-                    </td>
-                    <td className="px-4 py-3 font-mono text-slate-600">8624 •••• 112</td>
-                    <td className="px-4 py-3 font-medium text-slate-800">J. Doe</td>
-                    <td className="px-4 py-3 text-slate-500 font-medium">15 mins ago</td>
-                    <td className="px-4 py-3 text-right">
-                      <Link href="/dashboard/records" className="text-blue-600 hover:underline font-bold">
-                        Details
-                      </Link>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </section>
+
         </div>
 
         {/* ========================================================================= */}

@@ -1,0 +1,143 @@
+// Unified API Client Service Layer for VerifyFlow NestJS API Backend
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+
+export interface RegisterPhonePayload {
+  imei1: string;
+  imei2?: string;
+  serialNumber?: string;
+  brand: string;
+  model: string;
+  color?: string;
+  storageCapacity?: string;
+  condition?: string;
+  purchasePrice?: number;
+  sellingPrice?: number;
+  warrantyDurationMonths?: number;
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+}
+
+class ApiClient {
+  private getToken(): string | null {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem('vf_access_token');
+  }
+
+  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
+    const token = this.getToken();
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(options.headers as Record<string, string>),
+    };
+
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...options,
+      headers,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const errorMessage = data?.message || response.statusText || 'An error occurred during API request';
+      throw new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+    }
+
+    return data as T;
+  }
+
+  // --- Auth & Profile Endpoints ---
+  async login(email: string, password: string) {
+    return this.request<{ accessToken: string; refreshToken: string; user: any }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
+  }
+
+  async registerBusiness(data: any) {
+    return this.request<{ accessToken: string; refreshToken: string; user: any }>('/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  // --- Dashboard Summary Endpoint ---
+  async getDashboardSummary() {
+    return this.request<{
+      business: any;
+      kpis: {
+        totalRegistered: number;
+        inStockCount: number;
+        soldCount: number;
+        inRepairCount: number;
+        activeWarrantiesCount: number;
+        stockValuation: number;
+        totalSalesRevenue: number;
+        totalSalesCount: number;
+      };
+      recentPhones: any[];
+      recentSales: any[];
+    }>('/dashboard/summary');
+  }
+
+  // --- Phone Registration & Inventory Endpoints ---
+  async checkImei(imei: string) {
+    return this.request<{ exists: boolean; record: any; message: string }>(`/phones/check-imei?imei=${encodeURIComponent(imei)}`);
+  }
+
+  async registerPhone(payload: RegisterPhonePayload) {
+    return this.request<any>('/phones/register', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getInventory(params?: { search?: string; status?: string; brand?: string }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.status) query.append('status', params.status);
+    if (params?.brand) query.append('brand', params.brand);
+
+    const queryString = query.toString() ? `?${query.toString()}` : '';
+    return this.request<any[]>(`/phones${queryString}`);
+  }
+
+  async getPhoneById(id: string) {
+    return this.request<any>(`/phones/${id}`);
+  }
+
+  // --- Express POS Checkout & Thermal Receipts Endpoints ---
+  async checkoutSale(payload: {
+    customerName?: string;
+    customerPhone?: string;
+    customerEmail?: string;
+    paymentMethod?: string;
+    items: { phoneRecordId: string; price: number }[];
+  }) {
+    return this.request<any>('/sales/checkout', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getReceipts(search?: string) {
+    const query = search ? `?search=${encodeURIComponent(search)}` : '';
+    return this.request<any[]>(`/sales/receipts${query}`);
+  }
+
+  async getReceiptById(id: string) {
+    return this.request<any>(`/sales/receipts/${id}`);
+  }
+
+  // --- Public Verification Endpoint ---
+  async verifyPublicImei(imei: string) {
+    return this.request<any>(`/verification/verify?imei=${encodeURIComponent(imei)}`);
+  }
+}
+
+export const api = new ApiClient();

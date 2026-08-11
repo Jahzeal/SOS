@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Package,
@@ -25,108 +25,136 @@ import {
   SlidersHorizontal,
   Edit,
   Building,
+  Loader2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-
-interface InventoryItem {
-  id: string;
-  model: string;
-  brand: string;
-  storage: string;
-  color: string;
-  imei: string;
-  daysInInv: number;
-  warrantyStatus: 'active' | 'expired';
-  branch: string;
-  value: string;
-}
-
-const mockInventory: InventoryItem[] = [
-  {
-    id: 'INV-101',
-    model: 'iPhone 15 Pro',
-    brand: 'Apple',
-    storage: '256 GB',
-    color: 'Titanium',
-    imei: '352938•••••2104',
-    daysInInv: 12,
-    warrantyStatus: 'active',
-    branch: 'Main Warehouse',
-    value: '$1,099',
-  },
-  {
-    id: 'INV-102',
-    model: 'Galaxy S24 Ultra',
-    brand: 'Samsung',
-    storage: '512 GB',
-    color: 'Black',
-    imei: '861022•••••5590',
-    daysInInv: 92,
-    warrantyStatus: 'expired',
-    branch: 'Store #04 (NY)',
-    value: '$1,299',
-  },
-  {
-    id: 'INV-103',
-    model: 'Pixel 8 Pro',
-    brand: 'Google',
-    storage: '128 GB',
-    color: 'Bay',
-    imei: '357412•••••8832',
-    daysInInv: 4,
-    warrantyStatus: 'active',
-    branch: 'Main Warehouse',
-    value: '$999',
-  },
-  {
-    id: 'INV-104',
-    model: 'iPhone 14',
-    brand: 'Apple',
-    storage: '128 GB',
-    color: 'Blue',
-    imei: '351182•••••0059',
-    daysInInv: 28,
-    warrantyStatus: 'active',
-    branch: 'Store #02 (LA)',
-    value: '$649',
-  },
-  {
-    id: 'INV-105',
-    model: 'Galaxy Z Fold 5',
-    brand: 'Samsung',
-    storage: '512 GB',
-    color: 'Phantom Black',
-    imei: '359812•••••1029',
-    daysInInv: 45,
-    warrantyStatus: 'active',
-    branch: 'Main Warehouse',
-    value: '$1,399',
-  },
-];
+import { api } from '@/lib/api';
 
 export default function InventoryPage() {
   const [search, setSearch] = useState('');
   const [brandFilter, setBrandFilter] = useState('ALL');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [liveInventory, setLiveInventory] = useState<any[]>([]);
+  const [recentActivity, setRecentActivity] = useState<any[]>([]);
+  const [kpis, setKpis] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const filteredItems = useMemo(() => {
-    return mockInventory.filter((item) => {
-      const matchSearch =
-        search === '' ||
-        item.model.toLowerCase().includes(search.toLowerCase()) ||
-        item.imei.includes(search) ||
-        item.brand.toLowerCase().includes(search.toLowerCase());
+  const fetchInventory = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [data, summary] = await Promise.all([
+        api.getInventory({
+          search: search || undefined,
+          brand: brandFilter !== 'ALL' ? brandFilter : undefined,
+        }),
+        api.getDashboardSummary(),
+      ]);
+      setLiveInventory(data);
+      setKpis(summary.kpis);
+      // Build activity feed: merge recent registrations + recent sales, sort by date
+      const registrations = (summary.recentPhones || []).slice(0, 4).map((p: any) => ({
+        type: 'registration',
+        label: 'New Registration',
+        detail: `${p.brand} ${p.model} added to inventory`,
+        time: p.createdAt,
+        icon: '+',
+        color: 'bg-blue-100 text-blue-700',
+      }));
+      const sales = (summary.recentSales || []).slice(0, 4).map((s: any) => {
+        const first = s.items?.[0]?.phoneRecord;
+        return {
+          type: 'sale',
+          label: 'Sale Confirmed',
+          detail: first ? `${first.brand} ${first.model} sold` : 'Device sold',
+          time: s.createdAt,
+          icon: '✓',
+          color: 'bg-emerald-100 text-emerald-700',
+        };
+      });
+      const combined = [...registrations, ...sales]
+        .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+        .slice(0, 4);
+      setRecentActivity(combined);
+    } catch (err: any) {
+      console.error('Failed to fetch inventory:', err);
+      setError(err.message || 'Failed to load inventory.');
+      setLiveInventory([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-      const matchBrand = brandFilter === 'ALL' || item.brand.toUpperCase() === brandFilter.toUpperCase();
-
-      return matchSearch && matchBrand;
-    });
+  useEffect(() => {
+    fetchInventory();
   }, [search, brandFilter]);
+
+  const items = useMemo(() => {
+    return liveInventory.map((item) => ({
+      id: item.id,
+      model: item.model,
+      brand: item.brand,
+      storage: item.storageCapacity || 'N/A',
+      color: item.color || 'Standard',
+      imei: item.imei1 ? `${item.imei1.slice(0, 6)}•••••${item.imei1.slice(-4)}` : 'N/A',
+      fullImei: item.imei1,
+      daysInInv: Math.floor((Date.now() - new Date(item.createdAt).getTime()) / (1000 * 60 * 60 * 24)) || 1,
+      warrantyStatus: item.warrantyExpiryDate && new Date(item.warrantyExpiryDate) > new Date() ? 'active' : 'expired',
+      branch: 'Main Flagship',
+      value: item.sellingPrice ? `$${item.sellingPrice.toLocaleString()}` : '$0',
+    }));
+  }, [liveInventory]);
+
+  // Brand breakdown from live data
+  const brandBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    liveInventory.forEach((item) => {
+      const b = item.brand || 'Other';
+      counts[b] = (counts[b] || 0) + 1;
+    });
+    const total = liveInventory.length || 1;
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([brand, count]) => ({ brand, count, pct: Math.round((count / total) * 100) }));
+  }, [liveInventory]);
+
+  // Storage breakdown from live data
+  const storageBreakdown = useMemo(() => {
+    const counts: Record<string, number> = {};
+    liveInventory.forEach((item) => {
+      const s = item.storageCapacity || 'Unknown';
+      counts[s] = (counts[s] || 0) + 1;
+    });
+    const total = liveInventory.length || 1;
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 4)
+      .map(([storage, count]) => ({ storage, count, pct: Math.round((count / total) * 100) }));
+  }, [liveInventory]);
+
+  // Ageing inventory from live data
+  const ageing = useMemo(() => {
+    const now = Date.now();
+    const d30 = liveInventory.filter((i) => (now - new Date(i.createdAt).getTime()) > 30 * 86400000).length;
+    const d60 = liveInventory.filter((i) => (now - new Date(i.createdAt).getTime()) > 60 * 86400000).length;
+    const d90 = liveInventory.filter((i) => (now - new Date(i.createdAt).getTime()) > 90 * 86400000).length;
+    return { d30, d60, d90 };
+  }, [liveInventory]);
+
+  // Missing warranty count
+  const missingWarranty = useMemo(() =>
+    liveInventory.filter((i) => !i.warrantyExpiryDate).length
+  , [liveInventory]);
+
+  const BRAND_COLORS = ['bg-blue-600', 'bg-emerald-500', 'bg-amber-500', 'bg-indigo-500'];
+  const STORAGE_COLORS = ['bg-blue-600', 'bg-indigo-600', 'bg-emerald-600', 'bg-amber-500'];
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
-      setSelectedIds(filteredItems.map((i) => i.id));
+      setSelectedIds(items.map((i) => i.id));
     } else {
       setSelectedIds([]);
     }
@@ -172,14 +200,12 @@ export default function InventoryPage() {
 
       {/* 6 KPI Stat Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {/* 1. Available Devices */}
+        {/* 1. Available Devices (in stock) */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider mb-1">Available Devices</p>
           <div className="flex items-baseline justify-between">
-            <span className="text-xl font-extrabold text-slate-900">1,284</span>
-            <span className="text-emerald-700 font-bold text-[10px] flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" />+4%
-            </span>
+            <span className="text-xl font-extrabold text-slate-900">{kpis ? kpis.inStockCount.toLocaleString() : '—'}</span>
+            <TrendingUp className="w-3 h-3 text-emerald-600" />
           </div>
         </div>
 
@@ -187,10 +213,10 @@ export default function InventoryPage() {
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider mb-1">Inventory Value</p>
           <div className="flex items-baseline justify-between">
-            <span className="text-xl font-extrabold text-slate-900">$842.5k</span>
-            <span className="text-emerald-700 font-bold text-[10px] flex items-center gap-0.5">
-              <TrendingUp className="w-3 h-3" />+12%
+            <span className="text-xl font-extrabold text-slate-900">
+              {kpis ? `$${(kpis.stockValuation / 1000).toFixed(1)}k` : '—'}
             </span>
+            <TrendingUp className="w-3 h-3 text-emerald-600" />
           </div>
         </div>
 
@@ -198,35 +224,35 @@ export default function InventoryPage() {
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider mb-1">Brands in Stock</p>
           <div className="flex items-baseline justify-between">
-            <span className="text-xl font-extrabold text-slate-900">12</span>
-            <span className="text-slate-400 font-bold text-[10px]">Active Vendors</span>
+            <span className="text-xl font-extrabold text-slate-900">{brandBreakdown.length}</span>
+            <span className="text-slate-400 font-bold text-[10px]">Brands</span>
           </div>
         </div>
 
-        {/* 4. Ageing Inventory Alert Card */}
+        {/* 4. Ageing Inventory */}
         <div className="bg-rose-50 p-4 rounded-2xl border border-rose-200/90 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-rose-950 font-extrabold text-[10px] uppercase tracking-wider mb-1">Ageing Inventory</p>
           <div className="space-y-0.5 text-[11px] font-bold text-rose-900">
-            <div className="flex justify-between"><span>30+ Days:</span> <span>42</span></div>
-            <div className="flex justify-between"><span>60+ Days:</span> <span>18</span></div>
-            <div className="flex justify-between text-rose-600 font-extrabold"><span>90+ Days:</span> <span>5</span></div>
+            <div className="flex justify-between"><span>30+ Days:</span> <span>{ageing.d30}</span></div>
+            <div className="flex justify-between"><span>60+ Days:</span> <span>{ageing.d60}</span></div>
+            <div className="flex justify-between text-rose-600 font-extrabold"><span>90+ Days:</span> <span>{ageing.d90}</span></div>
           </div>
         </div>
 
-        {/* 5. Recently Registered */}
+        {/* 5. Total Registered */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider mb-1">Recently Reg.</p>
+          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider mb-1">Total Registered</p>
           <div className="flex items-baseline justify-between">
-            <span className="text-xl font-extrabold text-slate-900">124</span>
-            <span className="text-slate-400 font-bold text-[10px]">Last 7d</span>
+            <span className="text-xl font-extrabold text-slate-900">{kpis ? kpis.totalRegistered.toLocaleString() : '—'}</span>
+            <span className="text-slate-400 font-bold text-[10px]">All time</span>
           </div>
         </div>
 
-        {/* 6. Ready for Sale */}
+        {/* 6. Ready for Sale (in stock) */}
         <div className="bg-emerald-50 p-4 rounded-2xl border border-emerald-200 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-emerald-950 font-extrabold text-[10px] uppercase tracking-wider mb-1">Ready for Sale</p>
           <div className="flex items-baseline justify-between">
-            <span className="text-xl font-extrabold text-emerald-950">1,150</span>
+            <span className="text-xl font-extrabold text-emerald-950">{kpis ? kpis.inStockCount.toLocaleString() : '—'}</span>
             <CheckCircle2 className="w-4 h-4 text-emerald-600" />
           </div>
         </div>
@@ -237,7 +263,7 @@ export default function InventoryPage() {
         
         {/* Left 8 Cols: Brand & Storage Breakdown Charts */}
         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-          
+
           {/* Inventory by Brand */}
           <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
             <div className="flex justify-between items-center border-b border-slate-100 pb-3">
@@ -245,30 +271,22 @@ export default function InventoryPage() {
                 <PieChart className="w-4 h-4 text-blue-600" /> Inventory by Brand
               </h3>
             </div>
-            
             <div className="h-44 flex items-center justify-around">
-              {/* Clean Metric Donut Indicator */}
               <div className="w-28 h-28 rounded-full border-[10px] border-blue-600 border-t-emerald-500 border-r-amber-500 flex items-center justify-center shadow-subtle">
                 <div className="text-center">
-                  <p className="font-extrabold text-lg text-slate-900 leading-none">1.2k</p>
+                  <p className="font-extrabold text-lg text-slate-900 leading-none">{liveInventory.length}</p>
                   <p className="text-[9px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">Total</p>
                 </div>
               </div>
-
-              {/* Legend List */}
               <div className="space-y-2 text-xs font-bold text-slate-700">
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-                  <span>Apple (45%)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                  <span>Samsung (25%)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                  <span>Google (15%)</span>
-                </div>
+                {brandBreakdown.length === 0 ? (
+                  <p className="text-slate-400 text-[11px]">No data yet</p>
+                ) : brandBreakdown.map((b, i) => (
+                  <div key={b.brand} className="flex items-center gap-2">
+                    <div className={`w-2.5 h-2.5 rounded-full ${BRAND_COLORS[i]}`} />
+                    <span>{b.brand} ({b.pct}%)</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -280,37 +298,20 @@ export default function InventoryPage() {
                 <BarChart3 className="w-4 h-4 text-indigo-600" /> Inventory by Storage
               </h3>
             </div>
-
             <div className="space-y-3 text-xs font-semibold text-slate-700 pt-1">
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span>128 GB</span>
-                  <span className="font-bold text-slate-900">450 units (45%)</span>
+              {storageBreakdown.length === 0 ? (
+                <p className="text-slate-400 text-[11px] py-4 text-center">No data yet</p>
+              ) : storageBreakdown.map((s, i) => (
+                <div key={s.storage}>
+                  <div className="flex justify-between text-[11px] mb-1">
+                    <span>{s.storage}</span>
+                    <span className="font-bold text-slate-900">{s.count} units ({s.pct}%)</span>
+                  </div>
+                  <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full ${STORAGE_COLORS[i]}`} style={{ width: `${s.pct}%` }} />
+                  </div>
                 </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-600 rounded-full" style={{ width: '45%' }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span>256 GB</span>
-                  <span className="font-bold text-slate-900">320 units (32%)</span>
-                </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-indigo-600 rounded-full" style={{ width: '32%' }} />
-                </div>
-              </div>
-
-              <div>
-                <div className="flex justify-between text-[11px] mb-1">
-                  <span>512 GB</span>
-                  <span className="font-bold text-slate-900">180 units (18%)</span>
-                </div>
-                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-600 rounded-full" style={{ width: '18%' }} />
-                </div>
-              </div>
+              ))}
             </div>
           </div>
 
@@ -323,34 +324,30 @@ export default function InventoryPage() {
               <AlertTriangle className="w-4 h-4 text-rose-600" />
               <h3 className="font-extrabold text-sm text-slate-900">Inventory Alerts</h3>
             </div>
-
             <div className="space-y-2.5 text-xs">
-              <div className="p-3 bg-rose-50 border-l-4 border-rose-600 rounded-r-xl flex gap-3">
-                <Clock className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-extrabold text-rose-950">90+ Day Aging Stock</p>
-                  <p className="text-rose-800 text-[11px] font-medium">5 units of iPhone 13 Pro Max require markdown.</p>
+              {ageing.d90 > 0 && (
+                <div className="p-3 bg-rose-50 border-l-4 border-rose-600 rounded-r-xl flex gap-3">
+                  <Clock className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-extrabold text-rose-950">90+ Day Aging Stock</p>
+                    <p className="text-rose-800 text-[11px] font-medium">{ageing.d90} unit{ageing.d90 !== 1 ? 's' : ''} sitting for 90+ days.</p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="p-3 bg-amber-50 border-l-4 border-amber-500 rounded-r-xl flex gap-3">
-                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-extrabold text-amber-950">Missing Warranty Data</p>
-                  <p className="text-amber-800 text-[11px] font-medium">12 devices registered today lack AppleCare log.</p>
+              )}
+              {missingWarranty > 0 && (
+                <div className="p-3 bg-amber-50 border-l-4 border-amber-500 rounded-r-xl flex gap-3">
+                  <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-extrabold text-amber-950">Missing Warranty Data</p>
+                    <p className="text-amber-800 text-[11px] font-medium">{missingWarranty} device{missingWarranty !== 1 ? 's' : ''} have no warranty set.</p>
+                  </div>
                 </div>
-              </div>
-
-              <div className="p-3 bg-emerald-50 border-l-4 border-emerald-600 rounded-r-xl flex gap-3">
-                <Package className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-extrabold text-emerald-950">Low Stock Alert</p>
-                  <p className="text-emerald-800 text-[11px] font-medium">Galaxy S24 Ultra is below 5% threshold.</p>
-                </div>
-              </div>
+              )}
+              {ageing.d90 === 0 && missingWarranty === 0 && (
+                <p className="text-xs text-slate-400 font-medium py-4 text-center">No alerts at this time.</p>
+              )}
             </div>
           </div>
-
           <Button variant="secondary" size="sm" fullWidth className="text-xs font-bold mt-2">
             View All Inventory Alerts →
           </Button>
@@ -399,7 +396,7 @@ export default function InventoryPage() {
                   <input
                     type="checkbox"
                     onChange={handleSelectAll}
-                    checked={selectedIds.length === filteredItems.length && filteredItems.length > 0}
+                    checked={selectedIds.length === items.length && items.length > 0}
                     className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
                   />
                 </th>
@@ -414,8 +411,37 @@ export default function InventoryPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredItems.map((item) => (
-                <tr key={item.id} className="hover:bg-slate-50/80 transition">
+              {isLoading ? (
+                <tr>
+                  <td colSpan={9} className="py-16 text-center">
+                    <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold">
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Loading inventory records...
+                    </div>
+                  </td>
+                </tr>
+              ) : error ? (
+                <tr>
+                  <td colSpan={9} className="py-16 text-center">
+                    <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold">
+                      <AlertTriangle className="w-5 h-5" />
+                      {error}
+                    </div>
+                  </td>
+                </tr>
+              ) : items.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="py-16 text-center">
+                    <div className="flex flex-col items-center gap-2 text-slate-400">
+                      <Smartphone className="w-10 h-10" />
+                      <p className="font-bold text-sm text-slate-600">No inventory items found</p>
+                      <p className="text-xs">Try adjusting your search filters or register a new phone.</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                items.map((item) => (
+                  <tr key={item.id} className="hover:bg-slate-50/80 transition">
                   <td className="py-3.5 px-4">
                     <input
                       type="checkbox"
@@ -472,62 +498,42 @@ export default function InventoryPage() {
                     </Link>
                   </td>
                 </tr>
-              ))}
+              ))
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Recent Activity Timeline Bar */}
+      {/* Recent Activity Timeline */}
       <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
         <h3 className="font-extrabold text-sm text-slate-900 border-b border-slate-100 pb-3">
-          Recent Activity Timeline
+          Recent Activity
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-medium">
-          <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="w-7 h-7 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center shrink-0 font-bold">
-              +
-            </div>
-            <div>
-              <p className="font-extrabold text-slate-900">New Registration</p>
-              <p className="text-slate-500 text-[11px]">iPhone 15 Pro added to Main Warehouse</p>
-              <p className="text-[10px] text-slate-400 font-bold mt-0.5">2 MIN AGO</p>
-            </div>
+        {recentActivity.length === 0 ? (
+          <p className="text-xs text-slate-400 font-medium py-4 text-center">No recent activity yet.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-xs font-medium">
+            {recentActivity.map((item, i) => {
+              const diffMs = Date.now() - new Date(item.time).getTime();
+              const mins = Math.floor(diffMs / 60000);
+              const hrs = Math.floor(mins / 60);
+              const timeLabel = hrs > 0 ? `${hrs} HR${hrs > 1 ? 'S' : ''} AGO` : `${mins} MIN AGO`;
+              return (
+                <div key={i} className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 font-bold ${item.color}`}>
+                    {item.icon}
+                  </div>
+                  <div>
+                    <p className="font-extrabold text-slate-900">{item.label}</p>
+                    <p className="text-slate-500 text-[11px]">{item.detail}</p>
+                    <p className="text-[10px] text-slate-400 font-bold mt-0.5">{timeLabel}</p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-
-          <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0 font-bold">
-              ✓
-            </div>
-            <div>
-              <p className="font-extrabold text-slate-900">Sale Confirmed</p>
-              <p className="text-slate-500 text-[11px]">Galaxy S24 Ultra sold at Store #04</p>
-              <p className="text-[10px] text-slate-400 font-bold mt-0.5">15 MIN AGO</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="w-7 h-7 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 font-bold">
-              ↔
-            </div>
-            <div>
-              <p className="font-extrabold text-slate-900">Inter-branch Transfer</p>
-              <p className="text-slate-500 text-[11px]">12 Units moved: Main → Store #04</p>
-              <p className="text-[10px] text-slate-400 font-bold mt-0.5">1 HR AGO</p>
-            </div>
-          </div>
-
-          <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-            <div className="w-7 h-7 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 font-bold">
-              !
-            </div>
-            <div>
-              <p className="font-extrabold text-slate-900">Return Logged</p>
-              <p className="text-slate-500 text-[11px]">Pixel 8 Pro returned (Defective Screen)</p>
-              <p className="text-[10px] text-slate-400 font-bold mt-0.5">3 HRS AGO</p>
-            </div>
-          </div>
-        </div>
+        )}
       </div>
 
     </div>

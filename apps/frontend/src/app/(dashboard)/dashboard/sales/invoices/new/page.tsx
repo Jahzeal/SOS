@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -8,11 +8,7 @@ import {
   Plus,
   Trash2,
   ChevronRight,
-  ChevronLeft,
-  Calendar,
   User,
-  Building,
-  DollarSign,
   Send,
   Save,
   CheckCircle2,
@@ -20,61 +16,78 @@ import {
   Package,
   Printer,
   Share2,
-  Download,
   Mail,
+  Search,
+  AlertTriangle,
+  Loader2,
+  Check,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { api } from '@/lib/api';
 
 interface LineItem {
-  id: string;
+  id: string; // phoneRecord.id or custom item ID
   description: string;
   imei: string;
   quantity: number;
   unitPrice: number;
+  isDevice: boolean;
 }
 
 export default function CreateInvoicePage() {
   const router = useRouter();
 
   // Invoice Meta State
-  const [invoiceNumber] = useState(`INV-${Math.floor(80000 + Math.random() * 10000)}`);
   const [issueDate, setIssueDate] = useState(new Date().toISOString().split('T')[0]);
   const [paymentTerms, setPaymentTerms] = useState('NET_15');
-  
+
   // Customer Details State
-  const [customerName, setCustomerName] = useState('Johnathan Doe');
-  const [customerEmail, setCustomerEmail] = useState('johnathan@example.com');
-  const [customerPhone, setCustomerPhone] = useState('+1 (555) 234-5678');
-  const [billingAddress, setBillingAddress] = useState('123 Corporate Blvd, Suite 400, New York, NY 10001');
+  const [customerName, setCustomerName] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
+  const [customerPhone, setCustomerPhone] = useState('');
+  const [billingAddress, setBillingAddress] = useState('');
 
-  // Line Items State
-  const [items, setItems] = useState<LineItem[]>([
-    {
-      id: 'ITEM-1',
-      description: 'iPhone 15 Pro (256GB - Natural Titanium)',
-      imei: '358291048291048',
-      quantity: 1,
-      unitPrice: 1099.0,
-    },
-    {
-      id: 'ITEM-2',
-      description: 'AirPods Pro (2nd Gen) USB-C',
-      imei: 'N/A',
-      quantity: 1,
-      unitPrice: 249.0,
-    },
-  ]);
+  // Line Items State (empty default)
+  const [items, setItems] = useState<LineItem[]>([]);
 
-  // Form Inputs for Adding New Line Item
+  // Inventory Search State
+  const [deviceSearch, setDeviceSearch] = useState('');
+  const [inStockDevices, setInStockDevices] = useState<any[]>([]);
+  const [isSearchingDevices, setIsSearchingDevices] = useState(false);
+
+  // Form Inputs for Adding Custom Line Item
   const [newItemDesc, setNewItemDesc] = useState('');
   const [newItemImei, setNewItemImei] = useState('');
   const [newItemQty, setNewItemQty] = useState('1');
   const [newItemPrice, setNewItemPrice] = useState('');
 
-  const [notes, setNotes] = useState('Thank you for your business. Please remit payment via bank transfer before the due date.');
+  const [notes, setNotes] = useState('Thank you for your business. Please remit payment before the due date.');
   const [isSaving, setIsSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [createdInvoice, setCreatedInvoice] = useState<any>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+
+  // Search available in-stock devices
+  useEffect(() => {
+    const t = setTimeout(async () => {
+      setIsSearchingDevices(true);
+      try {
+        const devices = await api.getInventory({
+          status: 'IN_STOCK',
+          search: deviceSearch.trim() || undefined,
+        });
+        setInStockDevices(devices || []);
+      } catch (err) {
+        console.error('Failed to load devices for invoice:', err);
+        setInStockDevices([]);
+      } finally {
+        setIsSearchingDevices(false);
+      }
+    }, 300);
+
+    return () => clearTimeout(t);
+  }, [deviceSearch]);
 
   // Calculated Due Date
   const dueDate = useMemo(() => {
@@ -93,19 +106,37 @@ export default function CreateInvoicePage() {
   const tax = useMemo(() => subtotal * 0.08, [subtotal]);
   const totalAmount = useMemo(() => subtotal + tax, [subtotal, tax]);
 
-  // Line Item Handlers
-  const handleAddItem = (e: React.FormEvent) => {
+  // Add In-Stock Device from Inventory
+  const handleAddDeviceToInvoice = (phone: any) => {
+    const newItem: LineItem = {
+      id: phone.id,
+      description: `${phone.brand} ${phone.model}`,
+      imei: phone.imei1,
+      quantity: 1,
+      unitPrice: phone.sellingPrice ?? phone.purchasePrice ?? 0,
+      isDevice: true,
+    };
+
+    setItems((prev) => {
+      if (prev.some((i) => i.id === newItem.id)) return prev;
+      return [...prev, newItem];
+    });
+  };
+
+  // Add Custom Line Item
+  const handleAddCustomItem = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newItemDesc || !newItemPrice) return;
+    if (!newItemDesc.trim() || !newItemPrice) return;
 
     setItems((prev) => [
       ...prev,
       {
-        id: `ITEM-${Date.now()}`,
-        description: newItemDesc,
-        imei: newItemImei || 'N/A',
+        id: `CUSTOM-${Date.now()}`,
+        description: newItemDesc.trim(),
+        imei: newItemImei.trim() || 'N/A',
         quantity: parseInt(newItemQty, 10) || 1,
         unitPrice: parseFloat(newItemPrice) || 0,
+        isDevice: false,
       },
     ]);
 
@@ -115,21 +146,74 @@ export default function CreateInvoicePage() {
     setNewItemPrice('');
   };
 
-  const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((i) => i.id !== id));
+  const handlePrintPDF = () => {
+    window.print();
   };
 
-  const handleIssueInvoice = (status: 'ISSUED' | 'DRAFT') => {
+  const handleEmailPDF = () => {
+    if (!customerEmail.trim()) {
+      alert('Please enter a customer email address first.');
+      return;
+    }
+    const invNum = createdInvoice?.invoiceNumber || createdInvoice?.id || 'Statement';
+    const subject = encodeURIComponent(`Invoice Statement #${invNum}`);
+    const body = encodeURIComponent(
+      `Hello ${customerName.trim() || 'Valued Customer'},\n\nPlease find your invoice statement for $${totalAmount.toFixed(2)} due on ${dueDate}.\n\nThank you for your business!`
+    );
+    window.location.href = `mailto:${customerEmail.trim()}?subject=${subject}&body=${body}`;
+  };
+
+  const updateItemPrice = (id: string, price: number) => {
+    setItems((prev) =>
+      prev.map((i) => (i.id === id ? { ...i, unitPrice: Math.max(0, price) } : i))
+    );
+  };
+
+  // Issue Invoice via API
+  const handleIssueInvoice = async (status: 'ISSUED' | 'DRAFT') => {
     setIsSaving(true);
-    setTimeout(() => {
-      setIsSaving(false);
+    setErrorMessage(null);
+    try {
+      const deviceItems = items.filter((i) => i.isDevice);
+      if (deviceItems.length === 0) {
+        throw new Error('At least one device from inventory is required to issue an invoice statement.');
+      }
+
+      const payloadItems = deviceItems.map((item) => ({
+        phoneRecordId: item.id,
+        price: item.unitPrice,
+      }));
+
+      const sale = await api.checkoutSale({
+        customerName: customerName.trim() || 'Invoice Customer',
+        customerPhone: customerPhone.trim() || undefined,
+        customerEmail: customerEmail.trim() || undefined,
+        paymentMethod: 'CASH',
+        items: payloadItems,
+      });
+
+      setCreatedInvoice({
+        id: sale.invoiceNumber || sale.receiptNumber || sale.id,
+        invoiceNumber: sale.invoiceNumber,
+        receiptNumber: sale.receiptNumber,
+        customerName: sale.customer?.name || customerName || 'Invoice Customer',
+        totalAmount: sale.totalAmount || totalAmount,
+        dueDate,
+        status,
+      });
+
       setShowSuccessModal(true);
-    }, 700);
+    } catch (err: any) {
+      console.error('Failed to issue invoice:', err);
+      setErrorMessage(err.message || 'Failed to issue invoice statement. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="space-y-6 font-sans pb-24 md:pb-8">
-      
+
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
@@ -170,9 +254,18 @@ export default function CreateInvoicePage() {
         </div>
       </div>
 
+      {/* Error Message Banner */}
+      {errorMessage && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-800 text-xs font-bold animate-in fade-in duration-200">
+          <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+          <div className="flex-1">{errorMessage}</div>
+          <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 font-bold text-sm">✕</button>
+        </div>
+      )}
+
       {/* Main 2-Column Invoice Builder */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
+
         {/* LEFT 8 COLUMNS: INVOICE FORM & ITEMS */}
         <div className="lg:col-span-8 space-y-6">
 
@@ -182,7 +275,7 @@ export default function CreateInvoicePage() {
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <User className="w-4 h-4 text-blue-600" /> Customer & Billing Details
               </h2>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">{invoiceNumber}</span>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Client Profile</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -193,6 +286,7 @@ export default function CreateInvoicePage() {
                   required
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="e.g. Acme Corp or Johnathan Doe..."
                   className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
@@ -203,6 +297,7 @@ export default function CreateInvoicePage() {
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="e.g. client@example.com"
                   className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
@@ -213,6 +308,7 @@ export default function CreateInvoicePage() {
                   type="text"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="e.g. +1 (555) 234-5678"
                   className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
@@ -223,13 +319,87 @@ export default function CreateInvoicePage() {
                   type="text"
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
+                  placeholder="e.g. 123 Corporate Blvd, New York, NY"
                   className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
             </div>
           </div>
 
-          {/* Line Items Table & Add Item Form */}
+          {/* In-Stock Device Picker Section */}
+          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                <Smartphone className="w-4 h-4 text-blue-600" /> Select In-Stock Device from Inventory
+              </h2>
+              <span className="text-[10px] text-slate-400 font-bold uppercase">Available Inventory</span>
+            </div>
+
+            <div className="relative">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                value={deviceSearch}
+                onChange={(e) => setDeviceSearch(e.target.value)}
+                placeholder="Search in-stock devices by IMEI, Model, or Brand..."
+                className="w-full text-xs pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+              />
+            </div>
+
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {isSearchingDevices ? (
+                <div className="py-6 text-center text-slate-400 text-xs font-semibold flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" /> Searching devices...
+                </div>
+              ) : inStockDevices.length === 0 ? (
+                <div className="py-6 text-center text-slate-400 text-xs font-medium">
+                  No matching in-stock devices found.
+                </div>
+              ) : (
+                inStockDevices.map((phone) => {
+                  const inInvoice = items.some((i) => i.id === phone.id);
+                  return (
+                    <div
+                      key={phone.id}
+                      onClick={() => !inInvoice && handleAddDeviceToInvoice(phone)}
+                      className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs transition cursor-pointer ${
+                        inInvoice
+                          ? 'bg-emerald-50/60 border-emerald-300 opacity-80 cursor-default'
+                          : 'bg-slate-50 border-slate-200/90 hover:border-blue-500 hover:bg-blue-50/30'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold ${inInvoice ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-600'}`}>
+                          <Smartphone className="w-4 h-4" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-extrabold text-slate-900 truncate">{phone.brand} {phone.model}</p>
+                          <p className="text-[10px] font-mono text-slate-500 truncate">IMEI: {phone.imei1}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className="font-extrabold text-slate-900 text-xs">
+                          ${(phone.sellingPrice ?? phone.purchasePrice ?? 0).toFixed(2)}
+                        </span>
+                        <button
+                          type="button"
+                          disabled={inInvoice}
+                          className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                            inInvoice ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white hover:bg-blue-500'
+                          }`}
+                        >
+                          {inInvoice ? <><Check className="w-3.5 h-3.5" /> Added</> : <><Plus className="w-3.5 h-3.5" /> Add</>}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+
+          {/* Line Items Table & Custom Add Item Form */}
           <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
@@ -252,32 +422,49 @@ export default function CreateInvoicePage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {items.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                      <td className="py-3 px-3 font-extrabold text-slate-900">{item.description}</td>
-                      <td className="py-3 px-3 font-mono text-slate-500 text-[11px]">{item.imei}</td>
-                      <td className="py-3 px-3 text-center font-bold text-slate-800">{item.quantity}</td>
-                      <td className="py-3 px-3 text-right font-semibold text-slate-800">${item.unitPrice.toFixed(2)}</td>
-                      <td className="py-3 px-3 text-right font-extrabold text-slate-900">
-                        ${(item.unitPrice * item.quantity).toFixed(2)}
-                      </td>
-                      <td className="py-3 px-3 text-center">
-                        <button
-                          onClick={() => removeItem(item.id)}
-                          className="text-slate-400 hover:text-rose-600 p-1"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                  {items.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                        No items added to invoice yet. Select a device above or add a custom item below.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    items.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/80 transition">
+                        <td className="py-3 px-3 font-extrabold text-slate-900">{item.description}</td>
+                        <td className="py-3 px-3 font-mono text-slate-500 text-[11px]">{item.imei}</td>
+                        <td className="py-3 px-3 text-center font-bold text-slate-800">{item.quantity}</td>
+                        <td className="py-3 px-3 text-right font-semibold text-slate-800">
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={item.unitPrice}
+                            onChange={(e) => updateItemPrice(item.id, parseFloat(e.target.value) || 0)}
+                            className="w-20 text-right font-bold text-slate-900 bg-white border border-slate-200 rounded px-1.5 py-0.5"
+                          />
+                        </td>
+                        <td className="py-3 px-3 text-right font-extrabold text-slate-900">
+                          ${(item.unitPrice * item.quantity).toFixed(2)}
+                        </td>
+                        <td className="py-3 px-3 text-center">
+                          <button
+                            onClick={() => removeItem(item.id)}
+                            className="text-slate-400 hover:text-rose-600 p-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
 
-            {/* Add New Line Item Form (Includes Quantity Field) */}
-            <form onSubmit={handleAddItem} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3 pt-4">
-              <p className="text-[11px] font-bold text-slate-700">Add Line Item / Device</p>
+            {/* Add Custom Line Item Form */}
+            <form onSubmit={handleAddCustomItem} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3 pt-4">
+              <p className="text-[11px] font-bold text-slate-700">Add Custom Item / Service</p>
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                 <div className="sm:col-span-5">
                   <input
@@ -285,7 +472,7 @@ export default function CreateInvoicePage() {
                     required
                     value={newItemDesc}
                     onChange={(e) => setNewItemDesc(e.target.value)}
-                    placeholder="Description (e.g. iPhone 15 Pro)..."
+                    placeholder="Description (e.g. Repair Service)..."
                     className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -345,7 +532,7 @@ export default function CreateInvoicePage() {
 
         {/* RIGHT 4 COLUMNS: INVOICE TERMS, SUMMARY & SHARE ACTIONS */}
         <div className="lg:col-span-4 space-y-5">
-          
+
           <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
             <h3 className="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3">
               Billing Summary & Terms
@@ -399,7 +586,7 @@ export default function CreateInvoicePage() {
               </div>
             </div>
 
-            {/* Action Buttons: Print, Email / Share, Save */}
+            {/* Action Buttons */}
             <div className="space-y-2 pt-2">
               <Button
                 variant="primary"
@@ -417,7 +604,7 @@ export default function CreateInvoicePage() {
                 <Button
                   variant="secondary"
                   size="md"
-                  onClick={() => handleIssueInvoice('DRAFT')}
+                  onClick={handlePrintPDF}
                   leftIcon={<Printer className="w-4 h-4 text-slate-600" />}
                 >
                   Print PDF
@@ -426,7 +613,7 @@ export default function CreateInvoicePage() {
                 <Button
                   variant="secondary"
                   size="md"
-                  onClick={() => handleIssueInvoice('DRAFT')}
+                  onClick={handleEmailPDF}
                   leftIcon={<Mail className="w-4 h-4 text-slate-600" />}
                 >
                   Email PDF
@@ -441,7 +628,7 @@ export default function CreateInvoicePage() {
       </div>
 
       {/* Success Statement Share Modal */}
-      {showSuccessModal && (
+      {showSuccessModal && createdInvoice && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center space-y-4 border border-slate-200 animate-in fade-in zoom-in duration-200">
             <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto border border-blue-200">
@@ -449,36 +636,36 @@ export default function CreateInvoicePage() {
             </div>
 
             <div>
-              <h3 className="text-xl font-extrabold text-slate-900">Invoice Ready to Print & Share!</h3>
+              <h3 className="text-xl font-extrabold text-slate-900">Invoice Created Successfully!</h3>
               <p className="text-xs text-slate-600 font-medium mt-1">
-                Invoice ID: <strong>{invoiceNumber}</strong> • Due: <strong>{dueDate}</strong>
+                Invoice #: <strong>{createdInvoice.invoiceNumber || createdInvoice.id}</strong> • Due: <strong>{createdInvoice.dueDate}</strong>
               </p>
             </div>
 
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 text-xs text-left space-y-2 font-medium">
               <div className="flex justify-between border-b border-slate-200 pb-2">
                 <span>Billed Customer</span>
-                <span className="font-bold text-slate-900">{customerName}</span>
+                <span className="font-bold text-slate-900">{createdInvoice.customerName}</span>
               </div>
               <div className="flex justify-between font-bold text-slate-900 text-sm pt-1">
                 <span>Total Amount Owed</span>
-                <span className="text-blue-600 font-extrabold">${totalAmount.toFixed(2)}</span>
+                <span className="text-blue-600 font-extrabold">${createdInvoice.totalAmount.toFixed(2)}</span>
               </div>
             </div>
 
             <div className="space-y-2 pt-2">
               <div className="grid grid-cols-2 gap-2">
-                <Button variant="primary" size="md" leftIcon={<Printer className="w-4 h-4" />}>
+                <Button variant="primary" size="md" onClick={handlePrintPDF} leftIcon={<Printer className="w-4 h-4" />}>
                   Print PDF
                 </Button>
-                <Button variant="secondary" size="md" leftIcon={<Mail className="w-4 h-4" />}>
+                <Button variant="secondary" size="md" onClick={handleEmailPDF} leftIcon={<Mail className="w-4 h-4" />}>
                   Send Email
                 </Button>
               </div>
 
-              <Link href="/dashboard/sales/invoices">
+              <Link href="/dashboard/sales/receipts">
                 <Button variant="secondary" fullWidth size="lg">
-                  View in Invoices Registry
+                  View Receipts & Invoices Archive
                 </Button>
               </Link>
             </div>
