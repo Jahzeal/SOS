@@ -399,47 +399,7 @@ export default function RepairsDashboardPage() {
 
       </div>
 
-      {/* Low Stock Parts Alerts Card */}
-      <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <h3 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-            <Package className="w-4 h-4 text-rose-600" /> Low Stock Replacement Parts Alert
-          </h3>
-          <span className="text-[10px] text-rose-600 font-extrabold uppercase bg-rose-50 px-2 py-0.5 rounded border border-rose-200">Reorder Required</span>
-        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="p-3.5 rounded-xl bg-rose-50/50 border border-rose-200 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
-                <Zap className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="font-extrabold text-slate-900 text-xs">iPhone 15 Pro Replacement Batteries</p>
-                <p className="text-[10px] text-rose-700 font-extrabold">2 UNITS REMAINING</p>
-              </div>
-            </div>
-            <Button variant="destructive" size="sm" className="text-[11px] font-bold">
-              Reorder
-            </Button>
-          </div>
-
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0">
-                <Smartphone className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="font-extrabold text-slate-900 text-xs">S24 Ultra OLED Screen Assemblies</p>
-                <p className="text-[10px] text-slate-500 font-bold">4 UNITS REMAINING</p>
-              </div>
-            </div>
-            <Button variant="secondary" size="sm" className="text-[11px] font-bold">
-              Reorder
-            </Button>
-          </div>
-        </div>
-      </div>
 
       {/* New Repair Ticket Creation Modal */}
       {showNewTicketModal && (

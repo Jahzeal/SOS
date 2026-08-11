@@ -1,58 +1,94 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   FileText,
   Receipt,
   Store,
-  Palette,
-  Check,
   Save,
-  Printer,
-  Sparkles,
   QrCode,
-  ShieldCheck,
   Building,
-  Phone,
-  Mail,
-  SlidersHorizontal,
   ChevronRight,
   Eye,
   CheckCircle2,
+  Loader2,
+  AlertTriangle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { api } from '@/lib/api';
 
 export default function ReceiptInvoiceTemplatesPage() {
   const [activeTab, setActiveTab] = useState<'receipt' | 'invoice'>('receipt');
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Receipt Customization Settings
   const [storeName, setStoreName] = useState('VerifyFlow Retail POS');
-  const [storeBranch, setStoreBranch] = useState('Store #402 - Main Branch');
-  const [storeAddress, setStoreAddress] = useState('5th Ave, Manhattan, NY 10001');
-  const [storePhone, setStorePhone] = useState('+1 (800) 555-0199');
+  const [storeBranch, setStoreBranch] = useState('Main Store Branch');
+  const [storeAddress, setStoreAddress] = useState('Computer Village, Ikeja, Lagos');
+  const [storePhone, setStorePhone] = useState('+234 801 234 5678');
   const [receiptFooter, setReceiptFooter] = useState('Thank you for shopping! 30-Day Store Warranty included. No refunds without receipt.');
   const [showQrCode, setShowQrCode] = useState(true);
   const [showImei, setShowImei] = useState(true);
 
   // Invoice Customization Settings
-  const [companyName, setCompanyAddress] = useState('VerifyFlow Wireless Systems LLC');
-  const [taxId, setTaxId] = useState('TAX-84920194-US');
+  const [companyName, setCompanyName] = useState('VerifyFlow Wireless Systems Ltd');
+  const [taxId, setTaxId] = useState('TIN-84920194-NG');
   const [invoiceHeaderNote, setInvoiceHeaderNote] = useState('Official Commercial Invoice & Device Ownership Guarantee Statement.');
-  const [bankWireInfo, setBankWireInfo] = useState('Bank of America • Account: 4892-0192-8401 • ABA: 026009593');
+  const [bankWireInfo, setBankWireInfo] = useState('Zenith Bank • Account: 1012345678 • VerifyFlow Systems');
   const [invoiceTerms, setInvoiceTerms] = useState('Payment is due within the selected term days. Late payments subject to a 1.5% monthly fee.');
 
-  const [isSaved, setIsSaved] = useState(false);
+  useEffect(() => {
+    async function loadTemplates() {
+      setLoading(true);
+      setError(null);
+      try {
+        const profile = await api.getBusinessTemplates();
+        if (profile) {
+          if (profile.name) setStoreName(profile.name);
+          if (profile.address) setStoreAddress(profile.address);
+          if (profile.phone) setStorePhone(profile.phone);
+          if (profile.receiptFooter) setReceiptFooter(profile.receiptFooter);
+          if (profile.receiptTerms) setInvoiceTerms(profile.receiptTerms);
+          if (profile.name) setCompanyName(profile.name);
+        }
+      } catch (err: any) {
+        console.error('Failed to load business templates:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadTemplates();
+  }, []);
 
-  const handleSave = () => {
-    setIsSaved(true);
-    setTimeout(() => setIsSaved(false), 2500);
+  const handleSave = async () => {
+    setIsSaving(true);
+    setError(null);
+    try {
+      await api.updateBusinessTemplates({
+        name: storeName.trim(),
+        address: storeAddress.trim(),
+        phone: storePhone.trim(),
+        receiptFooter: receiptFooter.trim(),
+        receiptTerms: invoiceTerms.trim(),
+      });
+      setIsSaved(true);
+      setTimeout(() => setIsSaved(false), 2500);
+    } catch (err: any) {
+      console.error('Failed to save templates:', err);
+      setError(err.message || 'Failed to save template settings.');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
     <div className="space-y-6 font-sans pb-24 md:pb-8">
-      
+
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
@@ -76,13 +112,29 @@ export default function ReceiptInvoiceTemplatesPage() {
             variant="primary"
             size="md"
             onClick={handleSave}
-            leftIcon={isSaved ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Save className="w-4 h-4" />}
+            disabled={isSaving}
+            leftIcon={
+              isSaving ? (
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
+              ) : isSaved ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )
+            }
             className="bg-blue-600 hover:bg-blue-500 font-bold shadow-md shadow-blue-600/20"
           >
-            {isSaved ? 'Templates Saved!' : 'Save Template Settings'}
+            {isSaving ? 'Saving...' : isSaved ? 'Templates Saved!' : 'Save Template Settings'}
           </Button>
         </div>
       </div>
+
+      {error && (
+        <div className="p-4 bg-rose-50 border border-rose-200 rounded-xl text-xs font-bold text-rose-700 flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+          {error}
+        </div>
+      )}
 
       {/* Mode Switcher Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
@@ -111,7 +163,7 @@ export default function ReceiptInvoiceTemplatesPage() {
 
       {/* Main 2-Column Customizer & Live Preview Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
+
         {/* LEFT 7 COLUMNS: CUSTOMIZATION FORM */}
         <div className="lg:col-span-7 space-y-6">
 
@@ -222,7 +274,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                   <input
                     type="text"
                     value={companyName}
-                    onChange={(e) => setCompanyAddress(e.target.value)}
+                    onChange={(e) => setCompanyName(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -294,7 +346,7 @@ export default function ReceiptInvoiceTemplatesPage() {
 
                 <div className="flex justify-between text-[10px] text-slate-500 pt-1">
                   <span>Receipt: <strong>#RCP-84920</strong></span>
-                  <span>Jul 31, 2026</span>
+                  <span>Aug 11, 2026</span>
                 </div>
 
                 <div className="border-y border-slate-200 py-2 space-y-1.5">
@@ -303,24 +355,24 @@ export default function ReceiptInvoiceTemplatesPage() {
                       <p className="font-bold text-slate-900">iPhone 15 Pro (256GB)</p>
                       {showImei && <p className="text-[9px] text-slate-500">IMEI: 358291048291048</p>}
                     </div>
-                    <span className="font-bold text-slate-900">$1,099.00</span>
+                    <span className="font-bold text-slate-900">₦1,099,000</span>
                   </div>
                   <div className="flex justify-between text-[11px]">
                     <div>
                       <p className="font-bold text-slate-900">MagSafe Case Navy</p>
                     </div>
-                    <span className="font-bold text-slate-900">$49.00</span>
+                    <span className="font-bold text-slate-900">₦49,000</span>
                   </div>
                 </div>
 
                 <div className="space-y-1 text-[11px]">
                   <div className="flex justify-between text-slate-500">
                     <span>Subtotal</span>
-                    <span>$1,148.00</span>
+                    <span>₦1,148,000</span>
                   </div>
                   <div className="flex justify-between font-extrabold text-xs border-t border-slate-200 pt-1 text-slate-900">
                     <span>TOTAL PAID</span>
-                    <span className="text-blue-600">$1,239.84</span>
+                    <span className="text-blue-600">₦1,148,000</span>
                   </div>
                 </div>
 

@@ -103,7 +103,7 @@ export default function InventoryPage() {
       daysInInv: Math.floor((Date.now() - new Date(item.createdAt).getTime()) / (1000 * 60 * 60 * 24)) || 1,
       warrantyStatus: item.warrantyExpiryDate && new Date(item.warrantyExpiryDate) > new Date() ? 'active' : 'expired',
       branch: 'Main Flagship',
-      value: item.sellingPrice ? `$${item.sellingPrice.toLocaleString()}` : '$0',
+      value: item.sellingPrice ? `₦${item.sellingPrice.toLocaleString()}` : '₦0',
     }));
   }, [liveInventory]);
 
@@ -214,7 +214,7 @@ export default function InventoryPage() {
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider mb-1">Inventory Value</p>
           <div className="flex items-baseline justify-between">
             <span className="text-xl font-extrabold text-slate-900">
-              {kpis ? `$${(kpis.stockValuation / 1000).toFixed(1)}k` : '—'}
+              {kpis ? `₦${(kpis.stockValuation / 1000).toFixed(1)}k` : '—'}
             </span>
             <TrendingUp className="w-3 h-3 text-emerald-600" />
           </div>

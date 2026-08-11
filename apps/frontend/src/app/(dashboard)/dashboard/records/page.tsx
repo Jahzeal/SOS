@@ -379,7 +379,7 @@ export default function PhoneRecordsPage() {
                         {rec.status === 'RETURNED' && <Badge variant="starter" size="sm">RETURNED</Badge>}
                       </td>
                       <td className="py-3.5 px-4 font-extrabold text-slate-900 text-right">
-                        {rec.sellingPrice != null ? `$${rec.sellingPrice.toFixed(2)}` : (rec.purchasePrice != null ? `$${rec.purchasePrice.toFixed(2)}` : '—')}
+                        {rec.sellingPrice != null ? `₦${rec.sellingPrice.toLocaleString()}` : (rec.purchasePrice != null ? `₦${rec.purchasePrice.toLocaleString()}` : '—')}
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">

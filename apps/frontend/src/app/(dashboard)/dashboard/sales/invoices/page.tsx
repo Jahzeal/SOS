@@ -230,7 +230,7 @@ export default function InvoicesRegistryPage() {
             </div>
           </div>
           <p className="text-indigo-100 font-extrabold text-[10px] uppercase tracking-wider">Outstanding</p>
-          <h3 className="text-xl font-extrabold text-white mt-0.5">${counts.outstandingTotal.toFixed(2)}</h3>
+          <h3 className="text-xl font-extrabold text-white mt-0.5">₦{counts.outstandingTotal.toLocaleString()}</h3>
           <p className="text-[10px] text-indigo-100 font-medium mt-1">Total receivables</p>
         </div>
       </div>
@@ -337,7 +337,7 @@ export default function InvoicesRegistryPage() {
                       <td className="py-3.5 px-4 text-slate-600 font-medium">{getItemsSummary(inv.items)}</td>
                       <td className="py-3.5 px-4 text-slate-500 font-medium">{dateStr}</td>
                       <td className="py-3.5 px-4 text-right font-extrabold text-slate-900">
-                        ${inv.totalAmount ? inv.totalAmount.toFixed(2) : '0.00'}
+                        ₦{inv.totalAmount ? inv.totalAmount.toLocaleString() : '0'}
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         {status === 'PAID' && <Badge variant="verified" size="sm">PAID</Badge>}

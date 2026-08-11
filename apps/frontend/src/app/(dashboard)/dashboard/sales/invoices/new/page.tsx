@@ -159,7 +159,7 @@ export default function CreateInvoicePage() {
     const invNum = createdInvoice?.invoiceNumber || createdInvoice?.id || 'Statement';
     const subject = encodeURIComponent(`Invoice Statement #${invNum}`);
     const body = encodeURIComponent(
-      `Hello ${customerName.trim() || 'Valued Customer'},\n\nPlease find your invoice statement for $${totalAmount.toFixed(2)} due on ${dueDate}.\n\nThank you for your business!`
+      `Hello ${customerName.trim() || 'Valued Customer'},\n\nPlease find your invoice statement for ₦${totalAmount.toLocaleString()} due on ${dueDate}.\n\nThank you for your business!`
     );
     window.location.href = `mailto:${customerEmail.trim()}?subject=${subject}&body=${body}`;
   };
@@ -388,7 +388,7 @@ export default function CreateInvoicePage() {
 
                       <div className="flex items-center gap-3 shrink-0">
                         <span className="font-extrabold text-slate-900 text-xs">
-                          ${(phone.sellingPrice ?? phone.purchasePrice ?? 0).toFixed(2)}
+                          ₦{(phone.sellingPrice ?? phone.purchasePrice ?? 0).toLocaleString()}
                         </span>
                         <button
                           type="button"
@@ -424,7 +424,7 @@ export default function CreateInvoicePage() {
                     <th className="py-2.5 px-3">Description</th>
                     <th className="py-2.5 px-3">IMEI / Serial</th>
                     <th className="py-2.5 px-3 text-center">Qty</th>
-                    <th className="py-2.5 px-3 text-right">Price ($)</th>
+                    <th className="py-2.5 px-3 text-right">Price (₦)</th>
                     <th className="py-2.5 px-3 text-right">Total</th>
                     <th className="py-2.5 px-3 text-center">Action</th>
                   </tr>
@@ -453,7 +453,7 @@ export default function CreateInvoicePage() {
                           />
                         </td>
                         <td className="py-3 px-3 text-right font-extrabold text-slate-900">
-                          ${(item.unitPrice * item.quantity).toFixed(2)}
+                          ₦{(item.unitPrice * item.quantity).toLocaleString()}
                         </td>
                         <td className="py-3 px-3 text-center">
                           <button
@@ -511,7 +511,7 @@ export default function CreateInvoicePage() {
                     required
                     value={newItemPrice}
                     onChange={(e) => setNewItemPrice(e.target.value)}
-                    placeholder="Rate ($)..."
+                    placeholder="Rate (₦)..."
                     className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -594,16 +594,15 @@ export default function CreateInvoicePage() {
             <div className="pt-3 border-t border-slate-100 space-y-2 text-xs font-medium text-slate-600">
               <div className="flex justify-between">
                 <span>Subtotal</span>
-                <span className="font-bold text-slate-900">${subtotal.toFixed(2)}</span>
+                <span className="font-bold text-slate-900">₦{subtotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between">
-                <span>Sales Tax (8%)</span>
-                <span className="font-bold text-slate-900">${tax.toFixed(2)}</span>
+                <span>Tax (8%)</span>
+                <span className="font-bold text-slate-900">₦{tax.toLocaleString()}</span>
               </div>
-
-              <div className="flex justify-between items-baseline pt-3 border-t border-slate-200 text-slate-900 font-extrabold">
-                <span className="text-sm">Total Owed</span>
-                <span className="text-2xl text-blue-600 font-extrabold">${totalAmount.toFixed(2)}</span>
+              <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 text-slate-900 font-extrabold">
+                <span className="text-sm">Total Due</span>
+                <span className="text-2xl text-blue-600 font-extrabold">₦{totalAmount.toLocaleString()}</span>
               </div>
             </div>
 

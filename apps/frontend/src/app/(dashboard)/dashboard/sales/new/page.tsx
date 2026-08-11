@@ -488,7 +488,7 @@ function CheckoutPOSContent() {
                       required
                       value={customItemPrice}
                       onChange={(e) => setCustomItemPrice(e.target.value)}
-                      placeholder="Price ($)..."
+                      placeholder="Price (₦)..."
                       className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -570,7 +570,7 @@ function CheckoutPOSContent() {
                         )}
 
                         <div className="flex items-center gap-0.5">
-                          <span className="text-slate-400 font-bold">$</span>
+                          <span className="text-slate-400 font-bold">₦</span>
                           <input
                             type="number"
                             step="0.01"
@@ -597,16 +597,16 @@ function CheckoutPOSContent() {
               <div className="pt-3 border-t border-slate-100 space-y-2 text-xs font-medium text-slate-600">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-bold text-slate-900">${subtotal.toFixed(2)}</span>
+                  <span className="font-bold text-slate-900">₦{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Tax (8%)</span>
-                  <span className="font-bold text-slate-900">${tax.toFixed(2)}</span>
+                  <span className="font-bold text-slate-900">₦{tax.toLocaleString()}</span>
                 </div>
 
                 <div className="flex justify-between items-baseline pt-3 border-t border-slate-200 text-slate-900 font-extrabold">
                   <span className="text-sm">Grand Total</span>
-                  <span className="text-2xl text-blue-600 font-extrabold">${grandTotal.toFixed(2)}</span>
+                  <span className="text-2xl text-blue-600 font-extrabold">₦{grandTotal.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -689,13 +689,13 @@ function CheckoutPOSContent() {
             {paymentMethod === 'CASH' && (
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
                 <div className="flex justify-between items-center">
-                  <label className="font-bold text-slate-700">Cash Tendered ($)</label>
+                  <label className="font-bold text-slate-700">Cash Tendered (₦)</label>
                   <button
                     type="button"
-                    onClick={() => setCashTendered(grandTotal.toFixed(2))}
+                    onClick={() => setCashTendered(grandTotal.toString())}
                     className="text-[10px] text-blue-600 font-bold hover:underline"
                   >
-                    Exact: ${grandTotal.toFixed(2)}
+                    Exact: ₦{grandTotal.toLocaleString()}
                   </button>
                 </div>
                 <input
@@ -709,7 +709,7 @@ function CheckoutPOSContent() {
 
                 <div className="flex justify-between items-center border-t border-slate-200 pt-2 font-bold text-slate-900">
                   <span>Change Due to Customer</span>
-                  <span className="text-emerald-700 text-sm font-extrabold">${changeDue.toFixed(2)}</span>
+                  <span className="text-emerald-700 text-sm font-extrabold">₦{changeDue.toLocaleString()}</span>
                 </div>
               </div>
             )}
@@ -781,7 +781,7 @@ function CheckoutPOSContent() {
                       <p className="font-bold text-slate-900">{item.model}</p>
                       <p className="text-[9px] text-slate-500">{item.isDevice ? `IMEI: ${item.imei}` : item.color}</p>
                     </div>
-                    <span className="font-bold text-slate-900">${(item.price * item.quantity).toFixed(2)}</span>
+                    <span className="font-bold text-slate-900">₦{(item.price * item.quantity).toLocaleString()}</span>
                   </div>
                 ))}
               </div>
@@ -789,20 +789,20 @@ function CheckoutPOSContent() {
               <div className="space-y-1 text-[11px]">
                 <div className="flex justify-between text-slate-500">
                   <span>Subtotal</span>
-                  <span>${finalReceipt.subtotal.toFixed(2)}</span>
+                  <span>₦{finalReceipt.subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-slate-500">
                   <span>Tax (8%)</span>
-                  <span>${finalReceipt.tax.toFixed(2)}</span>
+                  <span>₦{finalReceipt.tax.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between font-extrabold text-sm border-t border-slate-200 pt-2 text-slate-900">
                   <span>TOTAL PAID</span>
-                  <span className="text-blue-600">${finalReceipt.total.toFixed(2)}</span>
+                  <span className="text-blue-600">₦{finalReceipt.total.toLocaleString()}</span>
                 </div>
                 {finalReceipt.paymentMethod === 'CASH' && (
                   <div className="flex justify-between text-[10px] text-slate-500 pt-1">
                     <span>Change Due:</span>
-                    <span className="font-bold text-emerald-700">${finalReceipt.changeDue.toFixed(2)}</span>
+                    <span className="font-bold text-emerald-700">₦{finalReceipt.changeDue.toLocaleString()}</span>
                   </div>
                 )}
               </div>

@@ -85,6 +85,22 @@ class ApiClient {
     }>('/dashboard/summary');
   }
 
+  async getReports(range?: string) {
+    const q = range ? `?range=${encodeURIComponent(range)}` : '';
+    return this.request<any>(`/dashboard/reports${q}`);
+  }
+
+  async getBusinessTemplates() {
+    return this.request<any>('/business/templates');
+  }
+
+  async updateBusinessTemplates(payload: any) {
+    return this.request<any>('/business/templates', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
   // --- Phone Registration & Inventory Endpoints ---
   async checkImei(imei: string) {
     return this.request<{ exists: boolean; record: any; message: string }>(`/phones/check-imei?imei=${encodeURIComponent(imei)}`);

@@ -779,7 +779,7 @@ export default function PublicLandingPageV2() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="text-xs text-slate-500 font-semibold">Total Stock Value</div>
-                  <div className="text-2xl font-extrabold text-slate-900 mt-1">$148,920</div>
+                  <div className="text-2xl font-extrabold text-slate-900 mt-1">₦148,920,000</div>
                 </div>
                 <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
                   <div className="text-xs text-emerald-700 font-semibold">Verified Devices</div>
@@ -887,7 +887,7 @@ export default function PublicLandingPageV2() {
                 <div className="space-y-2">
                   <div className="flex justify-between font-extrabold text-slate-900 text-xs">
                     <span>1x iPhone 16 Pro (512GB Titanium)</span>
-                    <span>$1,199.00</span>
+                    <span>₦1,199,000</span>
                   </div>
                   <div className="pl-3 space-y-0.5 text-[10px] text-slate-600 font-mono">
                     <p><span className="font-bold text-slate-700">IMEI 1:</span> 354892019283741</p>
@@ -905,15 +905,15 @@ export default function PublicLandingPageV2() {
                 <div className="space-y-1 text-xs">
                   <div className="flex justify-between text-slate-600 text-[11px]">
                     <span>SUBTOTAL</span>
-                    <span>$1,199.00</span>
+                    <span>₦1,199,000</span>
                   </div>
                   <div className="flex justify-between text-slate-600 text-[11px]">
                     <span>SALES TAX (8.0%)</span>
-                    <span>$95.92</span>
+                    <span>₦95,920</span>
                   </div>
                   <div className="flex justify-between font-black text-sm text-slate-900 pt-1 border-t border-slate-200">
                     <span>TOTAL PAID</span>
-                    <span>$1,294.92</span>
+                    <span>₦1,294,920</span>
                   </div>
                   <p className="text-[10px] text-slate-500 text-right pt-0.5">Paid via Visa Credit (•••• 4819)</p>
                 </div>
@@ -966,7 +966,7 @@ export default function PublicLandingPageV2() {
                     <span className="text-[10px] font-bold text-emerald-600">+14.2%</span>
                   </div>
                   <h5 className="font-extrabold text-slate-900 text-sm">Downtown Branch</h5>
-                  <p className="text-2xl font-extrabold text-slate-900">$92,400.00</p>
+                  <p className="text-2xl font-extrabold text-slate-900">₦92,400,000</p>
                   <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] font-semibold text-slate-500">
                     <span>1,248 Units Sold</span>
                     <span className="text-emerald-600 font-bold">99.8% Clean Record</span>
@@ -982,7 +982,7 @@ export default function PublicLandingPageV2() {
                     <span className="text-[10px] font-bold text-emerald-600">+8.5%</span>
                   </div>
                   <h5 className="font-extrabold text-slate-900 text-sm">Eastside Mall Branch</h5>
-                  <p className="text-2xl font-extrabold text-slate-900">$48,900.00</p>
+                  <p className="text-2xl font-extrabold text-slate-900">₦48,900,000</p>
                   <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] font-semibold text-slate-500">
                     <span>612 Units Sold</span>
                     <span className="text-emerald-600 font-bold">99.2% Clean Record</span>
@@ -998,7 +998,7 @@ export default function PublicLandingPageV2() {
                     <span className="text-[10px] font-bold text-emerald-600">+5.1%</span>
                   </div>
                   <h5 className="font-extrabold text-slate-900 text-sm">West End Outlet</h5>
-                  <p className="text-2xl font-extrabold text-slate-900">$28,200.00</p>
+                  <p className="text-2xl font-extrabold text-slate-900">₦28,200,000</p>
                   <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] font-semibold text-slate-500">
                     <span>380 Units Sold</span>
                     <span className="text-emerald-600 font-bold">98.9% Clean Record</span>
@@ -1190,7 +1190,7 @@ export default function PublicLandingPageV2() {
                 <div className="font-bold text-slate-900 text-lg">Starter Shop</div>
                 <p className="text-xs text-slate-500 mt-1">Single location phone store</p>
                 <div className="mt-4 text-3xl font-extrabold text-slate-900">
-                  {billingCycle === 'monthly' ? '$49' : '$39'}{' '}
+                  {billingCycle === 'monthly' ? '₦49,000' : '₦39,000'}{' '}
                   <span className="text-xs font-normal text-slate-500">/month</span>
                 </div>
                 <ul className="mt-6 space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-4">
@@ -1223,7 +1223,7 @@ export default function PublicLandingPageV2() {
                 <div className="font-bold text-slate-900 text-lg">Business Scale</div>
                 <p className="text-xs text-slate-500 mt-1">Growing retail chains & distributors</p>
                 <div className="mt-4 text-3xl font-extrabold text-slate-900">
-                  {billingCycle === 'monthly' ? '$129' : '$99'}{' '}
+                  {billingCycle === 'monthly' ? '₦129,000' : '₦99,000'}{' '}
                   <span className="text-xs font-normal text-slate-500">/month</span>
                 </div>
                 <ul className="mt-6 space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-4">

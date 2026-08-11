@@ -164,7 +164,7 @@ export default function ReceiptsArchivePage() {
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Revenue</p>
           <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
-            {summaryData?.kpis ? `$${summaryData.kpis.totalSalesRevenue.toLocaleString()}` : '$0.00'}
+            {summaryData?.kpis ? `₦${summaryData.kpis.totalSalesRevenue.toLocaleString()}` : '₦0'}
           </h3>
           <p className="text-xs text-slate-400 font-medium mt-1">Total settled transactions</p>
         </div>
@@ -179,8 +179,8 @@ export default function ReceiptsArchivePage() {
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Average Sale</p>
           <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
             {summaryData?.kpis && summaryData.kpis.totalSalesCount > 0
-              ? `$${(summaryData.kpis.totalSalesRevenue / summaryData.kpis.totalSalesCount).toFixed(2)}`
-              : '$0.00'}
+              ? `₦${Math.round(summaryData.kpis.totalSalesRevenue / summaryData.kpis.totalSalesCount).toLocaleString()}`
+              : '₦0'}
           </h3>
           <p className="text-xs text-slate-400 font-medium mt-1">Average per sales receipt</p>
         </div>
@@ -303,7 +303,7 @@ export default function ReceiptsArchivePage() {
                       </td>
                       <td className="py-3.5 px-4 text-slate-600 font-medium">{getItemSummary(rcp.items)}</td>
                       <td className="py-3.5 px-4 font-extrabold text-slate-900">
-                        ${rcp.totalAmount ? rcp.totalAmount.toFixed(2) : '0.00'}
+                        ₦{rcp.totalAmount ? rcp.totalAmount.toLocaleString() : '0'}
                       </td>
                       <td className="py-3.5 px-4 text-slate-700 font-semibold flex items-center gap-1.5">
                         <CreditCard className="w-3.5 h-3.5 text-slate-400" /> {rcp.paymentMethod || 'CASH'}
@@ -393,14 +393,14 @@ export default function ReceiptsArchivePage() {
                           <p className="text-[9px] text-slate-500">IMEI: {item.phoneRecord.imei1}</p>
                         )}
                       </div>
-                      <span className="font-bold text-slate-900">${(item.unitPrice * item.quantity).toFixed(2)}</span>
+                      <span className="font-bold text-slate-900">₦{((item.unitPrice || 0) * (item.quantity || 1)).toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
 
                 <div className="flex justify-between font-extrabold text-sm border-t border-slate-200 pt-2 text-slate-900">
                   <span>TOTAL PAID</span>
-                  <span className="text-blue-600">${selectedReceipt.totalAmount?.toFixed(2) || '0.00'}</span>
+                  <span className="text-blue-600">₦{selectedReceipt.totalAmount?.toLocaleString() || '0'}</span>
                 </div>
               </div>
             </div>

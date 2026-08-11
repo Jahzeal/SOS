@@ -368,7 +368,7 @@ export default function BusinessDashboardPage() {
             </div>
           </div>
           <div className="text-xl font-extrabold text-slate-900 tracking-tight">
-            ${livePhones.reduce((sum, p) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
+            ₦{livePhones.reduce((sum, p) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
           </div>
           <div className="text-[11px] font-bold text-slate-500">Live inventory value</div>
         </div>
@@ -749,7 +749,7 @@ export default function BusinessDashboardPage() {
           <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 text-xs space-y-1">
             <div className="font-bold text-slate-900">Total Revenue ({salesTimeframe.toUpperCase()})</div>
             <div className="text-2xl font-extrabold text-emerald-950">
-              ${livePhones.filter((p) => p.status === 'SOLD').reduce((sum, p) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
+              ₦{livePhones.filter((p) => p.status === 'SOLD').reduce((sum, p) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
             </div>
             <div className="text-[11px] text-emerald-700 font-semibold">Live POS Sales Revenue</div>
           </div>

@@ -22,4 +22,14 @@ export class BusinessController {
   async updatePlan(@CurrentUser() user: any, @Body('plan') plan: any) {
     return this.businessService.updatePlan(user.businessId, plan);
   }
+
+  @Get('templates')
+  async getTemplates(@CurrentUser() user: any) {
+    return this.businessService.getTemplateSettings(user.businessId);
+  }
+
+  @Put('templates')
+  async updateTemplates(@CurrentUser() user: any, @Body() body: any) {
+    return this.businessService.updateTemplateSettings(user.businessId, body);
+  }
 }

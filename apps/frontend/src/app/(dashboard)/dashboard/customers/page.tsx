@@ -258,7 +258,7 @@ export default function CustomersManagementPage() {
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lifetime Rev</p>
             <p className="text-xl font-extrabold text-slate-900 mt-0.5">
-              {summaryData?.kpis ? `$${(summaryData.kpis.totalSalesRevenue / 1000).toFixed(1)}k` : '$0.0k'}
+              {summaryData?.kpis ? `₦${(summaryData.kpis.totalSalesRevenue / 1000).toFixed(1)}k` : '₦0.0k'}
             </p>
           </div>
         </div>
@@ -401,7 +401,7 @@ export default function CustomersManagementPage() {
                             {cust.devicesCount || 0}
                           </td>
                           <td className="py-3.5 px-3 text-right font-extrabold text-slate-900">
-                            ${(cust.totalSpending || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                            ₦{(cust.totalSpending || 0).toLocaleString()}
                           </td>
                           <td className="py-3.5 px-3 text-right">
                             <p className="font-bold text-slate-800">{cust.lastPurchaseDate}</p>
@@ -461,7 +461,7 @@ export default function CustomersManagementPage() {
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
                   <p className="text-[10px] text-slate-400 font-bold uppercase">Lifetime Spend</p>
                   <p className="text-base font-extrabold text-blue-600 mt-0.5">
-                    ${(selectedCustomer.totalSpending || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                    ₦{(selectedCustomer.totalSpending || 0).toLocaleString()}
                   </p>
                 </div>
 
@@ -515,7 +515,7 @@ export default function CustomersManagementPage() {
                     (selectedCustomer.sales || []).map((sale: any) => (
                       <div key={sale.id} className="space-y-0.5">
                         <p className="font-bold text-slate-900">
-                          {sale.receiptNumber || sale.invoiceNumber || 'Sale Record'} — ${sale.totalAmount?.toFixed(2)}
+                          {sale.receiptNumber || sale.invoiceNumber || 'Sale Record'} — ₦{sale.totalAmount?.toLocaleString() || '0'}
                         </p>
                         <p className="text-[10px] text-slate-500">
                           {sale.items?.map((i: any) => i.description).join(', ') || 'Item'}

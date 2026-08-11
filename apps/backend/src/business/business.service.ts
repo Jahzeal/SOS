@@ -53,4 +53,44 @@ export class BusinessService {
       data: { plan },
     });
   }
+
+  async getTemplateSettings(businessId: string) {
+    const business = await this.prisma.business.findUnique({
+      where: { id: businessId },
+      select: {
+        id: true,
+        name: true,
+        address: true,
+        phone: true,
+        email: true,
+        receiptFooter: true,
+        receiptTerms: true,
+        warrantyTerms: true,
+        receiptPaperSize: true,
+      },
+    });
+
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+
+    return business;
+  }
+
+  async updateTemplateSettings(businessId: string, data: any) {
+    const updateData: any = {};
+    if (data.name) updateData.name = data.name;
+    if (data.address !== undefined) updateData.address = data.address;
+    if (data.phone !== undefined) updateData.phone = data.phone;
+    if (data.email !== undefined) updateData.email = data.email;
+    if (data.receiptFooter !== undefined) updateData.receiptFooter = data.receiptFooter;
+    if (data.receiptTerms !== undefined) updateData.receiptTerms = data.receiptTerms;
+    if (data.warrantyTerms !== undefined) updateData.warrantyTerms = data.warrantyTerms;
+    if (data.receiptPaperSize !== undefined) updateData.receiptPaperSize = data.receiptPaperSize;
+
+    return this.prisma.business.update({
+      where: { id: businessId },
+      data: updateData,
+    });
+  }
 }
