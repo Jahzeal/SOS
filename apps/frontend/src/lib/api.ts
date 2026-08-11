@@ -1,6 +1,9 @@
 // Unified API Client Service Layer for VerifyFlow NestJS API Backend
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_BASE_URL = rawUrl.startsWith('http://') || rawUrl.startsWith('https://')
+  ? rawUrl.replace(/\/$/, '')
+  : `https://${rawUrl.replace(/\/$/, '')}`;
 
 export interface RegisterPhonePayload {
   imei1: string;
