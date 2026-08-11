@@ -38,7 +38,7 @@ const MOCK_RESULTS: SearchResultItem[] = [
     id: '4',
     type: 'INVOICE',
     title: 'INV-2026-8891',
-    subtitle: 'Total: $2,499.00 - Paid via Stripe',
+    subtitle: 'Total: ₦2,499,000 - Paid via POS',
     badgeText: 'PAID',
   },
 ];
@@ -50,7 +50,7 @@ export interface GlobalSearchModalProps {
 
 export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
   const [query, setQuery] = useState('');
-  const [recentSearches, setRecentSearches] = useState(['354892019283741', 'iPhone 15 Pro', 'PhoneWorks Store']);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {

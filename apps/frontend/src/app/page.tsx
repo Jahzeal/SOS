@@ -43,17 +43,9 @@ export default function PublicLandingPageV2() {
 
   // Hero Verification Card Interactive State (Journey 1: Customer)
   const [activeHeroTab, setActiveHeroTab] = useState<'imei' | 'qr' | 'serial'>('imei');
-  const [heroSearchInput, setHeroSearchInput] = useState('354892019283741');
+  const [heroSearchInput, setHeroSearchInput] = useState('');
   const [heroVerifying, setHeroVerifying] = useState(false);
-  const [heroVerifiedResult, setHeroVerifiedResult] = useState<any>({
-    verified: true,
-    retailer: 'TechWorld Mobile',
-    model: 'iPhone 16 Pro',
-    storage: '256GB • Natural Titanium',
-    warranty: 'Active (until 22 July 2027)',
-    purchaseDate: '22 July 2026',
-    customer: 'Alex Dev',
-  });
+  const [heroVerifiedResult, setHeroVerifiedResult] = useState<any>(null);
 
   // Product Showcase Tab State (Section 8)
   const [showcaseTab, setShowcaseTab] = useState<'dashboard' | 'verification' | 'inventory' | 'sales' | 'receipts' | 'reports'>('dashboard');
@@ -130,9 +122,6 @@ export default function PublicLandingPageV2() {
               <span className="font-extrabold text-slate-900 tracking-tight text-lg leading-none block">
                 VerifyFlow
               </span>
-              <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">
-                Retail OS
-              </span>
             </div>
           </Link>
 
@@ -150,9 +139,9 @@ export default function PublicLandingPageV2() {
             <a href="#how-it-works" className="hover:text-slate-900 transition-colors">
               How it Works
             </a>
-            <a href="#pricing" className="hover:text-slate-900 transition-colors">
+            <Link href="/pricing" className="hover:text-slate-900 transition-colors">
               Pricing
-            </a>
+            </Link>
             <a href="#faq" className="hover:text-slate-900 transition-colors">
               Help Center
             </a>
@@ -291,14 +280,9 @@ export default function PublicLandingPageV2() {
         {/* Right Side: Live Customer Verification Scanner Widget Card */}
         <div id="verify-widget" className="lg:w-1/2 w-full max-w-xl">
           <div className="vf-card border-2 border-slate-200 shadow-card-hover p-5 sm:p-6 rounded-2xl bg-white space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-base font-extrabold text-slate-900">Verify Phone Record</h3>
-                <p className="text-xs text-slate-500 font-medium">Instant IMEI, Serial & QR origin lookup</p>
-              </div>
-              <Badge variant="verified" size="sm">
-                LIVE DB SYNC
-              </Badge>
+            <div className="border-b border-slate-100 pb-3">
+              <h3 className="text-base font-extrabold text-slate-900">Verify Phone Record</h3>
+              <p className="text-xs text-slate-500 font-medium">Instant IMEI, Serial & QR origin lookup</p>
             </div>
 
             {/* Input Tabs: IMEI / QR / Serial */}
@@ -562,9 +546,6 @@ export default function PublicLandingPageV2() {
                 <div className="w-3 h-3 rounded-full bg-rose-500/80" />
                 <div className="w-3 h-3 rounded-full bg-amber-500/80" />
                 <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
-              </div>
-              <div className="hidden sm:flex items-center gap-2 text-[11px] text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 rounded-lg">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Live Store Network Sync
               </div>
             </div>
 
@@ -1178,134 +1159,6 @@ export default function PublicLandingPageV2() {
               <div>
                 <div className="font-bold text-xs text-slate-900">David Chen</div>
                 <div className="text-[10px] text-slate-500">Wholesale Manager, GlobalPhone</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 11 — PRICING PREVIEW */}
-      <section id="pricing" className="py-20 bg-white border-y border-slate-200 px-6">
-        <div className="max-w-7xl mx-auto space-y-12">
-          <div className="text-center max-w-xl mx-auto space-y-3">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900">Simple Enterprise Pricing</h2>
-            <p className="text-xs sm:text-sm text-slate-500">Start with our free trial or select a plan that fits your retail scale.</p>
-
-            {/* Monthly / Annual Toggle */}
-            <div className="inline-flex bg-slate-100 p-1 rounded-xl text-xs font-semibold text-slate-600 mt-4">
-              <button
-                onClick={() => setBillingCycle('monthly')}
-                className={`px-4 py-1.5 rounded-lg transition-all ${
-                  billingCycle === 'monthly' ? 'bg-white text-slate-900 shadow-subtle' : ''
-                }`}
-              >
-                Monthly Billing
-              </button>
-              <button
-                onClick={() => setBillingCycle('annual')}
-                className={`px-4 py-1.5 rounded-lg transition-all ${
-                  billingCycle === 'annual' ? 'bg-white text-slate-900 shadow-subtle' : ''
-                }`}
-              >
-                Annual Billing (Save 20%)
-              </button>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-            {/* Starter */}
-            <div className="vf-card p-6 flex flex-col justify-between">
-              <div>
-                <div className="font-bold text-slate-900 text-lg">Starter Shop</div>
-                <p className="text-xs text-slate-500 mt-1">Single location phone store</p>
-                <div className="mt-4 text-3xl font-extrabold text-slate-900">
-                  {billingCycle === 'monthly' ? '₦49,000' : '₦39,000'}{' '}
-                  <span className="text-xs font-normal text-slate-500">/month</span>
-                </div>
-                <ul className="mt-6 space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-4">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> Up to 1,000 phone records/mo
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> 1 Store Location
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> QR Code Verification
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-8">
-                <Link href="/for-businesses">
-                  <Button variant="secondary" fullWidth size="md">
-                    Get Started
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Business (Popular) */}
-            <div className="vf-card p-6 flex flex-col justify-between border-2 border-blue-600 shadow-card-hover relative bg-white">
-              <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] font-extrabold uppercase px-3 py-1 rounded-full bg-blue-600 text-white shadow-sm">
-                Most Popular
-              </span>
-              <div>
-                <div className="font-bold text-slate-900 text-lg">Business Scale</div>
-                <p className="text-xs text-slate-500 mt-1">Growing retail chains & distributors</p>
-                <div className="mt-4 text-3xl font-extrabold text-slate-900">
-                  {billingCycle === 'monthly' ? '₦129,000' : '₦99,000'}{' '}
-                  <span className="text-xs font-normal text-slate-500">/month</span>
-                </div>
-                <ul className="mt-6 space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-4">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> Up to 10,000 phone records/mo
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> Up to 5 Store Branches
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> Multi-User Staff Access
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> Thermal POS Receipt Builder
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-8">
-                <Link href="/for-businesses">
-                  <Button variant="primary" fullWidth size="md">
-                    Get Started
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Enterprise */}
-            <div className="vf-card p-6 flex flex-col justify-between">
-              <div>
-                <div className="font-bold text-slate-900 text-lg">Enterprise Wholesale</div>
-                <p className="text-xs text-slate-500 mt-1">Large distributors & importers</p>
-                <div className="mt-4 text-3xl font-extrabold text-slate-900">
-                  {billingCycle === 'monthly' ? '$299' : '$249'}{' '}
-                  <span className="text-xs font-normal text-slate-500">/month</span>
-                </div>
-                <ul className="mt-6 space-y-2.5 text-xs text-slate-600 border-t border-slate-100 pt-4">
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> Unlimited Phone Records
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> Unlimited Store Branches
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <Check className="w-4 h-4 text-emerald-600" /> Custom API & ERP Integrations
-                  </li>
-                </ul>
-              </div>
-              <div className="mt-8">
-                <Link href="/for-businesses">
-                  <Button variant="secondary" fullWidth size="md">
-                    Get Started
-                  </Button>
-                </Link>
               </div>
             </div>
           </div>

@@ -278,6 +278,9 @@ export default function OnboardingPage() {
                   <span>VerifyFlow</span>
                 </Link>
                 <div className="flex items-center gap-2">
+                  <Link href="/login" className="text-xs font-bold text-blue-600 hover:underline">
+                    Sign In
+                  </Link>
                   {currentStep > 1 && (
                     <button
                       onClick={handleBack}
@@ -326,8 +329,14 @@ export default function OnboardingPage() {
                 <ArrowLeft className="w-4 h-4" /> Back to Step {currentStep - 1}
               </button>
 
-              <div className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-                Step <span className="text-blue-600 font-extrabold">{currentStep}</span> of 5
+              <div className="flex items-center gap-3 text-xs font-bold">
+                <span className="text-slate-500 uppercase tracking-wider text-[11px]">
+                  Step <span className="text-blue-600 font-extrabold">{currentStep}</span> of 5
+                </span>
+                <span className="text-slate-300">•</span>
+                <Link href="/login" className="text-blue-600 hover:underline">
+                  Already registered? Sign In →
+                </Link>
               </div>
             </div>
 

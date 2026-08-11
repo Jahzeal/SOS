@@ -60,8 +60,8 @@ export default function LoginPage() {
           </div>
         </Link>
 
-        <div className="flex items-center gap-4 text-xs font-semibold">
-          <span className="text-slate-500 hidden sm:inline">Don't have a store account?</span>
+        <div className="hidden sm:flex items-center gap-4 text-xs font-semibold">
+          <span className="text-slate-500">Don't have a store account?</span>
           <Link href="/onboarding">
             <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800 font-bold">
               Register Business →
@@ -141,6 +141,14 @@ export default function LoginPage() {
               >
                 {loading ? 'Authenticating Store Session...' : 'Sign In to Dashboard →'}
               </Button>
+
+              {/* Mobile & Card Registration Link */}
+              <div className="pt-3 border-t border-slate-100 text-center text-xs">
+                <span className="text-slate-500 font-medium">Don't have a store account? </span>
+                <Link href="/onboarding" className="text-blue-600 font-bold hover:underline block sm:inline mt-1 sm:mt-0">
+                  Create a business account →
+                </Link>
+              </div>
             </form>
           </div>
 

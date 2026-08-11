@@ -43,13 +43,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 text-xs font-semibold text-slate-800">
+            <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
               <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-              <span className="truncate">VerifyFlow Retail Operations</span>
+              <span className="truncate">VerifyFlow</span>
             </div>
-            <span className="hidden sm:inline-flex text-[11px] px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
-              Live Verification Network
-            </span>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
