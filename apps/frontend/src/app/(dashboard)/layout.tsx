@@ -3,14 +3,26 @@
 import React, { useState } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Bell, Search, ShieldCheck, Menu, LayoutDashboard, Plus, List, QrCode } from 'lucide-react';
+import { Bell, Search, ShieldCheck, Menu, LayoutDashboard, Plus, List, LogOut, UserCircle } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/search/GlobalSearchModal';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { user } = useAuthStore();
+  const router = useRouter();
+  const { user, logout } = useAuthStore();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('vf_access_token');
+      localStorage.removeItem('vf_user');
+    }
+    logout();
+    router.push('/login');
+  };
 
   return (
     <div className="min-h-screen flex bg-slate-50 text-slate-900 pb-16 lg:pb-0">
@@ -62,6 +74,58 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Bell className="w-4 h-4" />
               <span className="w-2 h-2 rounded-full bg-blue-600 absolute top-2 right-2 ring-2 ring-white"></span>
             </button>
+
+            {/* Top Bar User Profile Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 transition border border-slate-200/60"
+                title="Account Settings & Logout"
+              >
+                <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                  {user?.firstName?.[0] || 'U'}
+                </div>
+                <span className="hidden md:inline font-bold text-xs text-slate-800 max-w-[100px] truncate">
+                  {user?.firstName || 'Account'}
+                </span>
+              </button>
+
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-slate-200 shadow-2xl p-2 z-50 animate-in fade-in duration-150 text-xs">
+                  <div className="p-2.5 border-b border-slate-100 space-y-0.5">
+                    <div className="font-extrabold text-slate-900 truncate">
+                      {user?.firstName || 'Store'} {user?.lastName || 'User'}
+                    </div>
+                    <div className="text-[11px] text-slate-500 truncate font-medium">{user?.email || 'owner@retailer.com'}</div>
+                    <div className="text-[10px] text-blue-600 font-bold uppercase pt-1">
+                      {user?.business?.name || 'Main Workspace'}
+                    </div>
+                  </div>
+
+                  <div className="py-1">
+                    <Link
+                      href="/dashboard/settings"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className="flex items-center gap-2 p-2 rounded-xl text-slate-700 hover:bg-slate-100 font-semibold"
+                    >
+                      <UserCircle className="w-4 h-4 text-slate-500" />
+                      <span>Account Settings</span>
+                    </Link>
+                  </div>
+
+                  <div className="pt-1 border-t border-slate-100">
+                    <button
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-2 p-2 rounded-xl text-rose-600 hover:bg-rose-50 font-bold transition text-left"
+                    >
+                      <LogOut className="w-4 h-4 text-rose-600" />
+                      <span>Log Out of Store</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
           </div>
         </header>
 
