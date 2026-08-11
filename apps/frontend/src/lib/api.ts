@@ -207,8 +207,8 @@ class ApiClient {
   }
 
   // --- Public Verification Endpoint ---
-  async verifyPublicImei(imei: string) {
-    return this.request<any>(`/verification/verify?imei=${encodeURIComponent(imei)}`);
+  async verifyPublicImei(identifier: string) {
+    return this.request<any>(`/verification/public/${encodeURIComponent(identifier)}`);
   }
 }
 

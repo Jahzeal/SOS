@@ -248,7 +248,7 @@ export default function BusinessDashboardPage() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Good Morning, {userName} 👋
+            {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening'}, {userName} 👋
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-xl leading-relaxed">
             Welcome back to VerifyFlow. Here's a real-time summary of your store's inventory, phone registrations, sales, and warranty activity today.

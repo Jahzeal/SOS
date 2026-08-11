@@ -1,5 +1,6 @@
 'use client';
 
+import { api } from '@/lib/api';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
@@ -75,22 +76,34 @@ export default function PublicLandingPageV2() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleHeroVerifySubmit = (e: React.FormEvent) => {
+  const handleHeroVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!heroSearchInput.trim()) return;
     setHeroVerifying(true);
-    setTimeout(() => {
-      setHeroVerifying(false);
+    setHeroVerifiedResult(null);
+
+    try {
+      const phone = await api.verifyPublicImei(heroSearchInput.trim());
       setHeroVerifiedResult({
-        verified: true,
-        retailer: 'TechWorld Mobile',
-        model: 'iPhone 16 Pro',
-        storage: '256GB • Natural Titanium',
-        warranty: 'Active (until 22 July 2027)',
-        purchaseDate: '22 July 2026',
-        customer: 'Alex Dev',
+        found: true,
+        retailer: phone.business?.name || 'Verified Partner Store',
+        model: `${phone.brand || ''} ${phone.model || ''}`.trim(),
+        storage: `${phone.storageCapacity || ''} ${phone.color ? '• ' + phone.color : ''}`.trim(),
+        warranty: phone.warrantyExpiryDate
+          ? `Active (until ${new Date(phone.warrantyExpiryDate).toLocaleDateString()})`
+          : `${phone.warrantyDurationMonths || 12} Months Active`,
+        imei: phone.imei1,
+        serial: phone.serialNumber || 'N/A',
+        status: phone.status || 'IN_STOCK',
       });
-    }, 500);
+    } catch (err) {
+      setHeroVerifiedResult({
+        found: false,
+        searchedTerm: heroSearchInput.trim(),
+      });
+    } finally {
+      setHeroVerifying(false);
+    }
   };
 
   const toggleFaq = (idx: number) => {
@@ -272,6 +285,136 @@ export default function PublicLandingPageV2() {
             <span className="flex items-center gap-1.5">
               <CheckCircle2 className="w-4 h-4 text-emerald-600" /> No Installation Required
             </span>
+          </div>
+        </div>
+
+        {/* Right Side: Live Customer Verification Scanner Widget Card */}
+        <div id="verify-widget" className="lg:w-1/2 w-full max-w-xl">
+          <div className="vf-card border-2 border-slate-200 shadow-card-hover p-5 sm:p-6 rounded-2xl bg-white space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900">Verify Phone Record</h3>
+                <p className="text-xs text-slate-500 font-medium">Instant IMEI, Serial & QR origin lookup</p>
+              </div>
+              <Badge variant="verified" size="sm">
+                LIVE DB SYNC
+              </Badge>
+            </div>
+
+            {/* Input Tabs: IMEI / QR / Serial */}
+            <div className="flex bg-slate-100 p-1 rounded-xl mb-4 text-xs font-semibold text-slate-600">
+              <button
+                type="button"
+                onClick={() => setActiveHeroTab('imei')}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${
+                  activeHeroTab === 'imei' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
+                }`}
+              >
+                IMEI Number
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveHeroTab('serial')}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${
+                  activeHeroTab === 'serial' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
+                }`}
+              >
+                Serial Number
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveHeroTab('qr')}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${
+                  activeHeroTab === 'qr' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
+                }`}
+              >
+                QR Code Scan
+              </button>
+            </div>
+
+            {/* Verification Search Form */}
+            <form onSubmit={handleHeroVerifySubmit} className="space-y-3">
+              <div className="relative">
+                <input
+                  type="text"
+                  value={heroSearchInput}
+                  onChange={(e) => setHeroSearchInput(e.target.value)}
+                  placeholder={
+                    activeHeroTab === 'imei'
+                      ? 'Enter 15-digit IMEI number...'
+                      : activeHeroTab === 'serial'
+                      ? 'Enter Serial Number...'
+                      : 'Scan Manufacturer QR Code...'
+                  }
+                  className="w-full text-xs sm:text-sm pl-10 pr-4 py-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 font-mono font-medium"
+                />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+              </div>
+
+              <Button
+                type="submit"
+                variant="primary"
+                fullWidth
+                size="md"
+                isLoading={heroVerifying}
+                leftIcon={<ShieldCheck className="w-4 h-4 text-emerald-400" />}
+              >
+                {heroVerifying ? 'Searching Live Ledger...' : 'Verify Phone Authenticity'}
+              </Button>
+            </form>
+
+            <div className="mt-2 text-center">
+              <a href="#how-it-works" className="text-[11px] font-semibold text-blue-600 hover:underline">
+                Need help? Learn how phone verification works →
+              </a>
+            </div>
+
+            {/* Live Verification Result Preview Card */}
+            {heroVerifiedResult && (
+              <div className="mt-4 p-4 rounded-xl bg-gradient-to-b from-emerald-50/80 to-emerald-50/20 border border-emerald-200 animate-in fade-in duration-200">
+                {heroVerifiedResult.found ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between border-b border-emerald-200/60 pb-2.5">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                        <span className="text-xs sm:text-sm font-extrabold text-slate-900">
+                          Official Retail Record Verified
+                        </span>
+                      </div>
+                      <Badge variant="verified" size="sm">
+                        GENUINE
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Authorized Retailer</span>
+                        <span className="font-bold text-slate-900">{heroVerifiedResult.retailer}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Device Model</span>
+                        <span className="font-bold text-slate-900">{heroVerifiedResult.model}</span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Specs & Storage</span>
+                        <span className="font-semibold text-slate-700">{heroVerifiedResult.storage}</span>
+                      </div>
+                      <div className="mt-1">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Warranty Status</span>
+                        <span className="font-bold text-emerald-700">{heroVerifiedResult.warranty}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 text-center space-y-1 text-xs">
+                    <div className="font-bold text-rose-700">No Registered Device Record Found</div>
+                    <div className="text-slate-600 text-[11px]">
+                      No active store registration matched identifier <code className="font-mono bg-white px-1 py-0.5 rounded border border-rose-200 text-rose-900 font-bold">{heroVerifiedResult.searchedTerm}</code>.
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </section>
