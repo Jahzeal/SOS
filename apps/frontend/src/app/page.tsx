@@ -148,10 +148,10 @@ export default function PublicLandingPageV2() {
           {/* Right: Actions */}
           <div className="hidden md:flex items-center gap-3">
             <Link
-              href="/dashboard"
-              className="text-xs font-semibold text-slate-700 hover:text-slate-900 px-3 py-2 transition-colors"
+              href="/login"
+              className="text-xs font-bold text-slate-700 hover:text-slate-900 px-3.5 py-2 rounded-xl hover:bg-slate-100 transition-colors"
             >
-              Login
+              Sign In
             </Link>
             <Link href="/for-businesses">
               <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>

@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore, PlanType } from '@/store/useAuthStore';
 import {
   LayoutDashboard,
@@ -24,6 +24,7 @@ import {
   Receipt,
   Sparkles,
   Palette,
+  LogOut,
 } from 'lucide-react';
 import { Badge } from './ui/Badge';
 
@@ -128,7 +129,8 @@ interface SidebarProps {
 
 export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
-  const { user, setPlan } = useAuthStore();
+  const router = useRouter();
+  const { user, logout, setPlan } = useAuthStore();
   const currentPlan = user?.business?.plan || 'STARTER';
   const currentLevel = PLAN_LEVELS[currentPlan];
 
@@ -138,6 +140,15 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   const toggleSubmenu = (name: string) => {
     setOpenSubmenus((prev) => ({ ...prev, [name]: !prev[name] }));
+  };
+
+  const handleLogout = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('vf_access_token');
+      localStorage.removeItem('vf_user');
+    }
+    logout();
+    router.push('/login');
   };
 
   const sidebarContent = (
@@ -259,19 +270,28 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         })}
       </nav>
 
-      {/* User Footer */}
+      {/* User Footer with Log Out */}
       <div className="p-3.5 border-t border-slate-100 flex items-center justify-between text-xs bg-slate-50/50">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+        <div className="flex items-center gap-2.5 min-w-0">
+          <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm shrink-0">
             {user?.firstName?.[0] || 'U'}
           </div>
-          <div>
-            <div className="font-bold text-slate-900 truncate max-w-[120px]">
-              {user?.firstName} {user?.lastName}
+          <div className="min-w-0">
+            <div className="font-bold text-slate-900 truncate max-w-[100px]">
+              {user?.firstName || 'User'} {user?.lastName || ''}
             </div>
-            <div className="text-[10px] text-slate-500 font-medium">{user?.role}</div>
+            <div className="text-[10px] text-slate-500 font-medium truncate">{user?.role || 'OWNER'}</div>
           </div>
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition border border-transparent hover:border-rose-200 font-bold text-[11px]"
+          title="Sign out of store session"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Exit</span>
+        </button>
       </div>
     </div>
   );
