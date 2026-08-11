@@ -7,7 +7,8 @@
     "JWT_EXPIRES_IN",
     "JWT_REFRESH_EXPIRES_IN",
     "CORS_ORIGIN",
-    "PORT"
+    "PORT",
+    "NEXT_PUBLIC_API_URL"
   ],
   "tasks": {
     "build": {
@@ -20,7 +21,8 @@
         "JWT_EXPIRES_IN",
         "JWT_REFRESH_EXPIRES_IN",
         "CORS_ORIGIN",
-        "PORT"
+        "PORT",
+        "NEXT_PUBLIC_API_URL"
       ]
     },
     "lint": {

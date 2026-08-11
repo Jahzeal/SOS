@@ -10,6 +10,8 @@ import { SalesModule } from './sales/sales.module';
 import { CustomersModule } from './customers/customers.module';
 import { RepairsModule } from './repairs/repairs.module';
 
+import { AppController } from './app.controller';
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
@@ -23,5 +25,6 @@ import { RepairsModule } from './repairs/repairs.module';
     CustomersModule,
     RepairsModule,
   ],
+  controllers: [AppController],
 })
 export class AppModule {}

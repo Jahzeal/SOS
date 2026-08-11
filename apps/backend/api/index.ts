@@ -16,10 +16,15 @@ export default async function handler(req: any, res: any) {
       }),
     );
 
-    const corsOrigin = process.env.CORS_ORIGIN || '*';
+    const allowedOrigins = process.env.CORS_ORIGIN
+      ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
+      : ['http://localhost:3000'];
+
     app.enableCors({
-      origin: corsOrigin.includes(',') ? corsOrigin.split(',') : corsOrigin === '*' ? true : corsOrigin,
+      origin: allowedOrigins,
       credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
     });
 
     await app.init();
