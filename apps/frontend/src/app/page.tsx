@@ -356,6 +356,36 @@ export default function PublicLandingPageV2() {
     }
   };
 
+  const preprocessCanvasForOcr = (sourceCanvas: HTMLCanvasElement): HTMLCanvasElement => {
+    const ocrCanvas = document.createElement('canvas');
+    ocrCanvas.width = sourceCanvas.width;
+    ocrCanvas.height = sourceCanvas.height;
+    const ctx = ocrCanvas.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return sourceCanvas;
+
+    ctx.drawImage(sourceCanvas, 0, 0);
+    const imgData = ctx.getImageData(0, 0, ocrCanvas.width, ocrCanvas.height);
+    const data = imgData.data;
+
+    // Convert to High Contrast Binarized Grayscale to sharpen printed text and eliminate glare
+    for (let i = 0; i < data.length; i += 4) {
+      const luminance = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+      const val = luminance > 120 ? 255 : luminance < 70 ? 0 : luminance;
+      data[i] = val;
+      data[i + 1] = val;
+      data[i + 2] = val;
+    }
+    ctx.putImageData(imgData, 0, 0);
+    return ocrCanvas;
+  };
+
+  const cleanOcrNoise = (rawText: string): string => {
+    if (!rawText) return '';
+    // Strip non-alphanumeric noise characters like =, ~, _, -, |, etc.
+    const cleaned = rawText.replace(/[^a-zA-Z0-9\s/:\(\)]/g, ' ').replace(/\s+/g, ' ').trim();
+    return cleaned;
+  };
+
   const handleSnapAndScanText = async () => {
     const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
     if (!videoElement || videoElement.paused) return;
@@ -375,15 +405,18 @@ export default function PublicLandingPageV2() {
     setIsCameraFrozen(true);
     hasScannedRef.current = true;
 
+    // Apply high-contrast grayscale pre-processing to eliminate glare
+    const processedCanvas = preprocessCanvasForOcr(snapCanvas);
+
     try {
       const { createWorker } = await import('tesseract.js');
       const worker = await createWorker('eng');
-      const { data: { text: ocrText } } = await worker.recognize(snapCanvas);
+      const { data: { text: ocrText } } = await worker.recognize(processedCanvas);
       await worker.terminate();
 
-      const rawTrimmed = ocrText.trim();
-      const cleanIdentifier = extractImeiAndSerial(rawTrimmed);
-      setScannedRawText(rawTrimmed.slice(0, 60));
+      const cleanedText = cleanOcrNoise(ocrText);
+      const cleanIdentifier = extractImeiAndSerial(cleanedText || ocrText);
+      setScannedRawText(cleanedText.slice(0, 60));
 
       if (cleanIdentifier && cleanIdentifier.length >= 8) {
         setHeroSearchInput(cleanIdentifier);
@@ -402,7 +435,7 @@ export default function PublicLandingPageV2() {
       } else {
         setHeroVerifiedResult({
           found: false,
-          searchedTerm: rawTrimmed ? `"${rawTrimmed.slice(0, 30)}..." (Not an IMEI or Serial No.)` : 'No clear text recognized',
+          searchedTerm: cleanedText ? `"${cleanedText.slice(0, 30)}..." (Not an IMEI or Serial No.)` : 'No clear text recognized',
         });
       }
     } catch (err) {
