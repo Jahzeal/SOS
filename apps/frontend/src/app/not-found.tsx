@@ -21,10 +21,10 @@ export default function NotFound() {
           Return Home
         </Link>
         <Link
-          href="/for-businesses"
+          href="/pricing"
           className="px-4 py-2.5 bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 rounded-xl text-xs font-bold transition"
         >
-          VerifyFlow for Businesses
+          View Pricing & Plans
         </Link>
       </div>
     </div>

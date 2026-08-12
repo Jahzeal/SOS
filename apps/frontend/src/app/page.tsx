@@ -127,9 +127,6 @@ export default function PublicLandingPageV2() {
 
           {/* Center: Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
-            <Link href="/for-businesses" className="text-blue-600 font-bold hover:text-blue-700 transition-colors flex items-center gap-1">
-              <Building className="w-3.5 h-3.5" /> For Businesses
-            </Link>
             <a href="#features" className="hover:text-slate-900 transition-colors">
               Features
             </a>
@@ -139,8 +136,8 @@ export default function PublicLandingPageV2() {
             <a href="#how-it-works" className="hover:text-slate-900 transition-colors">
               How it Works
             </a>
-            <Link href="/pricing" className="hover:text-slate-900 transition-colors">
-              Pricing
+            <Link href="/pricing" className="hover:text-slate-900 transition-colors font-bold text-blue-600">
+              Pricing & Plans
             </Link>
             <a href="#faq" className="hover:text-slate-900 transition-colors">
               Help Center
@@ -155,7 +152,7 @@ export default function PublicLandingPageV2() {
             >
               Sign In
             </Link>
-            <Link href="/for-businesses">
+            <Link href="/onboarding">
               <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                 Get Started
               </Button>
@@ -175,8 +172,8 @@ export default function PublicLandingPageV2() {
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-slate-200 px-6 py-6 space-y-4 shadow-dropdown animate-in slide-in-from-top-2 duration-200">
             <nav className="flex flex-col space-y-3 text-sm font-semibold text-slate-700">
-              <Link href="/for-businesses" onClick={() => setMobileMenuOpen(false)} className="text-blue-600 font-bold py-1">
-                VerifyFlow for Businesses
+              <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-blue-600 font-bold py-1">
+                Pricing & Plans
               </Link>
               <a
                 href="#features"
@@ -200,13 +197,6 @@ export default function PublicLandingPageV2() {
                 How it Works
               </a>
               <a
-                href="#pricing"
-                onClick={() => setMobileMenuOpen(false)}
-                className="hover:text-blue-600 py-1"
-              >
-                Pricing
-              </a>
-              <a
                 href="#faq"
                 onClick={() => setMobileMenuOpen(false)}
                 className="hover:text-blue-600 py-1"
@@ -214,15 +204,15 @@ export default function PublicLandingPageV2() {
                 Help Center
               </a>
             </nav>
-            <div className="pt-4 border-t border-slate-100 flex flex-col gap-2.5">
-              <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+            <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="secondary" fullWidth size="md">
-                  Login to Workspace
+                  Sign In
                 </Button>
               </Link>
-              <Link href="/for-businesses" onClick={() => setMobileMenuOpen(false)}>
+              <Link href="/onboarding" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="primary" fullWidth size="md">
-                  Get Started
+                  Register Business
                 </Button>
               </Link>
             </div>
