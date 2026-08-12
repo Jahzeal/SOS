@@ -68,57 +68,83 @@ export default function PublicLandingPageV2() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const [cameraError, setCameraError] = useState<string | null>(null);
+
   useEffect(() => {
-    let scannerInstance: any = null;
+    let html5QrCode: any = null;
+    let isMounted = true;
 
     if (activeHeroTab === 'qr') {
-      import('html5-qrcode').then(({ Html5QrcodeScanner }) => {
-        const container = document.getElementById('qr-camera-scanner');
-        if (!container) return;
+      setCameraError(null);
+      import('html5-qrcode').then(({ Html5Qrcode }) => {
+        if (!isMounted) return;
 
-        scannerInstance = new Html5QrcodeScanner(
-          'qr-camera-scanner',
-          { fps: 10, qrbox: { width: 220, height: 220 } },
-          false
-        );
+        // Ensure container exists
+        setTimeout(() => {
+          const element = document.getElementById('qr-camera-scanner');
+          if (!element) return;
 
-        scannerInstance.render(
-          async (decodedText: string) => {
-            setHeroSearchInput(decodedText);
-            setHeroVerifying(true);
-            setHeroVerifiedResult(null);
+          try {
+            html5QrCode = new Html5Qrcode('qr-camera-scanner');
+            
+            // Triggers browser's native camera permission prompt (Allow / Decline) immediately!
+            html5QrCode
+              .start(
+                { facingMode: 'environment' },
+                { fps: 10, qrbox: { width: 220, height: 220 } },
+                async (decodedText: string) => {
+                  setHeroSearchInput(decodedText);
+                  setHeroVerifying(true);
+                  setHeroVerifiedResult(null);
 
-            try {
-              const phone = await api.verifyPublicImei(decodedText.trim());
-              setHeroVerifiedResult({
-                found: true,
-                retailer: phone.business?.name || 'Verified Partner Store',
-                model: `${phone.brand || ''} ${phone.model || ''}`.trim(),
-                storage: `${phone.storageCapacity || ''} ${phone.color ? '• ' + phone.color : ''}`.trim(),
-                warranty: phone.warrantyExpiryDate
-                  ? `Active (until ${new Date(phone.warrantyExpiryDate).toLocaleDateString()})`
-                  : `${phone.warrantyDurationMonths || 12} Months Active`,
-                imei: phone.imei1,
-                serial: phone.serialNumber || 'N/A',
-                status: phone.status || 'IN_STOCK',
+                  try {
+                    const phone = await api.verifyPublicImei(decodedText.trim());
+                    setHeroVerifiedResult({
+                      found: true,
+                      retailer: phone.business?.name || 'Verified Partner Store',
+                      model: `${phone.brand || ''} ${phone.model || ''}`.trim(),
+                      storage: `${phone.storageCapacity || ''} ${phone.color ? '• ' + phone.color : ''}`.trim(),
+                      warranty: phone.warrantyExpiryDate
+                        ? `Active (until ${new Date(phone.warrantyExpiryDate).toLocaleDateString()})`
+                        : `${phone.warrantyDurationMonths || 12} Months Active`,
+                      imei: phone.imei1,
+                      serial: phone.serialNumber || 'N/A',
+                      status: phone.status || 'IN_STOCK',
+                    });
+                  } catch (err) {
+                    setHeroVerifiedResult({
+                      found: false,
+                      searchedTerm: decodedText,
+                    });
+                  } finally {
+                    setHeroVerifying(false);
+                  }
+                },
+                () => {}
+              )
+              .catch((err: any) => {
+                console.warn('Camera access prompt error or denied:', err);
+                setCameraError(
+                  'Camera access was denied or not available. Please allow camera permission in your browser or search by IMEI.'
+                );
               });
-            } catch (err) {
-              setHeroVerifiedResult({
-                found: false,
-                searchedTerm: decodedText,
-              });
-            } finally {
-              setHeroVerifying(false);
-            }
-          },
-          () => {}
-        );
+          } catch (e) {
+            console.error('Html5Qrcode init error:', e);
+          }
+        }, 100);
       }).catch(console.error);
     }
 
     return () => {
-      if (scannerInstance) {
-        scannerInstance.clear().catch(() => {});
+      isMounted = false;
+      if (html5QrCode) {
+        try {
+          if (html5QrCode.isScanning) {
+            html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
+          } else {
+            html5QrCode.clear();
+          }
+        } catch (e) {}
       }
     };
   }, [activeHeroTab]);
@@ -352,10 +378,28 @@ export default function PublicLandingPageV2() {
             {/* Verification Search Form or Camera Scanner */}
             {activeHeroTab === 'qr' ? (
               <div className="space-y-3 animate-in fade-in duration-200">
-                <div id="qr-camera-scanner" className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-900 text-white min-h-[260px] flex items-center justify-center" />
-                <div className="text-[11px] text-slate-500 font-medium text-center">
-                  Point camera at phone receipt QR code or device barcode to scan automatically.
-                </div>
+                {cameraError ? (
+                  <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs space-y-3">
+                    <div className="flex items-start gap-2.5">
+                      <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                      <p className="font-medium leading-relaxed">{cameraError}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveHeroTab('imei')}
+                      className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition text-xs shadow-sm"
+                    >
+                      Switch to IMEI Number Search
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    <div id="qr-camera-scanner" className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-900 text-white min-h-[260px] flex items-center justify-center" />
+                    <div className="text-[11px] text-slate-500 font-medium text-center">
+                      Point camera at phone receipt QR code or device barcode to scan automatically.
+                    </div>
+                  </>
+                )}
               </div>
             ) : (
               <form onSubmit={handleHeroVerifySubmit} className="space-y-3">
@@ -492,34 +536,31 @@ export default function PublicLandingPageV2() {
       </section>
 
       {/* SECTION 5 — SOLUTION SECTION */}
-      <section id="solutions" className="py-20 bg-slate-950 text-white px-6 border-y border-slate-800/80">
+      <section id="solutions" className="py-20 bg-gradient-to-b from-slate-50 via-white to-slate-100 text-slate-900 px-6 border-y border-slate-200/80">
         <div className="max-w-7xl mx-auto text-center space-y-10">
           <div className="max-w-3xl mx-auto space-y-4">
-            <span className="px-3.5 py-1 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20 text-xs font-bold uppercase tracking-wider">
-              VerifyFlow Retail OS
-            </span>
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
               Meet VerifyFlow: The Complete Phone Retail OS
             </h2>
-            <p className="text-sm sm:text-base text-slate-400 font-medium leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed">
               One unified workspace to register IMEI stock, process express POS checkouts, issue digital thermal receipts, track warranties, and handle repairs.
             </p>
           </div>
 
           {/* Large Operational Dashboard Browser Mockup with Real Retail Store Photography */}
-          <div className="vf-card border border-slate-800 bg-slate-900/90 backdrop-blur-xl p-2 sm:p-5 rounded-3xl shadow-2xl overflow-hidden max-w-5xl mx-auto text-left space-y-4">
+          <div className="vf-card border border-slate-200 bg-white/90 backdrop-blur-xl p-2 sm:p-5 rounded-3xl shadow-2xl overflow-hidden max-w-5xl mx-auto text-left space-y-4">
             
             {/* Browser Top Bar */}
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-800/80 bg-slate-950/80 rounded-t-2xl text-xs">
+            <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 bg-slate-100/80 rounded-t-2xl text-xs">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-rose-500/80" />
-                <div className="w-3 h-3 rounded-full bg-amber-500/80" />
-                <div className="w-3 h-3 rounded-full bg-emerald-500/80" />
+                <div className="w-3 h-3 rounded-full bg-rose-400" />
+                <div className="w-3 h-3 rounded-full bg-amber-400" />
+                <div className="w-3 h-3 rounded-full bg-emerald-400" />
               </div>
             </div>
 
             {/* Photo Showcase Container */}
-            <div className="relative rounded-2xl overflow-hidden border border-slate-800 shadow-2xl group">
+            <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl group">
               <img
                 src="/images/verifyflow_store_hero.png"
                 alt="Professional phone retailer operating VerifyFlow retail software on laptop at store counter"
@@ -527,11 +568,11 @@ export default function PublicLandingPageV2() {
               />
               
               {/* Overlay Ambient Gradients */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent pointer-events-none" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent pointer-events-none" />
 
               {/* Floating Live Badge Overlays */}
               <div className="absolute bottom-4 left-4 right-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-bold text-white">
-                <div className="flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-700/80 shadow-lg">
+                <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-700/80 shadow-lg">
                   <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
                   <span>Real-Time Store Operations & POS Checkout</span>
                 </div>
