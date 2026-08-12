@@ -150,11 +150,24 @@ export default function RegisterPhonePage() {
                     }
                   }
 
-                  const text = result.getText().trim();
-                  if (/^\d{15}$/.test(text)) {
-                    setImei(text);
+                  const rawText = result.getText();
+                  const clean = rawText.replace(/^(\(1P\)|\(S\)|EID|IMEI\s*\/MEID|IMEI\d?|S\/N|SN|EAN):?\s*/i, '').trim();
+
+                  const isImei = /^\d{15}$/.test(clean) || /^(35|86|99|01)\d{13}$/.test(clean);
+                  const isSerial = /^[A-Z0-9]{8,15}$/i.test(clean) && !clean.startsWith('8904') && !clean.startsWith('890');
+
+                  if (!isImei && !isSerial) {
+                    setRegisterCameraGuidance({
+                      message: 'Detected EID/UPC barcode — Point camera directly at IMEI or Serial No.',
+                      type: 'warning',
+                    });
+                    return;
+                  }
+
+                  if (isImei) {
+                    setImei(clean);
                   } else {
-                    setSerialNumber(text);
+                    setSerialNumber(clean);
                   }
                   setShowCameraScanner(false);
                   setStep(2);
