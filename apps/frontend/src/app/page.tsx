@@ -113,6 +113,7 @@ export default function PublicLandingPageV2() {
   });
 
   const hasScannedRef = React.useRef(false);
+  const lastDetectionTimeRef = React.useRef(Date.now());
 
   const extractImeiAndSerial = (rawText: string): string => {
     if (!rawText) return '';
@@ -151,6 +152,7 @@ export default function PublicLandingPageV2() {
       setIsCameraFrozen(false);
       setScannedFormat(null);
       hasScannedRef.current = false;
+      lastDetectionTimeRef.current = Date.now();
       setCameraGuidance({ message: 'Align barcode inside green box', type: 'info' });
 
       import('@zxing/browser').then(({ BrowserMultiFormatReader }) => {
@@ -195,6 +197,11 @@ export default function PublicLandingPageV2() {
                     message: '🌙 Environment Too Dark — Turn on lighting or flash',
                     type: 'dark',
                   });
+                } else if (Date.now() - lastDetectionTimeRef.current > 2500) {
+                  setCameraGuidance({
+                    message: '⚠️ No IMEI or Barcode Detected — Point camera at phone box sticker',
+                    type: 'warning',
+                  });
                 }
               }
             } catch (e) {}
@@ -207,23 +214,10 @@ export default function PublicLandingPageV2() {
               videoElement,
               async (result: any, err: any) => {
                 if (result && !hasScannedRef.current) {
+                  lastDetectionTimeRef.current = Date.now();
                   const rawText = result.getText();
                   const cleanIdentifier = extractImeiAndSerial(rawText);
 
-                  // Validate if the detected barcode is an actual IMEI (15 digits) or valid Serial Number
-                  const isImei = /^\d{15}$/.test(cleanIdentifier) || /^(35|86|99|01)\d{13}$/.test(cleanIdentifier);
-                  const isSerial = /^[A-Z0-9]{8,15}$/i.test(cleanIdentifier) && !cleanIdentifier.startsWith('8904') && !cleanIdentifier.startsWith('890');
-
-                  if (!isImei && !isSerial) {
-                    // Ignore non-IMEI barcodes (e.g. EID / UPC barcodes) and keep scanning video frames!
-                    setCameraGuidance({
-                      message: 'Detected EID/UPC barcode — Point camera directly at IMEI or Serial No.',
-                      type: 'warning',
-                    });
-                    return;
-                  }
-
-                  // Valid IMEI or Serial Number detected! Freeze frame & Lock
                   hasScannedRef.current = true;
                   const formatName = result.getBarcodeFormat() ? `FORMAT_${result.getBarcodeFormat()}` : 'BARCODE';
                   
