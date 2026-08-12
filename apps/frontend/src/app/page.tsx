@@ -588,7 +588,7 @@ export default function PublicLandingPageV2() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
               Instantly verify any phone via manufacturer QR code, IMEI, or Serial Number. Eliminates fraud disputes.
             </p>
-            <Link href="/for-businesses" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -602,7 +602,7 @@ export default function PublicLandingPageV2() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
               Track stock by unique hardware serial numbers across multiple store branches in real time.
             </p>
-            <Link href="/for-businesses" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -616,7 +616,7 @@ export default function PublicLandingPageV2() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
               Fast retail POS checkout linking customer buyer profiles directly to device IMEI and warranty dates.
             </p>
-            <Link href="/for-businesses" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -630,7 +630,7 @@ export default function PublicLandingPageV2() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
               Automated hardware guarantee countdowns and expiration alerts sent directly to store managers and customers.
             </p>
-            <Link href="/for-businesses" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -644,7 +644,7 @@ export default function PublicLandingPageV2() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
               Generate digital receipts and 80mm thermal POS prints embedded with anti-tamper verification QR codes.
             </p>
-            <Link href="/for-businesses" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -658,7 +658,7 @@ export default function PublicLandingPageV2() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
               Deep insights into top-selling phone models, store branch revenue, stock valuation, and warranty claims.
             </p>
-            <Link href="/for-businesses" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -1221,7 +1221,7 @@ export default function PublicLandingPageV2() {
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/for-businesses">
+            <Link href="/onboarding">
               <Button variant="primary" size="lg" className="shadow-md shadow-blue-600/10">
                 Get Started
               </Button>
@@ -1242,10 +1242,10 @@ export default function PublicLandingPageV2() {
           <div className="space-y-3">
             <div className="font-extrabold text-slate-900 text-base">Product</div>
             <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><Link href="/for-businesses" className="hover:text-blue-600 transition">VerifyFlow for Businesses</Link></li>
+              <li><Link href="/pricing" className="hover:text-blue-600 transition">Pricing & Plans</Link></li>
               <li><a href="#features" className="hover:text-blue-600 transition">Features</a></li>
               <li><a href="#solutions" className="hover:text-blue-600 transition">Verification Ledger</a></li>
-              <li><a href="#pricing" className="hover:text-blue-600 transition">Pricing Plans</a></li>
+              <li><Link href="/pricing" className="hover:text-blue-600 transition">Pricing Plans</Link></li>
             </ul>
           </div>
 
