@@ -34,6 +34,7 @@ import {
   ExternalLink,
   Menu,
   TrendingUp,
+  Upload,
 } from 'lucide-react';
 
 export default function PublicLandingPageV2() {
@@ -155,7 +156,10 @@ export default function PublicLandingPageV2() {
       lastDetectionTimeRef.current = Date.now();
       setCameraGuidance({ message: 'Align barcode inside green box', type: 'info' });
 
-      import('@zxing/browser').then(({ BrowserMultiFormatReader }) => {
+      Promise.all([
+        import('@zxing/browser'),
+        import('@zxing/library')
+      ]).then(([{ BrowserMultiFormatReader }, { DecodeHintType, BarcodeFormat }]) => {
         if (!isMounted) return;
 
         setTimeout(async () => {
@@ -197,18 +201,24 @@ export default function PublicLandingPageV2() {
                     message: '🌙 Environment Too Dark — Turn on lighting or flash',
                     type: 'dark',
                   });
-                } else if (Date.now() - lastDetectionTimeRef.current > 2500) {
-                  setCameraGuidance({
-                    message: '⚠️ No IMEI or Barcode Detected — Point camera at phone box sticker',
-                    type: 'warning',
-                  });
                 }
               }
             } catch (e) {}
           }, 500);
 
           try {
-            codeReader = new BrowserMultiFormatReader();
+            const hints = new Map();
+            hints.set(DecodeHintType.TRY_HARDER, true);
+            hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+              BarcodeFormat.CODE_128,
+              BarcodeFormat.CODE_39,
+              BarcodeFormat.EAN_13,
+              BarcodeFormat.UPC_A,
+              BarcodeFormat.QR_CODE,
+              BarcodeFormat.DATA_MATRIX,
+            ]);
+
+            codeReader = new BrowserMultiFormatReader(hints);
             controls = await codeReader.decodeFromVideoDevice(
               undefined,
               videoElement,
@@ -280,6 +290,94 @@ export default function PublicLandingPageV2() {
     const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
     if (videoElement) {
       videoElement.play().catch(() => {});
+    }
+  };
+
+  const handleBoxPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setHeroVerifying(true);
+    setHeroVerifiedResult(null);
+
+    const imageUrl = URL.createObjectURL(file);
+    try {
+      const [{ BrowserMultiFormatReader }, { DecodeHintType, BarcodeFormat }] = await Promise.all([
+        import('@zxing/browser'),
+        import('@zxing/library')
+      ]);
+      const hints = new Map();
+      hints.set(DecodeHintType.TRY_HARDER, true);
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+        BarcodeFormat.CODE_128,
+        BarcodeFormat.CODE_39,
+        BarcodeFormat.EAN_13,
+        BarcodeFormat.UPC_A,
+        BarcodeFormat.QR_CODE,
+        BarcodeFormat.DATA_MATRIX,
+      ]);
+      const reader = new BrowserMultiFormatReader(hints);
+      const imgElement = document.createElement('img');
+      imgElement.src = imageUrl;
+
+      imgElement.onload = async () => {
+        try {
+          const result = await reader.decodeFromImageElement(imgElement);
+          const rawText = result.getText();
+          const cleanIdentifier = extractImeiAndSerial(rawText);
+          setHeroSearchInput(cleanIdentifier);
+
+          const data = await api.verifyPublicImei(cleanIdentifier);
+          const formatted = formatVerifiedPhoneResult(data);
+          if (formatted) {
+            setHeroVerifiedResult(formatted);
+          } else {
+            setHeroVerifiedResult({
+              found: false,
+              searchedTerm: cleanIdentifier,
+            });
+          }
+        } catch (decodeErr) {
+          console.warn('Image barcode decode failed, falling back to OCR text recognition:', decodeErr);
+          try {
+            const { createWorker } = await import('tesseract.js');
+            const worker = await createWorker('eng');
+            const { data: { text: ocrText } } = await worker.recognize(imageUrl);
+            await worker.terminate();
+
+            const parsedIdentifier = extractImeiAndSerial(ocrText);
+            if (parsedIdentifier && parsedIdentifier.length >= 8) {
+              setHeroSearchInput(parsedIdentifier);
+              const data = await api.verifyPublicImei(parsedIdentifier);
+              const formatted = formatVerifiedPhoneResult(data);
+              if (formatted) {
+                setHeroVerifiedResult(formatted);
+              } else {
+                setHeroVerifiedResult({
+                  found: false,
+                  searchedTerm: parsedIdentifier,
+                });
+              }
+            } else {
+              setHeroVerifiedResult({
+                found: false,
+                searchedTerm: 'Uploaded Box Photo (No IMEI/Serial text found)',
+              });
+            }
+          } catch (ocrErr) {
+            console.error('OCR failed:', ocrErr);
+            setHeroVerifiedResult({
+              found: false,
+              searchedTerm: 'Uploaded Box Photo (Unreadable text)',
+            });
+          }
+        } finally {
+          setHeroVerifying(false);
+          URL.revokeObjectURL(imageUrl);
+        }
+      };
+    } catch (e) {
+      setHeroVerifying(false);
     }
   };
 
@@ -599,24 +697,24 @@ export default function PublicLandingPageV2() {
                         <button
                           type="button"
                           onClick={resumeCameraScanning}
-                          className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl transition shadow-md flex items-center justify-center gap-2 text-xs"
+                          className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl transition shadow-sm text-xs flex items-center gap-1.5"
                         >
-                          <RotateCcw className="w-4 h-4" /> Scan Next Phone 📷
+                          <RotateCcw className="w-3.5 h-3.5" /> Scan Next Phone
                         </button>
                       ) : (
-                        <>
-                          <span>Align barcode or QR code inside green box</span>
-                          <label className="cursor-pointer font-bold text-blue-600 hover:underline flex items-center gap-1">
-                            <span>Upload Box Photo 📷</span>
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={handleScanFile}
-                              className="hidden"
-                            />
-                          </label>
-                        </>
+                        <span>Position reticle over box sticker</span>
                       )}
+
+                      <label className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl transition shadow-subtle text-xs cursor-pointer flex items-center gap-1.5">
+                        <Upload className="w-3.5 h-3.5 text-slate-600" />
+                        <span>Upload Box Photo 🖼️</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleBoxPhotoUpload}
+                          className="hidden"
+                        />
+                      </label>
                     </div>
                   </>
                 )}
