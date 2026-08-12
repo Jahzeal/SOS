@@ -260,58 +260,10 @@ export default function PublicLandingPageV2() {
                 const avgLuminance = totalLuminance / (pixels.length / 16);
                 if (avgLuminance < 25) {
                   setCameraGuidance({
-                    message: '🌙 Environment Too Dark — Turn on lighting or flash',
+                    message: 'Environment Too Dark — Turn on lighting or flash',
                     type: 'dark',
                   });
                 }
-              }
-
-              // Run High-Res Live Frame OCR Printed Text Recognition
-              if (ocrWorker && !isOcrBusy && !hasScannedRef.current && ocrCtx) {
-                isOcrBusy = true;
-                ocrCtx.drawImage(videoElement, 0, 0, 640, 480);
-
-                ocrWorker
-                  .recognize(ocrCanvas)
-                  .then(async (ocrResult: any) => {
-                    isOcrBusy = false;
-                    if (ocrResult?.data?.text && !hasScannedRef.current) {
-                      const cleanIdentifier = extractImeiAndSerial(ocrResult.data.text);
-                      if (cleanIdentifier && (cleanIdentifier.length === 15 || cleanIdentifier.length >= 8)) {
-                        hasScannedRef.current = true;
-                        videoElement.pause();
-                        setIsCameraFrozen(true);
-                        setScannedFormat('TEXT_OCR');
-                        setScannedRawText(cleanIdentifier);
-                        setHeroSearchInput(cleanIdentifier);
-                        setHeroVerifying(true);
-                        setHeroVerifiedResult(null);
-
-                        try {
-                          const data = await api.verifyPublicImei(cleanIdentifier);
-                          const formatted = formatVerifiedPhoneResult(data);
-                          if (formatted) {
-                            setHeroVerifiedResult(formatted);
-                          } else {
-                            setHeroVerifiedResult({
-                              found: false,
-                              searchedTerm: cleanIdentifier,
-                            });
-                          }
-                        } catch (e) {
-                          setHeroVerifiedResult({
-                            found: false,
-                            searchedTerm: cleanIdentifier,
-                          });
-                        } finally {
-                          setHeroVerifying(false);
-                        }
-                      }
-                    }
-                  })
-                  .catch(() => {
-                    isOcrBusy = false;
-                  });
               }
             } catch (e) {}
           }, 600);
