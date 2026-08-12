@@ -22,6 +22,16 @@ body {
   font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  touch-action: manipulation;
+}
+
+/* Prevent Mobile Input Focus Auto-Zoom on iOS Safari */
+@media (max-width: 639px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
 }
 
 /* Custom Scrollbar for Enterprise Tables and Panels */
@@ -130,24 +140,31 @@ body {
 }
 
 /* QR Camera Reticle & Laser Scan Bar Overlay */
-#qr-camera-scanner {
+#qr-camera-scanner,
+#test-camera-scanner {
   position: relative;
   background: #0f172a !important;
   border: none !important;
+  touch-action: manipulation;
+  overflow: hidden !important;
 }
 
-#qr-camera-scanner video {
+#qr-camera-scanner video,
+#test-camera-scanner video {
   width: 100% !important;
   height: 100% !important;
+  max-height: 280px !important;
   object-fit: cover !important;
   border-radius: 1rem !important;
 }
 
-#qr-camera-scanner img {
+#qr-camera-scanner img,
+#test-camera-scanner img {
   display: none !important;
 }
 
-#qr-camera-scanner button {
+#qr-camera-scanner button,
+#test-camera-scanner button {
   background: #2563eb !important;
   color: #ffffff !important;
   font-weight: 700 !important;

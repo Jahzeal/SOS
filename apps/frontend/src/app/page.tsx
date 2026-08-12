@@ -69,26 +69,36 @@ export default function PublicLandingPageV2() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const formatVerifiedPhoneResult = (phone: any) => {
-    const brandModel = [phone.brand, phone.model].filter(Boolean).join(' ').trim();
-    const specs = [phone.storageCapacity, phone.color].filter(Boolean).join(' • ').trim();
+  const formatVerifiedPhoneResult = (data: any) => {
+    if (!data || !data.verified) {
+      return null;
+    }
+
+    const device = data.deviceInfo || data;
+    const retailer = data.retailer || data.business;
+    const warranty = data.warranty || {};
+
+    const brandModel = [device.brand, device.model].filter(Boolean).join(' ').trim();
+    const specs = [device.storageCapacity, device.color].filter(Boolean).join(' • ').trim();
 
     let warrantyText = 'No Active Warranty';
-    if (phone.warrantyExpiryDate) {
-      warrantyText = `Active (until ${new Date(phone.warrantyExpiryDate).toLocaleDateString()})`;
-    } else if (phone.warrantyDurationMonths && phone.warrantyDurationMonths > 0) {
-      warrantyText = `${phone.warrantyDurationMonths} Months Active Warranty`;
+    if (warranty.expiryDate) {
+      warrantyText = `Active until ${new Date(warranty.expiryDate).toLocaleDateString()}`;
+    } else if (warranty.warrantyDurationMonths && warranty.warrantyDurationMonths > 0) {
+      warrantyText = `${warranty.warrantyDurationMonths} Months Active Warranty`;
+    } else if (device.warrantyExpiryDate) {
+      warrantyText = `Active until ${new Date(device.warrantyExpiryDate).toLocaleDateString()}`;
     }
 
     return {
       found: true,
-      retailer: phone.business?.name,
-      model: brandModel,
-      storage: specs,
+      retailer: retailer?.name || 'Authorized Store',
+      model: brandModel || 'Registered Mobile Device',
+      storage: specs || 'Standard Specs',
       warranty: warrantyText,
-      imei: phone.imei1,
-      serial: phone.serialNumber,
-      status: phone.status,
+      imei: device.imei1 || '',
+      serial: device.serialNumber || '',
+      status: device.status || 'VERIFIED',
     };
   };
 
@@ -137,8 +147,16 @@ export default function PublicLandingPageV2() {
                   setHeroVerifiedResult(null);
 
                   try {
-                    const phone = await api.verifyPublicImei(decodedText.trim());
-                    setHeroVerifiedResult(formatVerifiedPhoneResult(phone));
+                    const data = await api.verifyPublicImei(decodedText.trim());
+                    const formatted = formatVerifiedPhoneResult(data);
+                    if (formatted) {
+                      setHeroVerifiedResult(formatted);
+                    } else {
+                      setHeroVerifiedResult({
+                        found: false,
+                        searchedTerm: decodedText,
+                      });
+                    }
                   } catch (err) {
                     setHeroVerifiedResult({
                       found: false,
@@ -184,8 +202,16 @@ export default function PublicLandingPageV2() {
     setHeroVerifiedResult(null);
 
     try {
-      const phone = await api.verifyPublicImei(heroSearchInput.trim());
-      setHeroVerifiedResult(formatVerifiedPhoneResult(phone));
+      const data = await api.verifyPublicImei(heroSearchInput.trim());
+      const formatted = formatVerifiedPhoneResult(data);
+      if (formatted) {
+        setHeroVerifiedResult(formatted);
+      } else {
+        setHeroVerifiedResult({
+          found: false,
+          searchedTerm: heroSearchInput.trim(),
+        });
+      }
     } catch (err) {
       setHeroVerifiedResult({
         found: false,
@@ -209,8 +235,16 @@ export default function PublicLandingPageV2() {
       const decodedText = await html5QrCode.scanFile(file, true);
       setHeroSearchInput(decodedText);
 
-      const phone = await api.verifyPublicImei(decodedText.trim());
-      setHeroVerifiedResult(formatVerifiedPhoneResult(phone));
+      const data = await api.verifyPublicImei(decodedText.trim());
+      const formatted = formatVerifiedPhoneResult(data);
+      if (formatted) {
+        setHeroVerifiedResult(formatted);
+      } else {
+        setHeroVerifiedResult({
+          found: false,
+          searchedTerm: 'Uploaded Image',
+        });
+      }
     } catch (err) {
       setHeroVerifiedResult({
         found: false,
