@@ -57,7 +57,10 @@ export default function BusinessDashboardPage() {
   // Protected Route Guard
   useEffect(() => {
     if (!isLoading && !user) {
-      router.push('/onboarding');
+      const hasToken = typeof window !== 'undefined' && localStorage.getItem('vf_access_token');
+      if (!hasToken) {
+        router.push('/login');
+      }
     }
   }, [user, isLoading, router]);
 

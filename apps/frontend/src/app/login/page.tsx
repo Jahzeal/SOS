@@ -37,7 +37,11 @@ export default function LoginPage() {
       }
 
       setAuth(data.user, data.accessToken);
-      router.push('/dashboard');
+      if (typeof window !== 'undefined') {
+        window.location.href = '/dashboard';
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err: any) {
       console.error('Login failed:', err);
       setError(err.message || 'Invalid email or password. Please try again.');

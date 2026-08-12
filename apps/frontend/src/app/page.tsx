@@ -68,6 +68,61 @@ export default function PublicLandingPageV2() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    let scannerInstance: any = null;
+
+    if (activeHeroTab === 'qr') {
+      import('html5-qrcode').then(({ Html5QrcodeScanner }) => {
+        const container = document.getElementById('qr-camera-scanner');
+        if (!container) return;
+
+        scannerInstance = new Html5QrcodeScanner(
+          'qr-camera-scanner',
+          { fps: 10, qrbox: { width: 220, height: 220 } },
+          false
+        );
+
+        scannerInstance.render(
+          async (decodedText: string) => {
+            setHeroSearchInput(decodedText);
+            setHeroVerifying(true);
+            setHeroVerifiedResult(null);
+
+            try {
+              const phone = await api.verifyPublicImei(decodedText.trim());
+              setHeroVerifiedResult({
+                found: true,
+                retailer: phone.business?.name || 'Verified Partner Store',
+                model: `${phone.brand || ''} ${phone.model || ''}`.trim(),
+                storage: `${phone.storageCapacity || ''} ${phone.color ? '• ' + phone.color : ''}`.trim(),
+                warranty: phone.warrantyExpiryDate
+                  ? `Active (until ${new Date(phone.warrantyExpiryDate).toLocaleDateString()})`
+                  : `${phone.warrantyDurationMonths || 12} Months Active`,
+                imei: phone.imei1,
+                serial: phone.serialNumber || 'N/A',
+                status: phone.status || 'IN_STOCK',
+              });
+            } catch (err) {
+              setHeroVerifiedResult({
+                found: false,
+                searchedTerm: decodedText,
+              });
+            } finally {
+              setHeroVerifying(false);
+            }
+          },
+          () => {}
+        );
+      }).catch(console.error);
+    }
+
+    return () => {
+      if (scannerInstance) {
+        scannerInstance.clear().catch(() => {});
+      }
+    };
+  }, [activeHeroTab]);
+
   const handleHeroVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!heroSearchInput.trim()) return;
@@ -253,18 +308,6 @@ export default function PublicLandingPageV2() {
             For phone retailers, distributors, wholesalers & electronics businesses.
           </p>
 
-          {/* 3 Trust Indicators */}
-          <div className="pt-4 border-t border-slate-200/80 flex items-center gap-6 text-xs font-semibold text-slate-600 flex-wrap">
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Cloud Based
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Secure Business Ledger
-            </span>
-            <span className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" /> No Installation Required
-            </span>
-          </div>
         </div>
 
         {/* Right Side: Live Customer Verification Scanner Widget Card */}
@@ -306,36 +349,43 @@ export default function PublicLandingPageV2() {
               </button>
             </div>
 
-            {/* Verification Search Form */}
-            <form onSubmit={handleHeroVerifySubmit} className="space-y-3">
-              <div className="relative">
-                <input
-                  type="text"
-                  value={heroSearchInput}
-                  onChange={(e) => setHeroSearchInput(e.target.value)}
-                  placeholder={
-                    activeHeroTab === 'imei'
-                      ? 'Enter 15-digit IMEI number...'
-                      : activeHeroTab === 'serial'
-                      ? 'Enter Serial Number...'
-                      : 'Scan Manufacturer QR Code...'
-                  }
-                  className="w-full text-xs sm:text-sm pl-10 pr-4 py-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 font-mono font-medium"
-                />
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+            {/* Verification Search Form or Camera Scanner */}
+            {activeHeroTab === 'qr' ? (
+              <div className="space-y-3 animate-in fade-in duration-200">
+                <div id="qr-camera-scanner" className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-900 text-white min-h-[260px] flex items-center justify-center" />
+                <div className="text-[11px] text-slate-500 font-medium text-center">
+                  Point camera at phone receipt QR code or device barcode to scan automatically.
+                </div>
               </div>
+            ) : (
+              <form onSubmit={handleHeroVerifySubmit} className="space-y-3">
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={heroSearchInput}
+                    onChange={(e) => setHeroSearchInput(e.target.value)}
+                    placeholder={
+                      activeHeroTab === 'imei'
+                        ? 'Enter 15-digit IMEI number...'
+                        : 'Enter Serial Number...'
+                    }
+                    className="w-full text-xs sm:text-sm pl-10 pr-4 py-2.5 bg-slate-50 text-slate-900 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 font-mono font-medium"
+                  />
+                  <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+                </div>
 
-              <Button
-                type="submit"
-                variant="primary"
-                fullWidth
-                size="md"
-                isLoading={heroVerifying}
-                leftIcon={<ShieldCheck className="w-4 h-4 text-emerald-400" />}
-              >
-                {heroVerifying ? 'Searching Live Ledger...' : 'Verify Phone Authenticity'}
-              </Button>
-            </form>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  size="md"
+                  isLoading={heroVerifying}
+                  leftIcon={<ShieldCheck className="w-4 h-4 text-emerald-400" />}
+                >
+                  {heroVerifying ? 'Searching Live Ledger...' : 'Verify Phone Authenticity'}
+                </Button>
+              </form>
+            )}
 
             <div className="mt-2 text-center">
               <a href="#how-it-works" className="text-[11px] font-semibold text-blue-600 hover:underline">
@@ -436,77 +486,6 @@ export default function PublicLandingPageV2() {
             <div className="vf-card p-4 text-center">
               <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">99.4%</div>
               <div className="text-xs text-slate-500 font-medium mt-1">Customer Satisfaction</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 4 — PROBLEM SECTION */}
-      <section className="py-20 px-6 max-w-7xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          {/* Left: Traditional Chaotic Paperwork Representation */}
-          <div className="p-7 rounded-2xl bg-rose-50/50 border border-rose-200/80 space-y-4">
-            <div className="flex items-center gap-2 text-rose-700 font-bold text-xs uppercase tracking-wider">
-              <ShieldAlert className="w-4 h-4" /> Traditional Phone Retail Frustrations
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div className="p-3.5 rounded-xl bg-white border border-rose-200 text-slate-800 shadow-subtle">
-                <div className="font-bold text-rose-900 flex justify-between">
-                  <span>📄 Paper Receipt Lost</span>
-                  <span className="text-[10px] text-rose-600 font-mono">DISPUTE #901</span>
-                </div>
-                <p className="text-slate-500 mt-1">
-                  Customer returns with broken screen claiming warranty, but original paper receipt is unreadable.
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white border border-rose-200 text-slate-800 shadow-subtle">
-                <div className="font-bold text-rose-900 flex justify-between">
-                  <span>📊 Cluttered Excel Spreadsheets</span>
-                  <span className="text-[10px] text-rose-600 font-mono">ERR_DUPLICATE_IMEI</span>
-                </div>
-                <p className="text-slate-500 mt-1">
-                  Staff typed wrong IMEI digit in Excel sheet. Phone serial cannot be matched during customer support lookup.
-                </p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-white border border-rose-200 text-slate-800 shadow-subtle">
-                <div className="font-bold text-rose-900 flex justify-between">
-                  <span>💬 WhatsApp Group Confusion</span>
-                  <span className="text-[10px] text-rose-600 font-mono">MANUAL CHAT</span>
-                </div>
-                <p className="text-slate-500 mt-1">
-                  Store manager searching WhatsApp chats to confirm if device was sold from Downtown branch or Westside branch.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Right: Headline & Story */}
-          <div className="space-y-6">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight leading-tight">
-              Running a phone business shouldn't feel like searching through paperwork.
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
-              Generic POS systems and spreadsheets were never built for serial-tracked electronics. When customers present warranty claims or ask for purchase confirmation, manual checks cost hours of frustration.
-            </p>
-
-            <ul className="space-y-2.5 text-xs sm:text-sm text-slate-700 font-medium">
-              <li className="flex items-center gap-2.5">
-                <X className="w-4 h-4 text-rose-500 shrink-0" /> Lost receipts causing customer argument & fraud disputes
-              </li>
-              <li className="flex items-center gap-2.5">
-                <X className="w-4 h-4 text-rose-500 shrink-0" /> Unable to verify if phone was bought from your store
-              </li>
-              <li className="flex items-center gap-2.5">
-                <X className="w-4 h-4 text-rose-500 shrink-0" /> Slow customer support and manual Excel inventory mistakes
-              </li>
-            </ul>
-
-            <div className="pt-2 p-4 rounded-xl bg-blue-50 border border-blue-200 text-xs sm:text-sm font-bold text-blue-900 flex items-center gap-3">
-              <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0" />
-              <span>VerifyFlow replaces all of this with one secure, fraud-proof cloud ledger.</span>
             </div>
           </div>
         </div>
