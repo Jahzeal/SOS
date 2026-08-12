@@ -77,7 +77,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <button
                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                 className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 transition border border-slate-200/60"
-                title="Account Settings & Logout"
+                title="Account Settings & Store Details"
               >
                 <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
                   {user?.firstName?.[0] || 'U'}
@@ -88,25 +88,40 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
 
               {isUserMenuOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl border border-slate-200 shadow-2xl p-2 z-50 animate-in fade-in duration-150 text-xs">
-                  <div className="p-2.5 border-b border-slate-100 space-y-0.5">
-                    <div className="font-extrabold text-slate-900 truncate">
-                      {user?.firstName || 'Store'} {user?.lastName || 'User'}
+                <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-slate-200 shadow-2xl p-2.5 z-50 animate-in fade-in duration-150 text-xs space-y-2">
+                  {/* User & Store Details Card */}
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div>
+                      <div className="font-extrabold text-slate-900 truncate text-sm">
+                        {user?.firstName || 'Store'} {user?.lastName || 'Owner'}
+                      </div>
+                      <div className="text-[11px] text-slate-500 truncate font-medium">{user?.email || 'owner@retailer.com'}</div>
                     </div>
-                    <div className="text-[11px] text-slate-500 truncate font-medium">{user?.email || 'owner@retailer.com'}</div>
-                    <div className="text-[10px] text-blue-600 font-bold uppercase pt-1">
-                      {user?.business?.name || 'Main Workspace'}
+
+                    <div className="pt-2 border-t border-slate-200/80 space-y-1 text-[11px]">
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Store:</span>
+                        <span className="font-bold text-blue-700 truncate max-w-[130px]">{user?.business?.name || 'TechWorld Mobile'}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-slate-500 font-medium">Branch:</span>
+                        <span className="font-bold text-slate-800">Ikeja Main Branch</span>
+                      </div>
+                      <div className="flex items-center justify-between pt-1">
+                        <span className="text-slate-500 font-medium">Plan:</span>
+                        <span className="font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">PRO PLAN</span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="py-1">
+                  <div className="space-y-0.5">
                     <Link
                       href="/dashboard/settings"
                       onClick={() => setIsUserMenuOpen(false)}
-                      className="flex items-center gap-2 p-2 rounded-xl text-slate-700 hover:bg-slate-100 font-semibold"
+                      className="flex items-center gap-2 p-2 rounded-xl text-slate-700 hover:bg-slate-100 font-bold transition"
                     >
                       <UserCircle className="w-4 h-4 text-slate-500" />
-                      <span>Account Settings</span>
+                      <span>Account & Store Settings</span>
                     </Link>
                   </div>
 

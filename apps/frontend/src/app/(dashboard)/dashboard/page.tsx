@@ -40,6 +40,7 @@ import {
   Copy,
   ExternalLink,
   MessageSquare,
+  X,
 } from 'lucide-react';
 
 export default function BusinessDashboardPage() {
@@ -51,6 +52,7 @@ export default function BusinessDashboardPage() {
   const [salesTimeframe, setSalesTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
   const [copiedImei, setCopiedImei] = useState<string | null>(null);
   const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [livePhones, setLivePhones] = useState<any[]>([]);
   const [isFetching, setIsFetching] = useState(true);
 
@@ -243,11 +245,18 @@ export default function BusinessDashboardPage() {
         <div className="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
 
         <div className="space-y-2 relative z-10">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200/80">
               {businessName} • {plan} PLAN
             </span>
             <span className="text-slate-500 text-xs font-semibold">• Main Downtown Branch</span>
+            <button
+              onClick={() => setShowOnboardingModal(true)}
+              className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold border border-emerald-200 transition flex items-center gap-1 cursor-pointer shadow-subtle"
+            >
+              <span>Setup Progress {livePhones.length > 0 ? '75%' : '50%'}</span>
+              <ChevronDown className="w-3.5 h-3.5" />
+            </button>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
@@ -464,85 +473,20 @@ export default function BusinessDashboardPage() {
         </div>
       </div>
       {/* ========================================================================= */}
-      {/* 4. SETUP CHECKLIST & LIVE VERIFICATION FEED                              */}
+      {/* 4. LIVE VERIFICATION FEED & ACTIVITY                                     */}
       {/* ========================================================================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
-        {/* Left 7 cols: Store Onboarding Checklist */}
-        <div className="lg:col-span-7 vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div>
-              <h3 className="text-base font-extrabold text-slate-900">Store Onboarding Setup Checklist</h3>
-              <p className="text-xs text-slate-500 font-medium">
-                {livePhones.length > 0 ? '3 of 4 setup steps completed (75%)' : '2 of 4 setup steps completed (50%)'}
-              </p>
-            </div>
-            <Badge variant="verified" size="sm">ONBOARDING ACTIVE</Badge>
+      <div className="vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h3 className="text-base font-extrabold text-slate-900">Live Verification Feed</h3>
+            <p className="text-xs text-slate-500 font-medium">Real-time store IMEI lookups and device origin scans</p>
           </div>
-
-          <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-            <div
-              className="bg-emerald-500 h-full rounded-full transition-all duration-500"
-              style={{ width: livePhones.length > 0 ? '75%' : '50%' }}
-            />
-          </div>
-
-          <div className="space-y-2.5 pt-1 text-xs">
-            <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 font-bold text-slate-900">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>1. Create Business Workspace Account ({businessName})</span>
-              </div>
-              <span className="text-[10px] text-emerald-700 font-bold uppercase">COMPLETED</span>
-            </div>
-
-            <div className={`p-3 rounded-xl flex items-center justify-between ${livePhones.length > 0 ? 'bg-emerald-50/60 border border-emerald-200' : 'bg-blue-50/80 border border-blue-200'}`}>
-              <div className="flex items-center gap-2.5 font-bold text-slate-900">
-                {livePhones.length > 0 ? <CheckCircle2 className="w-4 h-4 text-emerald-600" /> : <Clock className="w-4 h-4 text-blue-600" />}
-                <span>2. Register Your First Phone (IMEI & Box QR Code)</span>
-              </div>
-              {livePhones.length > 0 ? (
-                <span className="text-[10px] text-emerald-700 font-bold uppercase">COMPLETED</span>
-              ) : (
-                <Link href="/dashboard/register" className="text-xs font-bold text-blue-600 hover:underline">
-                  Register Now →
-                </Link>
-              )}
-            </div>
-
-            <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 font-bold text-slate-900">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>3. Customize Thermal QR Receipt Header & Branding</span>
-              </div>
-              <span className="text-[10px] text-emerald-700 font-bold uppercase">COMPLETED</span>
-            </div>
-
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-              <div className="flex items-center gap-2.5 font-bold text-slate-900">
-                <Clock className="w-4 h-4 text-slate-500" />
-                <span>4. Record First Sale & Issue Customer Digital Receipt</span>
-              </div>
-              <Link href="/dashboard/verify" className="text-xs font-bold text-blue-600 hover:underline">
-                Record Sale →
-              </Link>
-            </div>
-          </div>
+          <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> LIVE LEDGER
+          </span>
         </div>
 
-        {/* Right 5 cols: Verification Activity Feed */}
-        <div className="lg:col-span-5 vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div>
-              <h3 className="text-base font-extrabold text-slate-900">Live Verification Feed</h3>
-              <p className="text-xs text-slate-500 font-medium">Real-time device origin scans</p>
-            </div>
-            <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> LIVE
-            </span>
-          </div>
-
-          <div className="space-y-3">
+        <div className="space-y-3">
             {livePhones.length > 0 ? (
               livePhones.slice(0, 4).map((phone) => (
                 <div key={phone.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
@@ -567,7 +511,6 @@ export default function BusinessDashboardPage() {
             )}
           </div>
         </div>
-      </div>
 
       {/* ========================================================================= */}
       {/* 5. RECENT PHONE REGISTRATIONS LEDGER TABLE                               */}
@@ -812,6 +755,84 @@ export default function BusinessDashboardPage() {
           </div>
         )}
       </div>
+
+      {/* Onboarding Setup Progress Modal (Dismissible) */}
+      {showOnboardingModal && (
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in duration-200 border border-slate-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="text-lg font-extrabold text-slate-900">Store Onboarding Setup</h3>
+                <p className="text-xs text-slate-500 font-medium">
+                  {livePhones.length > 0 ? '3 of 4 steps completed (75%)' : '2 of 4 steps completed (50%)'}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowOnboardingModal(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+              <div
+                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                style={{ width: livePhones.length > 0 ? '75%' : '50%' }}
+              />
+            </div>
+
+            <div className="space-y-2.5 pt-1 text-xs">
+              <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 font-bold text-slate-900">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>1. Create Business Workspace ({businessName})</span>
+                </div>
+                <span className="text-[10px] text-emerald-700 font-extrabold uppercase">COMPLETED</span>
+              </div>
+
+              <div className={`p-3.5 rounded-xl flex items-center justify-between ${livePhones.length > 0 ? 'bg-emerald-50/60 border border-emerald-200' : 'bg-blue-50/80 border border-blue-200'}`}>
+                <div className="flex items-center gap-2.5 font-bold text-slate-900">
+                  {livePhones.length > 0 ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <Clock className="w-4 h-4 text-blue-600 shrink-0" />}
+                  <span>2. Register First Phone (IMEI & Box QR Code)</span>
+                </div>
+                {livePhones.length > 0 ? (
+                  <span className="text-[10px] text-emerald-700 font-extrabold uppercase">COMPLETED</span>
+                ) : (
+                  <Link href="/dashboard/register" onClick={() => setShowOnboardingModal(false)} className="text-xs font-bold text-blue-600 hover:underline">
+                    Register Now →
+                  </Link>
+                )}
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 font-bold text-slate-900">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span>3. Customize Thermal QR Receipt & Logo</span>
+                </div>
+                <span className="text-[10px] text-emerald-700 font-extrabold uppercase">COMPLETED</span>
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
+                <div className="flex items-center gap-2.5 font-bold text-slate-900">
+                  <Clock className="w-4 h-4 text-slate-500 shrink-0" />
+                  <span>4. Record First Sale & Issue Digital Receipt</span>
+                </div>
+                <Link href="/dashboard/verify" onClick={() => setShowOnboardingModal(false)} className="text-xs font-bold text-blue-600 hover:underline">
+                  Record Sale →
+                </Link>
+              </div>
+            </div>
+
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-[11px] text-slate-400 font-medium">Re-open anytime from the top bar</span>
+              <Button variant="secondary" size="md" onClick={() => setShowOnboardingModal(false)}>
+                Dismiss for Now
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

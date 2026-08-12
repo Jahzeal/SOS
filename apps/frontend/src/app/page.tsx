@@ -112,6 +112,34 @@ export default function PublicLandingPageV2() {
     type: 'info',
   });
 
+  const hasScannedRef = React.useRef(false);
+
+  const extractImeiAndSerial = (rawText: string): string => {
+    if (!rawText) return '';
+    const text = rawText.trim();
+
+    // 1. Look for 15-digit numeric IMEI anywhere in string
+    const imeiMatch = text.match(/\b(35\d{13}|86\d{13}|99\d{13}|01\d{13}|\d{15})\b/);
+    if (imeiMatch) {
+      return imeiMatch[1];
+    }
+
+    // 2. Look for iPhone Serial Number after (S) Serial No. or S/N:
+    const serialMatch = text.match(/(?:\(S\)\s*Serial\s*No\.?|S\/N|SN|Serial\s*No?):?\s*([A-Z0-9]{8,15})/i);
+    if (serialMatch) {
+      return serialMatch[1];
+    }
+
+    // 3. Look for IMEI /MEID text label pattern
+    const imeiLabelMatch = text.match(/(?:IMEI\s*\/MEID|IMEI\d?):?\s*(\d{15})/i);
+    if (imeiLabelMatch) {
+      return imeiLabelMatch[1];
+    }
+
+    // 4. Fallback: Strip EID, EAN, (1P), (S) prefixes
+    return text.replace(/^(\(1P\)|\(S\)|EID|IMEI\s*\/MEID|IMEI\d?|S\/N|SN|EAN):?\s*/i, '').trim();
+  };
+
   useEffect(() => {
     let codeReader: any = null;
     let controls: any = null;
@@ -122,6 +150,7 @@ export default function PublicLandingPageV2() {
       setCameraError(null);
       setIsCameraFrozen(false);
       setScannedFormat(null);
+      hasScannedRef.current = false;
       setCameraGuidance({ message: 'Align barcode inside green box', type: 'info' });
 
       import('@zxing/browser').then(({ BrowserMultiFormatReader }) => {
@@ -143,7 +172,8 @@ export default function PublicLandingPageV2() {
               videoElement.paused ||
               videoElement.ended ||
               videoElement.readyState < 2 ||
-              !videoElement.videoWidth
+              !videoElement.videoWidth ||
+              hasScannedRef.current
             ) {
               return;
             }
@@ -176,67 +206,36 @@ export default function PublicLandingPageV2() {
               undefined,
               videoElement,
               async (result: any, err: any) => {
-                if (result && !isCameraFrozen) {
-                  // Directional position drift calculation
-                  const points = result.getResultPoints();
-                  if (points && points.length > 0) {
-                    const videoWidth = videoElement.videoWidth || 640;
-                    const videoHeight = videoElement.videoHeight || 480;
+                if (result && !hasScannedRef.current) {
+                  hasScannedRef.current = true;
 
-                    let sumX = 0;
-                    let sumY = 0;
-                    points.forEach((p: any) => {
-                      sumX += p.getX();
-                      sumY += p.getY();
-                    });
-                    const barcodeCenterX = sumX / points.length;
-                    const barcodeCenterY = sumY / points.length;
-
-                    const reticleCenterX = videoWidth / 2;
-                    const reticleCenterY = videoHeight / 2;
-
-                    const deltaX = barcodeCenterX - reticleCenterX;
-                    const deltaY = barcodeCenterY - reticleCenterY;
-
-                    if (deltaX < -60) {
-                      setCameraGuidance({ message: 'Move Camera Right ➡️', type: 'warning' });
-                    } else if (deltaX > 60) {
-                      setCameraGuidance({ message: 'Move Camera Left ⬅️', type: 'warning' });
-                    } else if (deltaY < -50) {
-                      setCameraGuidance({ message: 'Move Camera Down ⬇️', type: 'warning' });
-                    } else if (deltaY > 50) {
-                      setCameraGuidance({ message: 'Move Camera Up ⬆️', type: 'warning' });
-                    } else {
-                      setCameraGuidance({ message: 'Perfect Alignment — Hold Still 🟢', type: 'success' });
-                    }
-                  }
-
-                  const decodedText = result.getText();
+                  const rawText = result.getText();
+                  const cleanIdentifier = extractImeiAndSerial(rawText);
                   const formatName = result.getBarcodeFormat() ? `FORMAT_${result.getBarcodeFormat()}` : 'BARCODE';
                   
                   // Snapshot & Freeze Camera Feed immediately
                   videoElement.pause();
                   setIsCameraFrozen(true);
                   setScannedFormat(formatName);
-                  setHeroSearchInput(decodedText);
+                  setHeroSearchInput(cleanIdentifier);
                   setHeroVerifying(true);
                   setHeroVerifiedResult(null);
 
                   try {
-                    const data = await api.verifyPublicImei(decodedText.trim());
+                    const data = await api.verifyPublicImei(cleanIdentifier);
                     const formatted = formatVerifiedPhoneResult(data);
                     if (formatted) {
                       setHeroVerifiedResult(formatted);
                     } else {
                       setHeroVerifiedResult({
                         found: false,
-                        searchedTerm: decodedText,
+                        searchedTerm: cleanIdentifier,
                       });
                     }
                   } catch (e) {
                     setHeroVerifiedResult({
                       found: false,
-                      searchedTerm: decodedText,
+                      searchedTerm: cleanIdentifier,
                     });
                   } finally {
                     setHeroVerifying(false);
@@ -266,6 +265,7 @@ export default function PublicLandingPageV2() {
   }, [activeHeroTab]);
 
   const resumeCameraScanning = () => {
+    hasScannedRef.current = false;
     setIsCameraFrozen(false);
     setHeroVerifiedResult(null);
     setScannedFormat(null);
