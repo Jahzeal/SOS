@@ -548,17 +548,7 @@ export default function PublicLandingPageV2() {
           </div>
 
           {/* Large Operational Dashboard Browser Mockup with Real Retail Store Photography */}
-          <div className="vf-card border border-slate-200 bg-white/90 backdrop-blur-xl p-2 sm:p-5 rounded-3xl shadow-2xl overflow-hidden max-w-5xl mx-auto text-left space-y-4">
-            
-            {/* Browser Top Bar */}
-            <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 bg-slate-100/80 rounded-t-2xl text-xs">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-rose-400" />
-                <div className="w-3 h-3 rounded-full bg-amber-400" />
-                <div className="w-3 h-3 rounded-full bg-emerald-400" />
-              </div>
-            </div>
-
+          <div className="vf-card border border-slate-200/80 bg-white p-2 sm:p-4 rounded-3xl shadow-2xl overflow-hidden max-w-5xl mx-auto text-left">
             {/* Photo Showcase Container */}
             <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl group">
               <img
