@@ -138,7 +138,15 @@ export default function PublicLandingPageV2() {
           canvas.height = 120;
 
           frameCheckInterval = setInterval(() => {
-            if (!videoElement || videoElement.paused || videoElement.ended) return;
+            if (
+              !videoElement ||
+              videoElement.paused ||
+              videoElement.ended ||
+              videoElement.readyState < 2 ||
+              !videoElement.videoWidth
+            ) {
+              return;
+            }
             try {
               ctx?.drawImage(videoElement, 0, 0, 160, 120);
               const imgData = ctx?.getImageData(0, 0, 160, 120);
@@ -152,7 +160,7 @@ export default function PublicLandingPageV2() {
                   totalLuminance += 0.2126 * r + 0.7152 * g + 0.0722 * b;
                 }
                 const avgLuminance = totalLuminance / (pixels.length / 16);
-                if (avgLuminance < 42) {
+                if (avgLuminance < 25) {
                   setCameraGuidance({
                     message: '🌙 Environment Too Dark — Turn on lighting or flash',
                     type: 'dark',
@@ -160,7 +168,7 @@ export default function PublicLandingPageV2() {
                 }
               }
             } catch (e) {}
-          }, 450);
+          }, 500);
 
           try {
             codeReader = new BrowserMultiFormatReader();
