@@ -155,7 +155,7 @@ export default function PublicLandingPageV2() {
       setScannedFormat(null);
       hasScannedRef.current = false;
       lastDetectionTimeRef.current = Date.now();
-      setCameraGuidance({ message: 'Align barcode inside green box', type: 'info' });
+      setCameraGuidance({ message: 'Align IMEI / Serial Number inside reticle 🎯', type: 'info' });
 
       Promise.all([
         import('@zxing/browser'),
@@ -167,11 +167,17 @@ export default function PublicLandingPageV2() {
           const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
           if (!videoElement) return;
 
-          // Create offscreen canvas for low-light luminance check
+          // Offscreen canvas for low-light luminance check
           const canvas = document.createElement('canvas');
           const ctx = canvas.getContext('2d', { willReadFrequently: true });
           canvas.width = 160;
           canvas.height = 120;
+
+          // Dedicated High-Res 640x480 canvas for Live Camera OCR Text Reader
+          const ocrCanvas = document.createElement('canvas');
+          const ocrCtx = ocrCanvas.getContext('2d', { willReadFrequently: true });
+          ocrCanvas.width = 640;
+          ocrCanvas.height = 480;
 
           let ocrWorker: any = null;
           let isOcrBusy = false;
@@ -215,11 +221,13 @@ export default function PublicLandingPageV2() {
                 }
               }
 
-              // Run Live Frame OCR Printed Text Recognition
-              if (ocrWorker && !isOcrBusy && !hasScannedRef.current) {
+              // Run High-Res Live Frame OCR Printed Text Recognition
+              if (ocrWorker && !isOcrBusy && !hasScannedRef.current && ocrCtx) {
                 isOcrBusy = true;
+                ocrCtx.drawImage(videoElement, 0, 0, 640, 480);
+
                 ocrWorker
-                  .recognize(videoElement)
+                  .recognize(ocrCanvas)
                   .then(async (ocrResult: any) => {
                     isOcrBusy = false;
                     if (ocrResult?.data?.text && !hasScannedRef.current) {
@@ -344,9 +352,70 @@ export default function PublicLandingPageV2() {
     setIsCameraFrozen(false);
     setHeroVerifiedResult(null);
     setScannedFormat(null);
+    setScannedRawText(null);
     const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
     if (videoElement) {
       videoElement.play().catch(() => {});
+    }
+  };
+
+  const handleSnapAndScanText = async () => {
+    const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
+    if (!videoElement || videoElement.paused) return;
+
+    setHeroVerifying(true);
+    setHeroVerifiedResult(null);
+
+    // Create high-res 1080p canvas snapshot from live camera feed
+    const snapCanvas = document.createElement('canvas');
+    const snapCtx = snapCanvas.getContext('2d');
+    snapCanvas.width = videoElement.videoWidth || 1280;
+    snapCanvas.height = videoElement.videoHeight || 720;
+    snapCtx?.drawImage(videoElement, 0, 0, snapCanvas.width, snapCanvas.height);
+
+    // Freeze video feed instantly
+    videoElement.pause();
+    setIsCameraFrozen(true);
+    hasScannedRef.current = true;
+
+    try {
+      const { createWorker } = await import('tesseract.js');
+      const worker = await createWorker('eng');
+      const { data: { text: ocrText } } = await worker.recognize(snapCanvas);
+      await worker.terminate();
+
+      const rawTrimmed = ocrText.trim();
+      const cleanIdentifier = extractImeiAndSerial(rawTrimmed);
+      setScannedRawText(rawTrimmed.slice(0, 60));
+
+      if (cleanIdentifier && cleanIdentifier.length >= 8) {
+        setHeroSearchInput(cleanIdentifier);
+        setScannedFormat('TEXT_OCR');
+
+        const data = await api.verifyPublicImei(cleanIdentifier);
+        const formatted = formatVerifiedPhoneResult(data);
+        if (formatted) {
+          setHeroVerifiedResult(formatted);
+        } else {
+          setHeroVerifiedResult({
+            found: false,
+            searchedTerm: cleanIdentifier,
+          });
+        }
+      } else {
+        setHeroVerifiedResult({
+          found: false,
+          searchedTerm: rawTrimmed ? `"${rawTrimmed.slice(0, 30)}..." (Not an IMEI or Serial No.)` : 'No clear text recognized',
+        });
+      }
+    } catch (err) {
+      console.error('Snap OCR failed:', err);
+      setHeroVerifiedResult({
+        found: false,
+        searchedTerm: 'Snap OCR Error',
+      });
+    } finally {
+      setHeroVerifying(false);
     }
   };
 
@@ -749,9 +818,20 @@ export default function PublicLandingPageV2() {
                       )}
 
                       {!isCameraFrozen && (
-                        <div className="scanner-overlay-reticle">
-                          <div className="scanner-overlay-laser" />
-                        </div>
+                        <>
+                          <div className="scanner-overlay-reticle">
+                            <div className="scanner-overlay-laser" />
+                          </div>
+                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+                            <button
+                              type="button"
+                              onClick={handleSnapAndScanText}
+                              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30"
+                            >
+                              <Sparkles className="w-3.5 h-3.5" /> Snap & Read Text 📸
+                            </button>
+                          </div>
+                        </>
                       )}
                       {isCameraFrozen && (
                         <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 p-4 text-center">
