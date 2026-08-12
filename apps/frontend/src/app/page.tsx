@@ -173,7 +173,17 @@ export default function PublicLandingPageV2() {
           canvas.width = 160;
           canvas.height = 120;
 
-          frameCheckInterval = setInterval(() => {
+          let ocrWorker: any = null;
+          let isOcrBusy = false;
+
+          try {
+            const { createWorker } = await import('tesseract.js');
+            ocrWorker = await createWorker('eng');
+          } catch (e) {
+            console.warn('OCR Worker init skipped:', e);
+          }
+
+          frameCheckInterval = setInterval(async () => {
             if (
               !videoElement ||
               videoElement.paused ||
@@ -204,8 +214,54 @@ export default function PublicLandingPageV2() {
                   });
                 }
               }
+
+              // Run Live Frame OCR Printed Text Recognition
+              if (ocrWorker && !isOcrBusy && !hasScannedRef.current) {
+                isOcrBusy = true;
+                ocrWorker
+                  .recognize(videoElement)
+                  .then(async (ocrResult: any) => {
+                    isOcrBusy = false;
+                    if (ocrResult?.data?.text && !hasScannedRef.current) {
+                      const cleanIdentifier = extractImeiAndSerial(ocrResult.data.text);
+                      if (cleanIdentifier && (cleanIdentifier.length === 15 || cleanIdentifier.length >= 8)) {
+                        hasScannedRef.current = true;
+                        videoElement.pause();
+                        setIsCameraFrozen(true);
+                        setScannedFormat('TEXT_OCR');
+                        setScannedRawText(cleanIdentifier);
+                        setHeroSearchInput(cleanIdentifier);
+                        setHeroVerifying(true);
+                        setHeroVerifiedResult(null);
+
+                        try {
+                          const data = await api.verifyPublicImei(cleanIdentifier);
+                          const formatted = formatVerifiedPhoneResult(data);
+                          if (formatted) {
+                            setHeroVerifiedResult(formatted);
+                          } else {
+                            setHeroVerifiedResult({
+                              found: false,
+                              searchedTerm: cleanIdentifier,
+                            });
+                          }
+                        } catch (e) {
+                          setHeroVerifiedResult({
+                            found: false,
+                            searchedTerm: cleanIdentifier,
+                          });
+                        } finally {
+                          setHeroVerifying(false);
+                        }
+                      }
+                    }
+                  })
+                  .catch(() => {
+                    isOcrBusy = false;
+                  });
+              }
             } catch (e) {}
-          }, 500);
+          }, 600);
 
           try {
             const hints = new Map();
