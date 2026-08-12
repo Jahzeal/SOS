@@ -106,11 +106,13 @@ export default function PublicLandingPageV2() {
   const [isCameraFrozen, setIsCameraFrozen] = useState(false);
   const [scannedFormat, setScannedFormat] = useState<string | null>(null);
   const [scannedRawText, setScannedRawText] = useState<string | null>(null);
+  const [detectedBadges, setDetectedBadges] = useState<any[]>([]);
+  const [selectedBadge, setSelectedBadge] = useState<any | null>(null);
   const [cameraGuidance, setCameraGuidance] = useState<{
     message: string;
     type: 'success' | 'warning' | 'dark' | 'info';
   }>({
-    message: 'Align barcode inside green box',
+    message: 'Align box sticker inside reticle and tap Snap',
     type: 'info',
   });
 
@@ -141,6 +143,49 @@ export default function PublicLandingPageV2() {
 
     // 4. Fallback: Strip EID, EAN, (1P), (S) prefixes
     return text.replace(/^(\(1P\)|\(S\)|EID|IMEI\s*\/MEID|IMEI\d?|S\/N|SN|EAN):?\s*/i, '').trim();
+  };
+
+  const parseTextIntoBadges = (rawText: string) => {
+    if (!rawText) return [];
+    const lines = rawText.split('\n').map((l) => l.trim()).filter(Boolean);
+    const badges: any[] = [];
+
+    // 1. Look for 15-digit IMEI
+    const imeiMatch = rawText.match(/\b(35\d{13}|86\d{13}|99\d{13}|01\d{13}|\d{15})\b/);
+    if (imeiMatch) {
+      badges.push({
+        id: 'imei-1',
+        label: 'IMEI',
+        cleanText: imeiMatch[1],
+        isPrimary: true,
+      });
+    }
+
+    // 2. Look for Serial Number
+    const serialMatch = rawText.match(/(?:\(S\)\s*Serial\s*No\.?|S\/N|SN|Serial\s*No?):?\s*([A-Z0-9]{8,15})/i);
+    if (serialMatch) {
+      badges.push({
+        id: 'serial-1',
+        label: 'Serial No',
+        cleanText: serialMatch[1],
+        isPrimary: !imeiMatch,
+      });
+    }
+
+    // 3. Additional text lines
+    lines.forEach((line, index) => {
+      const clean = extractImeiAndSerial(line);
+      if (clean && clean !== imeiMatch?.[1] && clean !== serialMatch?.[1] && clean.length >= 4) {
+        badges.push({
+          id: `line-${index}`,
+          label: 'Text Line',
+          cleanText: clean,
+          isPrimary: false,
+        });
+      }
+    });
+
+    return badges;
   };
 
   useEffect(() => {
@@ -828,7 +873,7 @@ export default function PublicLandingPageV2() {
                               onClick={handleSnapAndScanText}
                               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30"
                             >
-                              <Sparkles className="w-3.5 h-3.5" /> Snap & Read Text 📸
+                              <Sparkles className="w-3.5 h-3.5" /> Snap & Read Text
                             </button>
                           </div>
                         </>
@@ -836,7 +881,7 @@ export default function PublicLandingPageV2() {
                       {isCameraFrozen && (
                         <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 p-4 text-center">
                           <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-black rounded-full shadow-lg animate-bounce">
-                            SNAPSHOT CAPTURED ✨
+                            SNAPSHOT CAPTURED
                           </span>
                         </div>
                       )}
@@ -856,7 +901,7 @@ export default function PublicLandingPageV2() {
 
                       <label className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl transition shadow-subtle text-xs cursor-pointer flex items-center gap-1.5">
                         <Upload className="w-3.5 h-3.5 text-slate-600" />
-                        <span>Upload Box Photo 🖼️</span>
+                        <span>Upload Box Photo</span>
                         <input
                           type="file"
                           accept="image/*"
