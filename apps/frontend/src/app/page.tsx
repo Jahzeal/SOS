@@ -104,16 +104,25 @@ export default function PublicLandingPageV2() {
 
   const [isCameraFrozen, setIsCameraFrozen] = useState(false);
   const [scannedFormat, setScannedFormat] = useState<string | null>(null);
+  const [cameraGuidance, setCameraGuidance] = useState<{
+    message: string;
+    type: 'success' | 'warning' | 'dark' | 'info';
+  }>({
+    message: 'Align barcode inside green box',
+    type: 'info',
+  });
 
   useEffect(() => {
     let codeReader: any = null;
     let controls: any = null;
     let isMounted = true;
+    let frameCheckInterval: any = null;
 
     if (activeHeroTab === 'qr') {
       setCameraError(null);
       setIsCameraFrozen(false);
       setScannedFormat(null);
+      setCameraGuidance({ message: 'Align barcode inside green box', type: 'info' });
 
       import('@zxing/browser').then(({ BrowserMultiFormatReader }) => {
         if (!isMounted) return;
@@ -122,6 +131,37 @@ export default function PublicLandingPageV2() {
           const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
           if (!videoElement) return;
 
+          // Create offscreen canvas for low-light luminance check
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          canvas.width = 160;
+          canvas.height = 120;
+
+          frameCheckInterval = setInterval(() => {
+            if (!videoElement || videoElement.paused || videoElement.ended) return;
+            try {
+              ctx?.drawImage(videoElement, 0, 0, 160, 120);
+              const imgData = ctx?.getImageData(0, 0, 160, 120);
+              if (imgData) {
+                let totalLuminance = 0;
+                const pixels = imgData.data;
+                for (let i = 0; i < pixels.length; i += 16) {
+                  const r = pixels[i];
+                  const g = pixels[i + 1];
+                  const b = pixels[i + 2];
+                  totalLuminance += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                }
+                const avgLuminance = totalLuminance / (pixels.length / 16);
+                if (avgLuminance < 42) {
+                  setCameraGuidance({
+                    message: '🌙 Environment Too Dark — Turn on lighting or flash',
+                    type: 'dark',
+                  });
+                }
+              }
+            } catch (e) {}
+          }, 450);
+
           try {
             codeReader = new BrowserMultiFormatReader();
             controls = await codeReader.decodeFromVideoDevice(
@@ -129,6 +169,40 @@ export default function PublicLandingPageV2() {
               videoElement,
               async (result: any, err: any) => {
                 if (result && !isCameraFrozen) {
+                  // Directional position drift calculation
+                  const points = result.getResultPoints();
+                  if (points && points.length > 0) {
+                    const videoWidth = videoElement.videoWidth || 640;
+                    const videoHeight = videoElement.videoHeight || 480;
+
+                    let sumX = 0;
+                    let sumY = 0;
+                    points.forEach((p: any) => {
+                      sumX += p.getX();
+                      sumY += p.getY();
+                    });
+                    const barcodeCenterX = sumX / points.length;
+                    const barcodeCenterY = sumY / points.length;
+
+                    const reticleCenterX = videoWidth / 2;
+                    const reticleCenterY = videoHeight / 2;
+
+                    const deltaX = barcodeCenterX - reticleCenterX;
+                    const deltaY = barcodeCenterY - reticleCenterY;
+
+                    if (deltaX < -60) {
+                      setCameraGuidance({ message: 'Move Camera Right ➡️', type: 'warning' });
+                    } else if (deltaX > 60) {
+                      setCameraGuidance({ message: 'Move Camera Left ⬅️', type: 'warning' });
+                    } else if (deltaY < -50) {
+                      setCameraGuidance({ message: 'Move Camera Down ⬇️', type: 'warning' });
+                    } else if (deltaY > 50) {
+                      setCameraGuidance({ message: 'Move Camera Up ⬆️', type: 'warning' });
+                    } else {
+                      setCameraGuidance({ message: 'Perfect Alignment — Hold Still 🟢', type: 'success' });
+                    }
+                  }
+
                   const decodedText = result.getText();
                   const formatName = result.getBarcodeFormat() ? `FORMAT_${result.getBarcodeFormat()}` : 'BARCODE';
                   
@@ -174,6 +248,7 @@ export default function PublicLandingPageV2() {
 
     return () => {
       isMounted = false;
+      if (frameCheckInterval) clearInterval(frameCheckInterval);
       if (controls) {
         try {
           controls.stop();
@@ -470,6 +545,26 @@ export default function PublicLandingPageV2() {
                     <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-900 text-white min-h-[260px] flex items-center justify-center">
                       <video id="zxing-hero-video" className="w-full h-full min-h-[260px] object-cover" muted playsInline />
                       <div id="qr-camera-scanner-file" className="hidden" />
+
+                      {/* Real-time Guidance Banner (Low light, Move Left, Move Right, Perfect) */}
+                      {!isCameraFrozen && (
+                        <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-max max-w-[90%]">
+                          <div
+                            className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-1.5 ${
+                              cameraGuidance.type === 'dark'
+                                ? 'bg-amber-500 text-slate-950 animate-pulse border border-amber-300'
+                                : cameraGuidance.type === 'warning'
+                                ? 'bg-slate-900/90 text-amber-400 border border-amber-500/40'
+                                : cameraGuidance.type === 'success'
+                                ? 'bg-emerald-600 text-white border border-emerald-300'
+                                : 'bg-slate-900/80 text-white border border-slate-700'
+                            }`}
+                          >
+                            {cameraGuidance.message}
+                          </div>
+                        </div>
+                      )}
+
                       {!isCameraFrozen && (
                         <div className="scanner-overlay-reticle">
                           <div className="scanner-overlay-laser" />

@@ -52,17 +52,58 @@ export default function RegisterPhonePage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [registeredItem, setRegisteredItem] = useState<any>(null);
   const [brandOpen, setBrandOpen] = useState(false);
+  const [registerCameraGuidance, setRegisterCameraGuidance] = useState<{
+    message: string;
+    type: 'success' | 'warning' | 'dark' | 'info';
+  }>({
+    message: 'Align box barcode inside green box',
+    type: 'info',
+  });
 
   React.useEffect(() => {
     let controls: any = null;
     let isMounted = true;
+    let frameCheckInterval: any = null;
 
     if (showCameraScanner) {
+      setRegisterCameraGuidance({ message: 'Align box barcode inside green box', type: 'info' });
+
       import('@zxing/browser').then(({ BrowserMultiFormatReader }) => {
         if (!isMounted) return;
         setTimeout(async () => {
           const videoElement = document.getElementById('zxing-register-video') as HTMLVideoElement;
           if (!videoElement) return;
+
+          // Low-light canvas analyzer
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d', { willReadFrequently: true });
+          canvas.width = 160;
+          canvas.height = 120;
+
+          frameCheckInterval = setInterval(() => {
+            if (!videoElement || videoElement.paused || videoElement.ended) return;
+            try {
+              ctx?.drawImage(videoElement, 0, 0, 160, 120);
+              const imgData = ctx?.getImageData(0, 0, 160, 120);
+              if (imgData) {
+                let totalLuminance = 0;
+                const pixels = imgData.data;
+                for (let i = 0; i < pixels.length; i += 16) {
+                  const r = pixels[i];
+                  const g = pixels[i + 1];
+                  const b = pixels[i + 2];
+                  totalLuminance += 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                }
+                const avgLuminance = totalLuminance / (pixels.length / 16);
+                if (avgLuminance < 42) {
+                  setRegisterCameraGuidance({
+                    message: '🌙 Environment Too Dark — Turn on lighting',
+                    type: 'dark',
+                  });
+                }
+              }
+            } catch (e) {}
+          }, 450);
 
           try {
             const codeReader = new BrowserMultiFormatReader();
@@ -71,6 +112,36 @@ export default function RegisterPhonePage() {
               videoElement,
               (result: any) => {
                 if (result) {
+                  const points = result.getResultPoints();
+                  if (points && points.length > 0) {
+                    const videoWidth = videoElement.videoWidth || 640;
+                    const videoHeight = videoElement.videoHeight || 480;
+
+                    let sumX = 0;
+                    let sumY = 0;
+                    points.forEach((p: any) => {
+                      sumX += p.getX();
+                      sumY += p.getY();
+                    });
+                    const barcodeCenterX = sumX / points.length;
+                    const barcodeCenterY = sumY / points.length;
+
+                    const deltaX = barcodeCenterX - (videoWidth / 2);
+                    const deltaY = barcodeCenterY - (videoHeight / 2);
+
+                    if (deltaX < -60) {
+                      setRegisterCameraGuidance({ message: 'Move Camera Right ➡️', type: 'warning' });
+                    } else if (deltaX > 60) {
+                      setRegisterCameraGuidance({ message: 'Move Camera Left ⬅️', type: 'warning' });
+                    } else if (deltaY < -50) {
+                      setRegisterCameraGuidance({ message: 'Move Camera Down ⬇️', type: 'warning' });
+                    } else if (deltaY > 50) {
+                      setRegisterCameraGuidance({ message: 'Move Camera Up ⬆️', type: 'warning' });
+                    } else {
+                      setRegisterCameraGuidance({ message: 'Perfect Alignment — Hold Still 🟢', type: 'success' });
+                    }
+                  }
+
                   const text = result.getText().trim();
                   if (/^\d{15}$/.test(text)) {
                     setImei(text);
@@ -91,6 +162,7 @@ export default function RegisterPhonePage() {
 
     return () => {
       isMounted = false;
+      if (frameCheckInterval) clearInterval(frameCheckInterval);
       if (controls) {
         try { controls.stop(); } catch (e) {}
       }
@@ -820,6 +892,23 @@ export default function RegisterPhonePage() {
 
             <div className="relative w-full rounded-2xl overflow-hidden bg-slate-900 min-h-[260px] flex items-center justify-center">
               <video id="zxing-register-video" className="w-full h-full min-h-[260px] object-cover" muted playsInline />
+              
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-max max-w-[90%]">
+                <div
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-1.5 ${
+                    registerCameraGuidance.type === 'dark'
+                      ? 'bg-amber-500 text-slate-950 animate-pulse border border-amber-300'
+                      : registerCameraGuidance.type === 'warning'
+                      ? 'bg-slate-900/90 text-amber-400 border border-amber-500/40'
+                      : registerCameraGuidance.type === 'success'
+                      ? 'bg-emerald-600 text-white border border-emerald-300'
+                      : 'bg-slate-900/80 text-white border border-slate-700'
+                  }`}
+                >
+                  {registerCameraGuidance.message}
+                </div>
+              </div>
+
               <div className="scanner-overlay-reticle">
                 <div className="scanner-overlay-laser" />
               </div>
