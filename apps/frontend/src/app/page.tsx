@@ -108,6 +108,7 @@ export default function PublicLandingPageV2() {
   const [scannedRawText, setScannedRawText] = useState<string | null>(null);
   const [detectedBadges, setDetectedBadges] = useState<any[]>([]);
   const [selectedBadge, setSelectedBadge] = useState<any | null>(null);
+  const [googleLensPills, setGoogleLensPills] = useState<any[]>([]);
   const [cameraGuidance, setCameraGuidance] = useState<{
     message: string;
     type: 'success' | 'warning' | 'dark' | 'info';
@@ -386,6 +387,34 @@ export default function PublicLandingPageV2() {
     return cleaned;
   };
 
+  const handleSelectLensPill = async (pill: any) => {
+    if (!pill || !pill.value) return;
+    const cleanId = extractImeiAndSerial(pill.value) || pill.value;
+    setHeroSearchInput(cleanId);
+    setHeroVerifying(true);
+    setHeroVerifiedResult(null);
+
+    try {
+      const data = await api.verifyPublicImei(cleanId);
+      const formatted = formatVerifiedPhoneResult(data);
+      if (formatted) {
+        setHeroVerifiedResult(formatted);
+      } else {
+        setHeroVerifiedResult({
+          found: false,
+          searchedTerm: cleanId,
+        });
+      }
+    } catch (e) {
+      setHeroVerifiedResult({
+        found: false,
+        searchedTerm: cleanId,
+      });
+    } finally {
+      setHeroVerifying(false);
+    }
+  };
+
   const handleSnapAndScanText = async () => {
     const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
     if (!videoElement || videoElement.paused) return;
@@ -411,12 +440,44 @@ export default function PublicLandingPageV2() {
     try {
       const { createWorker } = await import('tesseract.js');
       const worker = await createWorker('eng');
-      const { data: { text: ocrText } } = await worker.recognize(processedCanvas);
+      const { data } = await worker.recognize(processedCanvas);
       await worker.terminate();
 
+      const ocrText = data.text || '';
       const cleanedText = cleanOcrNoise(ocrText);
       const cleanIdentifier = extractImeiAndSerial(cleanedText || ocrText);
       setScannedRawText(cleanedText.slice(0, 60));
+
+      // Calculate Google Lens Interactive Bounding Box Pills
+      const imgW = processedCanvas.width || 1;
+      const imgH = processedCanvas.height || 1;
+      const pills: any[] = [];
+
+      ((data as any).words || []).forEach((w: any, idx: number) => {
+        const rawW = w.text ? w.text.trim() : '';
+        const cleanW = cleanOcrNoise(rawW);
+        if (!cleanW || cleanW.length < 3) return;
+
+        const imei = /\b(35\d{13}|86\d{13}|99\d{13}|01\d{13}|\d{15})\b/.test(cleanW);
+        const serial = /^[A-Z0-9]{8,15}$/i.test(cleanW);
+        const bbox = w.bbox;
+
+        if (bbox) {
+          pills.push({
+            id: `lens-pill-${idx}-${bbox.x0}`,
+            type: imei ? 'IMEI' : serial ? 'SERIAL' : 'TEXT',
+            value: extractImeiAndSerial(cleanW) || cleanW,
+            rawText: rawW,
+            leftPct: Math.max(0, Math.min(95, (bbox.x0 / imgW) * 100)),
+            topPct: Math.max(0, Math.min(95, (bbox.y0 / imgH) * 100)),
+            widthPct: Math.max(8, Math.min(100, ((bbox.x1 - bbox.x0) / imgW) * 100)),
+            heightPct: Math.max(4, Math.min(20, ((bbox.y1 - bbox.y0) / imgH) * 100)),
+            isPrimary: imei,
+          });
+        }
+      });
+
+      setGoogleLensPills(pills);
 
       if (cleanIdentifier && cleanIdentifier.length >= 8) {
         setHeroSearchInput(cleanIdentifier);
@@ -896,8 +957,41 @@ export default function PublicLandingPageV2() {
                       </label>
                     </div>
 
+                    {/* Google Lens Interactive Bounding Overlay */}
+                    {isCameraFrozen && googleLensPills.length > 0 && (
+                      <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs space-y-2 animate-in fade-in duration-200 shadow-xl">
+                        <div className="flex items-center justify-between text-slate-400 font-bold">
+                          <span className="flex items-center gap-1.5 text-blue-400">
+                            <Sparkles className="w-3.5 h-3.5" /> Google Lens Interactive Selection:
+                          </span>
+                          <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-emerald-400 font-mono font-bold">
+                            {googleLensPills.length} TEXT BLOCKS FOUND
+                          </span>
+                        </div>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          {googleLensPills.map((pill) => (
+                            <button
+                              key={pill.id}
+                              type="button"
+                              onClick={() => handleSelectLensPill(pill)}
+                              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 border shadow-sm ${
+                                pill.type === 'IMEI'
+                                  ? 'bg-emerald-600 text-white border-emerald-400 ring-2 ring-emerald-400/40 shadow-emerald-600/30'
+                                  : pill.type === 'SERIAL'
+                                  ? 'bg-blue-600 text-white border-blue-400 ring-2 ring-blue-400/40 shadow-blue-600/30'
+                                  : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
+                              }`}
+                            >
+                              {pill.type === 'IMEI' && <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />}
+                              <span>{pill.label}: {pill.value}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Exact Detection Transparency Card */}
-                    {scannedRawText && (
+                    {scannedRawText && !googleLensPills.length && (
                       <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1 animate-in fade-in duration-200">
                         <div className="flex items-center justify-between text-slate-400 font-bold">
                           <span className="flex items-center gap-1.5 text-blue-400">
