@@ -264,6 +264,11 @@ export default function PublicLandingPageV2() {
                     message: 'Environment Too Dark — Turn on lighting or flash',
                     type: 'dark',
                   });
+                } else {
+                  setCameraGuidance({
+                    message: 'Align box sticker inside reticle and tap Snap',
+                    type: 'info',
+                  });
                 }
               }
             } catch (e) {}
@@ -429,6 +434,15 @@ export default function PublicLandingPageV2() {
     snapCanvas.height = videoElement.videoHeight || 720;
     snapCtx?.drawImage(videoElement, 0, 0, snapCanvas.width, snapCanvas.height);
 
+    // Render snapshot onto display canvas
+    const displayCanvas = document.getElementById('google-lens-snap-canvas') as HTMLCanvasElement;
+    if (displayCanvas) {
+      displayCanvas.width = snapCanvas.width;
+      displayCanvas.height = snapCanvas.height;
+      const dCtx = displayCanvas.getContext('2d');
+      dCtx?.drawImage(snapCanvas, 0, 0);
+    }
+
     // Freeze video feed instantly
     videoElement.pause();
     setIsCameraFrozen(true);
@@ -537,6 +551,15 @@ export default function PublicLandingPageV2() {
       const imgElement = document.createElement('img');
 
       imgElement.onload = async () => {
+        setIsCameraFrozen(true);
+        const displayCanvas = document.getElementById('google-lens-snap-canvas') as HTMLCanvasElement;
+        if (displayCanvas) {
+          displayCanvas.width = imgElement.naturalWidth || 1280;
+          displayCanvas.height = imgElement.naturalHeight || 720;
+          const dCtx = displayCanvas.getContext('2d');
+          dCtx?.drawImage(imgElement, 0, 0);
+        }
+
         try {
           const result = await reader.decodeFromImageElement(imgElement);
           const rawText = result.getText();
@@ -559,11 +582,44 @@ export default function PublicLandingPageV2() {
           try {
             const { createWorker } = await import('tesseract.js');
             const worker = await createWorker('eng');
-            const { data: { text: ocrText } } = await worker.recognize(imageUrl);
+            const { data } = await worker.recognize(imageUrl);
             await worker.terminate();
 
-            const parsedIdentifier = extractImeiAndSerial(ocrText);
-            setScannedRawText(ocrText.slice(0, 40));
+            const ocrText = data.text || '';
+            const cleanedText = cleanOcrNoise(ocrText);
+            const parsedIdentifier = extractImeiAndSerial(cleanedText || ocrText);
+            setScannedRawText(cleanedText.slice(0, 60));
+
+            const imgW = imgElement.naturalWidth || 1;
+            const imgH = imgElement.naturalHeight || 1;
+            const pills: any[] = [];
+
+            ((data as any).words || []).forEach((w: any, idx: number) => {
+              const rawW = w.text ? w.text.trim() : '';
+              const cleanW = cleanOcrNoise(rawW);
+              if (!cleanW || cleanW.length < 3) return;
+
+              const imei = /\b(35\d{13}|86\d{13}|99\d{13}|01\d{13}|\d{15})\b/.test(cleanW);
+              const serial = /^[A-Z0-9]{8,15}$/i.test(cleanW);
+              const bbox = w.bbox;
+
+              if (bbox) {
+                pills.push({
+                  id: `upload-pill-${idx}-${bbox.x0}`,
+                  type: imei ? 'IMEI' : serial ? 'SERIAL' : 'TEXT',
+                  value: extractImeiAndSerial(cleanW) || cleanW,
+                  rawText: rawW,
+                  leftPct: Math.max(0, Math.min(95, (bbox.x0 / imgW) * 100)),
+                  topPct: Math.max(0, Math.min(95, (bbox.y0 / imgH) * 100)),
+                  widthPct: Math.max(8, Math.min(100, ((bbox.x1 - bbox.x0) / imgW) * 100)),
+                  heightPct: Math.max(4, Math.min(20, ((bbox.y1 - bbox.y0) / imgH) * 100)),
+                  isPrimary: imei,
+                });
+              }
+            });
+
+            setGoogleLensPills(pills);
+
             if (parsedIdentifier && parsedIdentifier.length >= 8) {
               setHeroSearchInput(parsedIdentifier);
               const data = await api.verifyPublicImei(parsedIdentifier);
@@ -579,7 +635,7 @@ export default function PublicLandingPageV2() {
             } else {
               setHeroVerifiedResult({
                 found: false,
-                searchedTerm: 'Uploaded Box Photo (No IMEI/Serial text found)',
+                searchedTerm: cleanedText ? `"${cleanedText.slice(0, 30)}..." (Not an IMEI or Serial No.)` : 'No clear text recognized',
               });
             }
           } catch (ocrErr) {
@@ -885,9 +941,18 @@ export default function PublicLandingPageV2() {
                   </div>
                 ) : (
                   <>
-                    <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-900 text-white min-h-[260px] flex items-center justify-center">
-                      <video id="zxing-hero-video" className="w-full h-full min-h-[260px] object-cover" muted playsInline />
-                      <div id="qr-camera-scanner-file" className="hidden" />
+                    <div className="relative w-full rounded-2xl overflow-hidden border border-slate-700 shadow-2xl bg-slate-950 min-h-[260px] flex items-center justify-center">
+                      <video
+                        id="zxing-hero-video"
+                        className={`w-full h-full min-h-[260px] object-cover ${isCameraFrozen ? 'hidden' : 'block'}`}
+                        muted
+                        playsInline
+                      />
+
+                      <canvas
+                        id="google-lens-snap-canvas"
+                        className={`w-full h-auto min-h-[260px] object-contain ${isCameraFrozen ? 'block' : 'hidden'}`}
+                      />
 
                       {/* Real-time Guidance Banner (Low light, Move Left, Move Right, Perfect) */}
                       {!isCameraFrozen && (
@@ -924,11 +989,31 @@ export default function PublicLandingPageV2() {
                           </div>
                         </>
                       )}
-                      {isCameraFrozen && (
-                        <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 p-4 text-center">
-                          <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-black rounded-full shadow-lg animate-bounce">
-                            SNAPSHOT CAPTURED
-                          </span>
+
+                      {/* FLOATING GOOGLE LENS BUBBLES DIRECTLY OVER THE SNAPSHOT CANVAS IMAGE */}
+                      {isCameraFrozen && googleLensPills.length > 0 && (
+                        <div className="absolute inset-0 z-30 pointer-events-auto p-2">
+                          {googleLensPills.map((pill) => (
+                            <button
+                              key={pill.id}
+                              type="button"
+                              onClick={() => handleSelectLensPill(pill)}
+                              style={{
+                                left: `${pill.leftPct}%`,
+                                top: `${pill.topPct}%`,
+                              }}
+                              className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full transition-all duration-200 transform hover:scale-110 flex items-center gap-1 text-[11px] font-mono font-black border shadow-2xl ${
+                                pill.type === 'IMEI'
+                                  ? 'bg-emerald-600 text-white border-emerald-300 ring-4 ring-emerald-400/70 shadow-emerald-600/60 animate-bounce z-40'
+                                  : pill.type === 'SERIAL'
+                                  ? 'bg-blue-600 text-white border-blue-300 ring-4 ring-blue-400/70 shadow-blue-600/50 z-30'
+                                  : 'bg-slate-900/90 text-slate-100 border-slate-500 hover:bg-blue-600 hover:border-blue-300 z-20'
+                              }`}
+                            >
+                              {pill.type === 'IMEI' && <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />}
+                              <span className="truncate max-w-[150px]">{pill.value}</span>
+                            </button>
+                          ))}
                         </div>
                       )}
                     </div>
