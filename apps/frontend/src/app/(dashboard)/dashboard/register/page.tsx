@@ -53,6 +53,50 @@ export default function RegisterPhonePage() {
   const [registeredItem, setRegisteredItem] = useState<any>(null);
   const [brandOpen, setBrandOpen] = useState(false);
 
+  React.useEffect(() => {
+    let controls: any = null;
+    let isMounted = true;
+
+    if (showCameraScanner) {
+      import('@zxing/browser').then(({ BrowserMultiFormatReader }) => {
+        if (!isMounted) return;
+        setTimeout(async () => {
+          const videoElement = document.getElementById('zxing-register-video') as HTMLVideoElement;
+          if (!videoElement) return;
+
+          try {
+            const codeReader = new BrowserMultiFormatReader();
+            controls = await codeReader.decodeFromVideoDevice(
+              undefined,
+              videoElement,
+              (result: any) => {
+                if (result) {
+                  const text = result.getText().trim();
+                  if (/^\d{15}$/.test(text)) {
+                    setImei(text);
+                  } else {
+                    setSerialNumber(text);
+                  }
+                  setShowCameraScanner(false);
+                  setStep(2);
+                }
+              }
+            );
+          } catch (e) {
+            console.warn('Register camera start error:', e);
+          }
+        }, 150);
+      });
+    }
+
+    return () => {
+      isMounted = false;
+      if (controls) {
+        try { controls.stop(); } catch (e) {}
+      }
+    };
+  }, [showCameraScanner]);
+
   const BRANDS = [
     'Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Huawei',
     'Oppo', 'Vivo', 'Realme', 'Tecno', 'Infinix', 'Itel',
@@ -753,6 +797,46 @@ export default function RegisterPhonePage() {
                 Register Another Phone
               </Button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ZXing Camera Scanner Modal */}
+      {showCameraScanner && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-200 animate-in zoom-in duration-200">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <Camera className="w-5 h-5 text-blue-600" />
+                <h3 className="font-extrabold text-slate-900 text-base">Scan Box Barcode</h3>
+              </div>
+              <button
+                onClick={() => setShowCameraScanner(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="relative w-full rounded-2xl overflow-hidden bg-slate-900 min-h-[260px] flex items-center justify-center">
+              <video id="zxing-register-video" className="w-full h-full min-h-[260px] object-cover" muted playsInline />
+              <div className="scanner-overlay-reticle">
+                <div className="scanner-overlay-laser" />
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 text-center font-medium">
+              Align phone box IMEI or Serial Number barcode inside green box to auto-populate form.
+            </p>
+
+            <Button
+              variant="secondary"
+              fullWidth
+              size="md"
+              onClick={() => setShowCameraScanner(false)}
+            >
+              Cancel Scan
+            </Button>
           </div>
         </div>
       )}

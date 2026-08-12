@@ -176,7 +176,7 @@ export default function ScannerTestPage() {
               <div className="p-3 rounded-xl bg-blue-50 text-blue-700 text-xs font-bold flex items-center gap-2">
                 <RefreshCw className="w-4 h-4 animate-spin text-blue-600" /> Querying Live Database...
               </div>
-            ) : apiResult?.success ? (
+            ) : apiResult?.success && apiResult.data?.verified ? (
               <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs space-y-2">
                 <div className="flex items-center justify-between font-bold">
                   <span className="flex items-center gap-1.5 text-emerald-800">
@@ -185,12 +185,12 @@ export default function ScannerTestPage() {
                   <Badge variant="verified" size="sm">GENUINE</Badge>
                 </div>
                 <div className="text-slate-700 font-medium">
-                  {apiResult.data?.brand} {apiResult.data?.model} • {apiResult.data?.business?.name}
+                  {apiResult.data.deviceInfo?.brand} {apiResult.data.deviceInfo?.model} • {apiResult.data.retailer?.name}
                 </div>
               </div>
             ) : (
-              <div className="p-4 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 text-xs font-medium">
-                <span className="font-bold text-slate-900">Record Not Found:</span> Scanned string <code className="font-mono bg-white px-1 py-0.5 rounded border border-slate-200 text-slate-800">{scannedCode}</code> is not registered in DB yet.
+              <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs font-medium">
+                <span className="font-bold text-rose-800">Record Not Found:</span> Scanned code <code className="font-mono bg-white px-1 py-0.5 rounded border border-rose-200 text-rose-900 font-bold">{scannedCode}</code> is not registered on the network.
               </div>
             )}
           </div>

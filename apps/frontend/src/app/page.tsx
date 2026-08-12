@@ -102,46 +102,40 @@ export default function PublicLandingPageV2() {
     };
   };
 
+  const [isCameraFrozen, setIsCameraFrozen] = useState(false);
+  const [scannedFormat, setScannedFormat] = useState<string | null>(null);
+
   useEffect(() => {
-    let html5QrCode: any = null;
+    let codeReader: any = null;
+    let controls: any = null;
     let isMounted = true;
 
     if (activeHeroTab === 'qr') {
       setCameraError(null);
-      import('html5-qrcode').then(({ Html5Qrcode, Html5QrcodeSupportedFormats }) => {
+      setIsCameraFrozen(false);
+      setScannedFormat(null);
+
+      import('@zxing/browser').then(({ BrowserMultiFormatReader }) => {
         if (!isMounted) return;
 
-        // Ensure container exists
-        setTimeout(() => {
-          const element = document.getElementById('qr-camera-scanner');
-          if (!element) return;
+        setTimeout(async () => {
+          const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
+          if (!videoElement) return;
 
           try {
-            html5QrCode = new Html5Qrcode('qr-camera-scanner');
-            
-            const formatsToSupport = [
-              Html5QrcodeSupportedFormats.QR_CODE,
-              Html5QrcodeSupportedFormats.CODE_128,
-              Html5QrcodeSupportedFormats.CODE_39,
-              Html5QrcodeSupportedFormats.EAN_13,
-              Html5QrcodeSupportedFormats.EAN_8,
-              Html5QrcodeSupportedFormats.UPC_A,
-              Html5QrcodeSupportedFormats.UPC_E,
-            ];
-
-            // Triggers browser's native camera permission prompt (Allow / Decline) immediately!
-            html5QrCode
-              .start(
-                { facingMode: 'environment' },
-                {
-                  fps: 15,
-                  qrbox: { width: 260, height: 180 },
-                  formatsToSupport: formatsToSupport,
-                  experimentalFeatures: {
-                    useBarCodeDetectorIfSupported: true,
-                  },
-                },
-                async (decodedText: string) => {
+            codeReader = new BrowserMultiFormatReader();
+            controls = await codeReader.decodeFromVideoDevice(
+              undefined,
+              videoElement,
+              async (result: any, err: any) => {
+                if (result && !isCameraFrozen) {
+                  const decodedText = result.getText();
+                  const formatName = result.getBarcodeFormat() ? `FORMAT_${result.getBarcodeFormat()}` : 'BARCODE';
+                  
+                  // Snapshot & Freeze Camera Feed immediately
+                  videoElement.pause();
+                  setIsCameraFrozen(true);
+                  setScannedFormat(formatName);
                   setHeroSearchInput(decodedText);
                   setHeroVerifying(true);
                   setHeroVerifiedResult(null);
@@ -157,7 +151,7 @@ export default function PublicLandingPageV2() {
                         searchedTerm: decodedText,
                       });
                     }
-                  } catch (err) {
+                  } catch (e) {
                     setHeroVerifiedResult({
                       found: false,
                       searchedTerm: decodedText,
@@ -165,35 +159,38 @@ export default function PublicLandingPageV2() {
                   } finally {
                     setHeroVerifying(false);
                   }
-                },
-                () => {}
-              )
-              .catch((err: any) => {
-                console.warn('Camera access prompt error or denied:', err);
-                setCameraError(
-                  'Camera access was denied or not available. Please allow camera permission in your browser or search by IMEI.'
-                );
-              });
-          } catch (e) {
-            console.error('Html5Qrcode init error:', e);
+                }
+              }
+            );
+          } catch (err: any) {
+            console.warn('ZXing camera start error:', err);
+            setCameraError(
+              'Camera access was denied or not available. Please allow camera permission in your browser or search by IMEI.'
+            );
           }
-        }, 100);
+        }, 150);
       }).catch(console.error);
     }
 
     return () => {
       isMounted = false;
-      if (html5QrCode) {
+      if (controls) {
         try {
-          if (html5QrCode.isScanning) {
-            html5QrCode.stop().then(() => html5QrCode.clear()).catch(() => {});
-          } else {
-            html5QrCode.clear();
-          }
+          controls.stop();
         } catch (e) {}
       }
     };
   }, [activeHeroTab]);
+
+  const resumeCameraScanning = () => {
+    setIsCameraFrozen(false);
+    setHeroVerifiedResult(null);
+    setScannedFormat(null);
+    const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
+    if (videoElement) {
+      videoElement.play().catch(() => {});
+    }
+  };
 
   const handleHeroVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -471,23 +468,44 @@ export default function PublicLandingPageV2() {
                 ) : (
                   <>
                     <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-900 text-white min-h-[260px] flex items-center justify-center">
-                      <div id="qr-camera-scanner" className="w-full h-full min-h-[260px]" />
+                      <video id="zxing-hero-video" className="w-full h-full min-h-[260px] object-cover" muted playsInline />
                       <div id="qr-camera-scanner-file" className="hidden" />
-                      <div className="scanner-overlay-reticle">
-                        <div className="scanner-overlay-laser" />
-                      </div>
+                      {!isCameraFrozen && (
+                        <div className="scanner-overlay-reticle">
+                          <div className="scanner-overlay-laser" />
+                        </div>
+                      )}
+                      {isCameraFrozen && (
+                        <div className="absolute inset-0 bg-slate-950/40 backdrop-blur-[2px] flex flex-col items-center justify-center gap-2 p-4 text-center">
+                          <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-black rounded-full shadow-lg animate-bounce">
+                            SNAPSHOT CAPTURED ✨
+                          </span>
+                        </div>
+                      )}
                     </div>
                     <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-slate-500 font-medium">
-                      <span>Align barcode or QR code inside green box</span>
-                      <label className="cursor-pointer font-bold text-blue-600 hover:underline flex items-center gap-1">
-                        <span>Upload Box Photo 📷</span>
-                        <input
-                          type="file"
-                          accept="image/*"
-                          onChange={handleScanFile}
-                          className="hidden"
-                        />
-                      </label>
+                      {isCameraFrozen ? (
+                        <button
+                          type="button"
+                          onClick={resumeCameraScanning}
+                          className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-xl transition shadow-md flex items-center justify-center gap-2 text-xs"
+                        >
+                          <RotateCcw className="w-4 h-4" /> Scan Next Phone 📷
+                        </button>
+                      ) : (
+                        <>
+                          <span>Align barcode or QR code inside green box</span>
+                          <label className="cursor-pointer font-bold text-blue-600 hover:underline flex items-center gap-1">
+                            <span>Upload Box Photo 📷</span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleScanFile}
+                              className="hidden"
+                            />
+                          </label>
+                        </>
+                      )}
                     </div>
                   </>
                 )}
