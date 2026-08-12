@@ -105,6 +105,7 @@ export default function PublicLandingPageV2() {
 
   const [isCameraFrozen, setIsCameraFrozen] = useState(false);
   const [scannedFormat, setScannedFormat] = useState<string | null>(null);
+  const [scannedRawText, setScannedRawText] = useState<string | null>(null);
   const [cameraGuidance, setCameraGuidance] = useState<{
     message: string;
     type: 'success' | 'warning' | 'dark' | 'info';
@@ -304,7 +305,7 @@ export default function PublicLandingPageV2() {
     try {
       const [{ BrowserMultiFormatReader }, { DecodeHintType, BarcodeFormat }] = await Promise.all([
         import('@zxing/browser'),
-        import('@zxing/library')
+        import('@zxing/library'),
       ]);
       const hints = new Map();
       hints.set(DecodeHintType.TRY_HARDER, true);
@@ -318,13 +319,13 @@ export default function PublicLandingPageV2() {
       ]);
       const reader = new BrowserMultiFormatReader(hints);
       const imgElement = document.createElement('img');
-      imgElement.src = imageUrl;
 
       imgElement.onload = async () => {
         try {
           const result = await reader.decodeFromImageElement(imgElement);
           const rawText = result.getText();
           const cleanIdentifier = extractImeiAndSerial(rawText);
+          setScannedRawText(rawText);
           setHeroSearchInput(cleanIdentifier);
 
           const data = await api.verifyPublicImei(cleanIdentifier);
@@ -338,7 +339,7 @@ export default function PublicLandingPageV2() {
             });
           }
         } catch (decodeErr) {
-          console.warn('Image barcode decode failed, falling back to OCR text recognition:', decodeErr);
+          console.warn('Image barcode decode failed, trying OCR text recognition:', decodeErr);
           try {
             const { createWorker } = await import('tesseract.js');
             const worker = await createWorker('eng');
@@ -346,6 +347,7 @@ export default function PublicLandingPageV2() {
             await worker.terminate();
 
             const parsedIdentifier = extractImeiAndSerial(ocrText);
+            setScannedRawText(ocrText.slice(0, 40));
             if (parsedIdentifier && parsedIdentifier.length >= 8) {
               setHeroSearchInput(parsedIdentifier);
               const data = await api.verifyPublicImei(parsedIdentifier);
@@ -376,6 +378,17 @@ export default function PublicLandingPageV2() {
           URL.revokeObjectURL(imageUrl);
         }
       };
+
+      imgElement.onerror = () => {
+        setHeroVerifying(false);
+        URL.revokeObjectURL(imageUrl);
+        setHeroVerifiedResult({
+          found: false,
+          searchedTerm: 'Image Load Error',
+        });
+      };
+
+      imgElement.src = imageUrl;
     } catch (e) {
       setHeroVerifying(false);
     }
@@ -716,6 +729,28 @@ export default function PublicLandingPageV2() {
                         />
                       </label>
                     </div>
+
+                    {/* Exact Detection Transparency Card */}
+                    {scannedRawText && (
+                      <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1 animate-in fade-in duration-200">
+                        <div className="flex items-center justify-between text-slate-400 font-bold">
+                          <span className="flex items-center gap-1.5 text-blue-400">
+                            <Sparkles className="w-3.5 h-3.5" /> Exact Camera / Photo Detection:
+                          </span>
+                          <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-emerald-400 font-mono">
+                            {scannedFormat || 'OCR READ'}
+                          </span>
+                        </div>
+                        <div className="font-mono text-emerald-400 font-bold truncate text-sm">
+                          Seeing: "{scannedRawText}"
+                        </div>
+                        {scannedRawText !== heroSearchInput && heroSearchInput && (
+                          <div className="text-[11px] text-slate-400 font-medium">
+                            Extracted Identifier: <span className="font-mono font-bold text-white underline">{heroSearchInput}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
