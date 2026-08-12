@@ -128,3 +128,68 @@ body {
   background-size: 200% 100%;
   animation: vf-shimmer 1.5s infinite ease-in-out;
 }
+
+/* QR Camera Reticle & Laser Scan Bar Overlay */
+#qr-camera-scanner {
+  position: relative;
+  background: #0f172a !important;
+  border: none !important;
+}
+
+#qr-camera-scanner video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 1rem !important;
+}
+
+#qr-camera-scanner img {
+  display: none !important;
+}
+
+#qr-camera-scanner button {
+  background: #2563eb !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  padding: 8px 16px !important;
+  border-radius: 10px !important;
+  border: none !important;
+  margin-top: 12px !important;
+}
+
+/* Custom Reticle Overlay Frame */
+.scanner-overlay-reticle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  transform: translate(-50%, -50%);
+  border: 2.5px solid #10b981;
+  box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.65), 0 0 20px rgba(16, 185, 129, 0.4);
+  border-radius: 20px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Animated Green Laser Scan Line */
+.scanner-overlay-laser {
+  position: absolute;
+  top: 0;
+  left: 5%;
+  width: 90%;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #10b981, #34d399, #10b981, transparent);
+  box-shadow: 0 0 12px #10b981, 0 0 6px #34d399;
+  border-radius: 9999px;
+  animation: laserScan 2s ease-in-out infinite alternate;
+}
+
+@keyframes laserScan {
+  0% {
+    top: 5%;
+  }
+  100% {
+    top: 92%;
+  }
+}

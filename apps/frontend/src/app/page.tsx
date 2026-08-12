@@ -46,6 +46,7 @@ export default function PublicLandingPageV2() {
   const [heroSearchInput, setHeroSearchInput] = useState('');
   const [heroVerifying, setHeroVerifying] = useState(false);
   const [heroVerifiedResult, setHeroVerifiedResult] = useState<any>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   // Product Showcase Tab State (Section 8)
   const [showcaseTab, setShowcaseTab] = useState<'dashboard' | 'verification' | 'inventory' | 'sales' | 'receipts' | 'reports'>('dashboard');
@@ -68,7 +69,28 @@ export default function PublicLandingPageV2() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const [cameraError, setCameraError] = useState<string | null>(null);
+  const formatVerifiedPhoneResult = (phone: any) => {
+    const brandModel = [phone.brand, phone.model].filter(Boolean).join(' ').trim();
+    const specs = [phone.storageCapacity, phone.color].filter(Boolean).join(' • ').trim();
+
+    let warrantyText = 'No Active Warranty';
+    if (phone.warrantyExpiryDate) {
+      warrantyText = `Active (until ${new Date(phone.warrantyExpiryDate).toLocaleDateString()})`;
+    } else if (phone.warrantyDurationMonths && phone.warrantyDurationMonths > 0) {
+      warrantyText = `${phone.warrantyDurationMonths} Months Active Warranty`;
+    }
+
+    return {
+      found: true,
+      retailer: phone.business?.name,
+      model: brandModel,
+      storage: specs,
+      warranty: warrantyText,
+      imei: phone.imei1,
+      serial: phone.serialNumber,
+      status: phone.status,
+    };
+  };
 
   useEffect(() => {
     let html5QrCode: any = null;
@@ -76,7 +98,7 @@ export default function PublicLandingPageV2() {
 
     if (activeHeroTab === 'qr') {
       setCameraError(null);
-      import('html5-qrcode').then(({ Html5Qrcode }) => {
+      import('html5-qrcode').then(({ Html5Qrcode, Html5QrcodeSupportedFormats }) => {
         if (!isMounted) return;
 
         // Ensure container exists
@@ -87,11 +109,28 @@ export default function PublicLandingPageV2() {
           try {
             html5QrCode = new Html5Qrcode('qr-camera-scanner');
             
+            const formatsToSupport = [
+              Html5QrcodeSupportedFormats.QR_CODE,
+              Html5QrcodeSupportedFormats.CODE_128,
+              Html5QrcodeSupportedFormats.CODE_39,
+              Html5QrcodeSupportedFormats.EAN_13,
+              Html5QrcodeSupportedFormats.EAN_8,
+              Html5QrcodeSupportedFormats.UPC_A,
+              Html5QrcodeSupportedFormats.UPC_E,
+            ];
+
             // Triggers browser's native camera permission prompt (Allow / Decline) immediately!
             html5QrCode
               .start(
                 { facingMode: 'environment' },
-                { fps: 10, qrbox: { width: 220, height: 220 } },
+                {
+                  fps: 15,
+                  qrbox: { width: 260, height: 180 },
+                  formatsToSupport: formatsToSupport,
+                  experimentalFeatures: {
+                    useBarCodeDetectorIfSupported: true,
+                  },
+                },
                 async (decodedText: string) => {
                   setHeroSearchInput(decodedText);
                   setHeroVerifying(true);
@@ -99,18 +138,7 @@ export default function PublicLandingPageV2() {
 
                   try {
                     const phone = await api.verifyPublicImei(decodedText.trim());
-                    setHeroVerifiedResult({
-                      found: true,
-                      retailer: phone.business?.name || 'Verified Partner Store',
-                      model: `${phone.brand || ''} ${phone.model || ''}`.trim(),
-                      storage: `${phone.storageCapacity || ''} ${phone.color ? '• ' + phone.color : ''}`.trim(),
-                      warranty: phone.warrantyExpiryDate
-                        ? `Active (until ${new Date(phone.warrantyExpiryDate).toLocaleDateString()})`
-                        : `${phone.warrantyDurationMonths || 12} Months Active`,
-                      imei: phone.imei1,
-                      serial: phone.serialNumber || 'N/A',
-                      status: phone.status || 'IN_STOCK',
-                    });
+                    setHeroVerifiedResult(formatVerifiedPhoneResult(phone));
                   } catch (err) {
                     setHeroVerifiedResult({
                       found: false,
@@ -157,22 +185,36 @@ export default function PublicLandingPageV2() {
 
     try {
       const phone = await api.verifyPublicImei(heroSearchInput.trim());
-      setHeroVerifiedResult({
-        found: true,
-        retailer: phone.business?.name || 'Verified Partner Store',
-        model: `${phone.brand || ''} ${phone.model || ''}`.trim(),
-        storage: `${phone.storageCapacity || ''} ${phone.color ? '• ' + phone.color : ''}`.trim(),
-        warranty: phone.warrantyExpiryDate
-          ? `Active (until ${new Date(phone.warrantyExpiryDate).toLocaleDateString()})`
-          : `${phone.warrantyDurationMonths || 12} Months Active`,
-        imei: phone.imei1,
-        serial: phone.serialNumber || 'N/A',
-        status: phone.status || 'IN_STOCK',
-      });
+      setHeroVerifiedResult(formatVerifiedPhoneResult(phone));
     } catch (err) {
       setHeroVerifiedResult({
         found: false,
         searchedTerm: heroSearchInput.trim(),
+      });
+    } finally {
+      setHeroVerifying(false);
+    }
+  };
+
+  const handleScanFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setHeroVerifying(true);
+    setHeroVerifiedResult(null);
+
+    try {
+      const { Html5Qrcode } = await import('html5-qrcode');
+      const html5QrCode = new Html5Qrcode('qr-camera-scanner-file');
+      const decodedText = await html5QrCode.scanFile(file, true);
+      setHeroSearchInput(decodedText);
+
+      const phone = await api.verifyPublicImei(decodedText.trim());
+      setHeroVerifiedResult(formatVerifiedPhoneResult(phone));
+    } catch (err) {
+      setHeroVerifiedResult({
+        found: false,
+        searchedTerm: 'Uploaded Image',
       });
     } finally {
       setHeroVerifying(false);
@@ -394,9 +436,24 @@ export default function PublicLandingPageV2() {
                   </div>
                 ) : (
                   <>
-                    <div id="qr-camera-scanner" className="w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-900 text-white min-h-[260px] flex items-center justify-center" />
-                    <div className="text-[11px] text-slate-500 font-medium text-center">
-                      Point camera at phone receipt QR code or device barcode to scan automatically.
+                    <div className="relative w-full rounded-2xl overflow-hidden border border-slate-200 shadow-inner bg-slate-900 text-white min-h-[260px] flex items-center justify-center">
+                      <div id="qr-camera-scanner" className="w-full h-full min-h-[260px]" />
+                      <div id="qr-camera-scanner-file" className="hidden" />
+                      <div className="scanner-overlay-reticle">
+                        <div className="scanner-overlay-laser" />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-slate-500 font-medium">
+                      <span>Align barcode or QR code inside green box</span>
+                      <label className="cursor-pointer font-bold text-blue-600 hover:underline flex items-center gap-1">
+                        <span>Upload Box Photo 📷</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleScanFile}
+                          className="hidden"
+                        />
+                      </label>
                     </div>
                   </>
                 )}
@@ -437,12 +494,20 @@ export default function PublicLandingPageV2() {
               </a>
             </div>
 
+            {/* Live Verification Status Loading Banner */}
+            {heroVerifying && (
+              <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold flex items-center justify-center gap-2.5 animate-pulse shadow-sm">
+                <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
+                <span>Searching live database ledger...</span>
+              </div>
+            )}
+
             {/* Live Verification Result Preview Card */}
-            {heroVerifiedResult && (
-              <div className="mt-4 p-4 rounded-xl bg-gradient-to-b from-emerald-50/80 to-emerald-50/20 border border-emerald-200 animate-in fade-in duration-200">
+            {!heroVerifying && heroVerifiedResult && (
+              <div className="mt-4 animate-in fade-in duration-200">
                 {heroVerifiedResult.found ? (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between border-b border-emerald-200/60 pb-2.5">
+                  <div className="p-4 rounded-2xl bg-gradient-to-b from-emerald-50 to-emerald-50/40 border border-emerald-200 shadow-sm space-y-3">
+                    <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2.5">
                       <div className="flex items-center gap-2">
                         <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
                         <span className="text-xs sm:text-sm font-extrabold text-slate-900">
@@ -457,11 +522,11 @@ export default function PublicLandingPageV2() {
                     <div className="grid grid-cols-2 gap-2 text-xs">
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Authorized Retailer</span>
-                        <span className="font-bold text-slate-900">{heroVerifiedResult.retailer}</span>
+                        <span className="font-extrabold text-slate-900">{heroVerifiedResult.retailer}</span>
                       </div>
                       <div>
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Device Model</span>
-                        <span className="font-bold text-slate-900">{heroVerifiedResult.model}</span>
+                        <span className="font-extrabold text-slate-900">{heroVerifiedResult.model}</span>
                       </div>
                       <div className="mt-1">
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Specs & Storage</span>
@@ -469,16 +534,19 @@ export default function PublicLandingPageV2() {
                       </div>
                       <div className="mt-1">
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Warranty Status</span>
-                        <span className="font-bold text-emerald-700">{heroVerifiedResult.warranty}</span>
+                        <span className="font-extrabold text-emerald-700">{heroVerifiedResult.warranty}</span>
                       </div>
                     </div>
                   </div>
                 ) : (
-                  <div className="p-3 text-center space-y-1 text-xs">
-                    <div className="font-bold text-rose-700">No Registered Device Record Found</div>
-                    <div className="text-slate-600 text-[11px]">
-                      No active store registration matched identifier <code className="font-mono bg-white px-1 py-0.5 rounded border border-rose-200 text-rose-900 font-bold">{heroVerifiedResult.searchedTerm}</code>.
+                  <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200/90 text-slate-900 shadow-sm space-y-2 text-xs">
+                    <div className="flex items-center gap-2 font-extrabold text-rose-800 text-sm">
+                      <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
+                      <span>No Registered Record Found</span>
                     </div>
+                    <p className="text-slate-600 text-xs font-medium leading-relaxed">
+                      Identifier <code className="font-mono bg-white px-1.5 py-0.5 rounded border border-rose-200 text-rose-900 font-bold">{heroVerifiedResult.searchedTerm}</code> is not registered on the network.
+                    </p>
                   </div>
                 )}
               </div>
