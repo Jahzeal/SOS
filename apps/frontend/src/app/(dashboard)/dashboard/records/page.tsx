@@ -115,11 +115,6 @@ export default function PhoneRecordsPage() {
       {/* Top Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Phone Records</span>
-          </nav>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Phone Records
           </h1>
@@ -259,8 +254,119 @@ export default function PhoneRecordsPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile Cards View (Hidden on larger screens) */}
+        <div className="block sm:hidden divide-y divide-slate-100 bg-white">
+          {loading ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold text-xs">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading records...
+              </div>
+            </div>
+          ) : error ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold text-xs">
+                <AlertTriangle className="w-5 h-5" />
+                {error}
+              </div>
+            </div>
+          ) : records.length === 0 ? (
+            <div className="py-16 text-center text-slate-400 text-xs animate-in fade-in duration-200">
+              <Smartphone className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+              <p className="font-bold text-slate-600">No records found</p>
+              <p>Try adjusting your filters or register a new phone.</p>
+            </div>
+          ) : (
+            records.map((rec) => {
+              const warrantyActive = isWarrantyActive(rec.warrantyExpiryDate);
+              return (
+                <div key={rec.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+                        <Smartphone className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-slate-900 text-sm">{rec.model}</h4>
+                        <p className="text-[11px] text-slate-500 font-medium">{rec.brand} • {rec.condition}</p>
+                      </div>
+                    </div>
+                    {/* Status Badge */}
+                    <div>
+                      {rec.status === 'IN_STOCK' && <Badge variant="verified" size="sm">IN STOCK</Badge>}
+                      {rec.status === 'SOLD' && <Badge variant="sold" size="sm">SOLD</Badge>}
+                      {rec.status === 'IN_REPAIR' && <Badge variant="business" size="sm">REPAIR</Badge>}
+                      {rec.status === 'RESERVED' && <Badge variant="starter" size="sm">RESERVED</Badge>}
+                      {rec.status === 'DISPOSED' && <Badge variant="sold" size="sm">DISPOSED</Badge>}
+                      {rec.status === 'RETURNED' && <Badge variant="starter" size="sm">RETURNED</Badge>}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-wrap gap-1">
+                    {rec.storageCapacity && (
+                      <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200/80 rounded font-bold text-[9px] text-slate-600">
+                        {rec.storageCapacity}
+                      </span>
+                    )}
+                    {rec.color && (
+                      <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200/80 rounded font-bold text-[9px] text-slate-600">
+                        {rec.color}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">IMEI / SN</span>
+                      <div className="flex items-center gap-1 font-mono font-bold text-slate-900 text-[11px] whitespace-nowrap">
+                        <span>{rec.imei1}</span>
+                        <button onClick={() => handleCopy(rec.imei1)} title="Copy IMEI" className="text-slate-400 hover:text-slate-600">
+                          <Copy className="w-3 h-3" />
+                        </button>
+                        {copiedImei === rec.imei1 && (
+                          <span className="text-[9px] text-emerald-600 font-bold">Copied!</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Price</span>
+                      <span className="font-extrabold text-slate-900 text-[13px]">
+                        {rec.sellingPrice != null ? `₦${rec.sellingPrice.toLocaleString()}` : (rec.purchasePrice != null ? `₦${rec.purchasePrice.toLocaleString()}` : '—')}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block mb-0.5">Warranty</span>
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <span className={`w-1.5 h-1.5 rounded-full ${warrantyActive ? 'bg-emerald-600' : 'bg-rose-500'}`} />
+                        <span className={warrantyActive ? 'text-emerald-700' : 'text-rose-600'}>
+                          {formatWarranty(rec.warrantyExpiryDate)}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link href={`/dashboard/records/${rec.id}`}>
+                        <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1">
+                          <Eye className="w-3.5 h-3.5" /> Detail
+                        </button>
+                      </Link>
+                      <Link href={`/dashboard/checkout?device=${rec.id}`}>
+                        <button className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1">
+                          <ShoppingCart className="w-3.5 h-3.5" /> Sell
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table View (Hidden on mobile) */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
               <tr>

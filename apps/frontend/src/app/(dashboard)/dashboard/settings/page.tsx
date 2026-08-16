@@ -465,8 +465,56 @@ export default function RebuiltSettingsPage() {
               </div>
             </div>
 
-            {/* Staff Table */}
-            <div className="overflow-x-auto">
+            {/* Mobile Cards View (Hidden on larger screens) */}
+            <div className="block sm:hidden space-y-4">
+              {filteredUsers.map((u) => (
+                <div key={u.id} className="p-4 rounded-xl border border-slate-200 bg-white space-y-3 shadow-subtle">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded-full ${u.color} text-white font-bold flex items-center justify-center text-xs shadow-sm`}>
+                        {u.initials}
+                      </div>
+                      <div>
+                        <div className="font-bold text-slate-900 text-sm">{u.name}</div>
+                        <div className="text-[11px] text-slate-500">{u.email}</div>
+                      </div>
+                    </div>
+                    <button className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition">
+                      <MoreVertical className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Role</span>
+                      <span className="font-bold text-slate-800">{u.role}</span>
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Branch</span>
+                      <span className="text-slate-600 font-medium">{u.branch}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                    <div>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Status</span>
+                      {u.status === 'ACTIVE' ? (
+                        <Badge variant="verified" size="sm">Active</Badge>
+                      ) : (
+                        <Badge variant="neutral" size="sm" className="bg-slate-100 text-slate-600 border-slate-200">Inactive</Badge>
+                      )}
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Last Active</span>
+                      <span className="text-slate-500 text-[11px] font-medium">{u.lastActive}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop Table View (Hidden on mobile) */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-xs whitespace-nowrap">
                 <thead className="bg-slate-50 text-slate-500 font-extrabold uppercase border-b border-slate-200 text-[10px] tracking-wider">
                   <tr>

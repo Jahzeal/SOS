@@ -172,11 +172,6 @@ export default function InventoryPage() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Inventory Overview</span>
-          </nav>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Inventory Overview
           </h1>
@@ -387,8 +382,94 @@ export default function InventoryPage() {
           </div>
         </div>
 
-        {/* Data Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile Cards View (Hidden on larger screens) */}
+        <div className="block sm:hidden divide-y divide-slate-100 bg-white">
+          {isLoading ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold text-xs">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading inventory records...
+              </div>
+            </div>
+          ) : error ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold text-xs">
+                <AlertTriangle className="w-5 h-5" />
+                {error}
+              </div>
+            </div>
+          ) : items.length === 0 ? (
+            <div className="py-16 text-center text-slate-400 text-xs animate-in fade-in duration-200">
+              <Smartphone className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+              <p className="font-bold text-sm text-slate-600">No inventory items found</p>
+              <p className="text-xs">Try adjusting your search filters or register a new phone.</p>
+            </div>
+          ) : (
+            items.map((item) => (
+              <div key={item.id} className="p-4 space-y-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0 shadow-subtle">
+                      <Smartphone className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-extrabold text-slate-900 text-sm">{item.model}</h4>
+                      <p className="text-[11px] text-slate-500 font-medium">{item.brand}</p>
+                    </div>
+                  </div>
+                  {/* Status / Warranty Badge */}
+                  <div>
+                    <Badge variant={item.warrantyStatus === 'active' ? 'verified' : 'sold'} size="sm">
+                      {item.warrantyStatus.toUpperCase()}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-1">
+                  <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200/80 rounded font-bold text-[9px] text-slate-600">
+                    {item.storage}
+                  </span>
+                  <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200/80 rounded font-bold text-[9px] text-slate-600">
+                    {item.color}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">IMEI</span>
+                    <span className="font-mono font-bold text-slate-900 text-[11px]">{item.imei}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block">Value</span>
+                    <span className="font-extrabold text-slate-900 text-[13px]">{item.value}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
+                  <div>
+                    <span className="text-[9px] text-slate-400 font-bold uppercase block mb-0.5">Days in Inventory</span>
+                    <div className="flex items-center gap-1.5 font-bold">
+                      <span className={`w-1.5 h-1.5 rounded-full ${item.daysInInv > 60 ? 'bg-rose-600' : 'bg-emerald-600'}`} />
+                      <span className={item.daysInInv > 60 ? 'text-rose-600 font-extrabold' : 'text-slate-800'}>
+                        {item.daysInInv} Days
+                      </span>
+                    </div>
+                  </div>
+                  <div>
+                    <Link href="/dashboard/records">
+                      <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1">
+                        View Details
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop Table View (Hidden on mobile) */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
               <tr>

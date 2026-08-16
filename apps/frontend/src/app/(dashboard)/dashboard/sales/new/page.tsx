@@ -285,13 +285,6 @@ function CheckoutPOSContent() {
       {/* Top Header & Multi-Step Progress Tracker */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-slate-900 font-bold">Sales & Invoices</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Checkout POS</span>
-          </nav>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             {checkoutStep === 1 && 'Checkout POS Terminal'}
             {checkoutStep === 2 && 'Select Payment Method'}
@@ -305,16 +298,16 @@ function CheckoutPOSContent() {
         </div>
 
         {/* Step Indicator Badges */}
-        <div className="flex items-center gap-2 text-xs font-extrabold shrink-0">
-          <span className={`px-3 py-1.5 rounded-full border transition ${checkoutStep === 1 ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+        <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold shrink-0">
+          <span className={`transition-colors duration-200 ${checkoutStep === 1 ? 'text-blue-600 font-extrabold font-sans' : 'text-slate-400'}`}>
             1. Items & Customer
           </span>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className={`px-3 py-1.5 rounded-full border transition ${checkoutStep === 2 ? 'bg-blue-600 text-white border-blue-600 shadow-sm' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+          <ChevronRight className="w-3 h-3 text-slate-300 animate-in fade-in" />
+          <span className={`transition-colors duration-200 ${checkoutStep === 2 ? 'text-blue-600 font-extrabold font-sans' : 'text-slate-400'}`}>
             2. Payment Method
           </span>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className={`px-3 py-1.5 rounded-full border transition ${checkoutStep === 3 ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
+          <ChevronRight className="w-3 h-3 text-slate-300 animate-in fade-in" />
+          <span className={`transition-colors duration-200 ${checkoutStep === 3 ? 'text-emerald-600 font-extrabold font-sans' : 'text-slate-400'}`}>
             3. Receipt & Archive
           </span>
         </div>

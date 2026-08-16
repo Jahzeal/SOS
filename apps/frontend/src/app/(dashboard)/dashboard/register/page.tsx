@@ -279,11 +279,6 @@ export default function RegisterPhonePage() {
       {/* Top Header Row with Breadcrumbs & Action Buttons */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Register Phone</span>
-          </nav>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Register Phone
           </h1>
@@ -295,14 +290,6 @@ export default function RegisterPhonePage() {
         <div className="flex items-center gap-2 shrink-0">
           <Button variant="secondary" size="sm" leftIcon={<Upload className="w-4 h-4 text-slate-600" />}>
             Bulk Registration
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => setShowCameraScanner(true)}
-            leftIcon={<QrCode className="w-4 h-4" />}
-          >
-            Scan QR Code
           </Button>
         </div>
       </div>
@@ -412,14 +399,14 @@ export default function RegisterPhonePage() {
               {/* Camera Scanner Trigger Box */}
               <div
                 onClick={() => setShowCameraScanner(true)}
-                className="p-8 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition-all cursor-pointer flex flex-row items-center justify-center gap-6 group"
+                className="p-4 sm:p-8 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition-all cursor-pointer flex flex-row items-center justify-center gap-4 sm:gap-6 group"
               >
-                <div className="w-20 h-20 bg-white rounded-2xl shadow-md border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <QrCode className="w-10 h-10 text-blue-600" />
+                <div className="w-12 h-12 sm:w-20 sm:h-20 bg-white rounded-xl sm:rounded-2xl shadow-md border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                  <QrCode className="w-6 h-6 sm:w-10 sm:h-10 text-blue-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-extrabold text-lg text-blue-700">Scan Manufacturer QR</p>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">Camera will open automatically to scan barcode</p>
+                  <p className="font-extrabold text-sm sm:text-lg text-blue-700">Scan Manufacturer QR</p>
+                  <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5 leading-tight">Camera will open automatically to scan barcode</p>
                 </div>
               </div>
 
