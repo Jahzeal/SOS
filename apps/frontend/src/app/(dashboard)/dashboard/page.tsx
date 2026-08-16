@@ -47,10 +47,7 @@ export default function BusinessDashboardPage() {
   const router = useRouter();
   const { user, isLoading } = useAuth();
 
-  const [activeTab, setActiveTab] = useState<'all' | 'instock' | 'sold'>('all');
-  const [tableSearch, setTableSearch] = useState('');
   const [salesTimeframe, setSalesTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
-  const [copiedImei, setCopiedImei] = useState<string | null>(null);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
   const [livePhones, setLivePhones] = useState<any[]>([]);
@@ -88,152 +85,6 @@ export default function BusinessDashboardPage() {
   const businessName = user?.business?.name || 'My Store Workspace';
   const plan = user?.business?.plan || 'BUSINESS';
 
-  // Sample Registered Phones Ledger Data
-  const registeredPhones = [
-    {
-      id: 'REC-901',
-      brand: 'Apple',
-      model: 'iPhone 16 Pro Max',
-      imei: '354892019283741',
-      serial: 'SN-IP16P-908123',
-      storage: '512GB Natural Titanium',
-      color: 'Natural Titanium',
-      date: '2026-07-30',
-      status: 'IN_STOCK',
-      customer: 'Unassigned',
-      warranty: '12 Months Active',
-    },
-    {
-      id: 'REC-902',
-      brand: 'Samsung',
-      model: 'Galaxy S25 Ultra',
-      imei: '864902049182309',
-      serial: 'SN-S25U-102938',
-      storage: '256GB Titanium Black',
-      color: 'Titanium Black',
-      date: '2026-07-29',
-      status: 'IN_STOCK',
-      customer: 'Unassigned',
-      warranty: '24 Months Active',
-    },
-    {
-      id: 'REC-903',
-      brand: 'Apple',
-      model: 'iPhone 15 Pro',
-      imei: '358291048291048',
-      serial: 'SN-IP15P-881290',
-      storage: '128GB Blue Titanium',
-      color: 'Blue Titanium',
-      date: '2026-07-28',
-      status: 'SOLD',
-      customer: 'Alex Dev',
-      warranty: 'Active (Exp 2027)',
-    },
-    {
-      id: 'REC-904',
-      brand: 'Google',
-      model: 'Pixel 9 Pro',
-      imei: '351982039182049',
-      serial: 'SN-PX9P-440192',
-      storage: '256GB Obsidian',
-      color: 'Obsidian',
-      date: '2026-07-26',
-      status: 'IN_STOCK',
-      customer: 'Unassigned',
-      warranty: '12 Months Active',
-    },
-    {
-      id: 'REC-905',
-      brand: 'Apple',
-      model: 'iPhone 14',
-      imei: '359102938471029',
-      serial: 'SN-IP14-229103',
-      storage: '128GB Midnight',
-      color: 'Midnight',
-      date: '2026-07-25',
-      status: 'SOLD',
-      customer: 'Sarah Connor',
-      warranty: 'Expired',
-    },
-  ];
-
-  // Verification Activity Log Data
-  const verificationActivity = [
-    {
-      id: 'ACT-1',
-      device: 'iPhone 16 Pro Max',
-      imei: '354892019283741',
-      type: 'Customer Scan',
-      time: '2 minutes ago',
-      branch: 'Main Downtown Branch',
-      result: 'GENUINE',
-    },
-    {
-      id: 'ACT-2',
-      device: 'Samsung Galaxy S25 Ultra',
-      imei: '864902049182309',
-      type: 'Staff Lookup',
-      time: '14 minutes ago',
-      branch: 'Westside Mall Branch',
-      result: 'GENUINE',
-    },
-    {
-      id: 'ACT-3',
-      device: 'Google Pixel 9 Pro',
-      imei: '351982039182049',
-      type: 'Receipt QR Check',
-      time: '1 hour ago',
-      branch: 'Main Downtown Branch',
-      result: 'GENUINE',
-    },
-    {
-      id: 'ACT-4',
-      device: 'iPhone 15 Pro',
-      imei: '358291048291048',
-      type: 'Warranty Claim Check',
-      time: '3 hours ago',
-      branch: 'Main Downtown Branch',
-      result: 'GENUINE',
-    },
-  ];
-
-  const displayPhones = useMemo(() => {
-    return livePhones.map((p) => ({
-      id: p.id || `REC-${p.imei1?.slice(-4)}`,
-      brand: p.brand,
-      model: p.model,
-      imei: p.imei1,
-      serial: p.serialNumber || 'N/A',
-      storage: p.storageCapacity || 'N/A',
-      color: p.color || 'Standard',
-      date: new Date(p.createdAt || Date.now()).toISOString().split('T')[0],
-      status: p.status || 'IN_STOCK',
-      customer: p.customer ? p.customer.name : 'Unassigned',
-      warranty: `${p.warrantyDurationMonths || 12} Months Active`,
-    }));
-  }, [livePhones]);
-
-  const filteredPhones = displayPhones.filter((phone) => {
-    if (activeTab === 'instock' && phone.status !== 'IN_STOCK') return false;
-    if (activeTab === 'sold' && phone.status !== 'SOLD') return false;
-    if (tableSearch) {
-      const q = tableSearch.toLowerCase();
-      return (
-        phone.model.toLowerCase().includes(q) ||
-        phone.imei.toLowerCase().includes(q) ||
-        phone.serial.toLowerCase().includes(q) ||
-        phone.brand.toLowerCase().includes(q)
-      );
-    }
-    return true;
-  });
-
-  const handleCopyImei = (imei: string) => {
-    navigator.clipboard.writeText(imei);
-    setCopiedImei(imei);
-    setTimeout(() => setCopiedImei(null), 2000);
-  };
-
   return (
     <div className="space-y-8 font-sans pb-12">
       
@@ -246,10 +97,12 @@ export default function BusinessDashboardPage() {
 
         <div className="space-y-2 relative z-10">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200/80">
+            <span className="hidden sm:inline-block px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200/80">
               {businessName} • {plan} PLAN
             </span>
-            <span className="text-slate-500 text-xs font-semibold">• Main Downtown Branch</span>
+            <span className="text-slate-500 text-xs font-semibold">
+              <span className="hidden sm:inline">• </span>Main Downtown Branch
+            </span>
             <button
               onClick={() => setShowOnboardingModal(true)}
               className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold border border-emerald-200 transition flex items-center gap-1 cursor-pointer shadow-subtle"
@@ -268,23 +121,23 @@ export default function BusinessDashboardPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 relative z-10 shrink-0">
-          <Link href="/dashboard/register">
+        <div className="flex flex-row items-center gap-3 relative z-10 shrink-0 w-full sm:w-auto">
+          <Link href="/dashboard/register" className="flex-1 sm:flex-none">
             <Button
               variant="primary"
               size="lg"
               leftIcon={<Plus className="w-4 h-4" />}
-              className="shadow-md shadow-blue-600/10 font-bold"
+              className="w-full sm:w-auto shadow-md shadow-blue-600/10 font-bold"
             >
               Register New Phone
             </Button>
           </Link>
-          <Link href="/dashboard/verify">
+          <Link href="/dashboard/verify" className="flex-1 sm:flex-none">
             <Button
               variant="secondary"
               size="lg"
               leftIcon={<Receipt className="w-4 h-4 text-blue-600" />}
-              className="bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold"
+              className="w-full sm:w-auto bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold"
             >
               Record Sale
             </Button>
@@ -470,170 +323,6 @@ export default function BusinessDashboardPage() {
               <div className="text-[10px] text-slate-500 font-medium">Branches & branding</div>
             </div>
           </Link>
-        </div>
-      </div>
-      {/* ========================================================================= */}
-      {/* 4. LIVE VERIFICATION FEED & ACTIVITY                                     */}
-      {/* ========================================================================= */}
-      <div className="vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-          <div>
-            <h3 className="text-base font-extrabold text-slate-900">Live Verification Feed</h3>
-            <p className="text-xs text-slate-500 font-medium">Real-time store IMEI lookups and device origin scans</p>
-          </div>
-          <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200 flex items-center gap-1">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" /> LIVE LEDGER
-          </span>
-        </div>
-
-        <div className="space-y-3">
-            {livePhones.length > 0 ? (
-              livePhones.slice(0, 4).map((phone) => (
-                <div key={phone.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 text-xs space-y-1">
-                  <div className="flex items-center justify-between font-bold text-slate-900">
-                    <span className="flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" /> {phone.brand} {phone.model}
-                    </span>
-                    <span className="text-[10px] text-slate-400 font-mono">Just registered</span>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-500 font-mono text-[11px]">
-                    <span>IMEI: {phone.imei1}</span>
-                    <span className="text-emerald-700 font-bold">100% GENUINE</span>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="p-8 text-center bg-slate-50/60 rounded-xl border border-dashed border-slate-200 space-y-2">
-                <ShieldCheck className="w-8 h-8 text-slate-400 mx-auto" />
-                <p className="text-xs font-bold text-slate-700">No Verification Activity Yet</p>
-                <p className="text-[11px] text-slate-500">Scan events and public QR lookups for registered devices will appear here in real time.</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-      {/* ========================================================================= */}
-      {/* 5. RECENT PHONE REGISTRATIONS LEDGER TABLE                               */}
-      {/* ========================================================================= */}
-      <div className="vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-          <div>
-            <h3 className="text-lg font-extrabold text-slate-900">Recent Phone Registrations</h3>
-            <p className="text-xs text-slate-500 font-medium">Serial & IMEI ledger log across store branches</p>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {/* Filter Tabs */}
-            <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-600">
-              <button
-                onClick={() => setActiveTab('all')}
-                className={`px-3 py-1.5 rounded-lg transition ${activeTab === 'all' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'}`}
-              >
-                All ({displayPhones.length})
-              </button>
-              <button
-                onClick={() => setActiveTab('instock')}
-                className={`px-3 py-1.5 rounded-lg transition ${activeTab === 'instock' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'}`}
-              >
-                In Stock ({displayPhones.filter((p) => p.status === 'IN_STOCK').length})
-              </button>
-              <button
-                onClick={() => setActiveTab('sold')}
-                className={`px-3 py-1.5 rounded-lg transition ${activeTab === 'sold' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'}`}
-              >
-                Sold ({displayPhones.filter((p) => p.status === 'SOLD').length})
-              </button>
-            </div>
-
-            {/* Search Input */}
-            <div className="relative">
-              <input
-                type="text"
-                value={tableSearch}
-                onChange={(e) => setTableSearch(e.target.value)}
-                placeholder="Search IMEI or model..."
-                className="text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 font-medium text-slate-900 w-48"
-              />
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-            </div>
-          </div>
-        </div>
-
-        {/* Data Table */}
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-700">
-            <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 uppercase tracking-wider font-semibold text-[10px]">
-              <tr>
-                <th className="py-3 px-4">Device Model</th>
-                <th className="py-3 px-4">IMEI Number</th>
-                <th className="py-3 px-4">Serial Number</th>
-                <th className="py-3 px-4">Specs & Color</th>
-                <th className="py-3 px-4">Date Registered</th>
-                <th className="py-3 px-4">Warranty Terms</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredPhones.length > 0 ? (
-                filteredPhones.map((phone) => (
-                  <tr key={phone.id} className="hover:bg-slate-50/80 transition">
-                    <td className="py-3.5 px-4 font-bold text-slate-900 flex items-center gap-2">
-                      <Smartphone className="w-4 h-4 text-blue-600" />
-                      {phone.model}
-                    </td>
-                    <td className="py-3.5 px-4 font-mono font-semibold text-slate-800">
-                      <div className="flex items-center gap-1.5">
-                        <span>{phone.imei}</span>
-                        <button
-                          type="button"
-                          onClick={() => handleCopyImei(phone.imei)}
-                          title="Copy IMEI"
-                          className="text-slate-400 hover:text-slate-600"
-                        >
-                          <Copy className="w-3 h-3" />
-                        </button>
-                        {copiedImei === phone.imei && <span className="text-[10px] text-emerald-600 font-bold">Copied!</span>}
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-500">{phone.serial}</td>
-                    <td className="py-3.5 px-4 font-medium text-slate-600">{phone.storage}</td>
-                    <td className="py-3.5 px-4 text-slate-500 font-medium">{phone.date}</td>
-                    <td className="py-3.5 px-4 text-emerald-700 font-bold">{phone.warranty}</td>
-                    <td className="py-3.5 px-4 text-center">
-                      {phone.status === 'IN_STOCK' ? (
-                        <Badge variant="verified" size="sm">IN_STOCK</Badge>
-                      ) : (
-                        <Badge variant="sold" size="sm">SOLD</Badge>
-                      )}
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <Link href="/dashboard/inventory">
-                        <Button variant="secondary" size="sm" className="text-[11px] font-bold">
-                          View Details
-                        </Button>
-                      </Link>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-500 space-y-3">
-                    <Smartphone className="w-10 h-10 text-slate-300 mx-auto" />
-                    <div>
-                      <p className="text-sm font-extrabold text-slate-800">No Phones Registered Yet</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Your store inventory database is currently empty. Register your first device to get started.</p>
-                    </div>
-                    <Link href="/dashboard/register" className="inline-block pt-1">
-                      <Button variant="primary" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
-                        Register First Phone
-                      </Button>
-                    </Link>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
         </div>
       </div>
 
