@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import {
   BarChart3,
@@ -53,21 +53,25 @@ export default function AnalyticsReportsPage() {
   const inventoryAgeing = reportsData?.inventoryAgeing || {};
   const repairBreakdown = reportsData?.repairBreakdown || {};
 
+  const inventoryTotal = useMemo(() => {
+    return (
+      (inventoryAgeing.age0_30 || 0) +
+      (inventoryAgeing.age31_60 || 0) +
+      (inventoryAgeing.age61_90 || 0) +
+      (inventoryAgeing.age90_plus || 0)
+    );
+  }, [inventoryAgeing]);
+
   return (
     <div className="space-y-6 font-sans pb-24 md:pb-8">
 
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Analytics</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2.5">
-            <BarChart3 className="w-8 h-8 text-blue-600" /> Analytics Dashboard
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 shrink-0" /> Analytics Dashboard
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-2xl mt-1 leading-relaxed">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium max-w-2xl mt-1 leading-relaxed">
             Understand your business performance, discover revenue trends, and make data-driven decisions.
           </p>
         </div>
@@ -315,31 +319,6 @@ export default function AnalyticsReportsPage() {
             {/* Column 2: Insights & Repair Status */}
             <div className="space-y-6">
 
-              {/* AI Insights Card */}
-              <div className="bg-slate-900 p-5 rounded-2xl text-white shadow-md space-y-4 border border-slate-800">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-amber-400" />
-                  <h3 className="text-base font-extrabold text-white">Automated Insights</h3>
-                </div>
-                <p className="text-xs text-slate-400">Real-time performance summary calculated from store records.</p>
-
-                <div className="space-y-2.5">
-                  <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm space-y-0.5">
-                    <p className="text-xs font-extrabold text-emerald-400">Revenue Performance</p>
-                    <p className="text-[11px] text-slate-200 leading-relaxed">
-                      Generated ₦{(kpis.totalRevenue || 0).toLocaleString()} across {kpis.totalSalesCount || 0} checkout transactions.
-                    </p>
-                  </div>
-
-                  <div className="bg-white/10 p-3 rounded-xl backdrop-blur-sm border-l-4 border-amber-400 space-y-0.5">
-                    <p className="text-xs font-extrabold text-amber-400">Inventory At Risk</p>
-                    <p className="text-[11px] text-slate-200 leading-relaxed">
-                      ₦{(inventoryAgeing.totalValueAtRisk || 0).toLocaleString()} value in devices aging 90+ days.
-                    </p>
-                  </div>
-                </div>
-              </div>
-
               {/* Repair Performance Card */}
               <div className="bg-white border border-slate-200/90 p-5 rounded-2xl shadow-subtle space-y-4">
                 <h3 className="text-sm font-extrabold text-slate-900">Repair Ticket Status</h3>
@@ -399,7 +378,12 @@ export default function AnalyticsReportsPage() {
                   </span>
                 </div>
                 <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-600 rounded-full transition-all duration-1000 w-full" />
+                  <div
+                    className="h-full bg-emerald-600 rounded-full transition-all duration-1000"
+                    style={{
+                      width: `${inventoryTotal > 0 ? Math.round(((inventoryAgeing.age0_30 || 0) / inventoryTotal) * 100) : 0}%`,
+                    }}
+                  />
                 </div>
               </div>
 
@@ -411,7 +395,12 @@ export default function AnalyticsReportsPage() {
                   </span>
                 </div>
                 <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-blue-600 rounded-full transition-all duration-1000 w-full" />
+                  <div
+                    className="h-full bg-blue-600 rounded-full transition-all duration-1000"
+                    style={{
+                      width: `${inventoryTotal > 0 ? Math.round(((inventoryAgeing.age31_60 || 0) / inventoryTotal) * 100) : 0}%`,
+                    }}
+                  />
                 </div>
               </div>
 
@@ -423,7 +412,12 @@ export default function AnalyticsReportsPage() {
                   </span>
                 </div>
                 <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-amber-500 rounded-full transition-all duration-1000 w-full" />
+                  <div
+                    className="h-full bg-amber-500 rounded-full transition-all duration-1000"
+                    style={{
+                      width: `${inventoryTotal > 0 ? Math.round(((inventoryAgeing.age61_90 || 0) / inventoryTotal) * 100) : 0}%`,
+                    }}
+                  />
                 </div>
               </div>
 
@@ -435,7 +429,12 @@ export default function AnalyticsReportsPage() {
                   </span>
                 </div>
                 <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-rose-600 rounded-full transition-all duration-1000 w-full" />
+                  <div
+                    className="h-full bg-rose-600 rounded-full transition-all duration-1000"
+                    style={{
+                      width: `${inventoryTotal > 0 ? Math.round(((inventoryAgeing.age90_plus || 0) / inventoryTotal) * 100) : 0}%`,
+                    }}
+                  />
                 </div>
               </div>
             </div>

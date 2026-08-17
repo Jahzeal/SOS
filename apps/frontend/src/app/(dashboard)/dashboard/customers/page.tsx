@@ -138,7 +138,7 @@ export default function CustomersManagementPage() {
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
               <p className="text-[10px] text-slate-400 font-bold uppercase">Lifetime Spend</p>
               <p className="text-base font-extrabold text-blue-600 mt-0.5">
-                ${(selectedCustomer.totalSpending || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}
+                ₦{(selectedCustomer.totalSpending || 0).toLocaleString()}
               </p>
             </div>
 
@@ -177,15 +177,10 @@ export default function CustomersManagementPage() {
       {/* Main Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Customer Directory</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Customer Directory
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
             Customers created automatically upon completed Checkout POS sales. Click any customer row to inspect their profile.
           </p>
         </div>
@@ -330,8 +325,75 @@ export default function CustomersManagementPage() {
               </div>
             </div>
 
+            {/* MOBILE CUSTOMER CARDS LIST */}
+            <div className="block sm:hidden divide-y divide-slate-100 bg-white">
+              {loading ? (
+                <div className="py-16 text-center">
+                  <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold text-xs">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Loading customer directory...
+                  </div>
+                </div>
+              ) : error ? (
+                <div className="py-16 text-center">
+                  <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold text-xs">
+                    <AlertTriangle className="w-5 h-5" />
+                    {error}
+                  </div>
+                </div>
+              ) : filteredCustomers.length === 0 ? (
+                <div className="py-16 text-center text-slate-400 text-xs">
+                  <Users className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+                  <p className="font-bold text-sm text-slate-600">No customers found</p>
+                  <p>Customers are created automatically when completing checkout sales.</p>
+                </div>
+              ) : (
+                filteredCustomers.map((cust) => {
+                  const isSelected = selectedCustomer?.id === cust.id;
+                  return (
+                    <div
+                      key={cust.id}
+                      onClick={() => setSelectedCustomer(cust)}
+                      className={`p-3.5 space-y-2.5 cursor-pointer transition ${
+                        isSelected ? 'bg-blue-50/80 border-l-4 border-l-blue-600' : 'hover:bg-slate-50/80'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 text-blue-600 font-extrabold flex items-center justify-center shrink-0 text-[10px]">
+                            {getCustomerInitials(cust.name)}
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="font-extrabold text-slate-900 text-sm truncate">{cust.name}</h4>
+                            <p className="text-[10px] text-slate-400 font-mono">{cust.phone}</p>
+                          </div>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="text-[9px] text-slate-400 font-bold uppercase block">Devices</span>
+                          <span className="font-extrabold text-slate-800 text-xs">{cust.devicesCount || 0} Owned</span>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
+                        <div>
+                          <span className="text-[9px] text-slate-400 font-bold uppercase block">Last Purchase</span>
+                          <span className="font-bold text-slate-800 text-[10px] block truncate">{cust.lastPurchaseItem || 'N/A'}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[9px] text-slate-400 font-bold uppercase block">Lifetime Spend</span>
+                          <span className="font-extrabold text-blue-600 text-xs">
+                            ₦{(cust.totalSpending || 0).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+
             {/* DESKTOP CUSTOMERS TABLE */}
-            <div className="overflow-x-auto">
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
                   <tr>

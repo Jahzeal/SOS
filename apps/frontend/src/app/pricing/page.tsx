@@ -103,19 +103,18 @@ export default function DedicatedPricingPage() {
       <main className="flex-1 max-w-7xl mx-auto px-6 py-12 space-y-12">
         
         {/* Page Title & Billing Cycle Selector */}
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <Badge variant="verified" size="sm" className="inline-flex">
-            TRANSPARENT STORE PRICING
-          </Badge>
-          <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Simple Enterprise Pricing for Your Phone Retail Business
-          </h1>
-          <p className="text-sm text-slate-600 font-medium leading-relaxed">
-            Select a plan tailored to your inventory volume, store branches, and sales scale.
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-2 border-b border-slate-200/80">
+          <div className="space-y-2 max-w-2xl text-left">
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+              Flexible plans tailored to your retail scale
+            </h1>
+            <p className="text-sm text-slate-600 font-medium leading-relaxed">
+              Start tracking your phone inventory and POS sales today. Upgrade or change your plan dynamically as you add branches and staff members.
+            </p>
+          </div>
 
           {/* Billing Cycle Switch */}
-          <div className="pt-2 inline-flex items-center gap-3 p-1 rounded-2xl bg-slate-200/80 border border-slate-300/60">
+          <div className="shrink-0 inline-flex items-center gap-2 p-1 rounded-2xl bg-slate-200/80 border border-slate-300/60">
             <button
               onClick={() => setBillingCycle('monthly')}
               className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
@@ -219,28 +218,7 @@ export default function DedicatedPricingPage() {
           })}
         </div>
 
-        {/* FAQs Box */}
-        <div className="max-w-3xl mx-auto p-8 rounded-3xl bg-white border border-slate-200/90 shadow-sm space-y-4 text-xs">
-          <div className="flex items-center gap-2 text-blue-600 font-extrabold text-sm">
-            <HelpCircle className="w-5 h-5" />
-            <span>Frequently Asked Pricing Questions</span>
-          </div>
 
-          <div className="divide-y divide-slate-100 space-y-3 pt-2">
-            <div className="pt-3 space-y-1">
-              <div className="font-extrabold text-slate-900">Can I upgrade or downgrade my plan at any time?</div>
-              <div className="text-slate-600 font-medium">
-                Yes, you can upgrade your plan instantly as your phone store adds more branches or phone inventory.
-              </div>
-            </div>
-            <div className="pt-3 space-y-1">
-              <div className="font-extrabold text-slate-900">Is there any setup fee or hidden charge?</div>
-              <div className="text-slate-600 font-medium">
-                No setup fees or hidden costs. All prices are in Naira (₦) as displayed above.
-              </div>
-            </div>
-          </div>
-        </div>
 
       </main>
 

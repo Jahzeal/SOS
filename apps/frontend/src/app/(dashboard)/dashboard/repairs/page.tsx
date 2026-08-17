@@ -137,15 +137,10 @@ export default function RepairsDashboardPage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Repair Tickets</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2.5">
-            <Wrench className="w-7 h-7 text-blue-600" /> Repairs Dashboard
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            <Wrench className="w-5 h-5 sm:w-7 sm:h-7 text-blue-600 shrink-0" /> Repairs Dashboard
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
             Track and update repair ticket statuses (Diagnosing, In Progress, Ready, Completed) with direct status selection.
           </p>
         </div>
@@ -275,8 +270,106 @@ export default function RepairsDashboardPage() {
           </div>
         </div>
 
-        {/* DESKTOP & MOBILE TABLE VIEW */}
-        <div className="overflow-x-auto">
+        {/* MOBILE REPAIR CARDS VIEW */}
+        <div className="block sm:hidden divide-y divide-slate-100 bg-white">
+          {loading ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold text-xs">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading repair tickets...
+              </div>
+            </div>
+          ) : error ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold text-xs">
+                <AlertTriangle className="w-5 h-5" />
+                {error}
+              </div>
+            </div>
+          ) : repairsList.length === 0 ? (
+            <div className="py-16 text-center text-slate-400 text-xs animate-in fade-in duration-200">
+              <Wrench className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+              <p className="font-bold text-slate-600">No repair tickets found</p>
+              <p>Register a customer device repair to track ticket status.</p>
+            </div>
+          ) : (
+            repairsList.map((r) => {
+              const custName = r.customer?.name || 'Customer';
+              const dateStr = new Date(r.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              });
+
+              return (
+                <div key={r.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] flex items-center justify-center border border-slate-200 shrink-0">
+                        {getInitials(custName)}
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-slate-900 text-sm">{custName}</h4>
+                        <p className="text-[10px] text-slate-400 font-mono font-bold text-blue-600">{r.ticketNumber || r.id}</p>
+                      </div>
+                    </div>
+                    
+                    <select
+                      value={r.status}
+                      onChange={(e) => handleStatusChange(r.id, e.target.value)}
+                      className={`text-[10px] font-extrabold px-2 py-1 rounded-lg border transition-all cursor-pointer focus:outline-none shrink-0 ${
+                        r.status === 'DIAGNOSING'
+                          ? 'bg-amber-50 text-amber-700 border-amber-300'
+                          : r.status === 'IN_PROGRESS'
+                          ? 'bg-blue-50 text-blue-700 border-blue-300'
+                          : r.status === 'WAITING_PARTS'
+                          ? 'bg-purple-50 text-purple-700 border-purple-300'
+                          : r.status === 'READY_FOR_PICKUP'
+                          ? 'bg-teal-50 text-teal-700 border-teal-300'
+                          : r.status === 'COMPLETED'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-300'
+                          : 'bg-rose-50 text-rose-700 border-rose-300'
+                      }`}
+                    >
+                      <option value="DIAGNOSING">DIAGNOSING</option>
+                      <option value="IN_PROGRESS">IN_PROGRESS</option>
+                      <option value="WAITING_PARTS">WAITING_PARTS</option>
+                      <option value="READY_FOR_PICKUP">READY_FOR_PICKUP</option>
+                      <option value="COMPLETED">COMPLETED</option>
+                      <option value="CANCELLED">CANCELLED</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-1.5 text-xs text-slate-800 font-medium">
+                      <Smartphone className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                      <span>{r.issueDescription}</span>
+                    </div>
+                    {r.phoneRecord && (
+                      <p className="text-[9px] text-slate-400 font-mono pl-5">IMEI: {r.phoneRecord.imei1}</p>
+                    )}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Created</span>
+                      <span className="font-bold text-slate-800 text-[10px]">{dateStr}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Est. Cost</span>
+                      <span className="font-extrabold text-slate-900 text-xs">
+                        ₦{(r.finalCost || r.estimatedCost || 0).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* DESKTOP TABLE VIEW */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
               <tr>
@@ -381,7 +474,7 @@ export default function RepairsDashboardPage() {
                       </td>
 
                       <td className="py-3.5 px-3 text-right font-extrabold text-slate-900">
-                        ${(r.finalCost || r.estimatedCost || 0).toFixed(2)}
+                        ₦{(r.finalCost || r.estimatedCost || 0).toLocaleString()}
                       </td>
                       <td className="py-3.5 px-3 text-right font-semibold text-slate-600">
                         <div className="inline-flex items-center justify-end gap-1 text-slate-700 font-bold">

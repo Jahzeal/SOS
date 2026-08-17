@@ -8,6 +8,7 @@ import {
   Plus,
   Trash2,
   ChevronRight,
+  ChevronLeft,
   User,
   Send,
   Save,
@@ -68,6 +69,7 @@ export default function CreateInvoicePage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [createdInvoice, setCreatedInvoice] = useState<any>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [mobileStep, setMobileStep] = useState(1);
 
   // Search available in-stock devices
   useEffect(() => {
@@ -232,7 +234,30 @@ export default function CreateInvoicePage() {
             Build a formal bill for deferred payment or corporate clients — print, share via email/link, or save to invoices registry.
           </p>
         </div>
+      </div>
 
+      {/* Step Indicators on Mobile */}
+      <div className="flex sm:hidden items-center justify-between border-b border-slate-200/80 pb-3 mb-2 text-[10px] font-extrabold text-slate-400">
+        <button
+          onClick={() => setMobileStep(1)}
+          className={`pb-1 border-b-2 transition ${mobileStep === 1 ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
+        >
+          1. Customer Details
+        </button>
+        <button
+          onClick={() => setMobileStep(2)}
+          disabled={customerName.trim() === ''}
+          className={`pb-1 border-b-2 transition ${mobileStep === 2 ? 'border-blue-600 text-blue-600' : 'border-transparent'} disabled:opacity-50`}
+        >
+          2. Invoice Items
+        </button>
+        <button
+          onClick={() => setMobileStep(3)}
+          disabled={items.length === 0}
+          className={`pb-1 border-b-2 transition ${mobileStep === 3 ? 'border-blue-600 text-blue-600' : 'border-transparent'} disabled:opacity-50`}
+        >
+          3. Summary & Terms
+        </button>
       </div>
 
       {/* Error Message Banner */}
@@ -251,7 +276,7 @@ export default function CreateInvoicePage() {
         <div className="lg:col-span-8 space-y-6">
 
           {/* Customer & Meta Card */}
-          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 ${mobileStep === 1 ? 'block' : 'hidden sm:block'}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Customer / Business Name *</label>
@@ -298,10 +323,25 @@ export default function CreateInvoicePage() {
                 />
               </div>
             </div>
+
+            {/* Mobile Next Navigation Button */}
+            <div className="block sm:hidden pt-3 border-t border-slate-100 mt-4">
+              <Button
+                variant="primary"
+                fullWidth
+                size="md"
+                onClick={() => setMobileStep(2)}
+                disabled={customerName.trim() === ''}
+                className="bg-blue-600 hover:bg-blue-500 font-bold"
+                rightIcon={<ChevronRight className="w-4 h-4" />}
+              >
+                Next: Add Items
+              </Button>
+            </div>
           </div>
 
           {/* In-Stock Device Picker Section */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 ${mobileStep === 2 ? 'block' : 'hidden sm:block'}`}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <Smartphone className="w-4 h-4 text-blue-600" /> Select In-Stock Device from Inventory
@@ -374,7 +414,7 @@ export default function CreateInvoicePage() {
           </div>
 
           {/* Line Items Table & Custom Add Item Form */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+          <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 ${mobileStep === 2 ? 'block' : 'hidden sm:block'}`}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-blue-600" /> Invoice Line Items & Services
@@ -538,10 +578,33 @@ export default function CreateInvoicePage() {
               </Button>
             </form>
 
+            {/* Mobile Navigation Buttons for Step 2 */}
+            <div className="block sm:hidden flex items-center gap-2 pt-4 border-t border-slate-100 mt-2">
+              <Button
+                variant="secondary"
+                size="md"
+                fullWidth
+                onClick={() => setMobileStep(1)}
+                leftIcon={<ChevronLeft className="w-4 h-4" />}
+              >
+                Back
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                fullWidth
+                onClick={() => setMobileStep(3)}
+                disabled={items.length === 0}
+                className="bg-blue-600 hover:bg-blue-500 font-bold"
+                rightIcon={<ChevronRight className="w-4 h-4" />}
+              >
+                Next: Summary
+              </Button>
+            </div>
           </div>
 
           {/* Notes & Terms Card */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
+          <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3 ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
             <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
               Payment Terms & Bank Wire Instructions
             </h3>
@@ -556,7 +619,7 @@ export default function CreateInvoicePage() {
         </div>
 
         {/* RIGHT 4 COLUMNS: INVOICE TERMS, SUMMARY & SHARE ACTIONS */}
-        <div className="lg:col-span-4 space-y-5">
+        <div className={`lg:col-span-4 space-y-5 ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
 
           <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
             <h3 className="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3">
@@ -665,6 +728,19 @@ export default function CreateInvoicePage() {
                   leftIcon={<Mail className="w-4 h-4 text-slate-600" />}
                 >
                   Email PDF
+                </Button>
+              </div>
+
+              {/* Mobile Back Button for Step 3 */}
+              <div className="block sm:hidden pt-3 border-t border-slate-100 mt-2">
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  size="md"
+                  onClick={() => setMobileStep(2)}
+                  leftIcon={<ChevronLeft className="w-4 h-4" />}
+                >
+                  Back to Items
                 </Button>
               </div>
             </div>

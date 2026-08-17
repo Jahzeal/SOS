@@ -95,7 +95,7 @@ export default function ReceiptsArchivePage() {
     const rcpNum = rcp.receiptNumber || rcp.invoiceNumber || rcp.id;
     const subject = encodeURIComponent(`Receipt & Sales Record #${rcpNum}`);
     const body = encodeURIComponent(
-      `Hello ${name},\n\nThank you for your purchase! Your sales receipt #${rcpNum} for $${rcp.totalAmount?.toFixed(2) || '0.00'} is confirmed.\n\nThank you for your business!`
+      `Hello ${name},\n\nThank you for your purchase! Your sales receipt #${rcpNum} for ₦${rcp.totalAmount?.toLocaleString() || '0'} is confirmed.\n\nThank you for your business!`
     );
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
   };
@@ -106,17 +106,10 @@ export default function ReceiptsArchivePage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-slate-900 font-bold">Sales & Invoices</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Receipts</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Receipts Archive
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
             Manage, re-print, and audit historical thermal sales receipts and customer transactions.
           </p>
         </div>
@@ -232,8 +225,88 @@ export default function ReceiptsArchivePage() {
           </div>
         </div>
 
-        {/* Data Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile Cards View (Hidden on desktop) */}
+        <div className="block sm:hidden divide-y divide-slate-100 bg-white">
+          {loading ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold text-xs">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading receipts archive...
+              </div>
+            </div>
+          ) : error ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold text-xs">
+                <AlertTriangle className="w-5 h-5" />
+                {error}
+              </div>
+            </div>
+          ) : filteredReceipts.length === 0 ? (
+            <div className="py-16 text-center text-slate-400 text-xs animate-in fade-in duration-200">
+              <Receipt className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+              <p className="font-bold text-slate-600">No receipts found</p>
+              <p>Process a new sale at the POS terminal to generate receipts.</p>
+            </div>
+          ) : (
+            filteredReceipts.map((rcp) => {
+              const displayNum = rcp.receiptNumber || rcp.invoiceNumber || rcp.id;
+              const customerName = rcp.customer?.name || 'Retail Buyer';
+              const dateStr = new Date(rcp.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              });
+
+              return (
+                <div key={rcp.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-[10px] border border-blue-200 shrink-0">
+                        {getCustomerInitials(customerName)}
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-slate-900 text-sm">{customerName}</h4>
+                        <p className="text-[10px] text-slate-400 font-mono font-bold text-blue-600">{displayNum}</p>
+                      </div>
+                    </div>
+                    {/* Status & Method Badges */}
+                    <div className="flex flex-col items-end gap-1">
+                      <Badge variant="verified" size="sm">{rcp.paymentStatus || 'PAID'}</Badge>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase">{rcp.paymentMethod || 'CASH'}</span>
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed">{getItemSummary(rcp.items)}</p>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Date</span>
+                      <span className="font-bold text-slate-800 text-[11px]">{dateStr}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Total Paid</span>
+                      <span className="font-extrabold text-slate-900 text-[13px]">
+                        ₦{rcp.totalAmount ? rcp.totalAmount.toLocaleString() : '0'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 text-xs">
+                    <button onClick={() => { setSelectedReceipt(rcp); handlePrintReceipt(); }} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1">
+                      <Printer className="w-3.5 h-3.5" /> Print
+                    </button>
+                    <button onClick={() => handleEmailReceipt(rcp)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5" /> Send
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table View (Hidden on mobile) */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
               <tr>
