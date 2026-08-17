@@ -755,11 +755,11 @@ export default function PublicLandingPageV2() {
         <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
           {/* Left: Logo & Product Name */}
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white font-extrabold shadow-md">
+            <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white font-extrabold shadow-md shadow-teal-600/20">
               VF
             </div>
             <div>
-              <span className="font-extrabold text-slate-900 tracking-tight text-lg leading-none block">
+              <span className="font-extrabold text-zinc-900 tracking-tight text-lg leading-none block">
                 VerifyFlow
               </span>
             </div>
@@ -776,7 +776,7 @@ export default function PublicLandingPageV2() {
             <a href="#how-it-works" className="hover:text-slate-900 transition-colors">
               How it Works
             </a>
-            <Link href="/pricing" className="hover:text-slate-900 transition-colors font-bold text-blue-600">
+            <Link href="/pricing" className="hover:text-zinc-900 transition-colors font-bold text-teal-600">
               Pricing & Plans
             </Link>
             <a href="#faq" className="hover:text-slate-900 transition-colors">
@@ -822,7 +822,7 @@ export default function PublicLandingPageV2() {
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-slate-200 px-6 py-6 space-y-4 shadow-dropdown animate-in slide-in-from-top-2 duration-200">
             <nav className="flex flex-col space-y-3 text-sm font-semibold text-slate-700">
-              <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-blue-600 font-bold py-1">
+              <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-teal-600 font-bold py-1">
                 Pricing & Plans
               </Link>
               <a
@@ -884,9 +884,9 @@ export default function PublicLandingPageV2() {
       <section className="pt-28 pb-16 md:pt-36 md:pb-24 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[90vh]">
         {/* Left Side: Business Owner Journey */}
         <div className="lg:w-1/2 space-y-6 text-left">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 tracking-tight leading-[1.1]">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-zinc-900 tracking-tight leading-[1.1]">
             Know Every Phone.{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800">
+            <span className="text-teal-600 font-extrabold">
               Verify Every Sale.
             </span>
           </h1>
