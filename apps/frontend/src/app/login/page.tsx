@@ -118,9 +118,9 @@ export default function LoginPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="block font-bold text-slate-800">Password</label>
-                  <a href="#" onClick={(e) => { e.preventDefault(); alert('Please contact store administrator to reset credentials.'); }} className="text-[11px] text-blue-600 font-bold hover:underline">
+                  <Link href="/forgot-password" className="text-[11px] text-blue-600 font-bold hover:underline">
                     Forgot password?
-                  </a>
+                  </Link>
                 </div>
                 <div className="relative">
                   <input

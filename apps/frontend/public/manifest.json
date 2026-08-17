@@ -1,0 +1,24 @@
+{
+  "name": "VerifyFlow - Phone Retail & Repair OS",
+  "short_name": "VerifyFlow",
+  "description": "Phone Retail Ledger, Barcode Scanner, POS Checkout & Repair Management Platform",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#0F172A",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

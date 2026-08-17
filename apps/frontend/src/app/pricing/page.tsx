@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -17,6 +17,18 @@ import {
 
 export default function DedicatedPricingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+
+  // Auth State Detection
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('vf_access_token');
+      if (token) {
+        setIsLoggedIn(true);
+      }
+    }
+  }, []);
 
   const plans = [
     {
@@ -86,16 +98,26 @@ export default function DedicatedPricingPage() {
         </Link>
 
         <div className="flex items-center gap-3">
-          <Link href="/login">
-            <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold border-slate-200">
-              Sign In
-            </Button>
-          </Link>
-          <Link href="/onboarding">
-            <Button variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
-              Register Business →
-            </Button>
-          </Link>
+          {isLoggedIn ? (
+            <Link href="/dashboard">
+              <Button variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                Dashboard →
+              </Button>
+            </Link>
+          ) : (
+            <>
+              <Link href="/login">
+                <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold border-slate-200">
+                  Sign In
+                </Button>
+              </Link>
+              <Link href="/onboarding">
+                <Button variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-700 text-white font-bold">
+                  Register Business →
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       </header>
 
