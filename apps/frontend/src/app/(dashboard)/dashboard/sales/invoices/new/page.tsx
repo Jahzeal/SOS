@@ -310,13 +310,13 @@ export default function CreateInvoicePage() {
             </div>
 
             <div className="relative">
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={deviceSearch}
                 onChange={(e) => setDeviceSearch(e.target.value)}
-                placeholder="Search in-stock devices by IMEI, Model, or Brand..."
-                className="w-full text-xs pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                placeholder="Search by IMEI, Model, or Brand..."
+                className="w-full text-[11px] sm:text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
               />
             </div>
 
@@ -336,24 +336,24 @@ export default function CreateInvoicePage() {
                     <div
                       key={phone.id}
                       onClick={() => !inInvoice && handleAddDeviceToInvoice(phone)}
-                      className={`p-2.5 rounded-xl border flex items-center justify-between gap-3 text-xs transition cursor-pointer ${
+                      className={`p-2 rounded-xl border flex items-center justify-between gap-2.5 transition cursor-pointer ${
                         inInvoice
                           ? 'bg-emerald-50/60 border-emerald-300 opacity-80 cursor-default'
                           : 'bg-slate-50 border-slate-200/90 hover:border-blue-500 hover:bg-blue-50/30'
                       }`}
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold ${inInvoice ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-600'}`}>
-                          <Smartphone className="w-4 h-4" />
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-bold ${inInvoice ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-600'}`}>
+                          <Smartphone className="w-3.5 h-3.5" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-extrabold text-slate-900 truncate">{phone.brand} {phone.model}</p>
-                          <p className="text-[10px] font-mono text-slate-500 truncate">IMEI: {phone.imei1}</p>
+                          <p className="font-bold text-slate-800 text-[11px] sm:text-xs truncate">{phone.brand} {phone.model}</p>
+                          <p className="text-[9px] font-mono text-slate-500 truncate">IMEI: {phone.imei1}</p>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
-                        <span className="font-extrabold text-slate-900 text-xs">
+                      <div className="flex items-center gap-2.5 shrink-0">
+                        <span className="font-bold text-slate-950 text-[11px] sm:text-xs">
                           ₦{(phone.sellingPrice ?? phone.purchasePrice ?? 0).toLocaleString()}
                         </span>
                         <button
@@ -497,8 +497,8 @@ export default function CreateInvoicePage() {
                     required
                     value={newItemDesc}
                     onChange={(e) => setNewItemDesc(e.target.value)}
-                    placeholder="Description (e.g. Repair Service)..."
-                    className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
+                    placeholder="Description (e.g. Repair)..."
+                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400"
                   />
                 </div>
                 <div className="sm:col-span-3">
@@ -506,8 +506,8 @@ export default function CreateInvoicePage() {
                     type="text"
                     value={newItemImei}
                     onChange={(e) => setNewItemImei(e.target.value)}
-                    placeholder="IMEI / Serial (Optional)..."
-                    className="w-full font-mono text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
+                    placeholder="IMEI (Optional)..."
+                    className="w-full font-mono text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -518,7 +518,7 @@ export default function CreateInvoicePage() {
                     value={newItemQty}
                     onChange={(e) => setNewItemQty(e.target.value)}
                     placeholder="Qty..."
-                    className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-900 focus:outline-none focus:border-blue-600 text-center"
+                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 text-center placeholder-slate-400"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -529,7 +529,7 @@ export default function CreateInvoicePage() {
                     value={newItemPrice}
                     onChange={(e) => setNewItemPrice(e.target.value)}
                     placeholder="Rate (₦)..."
-                    className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
+                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400"
                   />
                 </div>
               </div>
