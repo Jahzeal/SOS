@@ -261,7 +261,7 @@ export default function CreateInvoicePage() {
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="e.g. Acme Corp or Johnathan Doe..."
-                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
+                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
                 />
               </div>
 
@@ -272,7 +272,7 @@ export default function CreateInvoicePage() {
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   placeholder="e.g. client@example.com"
-                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
+                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
                 />
               </div>
 
@@ -283,7 +283,7 @@ export default function CreateInvoicePage() {
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="e.g. +1 (555) 234-5678"
-                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
+                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
                 />
               </div>
 
@@ -294,7 +294,7 @@ export default function CreateInvoicePage() {
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
                   placeholder="e.g. 123 Corporate Blvd, New York, NY"
-                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
+                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
                 />
               </div>
             </div>
@@ -316,7 +316,7 @@ export default function CreateInvoicePage() {
                 value={deviceSearch}
                 onChange={(e) => setDeviceSearch(e.target.value)}
                 placeholder="Search by IMEI, Model, or Brand..."
-                className="w-full text-[11px] sm:text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
+                className="w-full text-[11px] sm:text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
               />
             </div>
 
@@ -498,7 +498,7 @@ export default function CreateInvoicePage() {
                     value={newItemDesc}
                     onChange={(e) => setNewItemDesc(e.target.value)}
                     placeholder="Description (e.g. Repair)..."
-                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400"
+                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-[10px]"
                   />
                 </div>
                 <div className="sm:col-span-3">
@@ -507,7 +507,7 @@ export default function CreateInvoicePage() {
                     value={newItemImei}
                     onChange={(e) => setNewItemImei(e.target.value)}
                     placeholder="IMEI (Optional)..."
-                    className="w-full font-mono text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400"
+                    className="w-full font-mono text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-[10px]"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -518,7 +518,7 @@ export default function CreateInvoicePage() {
                     value={newItemQty}
                     onChange={(e) => setNewItemQty(e.target.value)}
                     placeholder="Qty..."
-                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 text-center placeholder-slate-400"
+                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 text-center placeholder-slate-400 placeholder:text-[10px]"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -529,7 +529,7 @@ export default function CreateInvoicePage() {
                     value={newItemPrice}
                     onChange={(e) => setNewItemPrice(e.target.value)}
                     placeholder="Rate (₦)..."
-                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400"
+                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-[10px]"
                   />
                 </div>
               </div>
