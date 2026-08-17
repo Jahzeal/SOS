@@ -131,17 +131,10 @@ export default function InvoicesRegistryPage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-slate-900 font-bold">Sales & Invoices</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Invoices</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Invoice Registry
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
             View, track, and manage all billing operations, accounts receivable, and customer statements across branches.
           </p>
         </div>

@@ -251,57 +251,50 @@ export default function CreateInvoicePage() {
         <div className="lg:col-span-8 space-y-6">
 
           {/* Customer & Meta Card */}
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                <User className="w-4 h-4 text-blue-600" /> Customer & Billing Details
-              </h2>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Client Profile</span>
-            </div>
-
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Customer / Business Name *</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Customer / Business Name *</label>
                 <input
                   type="text"
                   required
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   placeholder="e.g. Acme Corp or Johnathan Doe..."
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Email Address</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
                 <input
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   placeholder="e.g. client@example.com"
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Phone Number</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
                 <input
                   type="text"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="e.g. +1 (555) 234-5678"
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
                 />
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-slate-700">Billing Address</label>
+              <div className="space-y-1.5">
+                <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Billing Address</label>
                 <input
                   type="text"
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
                   placeholder="e.g. 123 Corporate Blvd, New York, NY"
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400"
                 />
               </div>
             </div>
