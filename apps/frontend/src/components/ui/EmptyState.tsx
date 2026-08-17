@@ -32,8 +32,8 @@ export function EmptyState({
   return (
     <div className={`p-8 text-center flex flex-col items-center justify-center max-w-md mx-auto ${className}`}>
       {/* Icon / Isometric Container */}
-      <div className="w-16 h-16 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-4 shadow-subtle">
-        {icon || <ShieldCheck className="w-8 h-8 text-blue-600" />}
+      <div className="w-16 h-16 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-4 shadow-subtle">
+        {icon || <ShieldCheck className="w-8 h-8 text-teal-600" />}
       </div>
 
       <h3 className="text-base font-bold text-slate-900 tracking-tight">{title}</h3>

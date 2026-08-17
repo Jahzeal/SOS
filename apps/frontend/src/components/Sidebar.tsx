@@ -156,12 +156,12 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       {/* Brand Header */}
       <div className="p-4 border-b border-slate-100 flex items-center justify-between">
         <Link href="/dashboard" onClick={onClose} className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-slate-900 flex items-center justify-center text-white font-bold shadow-md">
+          <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold shadow-md shadow-teal-600/20">
             VF
           </div>
           <div>
             <h1 className="font-extrabold text-slate-900 tracking-tight text-base leading-tight">VerifyFlow</h1>
-            <p className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Enterprise OS</p>
+            <p className="text-[10px] text-teal-600 font-bold uppercase tracking-wider">Enterprise OS</p>
           </div>
         </Link>
         {onClose && (
@@ -234,7 +234,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                             onClick={onClose}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                               isChildActive
-                                ? 'bg-blue-50 text-blue-700 font-semibold border border-blue-200/80 shadow-subtle'
+                                ? 'bg-teal-50 text-teal-700 font-semibold border border-teal-200/80 shadow-subtle'
                                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                             }`}
                           >
@@ -252,14 +252,14 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   onClick={onClose}
                   className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20 font-bold'
+                      ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20 font-bold'
                       : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
                   {item.name === 'Templates' && (
-                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-700">
+                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-700">
                       NEW
                     </span>
                   )}
@@ -273,7 +273,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       {/* User Footer with Log Out */}
       <div className="p-3.5 border-t border-slate-100 flex items-center justify-between text-xs bg-slate-50/50">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm shrink-0">
+          <div className="w-8 h-8 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-xs shadow-sm shrink-0">
             {user?.firstName?.[0] || 'U'}
           </div>
           <div className="min-w-0">

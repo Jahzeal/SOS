@@ -295,64 +295,64 @@ export default function RegisterPhonePage() {
       </div>
 
       {/* Stepper Navigation Indicator Bar */}
-      <div className="flex items-center justify-between border-b border-slate-200 pb-4">
-        <div className="flex items-center gap-1.5 sm:gap-4 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center justify-start sm:justify-between border-b border-slate-200 pb-3 gap-2">
+        <div className="flex items-center gap-1 sm:gap-4 overflow-x-auto pb-1 scrollbar-none justify-start">
           {/* Step 1 Indicator */}
           <button
             onClick={() => setStep(1)}
-            className={`flex items-center gap-1.5 text-xs font-extrabold transition shrink-0 ${
-              step === 1 ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'
+            className={`flex items-center gap-1 sm:gap-1.5 text-xs font-extrabold transition shrink-0 ${
+              step === 1 ? 'text-teal-600' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs shrink-0 ${
-              step === 1 ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm' : 'border-slate-300 bg-white text-slate-500'
+            <span className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-[10px] sm:text-xs shrink-0 ${
+              step === 1 ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-sm' : 'border-slate-300 bg-white text-slate-500'
             }`}>
               1
             </span>
-            <span className="text-[10px] sm:text-xs font-bold whitespace-nowrap">Identify</span>
+            <span className="text-[9px] sm:text-xs font-bold whitespace-nowrap">Identify</span>
           </button>
 
-          <div className="w-4 sm:w-12 h-px bg-slate-200 shrink-0" />
+          <div className="w-2 sm:w-12 h-px bg-slate-200 shrink-0" />
 
           {/* Step 2 Indicator */}
           <button
             onClick={() => setStep(2)}
-            className={`flex items-center gap-1.5 text-xs font-extrabold transition shrink-0 ${
-              step === 2 ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'
+            className={`flex items-center gap-1 sm:gap-1.5 text-xs font-extrabold transition shrink-0 ${
+              step === 2 ? 'text-teal-600' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs shrink-0 ${
-              step === 2 ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm' : 'border-slate-300 bg-white text-slate-500'
+            <span className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-[10px] sm:text-xs shrink-0 ${
+              step === 2 ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-sm' : 'border-slate-300 bg-white text-slate-500'
             }`}>
               2
             </span>
-            <span className="text-[10px] sm:text-xs font-bold whitespace-nowrap">Details</span>
+            <span className="text-[9px] sm:text-xs font-bold whitespace-nowrap">Details</span>
           </button>
 
-          <div className="w-4 sm:w-12 h-px bg-slate-200 shrink-0" />
+          <div className="w-2 sm:w-12 h-px bg-slate-200 shrink-0" />
 
           {/* Step 3 Indicator */}
           <button
             onClick={() => setStep(3)}
-            className={`flex items-center gap-1.5 text-xs font-extrabold transition shrink-0 ${
-              step === 3 ? 'text-blue-600' : 'text-slate-500 hover:text-slate-800'
+            className={`flex items-center gap-1 sm:gap-1.5 text-xs font-extrabold transition shrink-0 ${
+              step === 3 ? 'text-teal-600' : 'text-slate-500 hover:text-slate-800'
             }`}
           >
-            <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-xs shrink-0 ${
-              step === 3 ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm' : 'border-slate-300 bg-white text-slate-500'
+            <span className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-[10px] sm:text-xs shrink-0 ${
+              step === 3 ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-sm' : 'border-slate-300 bg-white text-slate-500'
             }`}>
               3
             </span>
-            <span className="text-[10px] sm:text-xs font-bold whitespace-nowrap">Summary</span>
+            <span className="text-[9px] sm:text-xs font-bold whitespace-nowrap">Summary</span>
           </button>
         </div>
 
         {step > 1 && (
           <button
             onClick={handleBack}
-            className="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-slate-900 transition shrink-0 ml-2"
+            className="flex items-center gap-1 text-[10px] sm:text-xs font-extrabold text-slate-600 hover:text-slate-900 transition shrink-0 ml-auto"
           >
-            <ArrowLeft className="w-4 h-4" /> <span className="hidden sm:inline">Back to Step {step - 1}</span><span className="inline sm:hidden">Back</span>
+            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Back to Step {step - 1}</span><span className="inline sm:hidden">Back</span>
           </button>
         )}
       </div>
@@ -368,13 +368,13 @@ export default function RegisterPhonePage() {
           {/* PAGE VIEW 1 — STEP 1: IDENTIFY DEVICE */}
           {step === 1 && (
             <section className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-6 animate-in fade-in duration-200">
-              <div className="flex items-center gap-3 border-b border-slate-100 pb-4">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 border border-blue-200 flex items-center justify-center font-bold shadow-sm">
-                  <QrCode className="w-5 h-5" />
+              <div className="flex items-center gap-2.5 sm:gap-3 border-b border-slate-100 pb-4 justify-start text-left">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-200 flex items-center justify-center font-bold shadow-sm shrink-0">
+                  <QrCode className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div>
-                  <h2 className="text-xl font-extrabold text-slate-900">Step 1: Identify Device</h2>
-                  <p className="text-xs text-slate-500 font-medium">Scan box QR code or enter 15-digit IMEI number</p>
+                <div className="text-left">
+                  <h2 className="text-base sm:text-xl font-extrabold text-slate-900 leading-tight">Step 1: Identify Device</h2>
+                  <p className="text-[11px] sm:text-xs text-slate-500 font-medium">Scan box QR code or enter 15-digit IMEI number</p>
                 </div>
               </div>
 
@@ -401,11 +401,11 @@ export default function RegisterPhonePage() {
                 onClick={() => setShowCameraScanner(true)}
                 className="p-4 sm:p-8 border-2 border-dashed border-slate-300 rounded-2xl bg-slate-50 hover:bg-slate-100/80 transition-all cursor-pointer flex flex-row items-center justify-center gap-4 sm:gap-6 group"
               >
-                <div className="w-12 h-12 sm:w-20 sm:h-20 bg-white rounded-xl sm:rounded-2xl shadow-md border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                  <QrCode className="w-6 h-6 sm:w-10 sm:h-10 text-blue-600" />
+                <div className="w-10 h-10 sm:w-20 sm:h-20 bg-white rounded-xl sm:rounded-2xl shadow-md border border-slate-200 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                  <QrCode className="w-5 h-5 sm:w-10 sm:h-10 text-teal-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-extrabold text-sm sm:text-lg text-blue-700">Scan Manufacturer QR</p>
+                  <p className="font-extrabold text-sm sm:text-lg text-teal-700">Scan Manufacturer QR</p>
                   <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5 leading-tight">Camera will open automatically to scan barcode</p>
                 </div>
               </div>
@@ -454,21 +454,21 @@ export default function RegisterPhonePage() {
           {/* PAGE VIEW 2 — STEP 2: DEVICE INFORMATION */}
           {step === 2 && (
             <section className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-6 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-200 flex items-center justify-center font-bold shadow-sm">
-                    <Smartphone className="w-5 h-5" />
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4 gap-2">
+                <div className="flex items-center gap-2.5 sm:gap-3 justify-start text-left">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-200 flex items-center justify-center font-bold shadow-sm shrink-0">
+                    <Smartphone className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <div>
-                    <h2 className="text-xl font-extrabold text-slate-900">Step 2: Device Information</h2>
-                    <p className="text-xs text-slate-500 font-medium">Verify hardware specifications, storage, and condition</p>
+                  <div className="text-left">
+                    <h2 className="text-base sm:text-xl font-extrabold text-slate-900 leading-tight">Step 2: Device Information</h2>
+                    <p className="text-[11px] sm:text-xs text-slate-500 font-medium">Verify hardware specifications, storage, and condition</p>
                   </div>
                 </div>
                 <button
                   onClick={() => setStep(1)}
-                  className="text-xs font-extrabold text-blue-600 hover:underline flex items-center gap-1"
+                  className="text-[11px] sm:text-xs font-extrabold text-teal-600 hover:underline flex items-center gap-1 shrink-0 ml-auto"
                 >
-                  <Edit3 className="w-3.5 h-3.5" /> Edit Step 1
+                  <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit Step 1</span>
                 </button>
               </div>
 
@@ -612,16 +612,16 @@ export default function RegisterPhonePage() {
               </div>
 
               {/* Step 2 Action Bar */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <Button variant="secondary" size="md" onClick={handleBack} leftIcon={<ArrowLeft className="w-4 h-4" />}>
+              <div className="flex items-center justify-between gap-2 pt-4 border-t border-slate-100 flex-col-reverse sm:flex-row">
+                <Button variant="secondary" size="sm" onClick={handleBack} leftIcon={<ArrowLeft className="w-3.5 h-3.5" />} className="text-xs font-bold w-full sm:w-auto">
                   Back to Step 1
                 </Button>
                 <Button
                   variant="primary"
-                  size="md"
+                  size="sm"
                   onClick={handleNextToStep3}
                   rightIcon={<ArrowRight className="w-4 h-4" />}
-                  className="shadow-md shadow-blue-600/10 font-bold w-full sm:w-auto"
+                  className="shadow-md font-bold bg-teal-600 hover:bg-teal-500 text-xs w-full sm:w-auto py-2"
                 >
                   <span className="hidden sm:inline">Proceed to Step 3: Summary Details</span>
                   <span className="inline sm:hidden">Proceed to Step 3</span>
@@ -633,17 +633,17 @@ export default function RegisterPhonePage() {
           {/* PAGE VIEW 3 — STEP 3: REGISTRATION SUMMARY */}
           {step === 3 && (
             <section className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-6 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold shadow-sm">
-                    <CheckCircle2 className="w-5 h-5" />
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4 gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 justify-start text-left min-w-0">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold shadow-sm shrink-0">
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
-                  <div>
-                    <h2 className="text-xl font-extrabold text-slate-900">Step 3: Registration Summary</h2>
-                    <p className="text-xs text-slate-500 font-medium">Review device metadata before completing hardware log</p>
+                  <div className="text-left min-w-0">
+                    <h2 className="text-sm sm:text-xl font-extrabold text-slate-900 leading-tight truncate">Step 3: Registration Summary</h2>
+                    <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">Review device metadata before completing hardware log</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="hidden sm:flex items-center gap-2 shrink-0">
                   <button onClick={() => setStep(1)} className="text-xs font-bold text-slate-500 hover:text-slate-900">Step 1</button>
                   <span className="text-slate-300">•</span>
                   <button onClick={() => setStep(2)} className="text-xs font-bold text-slate-500 hover:text-slate-900">Step 2</button>
@@ -659,7 +659,7 @@ export default function RegisterPhonePage() {
                   </div>
                   <div>
                     <span className="text-slate-500 block uppercase font-bold text-[10px]">IMEI Number</span>
-                    <span className="font-mono font-bold text-blue-700 text-sm">{imei || '358291049281910'}</span>
+                    <span className="font-mono font-bold text-teal-700 text-sm">{imei || '358291049281910'}</span>
                   </div>
                   <div>
                     <span className="text-slate-500 block uppercase font-bold text-[10px]">Specifications</span>
@@ -673,19 +673,20 @@ export default function RegisterPhonePage() {
               </div>
 
               {/* Step 3 Action Bar */}
-              <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <Button variant="secondary" size="md" onClick={handleBack} leftIcon={<ArrowLeft className="w-4 h-4" />}>
+              <div className="flex items-center justify-between gap-2 pt-4 border-t border-slate-100 flex-col-reverse sm:flex-row">
+                <Button variant="secondary" size="sm" onClick={handleBack} leftIcon={<ArrowLeft className="w-3.5 h-3.5" />} className="text-xs font-bold w-full sm:w-auto">
                   Back to Step 2
                 </Button>
                 <Button
                   variant="primary"
-                  size="lg"
+                  size="sm"
                   isLoading={isSubmitting}
                   onClick={handleCompleteRegistration}
-                  leftIcon={<Check className="w-5 h-5" />}
-                  className="shadow-xl bg-emerald-600 hover:bg-emerald-500 border-none font-bold"
+                  leftIcon={<Check className="w-4 h-4" />}
+                  className="shadow-md bg-emerald-600 hover:bg-emerald-500 border-none font-bold text-xs w-full sm:w-auto py-2"
                 >
-                  Complete Registration & Log Device
+                  <span className="hidden sm:inline">Complete Registration & Log Device</span>
+                  <span className="inline sm:hidden">Complete & Log Device</span>
                 </Button>
               </div>
             </section>
@@ -702,9 +703,9 @@ export default function RegisterPhonePage() {
           
           {/* DURING STEP 3: SHOW SUMMARY CARD */}
           {step === 3 ? (
-            <section className="p-6 rounded-2xl bg-white border border-blue-600 ring-2 ring-blue-500/10 shadow-sm space-y-5 sticky top-20 animate-in fade-in duration-200">
+            <section className="p-6 rounded-2xl bg-white border border-teal-600 ring-2 ring-teal-500/10 shadow-sm space-y-5 sticky top-20 animate-in fade-in duration-200">
               <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-                <span className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-blue-600/20">
+                <span className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-teal-600/20">
                   3
                 </span>
                 <h2 className="text-lg font-extrabold text-slate-900">Registration Summary</h2>
@@ -713,7 +714,7 @@ export default function RegisterPhonePage() {
               <div className="space-y-3 text-xs border-b border-slate-100 pb-4 font-medium">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">IMEI/SN</span>
-                  <span className="font-mono font-bold text-blue-700">{imei || '—'}</span>
+                  <span className="font-mono font-bold text-teal-700">{imei || '—'}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Brand</span>
@@ -828,19 +829,7 @@ export default function RegisterPhonePage() {
         </aside>
       </div>
 
-      {/* Mobile Sticky Action Bar */}
-      <div className="md:hidden fixed bottom-16 left-0 right-0 p-4 bg-white/95 backdrop-blur-md border-t border-slate-200 z-40">
-        <Button
-          variant="primary"
-          fullWidth
-          size="lg"
-          isLoading={isSubmitting}
-          onClick={handleCompleteRegistration}
-          className="shadow-xl"
-        >
-          Register Device
-        </Button>
-      </div>
+
 
       {/* Success Modal Overlay */}
       {showSuccessModal && registeredItem && (

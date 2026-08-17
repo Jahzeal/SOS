@@ -54,7 +54,7 @@ export default function RebuiltSettingsPage() {
   const [statusFilter, setStatusFilter] = useState('ALL');
 
   const [usersList, setUsersList] = useState([
-    { id: '1', name: 'David Ibeh', email: 'david@example.com', role: 'Management', branch: 'All Branches', status: 'ACTIVE', lastActive: 'Just now', initials: 'DI', color: 'bg-blue-600' },
+    { id: '1', name: 'David Ibeh', email: 'david@example.com', role: 'Management', branch: 'All Branches', status: 'ACTIVE', lastActive: 'Just now', initials: 'DI', color: 'bg-teal-600' },
     { id: '2', name: 'Amaka Okafor', email: 'amaka@example.com', role: 'Sales', branch: 'Ikeja', status: 'ACTIVE', lastActive: '5 min ago', initials: 'AO', color: 'bg-indigo-600' },
     { id: '3', name: 'John Ade', email: 'john@example.com', role: 'Manager', branch: 'Ikeja', status: 'ACTIVE', lastActive: '1 hour ago', initials: 'JA', color: 'bg-amber-600' },
     { id: '4', name: 'Peter James', email: 'peter@example.com', role: 'Technician', branch: 'Lekki', status: 'ACTIVE', lastActive: 'Yesterday', initials: 'PJ', color: 'bg-slate-700' },
@@ -125,7 +125,7 @@ export default function RebuiltSettingsPage() {
           <div className="flex items-center gap-2">
             {activeSubTab === 'profile' && (
               <>
-                <Building className="w-4 h-4 text-blue-600" />
+                <Building className="w-4 h-4 text-teal-600" />
                 <span>Business Profile</span>
               </>
             )}
@@ -164,10 +164,10 @@ export default function RebuiltSettingsPage() {
                   setIsDropdownOpen(false);
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl transition font-bold text-left ${
-                  activeSubTab === 'profile' ? 'bg-blue-50 text-blue-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  activeSubTab === 'profile' ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <Building className="w-4 h-4 shrink-0 text-blue-600" />
+                <Building className="w-4 h-4 shrink-0 text-teal-600" />
                 <span>Business Profile</span>
               </button>
               <button
@@ -176,10 +176,10 @@ export default function RebuiltSettingsPage() {
                   setIsDropdownOpen(false);
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl transition font-bold text-left ${
-                  activeSubTab === 'users' ? 'bg-indigo-50 text-indigo-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  activeSubTab === 'users' ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <Users className="w-4 h-4 shrink-0 text-indigo-600" />
+                <Users className="w-4 h-4 shrink-0 text-teal-600" />
                 <span>Users & Roles</span>
               </button>
               <button
@@ -188,10 +188,10 @@ export default function RebuiltSettingsPage() {
                   setIsDropdownOpen(false);
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl transition font-bold text-left ${
-                  activeSubTab === 'branches' ? 'bg-amber-50 text-amber-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  activeSubTab === 'branches' ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <Store className="w-4 h-4 shrink-0 text-amber-600" />
+                <Store className="w-4 h-4 shrink-0 text-teal-600" />
                 <span>Branches</span>
               </button>
               <button
@@ -200,10 +200,10 @@ export default function RebuiltSettingsPage() {
                   setIsDropdownOpen(false);
                 }}
                 className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl transition font-bold text-left ${
-                  activeSubTab === 'billing' ? 'bg-emerald-50 text-emerald-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  activeSubTab === 'billing' ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 }`}
               >
-                <CreditCard className="w-4 h-4 shrink-0 text-emerald-600" />
+                <CreditCard className="w-4 h-4 shrink-0 text-teal-600" />
                 <span>Billing & Plan</span>
               </button>
             </div>
@@ -256,7 +256,7 @@ export default function RebuiltSettingsPage() {
                     type="text"
                     value={businessProfile.name}
                     onChange={(e) => handleProfileChange('name', e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:bg-white"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-teal-600 focus:bg-white"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -265,7 +265,7 @@ export default function RebuiltSettingsPage() {
                     type="text"
                     value={businessProfile.legalName}
                     onChange={(e) => handleProfileChange('legalName', e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:bg-white"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-teal-600 focus:bg-white"
                   />
                 </div>
               </div>
@@ -275,7 +275,7 @@ export default function RebuiltSettingsPage() {
                 <select
                   value={businessProfile.businessType}
                   onChange={(e) => handleProfileChange('businessType', e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:bg-white"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-teal-600 focus:bg-white"
                 >
                   <option value="retail">Phone Retailer & Gadgets Store</option>
                   <option value="wholesale">Wholesale Phone Distributor</option>
@@ -290,7 +290,7 @@ export default function RebuiltSettingsPage() {
                     type="tel"
                     value={businessProfile.phone}
                     onChange={(e) => handleProfileChange('phone', e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:bg-white"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-teal-600 focus:bg-white"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -299,7 +299,7 @@ export default function RebuiltSettingsPage() {
                     type="email"
                     value={businessProfile.email}
                     onChange={(e) => handleProfileChange('email', e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:bg-white"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-teal-600 focus:bg-white"
                   />
                 </div>
               </div>
@@ -310,7 +310,7 @@ export default function RebuiltSettingsPage() {
                   rows={3}
                   value={businessProfile.address}
                   onChange={(e) => handleProfileChange('address', e.target.value)}
-                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-blue-600 focus:bg-white resize-none"
+                  className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-teal-600 focus:bg-white resize-none"
                 />
               </div>
             </div>
@@ -339,7 +339,7 @@ export default function RebuiltSettingsPage() {
                       type="checkbox"
                       checked={(businessProfile as any)[item.key]}
                       onChange={(e) => handleProfileChange(item.key, e.target.checked)}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-slate-300"
+                      className="w-4 h-4 text-teal-600 rounded focus:ring-teal-500 border-slate-300"
                     />
                   </label>
                 ))}
@@ -377,7 +377,7 @@ export default function RebuiltSettingsPage() {
               </div>
 
               <div className="flex items-start gap-2 text-left bg-white p-3 rounded-xl border border-slate-200 text-xs">
-                <Info className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
+                <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
                 <p className="text-[11px] text-slate-600 font-medium">
                   Internal supplier costs, wholesale margins, and private ledger records are never exposed to customers.
                 </p>
@@ -391,8 +391,8 @@ export default function RebuiltSettingsPage() {
       {activeSubTab === 'users' && (
         <div className="space-y-6">
           {/* Info Banner */}
-          <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200/80 text-xs text-blue-900 flex items-start gap-3">
-            <Info className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+          <div className="p-4 rounded-2xl bg-teal-50 border border-teal-200/80 text-xs text-teal-900 flex items-start gap-3">
+            <Info className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold">Multi-Staff Permission Management:</span> Your store owner account controls staff roles and branch access. Assigned staff can register devices and record sales without seeing private store financials.
             </div>
@@ -406,7 +406,7 @@ export default function RebuiltSettingsPage() {
             </div>
             <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
               <span className="text-xs font-semibold text-slate-500">Active Staff</span>
-              <div className="text-2xl sm:text-3xl font-extrabold text-blue-600 mt-1">
+              <div className="text-2xl sm:text-3xl font-extrabold text-teal-600 mt-1">
                 {usersList.filter((u) => u.status === 'ACTIVE').length}
               </div>
             </div>
@@ -432,7 +432,7 @@ export default function RebuiltSettingsPage() {
                   value={userSearch}
                   onChange={(e) => setUserSearch(e.target.value)}
                   placeholder="Search staff name or email..."
-                  className="w-full text-xs pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 font-medium text-slate-900"
+                  className="w-full text-xs pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 font-medium text-slate-900"
                 />
                 <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
               </div>
@@ -582,7 +582,7 @@ export default function RebuiltSettingsPage() {
               <div key={b.id} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Store className="w-5 h-5 text-blue-600" />
+                    <Store className="w-5 h-5 text-teal-600" />
                     <span className="font-extrabold text-slate-900 text-base">{b.name}</span>
                   </div>
                   {b.isHeadquarters && (
@@ -620,7 +620,7 @@ export default function RebuiltSettingsPage() {
           <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-slate-900 to-slate-950 text-white shadow-xl space-y-6 border border-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div>
-                <Badge variant="verified" size="sm" className="bg-blue-600 text-white border-none mb-2">
+                <Badge variant="verified" size="sm" className="bg-teal-600 text-white border-none mb-2">
                   ACTIVE SUBSCRIPTION
                 </Badge>
                 <h2 className="text-2xl font-extrabold tracking-tight">Business Scale Plan</h2>
@@ -633,7 +633,7 @@ export default function RebuiltSettingsPage() {
                 <Button variant="secondary" size="sm" className="bg-white/10 text-white hover:bg-white/20 border-white/10 font-bold">
                   Manage Billing
                 </Button>
-                <Button variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-500 text-white font-bold">
+                <Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-500 text-white font-bold">
                   Upgrade Plan →
                 </Button>
               </div>
@@ -654,10 +654,10 @@ export default function RebuiltSettingsPage() {
               <div className="space-y-2 p-4 rounded-2xl bg-white/5 border border-white/10">
                 <div className="flex justify-between font-bold">
                   <span className="text-slate-300">Store Branches</span>
-                  <span className="text-blue-400">2 / 3 Branches</span>
+                  <span className="text-teal-400">2 / 3 Branches</span>
                 </div>
                 <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-blue-500 rounded-full w-[66%]" />
+                  <div className="h-full bg-teal-500 rounded-full w-[66%]" />
                 </div>
               </div>
 

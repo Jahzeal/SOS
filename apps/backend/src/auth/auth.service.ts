@@ -126,4 +126,71 @@ export class AuthService {
       refreshToken,
     };
   }
+
+  async forgotPassword(email: string) {
+    if (!email || !email.trim()) {
+      throw new BadRequestException('Email address is required');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { email: email.trim().toLowerCase() },
+    });
+
+    if (!user) {
+      // For security reasons, respond with success message
+      return {
+        message: 'If an account is associated with this email address, password reset instructions have been sent.',
+      };
+    }
+
+    // Generate reset token signed with 1h expiry
+    const resetToken = this.jwtService.sign(
+      { sub: user.id, type: 'password_reset' },
+      { expiresIn: '1h' }
+    );
+
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+
+    // Log reset token and return preview message for dev environment
+    console.log(`[AUTH] Password Reset Link generated for ${user.email}: ${resetUrl}`);
+
+    return {
+      message: 'If an account is associated with this email address, password reset instructions have been sent.',
+      resetUrl, // Provided for local developer testing
+      resetToken,
+    };
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    if (!token || !newPassword) {
+      throw new BadRequestException('Reset token and new password are required');
+    }
+
+    if (newPassword.length < 6) {
+      throw new BadRequestException('Password must be at least 6 characters long');
+    }
+
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(token);
+    } catch (err) {
+      throw new BadRequestException('Invalid or expired password reset token');
+    }
+
+    if (payload.type !== 'password_reset' || !payload.sub) {
+      throw new BadRequestException('Invalid reset token structure');
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await this.prisma.user.update({
+      where: { id: payload.sub },
+      data: { password: hashedPassword },
+    });
+
+    return {
+      success: true,
+      message: 'Your password has been reset successfully. You may now log in.',
+    };
+  }
 }

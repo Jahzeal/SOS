@@ -83,7 +83,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
       >
         {/* Search Header Input */}
         <div className="p-4 border-b border-slate-200 flex items-center gap-3">
-          <Search className="w-5 h-5 text-blue-600 shrink-0" />
+          <Search className="w-5 h-5 text-teal-600 shrink-0" />
           <input
             autoFocus
             type="text"

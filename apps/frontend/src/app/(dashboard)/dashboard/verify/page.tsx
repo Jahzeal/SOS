@@ -42,13 +42,8 @@ export default function VerifyPhonePage() {
       
       {/* Top Header */}
       <div className="border-b border-slate-200 pb-4">
-        <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-          <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-          <ChevronRight className="w-3.5 h-3.5" />
-          <span className="text-blue-600 font-bold">Verify IMEI & QR</span>
-        </nav>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">IMEI & QR Authenticity Scanner</h1>
-        <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+        <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900">IMEI & QR Authenticity Scanner</h1>
+        <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium mt-1">
           Perform immediate hardware authentication, status check, and warranty validation against global & store ledgers.
         </p>
       </div>
@@ -61,7 +56,7 @@ export default function VerifyPhonePage() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Scan QR Code or Enter IMEI / Serial Number..."
-            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
+            className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-semibold text-slate-900 focus:outline-none focus:border-teal-600"
           />
           <Search className="w-5 h-5 text-slate-400 absolute left-3 top-3.5" />
         </div>
@@ -91,7 +86,7 @@ export default function VerifyPhonePage() {
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px] uppercase font-bold">IMEI</span>
-                  <span className="font-mono font-bold text-blue-700">{result.imei}</span>
+                  <span className="font-mono font-bold text-teal-700">{result.imei}</span>
                 </div>
                 <div>
                   <span className="text-slate-500 block text-[10px] uppercase font-bold">Serial Number</span>

@@ -37,11 +37,11 @@ export function Alert({
       icon: <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />,
     },
     info: {
-      bg: 'bg-blue-50/90',
-      border: 'border-blue-200',
-      text: 'text-blue-800',
-      titleColor: 'text-blue-950',
-      icon: <Info className="w-5 h-5 text-blue-600 shrink-0" />,
+      bg: 'bg-teal-50/90',
+      border: 'border-teal-200',
+      text: 'text-teal-800',
+      titleColor: 'text-teal-950',
+      icon: <Info className="w-5 h-5 text-teal-600 shrink-0" />,
     },
     warning: {
       bg: 'bg-amber-50/90',

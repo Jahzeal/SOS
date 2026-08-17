@@ -84,7 +84,7 @@ export const TextInput = React.forwardRef<HTMLInputElement, TextInputProps>(
     const activeType = isPasswordType ? (showPassword ? 'text' : 'password') : type;
 
     // Border states
-    let borderClass = 'border-slate-200 focus:border-blue-600 focus:ring-blue-500/20';
+    let borderClass = 'border-slate-200 focus:border-teal-600 focus:ring-teal-500/20';
     if (errorMessage) {
       borderClass = 'border-rose-300 focus:border-rose-500 focus:ring-rose-500/20 bg-rose-50/20';
     } else if (isSuccess) {
@@ -152,7 +152,7 @@ export const SearchInput = React.forwardRef<HTMLInputElement, SearchInputProps>(
         <input
           ref={ref}
           type="text"
-          className={`w-full text-xs sm:text-sm pl-9 pr-14 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-input border border-slate-200 shadow-subtle focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 transition-all ${className}`}
+          className={`w-full text-xs sm:text-sm pl-9 pr-14 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-input border border-slate-200 shadow-subtle focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 transition-all ${className}`}
           {...props}
         />
         {shortcutHint && (
@@ -185,7 +185,7 @@ export const SelectInput = React.forwardRef<HTMLSelectElement, SelectInputProps>
           <select
             ref={ref}
             id={fieldId}
-            className={`w-full text-xs sm:text-sm px-3 py-2 pr-9 bg-white text-slate-900 rounded-input border border-slate-200 shadow-subtle focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 appearance-none cursor-pointer disabled:bg-slate-100 disabled:cursor-not-allowed ${
+            className={`w-full text-xs sm:text-sm px-3 py-2 pr-9 bg-white text-slate-900 rounded-input border border-slate-200 shadow-subtle focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 appearance-none cursor-pointer disabled:bg-slate-100 disabled:cursor-not-allowed ${
               errorMessage ? 'border-rose-300 bg-rose-50/20' : ''
             } ${className}`}
             {...props}
@@ -221,7 +221,7 @@ export const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
         <textarea
           ref={ref}
           id={fieldId}
-          className={`w-full text-xs sm:text-sm p-3 bg-white text-slate-900 placeholder-slate-400 rounded-input border border-slate-200 shadow-subtle focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 min-h-[90px] resize-y ${
+          className={`w-full text-xs sm:text-sm p-3 bg-white text-slate-900 placeholder-slate-400 rounded-input border border-slate-200 shadow-subtle focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 min-h-[90px] resize-y ${
             errorMessage ? 'border-rose-300 bg-rose-50/20' : ''
           } ${className}`}
           {...props}
@@ -249,7 +249,7 @@ export const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
           ref={ref}
           id={fieldId}
           type="checkbox"
-          className={`mt-0.5 w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500 focus:ring-2 cursor-pointer ${className}`}
+          className={`mt-0.5 w-4 h-4 text-teal-600 rounded border-slate-300 focus:ring-teal-500 focus:ring-2 cursor-pointer ${className}`}
           {...props}
         />
         <div>
@@ -281,7 +281,7 @@ export const Radio = React.forwardRef<HTMLInputElement, RadioProps>(
           ref={ref}
           id={fieldId}
           type="radio"
-          className={`mt-0.5 w-4 h-4 text-blue-600 border-slate-300 focus:ring-blue-500 focus:ring-2 cursor-pointer ${className}`}
+          className={`mt-0.5 w-4 h-4 text-teal-600 border-slate-300 focus:ring-teal-500 focus:ring-2 cursor-pointer ${className}`}
           {...props}
         />
         <div>

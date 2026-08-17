@@ -97,9 +97,6 @@ export default function BusinessDashboardPage() {
 
         <div className="space-y-2 relative z-10">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="hidden sm:inline-block px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200/80">
-              {businessName} • {plan} PLAN
-            </span>
             <span className="text-slate-500 text-xs font-semibold">
               <span className="hidden sm:inline">• </span>Main Downtown Branch
             </span>
@@ -418,10 +415,10 @@ export default function BusinessDashboardPage() {
       </div>
 
       {/* Floating Help Widget */}
-      <div className="fixed bottom-6 right-6 z-40">
+      <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40">
         <button
           onClick={() => setShowSupportModal(!showSupportModal)}
-          className="w-12 h-12 rounded-full bg-blue-600 text-white shadow-2xl flex items-center justify-center hover:bg-blue-500 transition-all focus:outline-none focus:ring-4 focus:ring-blue-500/30"
+          className="w-12 h-12 rounded-full bg-teal-600 text-white shadow-2xl flex items-center justify-center hover:bg-teal-500 transition-all focus:outline-none focus:ring-4 focus:ring-teal-500/30"
           title="Store Assistance"
         >
           <HelpCircle className="w-6 h-6" />
@@ -438,7 +435,7 @@ export default function BusinessDashboardPage() {
               <a href="#" className="block p-2 rounded-lg bg-slate-50 hover:bg-slate-100 font-bold text-slate-800">
                 📚 Documentation & Guides
               </a>
-              <a href="#" className="block p-2 rounded-lg bg-blue-50 text-blue-700 font-bold hover:bg-blue-100">
+              <a href="#" className="block p-2 rounded-lg bg-teal-50 text-teal-700 font-bold hover:bg-teal-100">
                 💬 Contact Store Support
               </a>
             </div>

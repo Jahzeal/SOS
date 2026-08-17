@@ -44,7 +44,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </button>
 
             <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
-              <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
+              <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
               <span className="truncate">VerifyFlow</span>
             </div>
           </div>
@@ -69,7 +69,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             {/* Notification Bell */}
             <button className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition relative shadow-subtle">
               <Bell className="w-4 h-4" />
-              <span className="w-2 h-2 rounded-full bg-blue-600 absolute top-2 right-2 ring-2 ring-white"></span>
+              <span className="w-2 h-2 rounded-full bg-teal-600 absolute top-2 right-2 ring-2 ring-white"></span>
             </button>
 
             {/* Top Bar User Profile Dropdown */}
@@ -101,7 +101,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     <div className="pt-2 border-t border-slate-200/80 space-y-1 text-[11px]">
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 font-medium">Store:</span>
-                        <span className="font-bold text-blue-700 truncate max-w-[130px]">{user?.business?.name || 'TechWorld Mobile'}</span>
+                        <span className="font-bold text-teal-700 truncate max-w-[130px]">{user?.business?.name || 'TechWorld Mobile'}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-slate-500 font-medium">Branch:</span>
@@ -151,7 +151,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2 flex items-center justify-around shadow-2xl">
         <Link
           href="/dashboard"
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-blue-600 transition"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-teal-600 transition"
         >
           <LayoutDashboard className="w-5 h-5 text-slate-700" />
           <span>Home</span>
@@ -159,7 +159,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <Link
           href="/dashboard/verify"
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-blue-600 transition"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-teal-600 transition"
         >
           <Search className="w-5 h-5 text-slate-700" />
           <span>Verify</span>
@@ -168,7 +168,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* Floating Register Phone FAB Action Button in Center */}
         <Link
           href="/dashboard/register"
-          className="w-12 h-12 rounded-full bg-blue-600 text-white shadow-xl flex items-center justify-center -mt-6 border-4 border-white transition-transform active:scale-95"
+          className="w-12 h-12 rounded-full bg-teal-600 text-white shadow-xl flex items-center justify-center -mt-6 border-4 border-white transition-transform active:scale-95"
           title="Register Phone"
         >
           <Plus className="w-6 h-6" />
@@ -176,7 +176,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <Link
           href="/dashboard/records"
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-blue-600 transition"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-teal-600 transition"
         >
           <List className="w-5 h-5 text-slate-700" />
           <span>Records</span>
@@ -184,7 +184,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         <button
           onClick={() => setIsMobileMenuOpen(true)}
-          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-blue-600 transition"
+          className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-teal-600 transition"
         >
           <Menu className="w-5 h-5 text-slate-700" />
           <span>Menu</span>
