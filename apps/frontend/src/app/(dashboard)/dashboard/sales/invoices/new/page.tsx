@@ -225,41 +225,14 @@ export default function CreateInvoicePage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <Link href="/dashboard/sales/invoices" className="hover:text-slate-900 transition">Invoices</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">New Invoice Statement</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Create Invoice Statement
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
             Build a formal bill for deferred payment or corporate clients — print, share via email/link, or save to invoices registry.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => handleIssueInvoice('DRAFT')}
-            leftIcon={<Save className="w-4 h-4 text-slate-600" />}
-          >
-            Save Draft
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            isLoading={isSaving}
-            onClick={() => handleIssueInvoice('ISSUED')}
-            leftIcon={<Share2 className="w-4 h-4" />}
-            className="bg-blue-600 hover:bg-blue-500 font-bold"
-          >
-            Issue & Share Invoice
-          </Button>
-        </div>
       </div>
 
       {/* Error Message Banner */}
@@ -416,8 +389,59 @@ export default function CreateInvoicePage() {
               <Badge variant="starter" size="sm">{items.length} ITEMS</Badge>
             </div>
 
-            {/* Line Items Table */}
-            <div className="overflow-x-auto">
+            {/* Mobile Line Items View (Hidden on desktop) */}
+            <div className="block sm:hidden divide-y divide-slate-100 bg-white">
+              {items.length === 0 ? (
+                <div className="py-8 text-center text-slate-400 font-medium text-xs">
+                  No items added to invoice yet. Select a device above or add a custom item below.
+                </div>
+              ) : (
+                items.map((item) => (
+                  <div key={item.id} className="py-3.5 space-y-2.5">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-extrabold text-slate-900">{item.description}</p>
+                        <p className="text-[10px] font-mono text-slate-500">IMEI: {item.imei}</p>
+                      </div>
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="text-slate-400 hover:text-rose-600 p-1 shrink-0"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-100">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase">Qty:</span>
+                        <span className="font-bold text-slate-800">{item.quantity}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase">Price:</span>
+                        <div className="flex items-center gap-0.5">
+                          <span className="text-slate-400 font-bold">₦</span>
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={item.unitPrice}
+                            onChange={(e) => updateItemPrice(item.id, parseFloat(e.target.value) || 0)}
+                            className="w-16 text-right font-bold text-slate-900 bg-white border border-slate-200 rounded px-1 py-0.5"
+                          />
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] text-slate-400 font-bold uppercase block mb-0.5">Total</span>
+                        <span className="font-extrabold text-slate-900">₦{(item.unitPrice * item.quantity).toLocaleString()}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop Table View (Hidden on mobile) */}
+            <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
                   <tr>
@@ -611,13 +635,24 @@ export default function CreateInvoicePage() {
               <Button
                 variant="primary"
                 fullWidth
-                size="lg"
+                size="md"
                 isLoading={isSaving}
                 onClick={() => handleIssueInvoice('ISSUED')}
-                className="bg-blue-600 hover:bg-blue-500 font-bold h-12 shadow-lg shadow-blue-600/20"
+                className="bg-blue-600 hover:bg-blue-500 font-bold shadow-lg shadow-blue-600/20"
                 leftIcon={<Share2 className="w-4 h-4" />}
               >
                 Issue & Share Invoice
+              </Button>
+
+              <Button
+                variant="secondary"
+                fullWidth
+                size="md"
+                onClick={() => handleIssueInvoice('DRAFT')}
+                className="font-bold border border-slate-200 text-slate-700 hover:bg-slate-50"
+                leftIcon={<Save className="w-4 h-4 text-slate-500" />}
+              >
+                Save Draft
               </Button>
 
               <div className="grid grid-cols-2 gap-2">

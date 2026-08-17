@@ -121,21 +121,22 @@ export default function BusinessDashboardPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-row items-center gap-3 relative z-10 shrink-0 w-full sm:w-auto">
+        <div className="flex flex-row items-center gap-2.5 relative z-10 shrink-0 w-full sm:w-auto">
           <Link href="/dashboard/register" className="flex-1 sm:flex-none">
             <Button
               variant="primary"
-              size="lg"
+              size="md"
               leftIcon={<Plus className="w-4 h-4" />}
               className="w-full sm:w-auto shadow-md shadow-blue-600/10 font-bold"
             >
-              Register New Phone
+              <span className="hidden sm:inline">Register New Phone</span>
+              <span className="inline sm:hidden">Register Phone</span>
             </Button>
           </Link>
           <Link href="/dashboard/verify" className="flex-1 sm:flex-none">
             <Button
               variant="secondary"
-              size="lg"
+              size="md"
               leftIcon={<Receipt className="w-4 h-4 text-blue-600" />}
               className="w-full sm:w-auto bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold"
             >

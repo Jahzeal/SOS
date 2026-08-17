@@ -120,7 +120,7 @@ export default function InvoicesRegistryPage() {
     const invNum = inv.invoiceNumber || inv.receiptNumber || inv.id;
     const subject = encodeURIComponent(`Invoice Statement #${invNum}`);
     const body = encodeURIComponent(
-      `Hello ${name},\n\nPlease find your invoice statement #${invNum} for $${inv.totalAmount?.toFixed(2) || '0.00'}.\n\nThank you for your business!`
+      `Hello ${name},\n\nPlease find your invoice statement #${invNum} for ₦${inv.totalAmount?.toLocaleString() || '0'}.\n\nThank you for your business!`
     );
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
   };
@@ -269,8 +269,91 @@ export default function InvoicesRegistryPage() {
           </div>
         </div>
 
-        {/* Invoice Data Table */}
-        <div className="overflow-x-auto">
+        {/* Mobile Cards View (Hidden on desktop) */}
+        <div className="block sm:hidden divide-y divide-slate-100 bg-white">
+          {loading ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold text-xs">
+                <Loader2 className="w-5 h-5 animate-spin" />
+                Loading invoice registry...
+              </div>
+            </div>
+          ) : error ? (
+            <div className="py-16 text-center">
+              <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold text-xs">
+                <AlertTriangle className="w-5 h-5" />
+                {error}
+              </div>
+            </div>
+          ) : filteredInvoices.length === 0 ? (
+            <div className="py-16 text-center text-slate-400 text-xs animate-in fade-in duration-200">
+              <FileText className="w-10 h-10 mx-auto mb-2 text-slate-300" />
+              <p className="font-bold text-slate-600">No invoices found</p>
+              <p>Create a new invoice statement to view billing records.</p>
+            </div>
+          ) : (
+            filteredInvoices.map((inv) => {
+              const invNum = inv.invoiceNumber || inv.receiptNumber || inv.id;
+              const custName = inv.customer?.name || 'Invoice Customer';
+              const dateStr = new Date(inv.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              });
+              const status = (inv.paymentStatus || 'PAID').toUpperCase();
+
+              return (
+                <div key={inv.id} className="p-4 space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-[10px] border border-blue-200 shrink-0">
+                        {getCustomerInitials(custName)}
+                      </div>
+                      <div>
+                        <h4 className="font-extrabold text-slate-900 text-sm">{custName}</h4>
+                        <p className="text-[10px] text-slate-400 font-mono font-bold text-blue-600">{invNum}</p>
+                      </div>
+                    </div>
+                    {/* Status Badge */}
+                    <div>
+                      {status === 'PAID' && <Badge variant="verified" size="sm">PAID</Badge>}
+                      {status === 'PENDING' && <Badge variant="business" size="sm">PENDING</Badge>}
+                      {status === 'OVERDUE' && <Badge variant="sold" size="sm">OVERDUE</Badge>}
+                      {status === 'DRAFT' && <Badge variant="starter" size="sm">DRAFT</Badge>}
+                    </div>
+                  </div>
+
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed">{getItemsSummary(inv.items)}</p>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
+                    <div>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Issue Date</span>
+                      <span className="font-bold text-slate-800 text-[11px]">{dateStr}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Amount</span>
+                      <span className="font-extrabold text-slate-900 text-[13px]">
+                        ₦{inv.totalAmount ? inv.totalAmount.toLocaleString() : '0'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 text-xs">
+                    <button onClick={handlePrint} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1">
+                      <Printer className="w-3.5 h-3.5" /> Print
+                    </button>
+                    <button onClick={() => handleEmail(inv)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1">
+                      <Mail className="w-3.5 h-3.5" /> Send
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop Table View (Hidden on mobile) */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
               <tr>

@@ -264,7 +264,7 @@ function CheckoutPOSContent() {
     const receiptNum = finalReceipt?.receiptNumber || finalReceipt?.id || 'Receipt';
     const subject = encodeURIComponent(`Sales Receipt #${receiptNum}`);
     const body = encodeURIComponent(
-      `Hello ${finalReceipt?.customerName || 'Valued Customer'},\n\nThank you for your purchase! Your sales receipt #${receiptNum} for $${finalReceipt?.total?.toFixed(2) || '0.00'} is confirmed.\n\nThank you for shopping with us!`
+      `Hello ${finalReceipt?.customerName || 'Valued Customer'},\n\nThank you for your purchase! Your sales receipt #${receiptNum} for ₦${finalReceipt?.total?.toLocaleString() || '0'} is confirmed.\n\nThank you for shopping with us!`
     );
     window.location.href = `mailto:${finalReceipt?.customerPhone?.includes('@') ? finalReceipt.customerPhone : ''}?subject=${subject}&body=${body}`;
   };
@@ -285,12 +285,12 @@ function CheckoutPOSContent() {
       {/* Top Header & Multi-Step Progress Tracker */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             {checkoutStep === 1 && 'Checkout POS Terminal'}
             {checkoutStep === 2 && 'Select Payment Method'}
             {checkoutStep === 3 && 'Transaction Receipt'}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
+          <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
             {checkoutStep === 1 && 'Select in-stock devices, add customer details, and build your order.'}
             {checkoutStep === 2 && 'Choose customer payment method (Cash, Card, Transfer) and confirm settlement.'}
             {checkoutStep === 3 && 'Review thermal receipt, print or email customer statement, and view record.'}
@@ -372,8 +372,10 @@ function CheckoutPOSContent() {
             {/* In-Stock Device Inventory Selector */}
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-blue-600" /> Select In-Stock Device from Inventory
+                <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-blue-600" />
+                  <span className="hidden sm:inline">Select In-Stock Device from Inventory</span>
+                  <span className="inline sm:hidden">Select In-Stock Device</span>
                 </h2>
                 <span className="text-[10px] text-slate-400 font-bold uppercase">Available Inventory</span>
               </div>
@@ -426,8 +428,8 @@ function CheckoutPOSContent() {
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
-                          <span className="font-extrabold text-slate-900 text-sm">
-                            ${(phone.sellingPrice ?? phone.purchasePrice ?? 0).toFixed(2)}
+                          <span className="font-extrabold text-slate-900 text-xs sm:text-sm">
+                            ₦{(phone.sellingPrice ?? phone.purchasePrice ?? 0).toLocaleString()}
                           </span>
                           <button
                             type="button"
@@ -627,12 +629,12 @@ function CheckoutPOSContent() {
 
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div>
-                <h2 className="text-lg font-extrabold text-slate-900">Select Payment Method</h2>
+                <h2 className="text-sm sm:text-lg font-extrabold text-slate-900">Select Payment Method</h2>
                 <p className="text-xs text-slate-500 font-medium">Customer: <strong>{customerName.trim() || 'Retail Buyer'}</strong> ({customerPhone || 'No Phone'})</p>
               </div>
               <div className="text-right">
                 <p className="text-[10px] text-slate-400 font-extrabold uppercase">Total Amount Due</p>
-                <p className="text-2xl font-extrabold text-blue-600">${grandTotal.toFixed(2)}</p>
+                <p className="text-lg sm:text-2xl font-extrabold text-blue-600">₦{grandTotal.toLocaleString()}</p>
               </div>
             </div>
 
@@ -745,7 +747,7 @@ function CheckoutPOSContent() {
             </div>
 
             <div>
-              <h2 className="text-xl font-extrabold text-slate-900">Transaction Complete!</h2>
+              <h2 className="text-lg sm:text-xl font-extrabold text-slate-900">Transaction Complete!</h2>
               <p className="text-xs text-slate-500 font-medium mt-0.5">
                 Receipt saved to <strong className="text-slate-800">Receipts Archive</strong>
               </p>
@@ -821,7 +823,7 @@ function CheckoutPOSContent() {
               <Button
                 variant="primary"
                 fullWidth
-                size="lg"
+                size="md"
                 onClick={resetForm}
                 className="bg-blue-600 hover:bg-blue-500 font-bold shadow-md mt-2"
               >
