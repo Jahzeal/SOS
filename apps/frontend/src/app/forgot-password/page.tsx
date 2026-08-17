@@ -34,7 +34,7 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-teal-600 selection:text-white">
       
       {/* Header / Brand */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-2">
@@ -69,11 +69,12 @@ export default function ForgotPasswordPage() {
               </div>
 
               {devResetUrl && (
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-2xl text-left space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-blue-700 block">Development Link Preview</span>
+                <div className="p-3 bg-teal-50 border border-teal-200 rounded-2xl text-left space-y-1.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 block">Development Link Preview</span>
+                  <p className="text-[11px] text-slate-600">Click below to test the reset flow locally:</p>
                   <a
                     href={devResetUrl}
-                    className="text-xs text-blue-600 font-mono font-bold break-all hover:underline block"
+                    className="text-xs text-teal-600 font-mono font-bold break-all hover:underline block"
                   >
                     {devResetUrl}
                   </a>
@@ -111,7 +112,7 @@ export default function ForgotPasswordPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="owner@store.com"
-                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600 text-xs"
+                    className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-teal-600 text-xs"
                   />
                 </div>
               </div>
@@ -122,8 +123,8 @@ export default function ForgotPasswordPage() {
                 size="md"
                 fullWidth
                 disabled={loading || !email.trim()}
-                leftIcon={loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
-                className="bg-blue-600 hover:bg-blue-700 font-bold text-xs py-3 shadow-md shadow-blue-600/20 mt-2"
+                leftIcon={loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
+                className="bg-teal-600 hover:bg-teal-700 font-bold text-xs py-3 shadow-md shadow-teal-600/20 mt-2"
               >
                 {loading ? 'Sending Reset Instructions...' : 'Send Password Reset Link'}
               </Button>

@@ -71,7 +71,7 @@ function ResetPasswordForm() {
 
           <div className="pt-2">
             <Link href="/login">
-              <Button variant="primary" size="md" fullWidth className="font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-600/20">
+              <Button variant="primary" size="md" fullWidth className="font-bold text-xs bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20">
                 Sign In Now →
               </Button>
             </Link>
@@ -100,7 +100,7 @@ function ResetPasswordForm() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600 text-xs"
+                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-teal-600 text-xs"
               />
             </div>
           </div>
@@ -118,7 +118,7 @@ function ResetPasswordForm() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600 text-xs"
+                className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-teal-600 text-xs"
               />
             </div>
           </div>
@@ -130,7 +130,7 @@ function ResetPasswordForm() {
             fullWidth
             disabled={loading || !token}
             leftIcon={loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <KeyRound className="w-4 h-4" />}
-            className="bg-blue-600 hover:bg-blue-700 font-bold text-xs py-3 shadow-md shadow-blue-600/20 mt-2"
+            className="bg-teal-600 hover:bg-teal-700 font-bold text-xs py-3 shadow-md shadow-teal-600/20 mt-2"
           >
             {loading ? 'Updating Password...' : 'Reset Password'}
           </Button>
@@ -151,11 +151,11 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-blue-600 selection:text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-teal-600 selection:text-white">
       {/* Header / Brand */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-2">
         <Link href="/" className="inline-flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-lg shadow-md">
+          <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-teal-600/20">
             VF
           </div>
           <span className="font-extrabold text-slate-900 text-xl tracking-tight">VerifyFlow</span>
@@ -172,7 +172,7 @@ export default function ResetPasswordPage() {
         <Suspense
           fallback={
             <div className="bg-white py-12 px-6 shadow-xl rounded-3xl border border-slate-200/90 text-center">
-              <Loader2 className="w-6 h-6 animate-spin mx-auto text-blue-600" />
+              <Loader2 className="w-6 h-6 animate-spin mx-auto text-teal-600" />
             </div>
           }
         >

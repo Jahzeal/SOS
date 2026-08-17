@@ -191,34 +191,36 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-screen">
         
-        {/* LEFT PANEL — BRAND EXPERIENCE (Desktop Only: hidden lg:flex lg:col-span-5) */}
-        <div className="hidden lg:flex lg:col-span-5 bg-gradient-to-b from-slate-900 via-slate-850 to-slate-900 text-white p-6 lg:p-10 lg:py-8 flex-col justify-between relative overflow-hidden border-r border-slate-800">
+        {/* LEFT PANEL — BRAND EXPERIENCE (Option 2: Matte Obsidian Hardware Glass Background Image) */}
+        <div
+          className="hidden lg:flex lg:col-span-5 text-white p-6 lg:p-10 lg:py-8 flex-col justify-between relative overflow-hidden border-r border-slate-800/80 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/images/onboarding_bg.png')" }}
+        >
+          {/* Light Overlay Tint for Maximum Background Image Visibility */}
+          <div className="absolute inset-0 bg-slate-950/20 pointer-events-none" />
           
-          {/* Background Ambient Accents */}
-          <div className="absolute -top-32 -left-32 w-96 h-96 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl pointer-events-none" />
+          {/* Background Ambient Hardware Lighting Accents */}
+          <div className="absolute -top-40 -left-40 w-[450px] h-[450px] bg-teal-500/15 rounded-full blur-[120px] pointer-events-none" />
+          <div className="absolute -bottom-40 -right-40 w-[400px] h-[400px] bg-teal-600/15 rounded-full blur-[100px] pointer-events-none" />
 
           {/* Top Logo Bar */}
           <div className="relative z-10 flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2 font-black text-xl tracking-tight text-white">
-              <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-600/30">
+              <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white shadow-lg shadow-teal-600/30">
                 <ShieldCheck className="w-5 h-5" />
               </div>
               <span>VerifyFlow</span>
             </Link>
-            <span className="text-xs font-bold text-blue-300 bg-blue-950/80 px-3.5 py-1 rounded-full border border-blue-800/60 shadow-subtle">
-              Setup Wizard
-            </span>
           </div>
 
           {/* Brand Dynamic Content Area (Comfortable top spacing below logo header) */}
           <div className="relative z-10 mt-12 mb-auto space-y-5 max-w-lg">
             
             {/* Icon Box */}
-            <div className="w-14 h-14 rounded-2xl bg-slate-800/90 border border-slate-700/80 flex items-center justify-center shadow-xl">
-              {currentStep === 1 && <Building className="w-7 h-7 text-blue-400" />}
+            <div className="w-14 h-14 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-center shadow-xl backdrop-blur-md">
+              {currentStep === 1 && <Building className="w-7 h-7 text-teal-400" />}
               {currentStep === 2 && <Mail className="w-7 h-7 text-emerald-400" />}
-              {currentStep === 3 && <Store className="w-7 h-7 text-indigo-400" />}
+              {currentStep === 3 && <Store className="w-7 h-7 text-teal-400" />}
               {currentStep === 4 && <Award className="w-7 h-7 text-amber-400" />}
               {currentStep === 5 && <CheckCircle2 className="w-7 h-7 text-emerald-400" />}
             </div>
@@ -233,7 +235,7 @@ export default function OnboardingPage() {
             </div>
 
             {/* Testimonial Card */}
-            <div className="p-4 rounded-2xl bg-slate-800/70 border border-slate-700/80 text-xs space-y-2.5 shadow-xl backdrop-blur-md">
+            <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/90 text-xs space-y-2.5 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <div className="flex text-amber-400 gap-0.5 text-xs">★★★★★</div>
                 <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Store Owner Review</span>
@@ -241,8 +243,8 @@ export default function OnboardingPage() {
               <p className="text-slate-200 font-medium italic leading-relaxed text-[11px]">
                 "Setting up our 3 store locations on VerifyFlow took less than 5 minutes. The IMEI receipt verification stopped warranty disputes instantly."
               </p>
-              <div className="flex items-center gap-2.5 pt-1 border-t border-slate-700/60">
-                <div className="w-7 h-7 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center text-xs">
+              <div className="flex items-center gap-2.5 pt-1 border-t border-slate-800">
+                <div className="w-7 h-7 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-xs shadow-md shadow-teal-600/30">
                   M
                 </div>
                 <div>
@@ -256,9 +258,6 @@ export default function OnboardingPage() {
           {/* Left Footer Info */}
           <div className="relative z-10 text-xs text-slate-400 font-semibold flex items-center justify-between border-t border-slate-800/80 pt-4">
             <span>© 2026 VerifyFlow Inc.</span>
-            <span className="flex items-center gap-1.5 text-slate-300">
-              <Lock className="w-3.5 h-3.5 text-emerald-400" /> 256-Bit SSL Encrypted
-            </span>
           </div>
         </div>
 
@@ -272,13 +271,13 @@ export default function OnboardingPage() {
             <div className="block lg:hidden bg-white -mx-4 -mt-4 p-4 mb-2 border-b border-slate-200 shadow-sm rounded-b-xl space-y-3">
               <div className="flex items-center justify-between">
                 <Link href="/" className="flex items-center gap-2 font-black text-lg text-slate-900">
-                  <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center text-white">
+                  <div className="w-7 h-7 rounded-lg bg-teal-600 flex items-center justify-center text-white">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <span>VerifyFlow</span>
                 </Link>
                 <div className="flex items-center gap-2">
-                  <Link href="/login" className="text-xs font-bold text-blue-600 hover:underline">
+                  <Link href="/login" className="text-xs font-bold text-teal-600 hover:underline">
                     Sign In
                   </Link>
                   {currentStep > 1 && (
@@ -289,7 +288,7 @@ export default function OnboardingPage() {
                       <ArrowLeft className="w-3.5 h-3.5" /> Back
                     </button>
                   )}
-                  <span className="text-[11px] font-extrabold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-full border border-blue-200">
+                  <span className="text-[11px] font-extrabold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
                     Step {currentStep} of 5
                   </span>
                 </div>
@@ -331,10 +330,10 @@ export default function OnboardingPage() {
 
               <div className="flex items-center gap-3 text-xs font-bold">
                 <span className="text-slate-500 uppercase tracking-wider text-[11px]">
-                  Step <span className="text-blue-600 font-extrabold">{currentStep}</span> of 5
+                  Step <span className="text-teal-600 font-extrabold">{currentStep}</span> of 5
                 </span>
                 <span className="text-slate-300">•</span>
-                <Link href="/login" className="text-blue-600 hover:underline">
+                <Link href="/login" className="text-teal-600 hover:underline">
                   Already registered? Sign In →
                 </Link>
               </div>
@@ -359,7 +358,7 @@ export default function OnboardingPage() {
                         isCompleted
                           ? 'bg-emerald-500'
                           : isCurrent
-                          ? 'bg-blue-600 ring-2 ring-blue-500/20'
+                          ? 'bg-teal-600 ring-2 ring-teal-500/20'
                           : 'bg-slate-200'
                       }`}
                     />
@@ -368,7 +367,7 @@ export default function OnboardingPage() {
                         isCompleted
                           ? 'text-emerald-700'
                           : isCurrent
-                          ? 'text-blue-600 font-extrabold'
+                          ? 'text-teal-600 font-extrabold'
                           : 'text-slate-400'
                       }`}
                     >
@@ -408,7 +407,7 @@ export default function OnboardingPage() {
                           value={accountForm.fullName}
                           onChange={(e) => setAccountForm({ ...accountForm, fullName: e.target.value })}
                           placeholder="e.g. Marcus Vance"
-                          className="w-full text-sm pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 font-medium text-slate-900"
+                          className="w-full text-sm pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
                         />
                         <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                       </div>
@@ -428,7 +427,7 @@ export default function OnboardingPage() {
                           value={accountForm.email}
                           onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
                           placeholder="marcus@techworldmobile.com"
-                          className="w-full text-sm pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 font-medium text-slate-900"
+                          className="w-full text-sm pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
                         />
                         <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                       </div>
@@ -448,7 +447,7 @@ export default function OnboardingPage() {
                           value={accountForm.password}
                           onChange={(e) => setAccountForm({ ...accountForm, password: e.target.value })}
                           placeholder="At least 8 characters"
-                          className="w-full text-sm pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 font-medium text-slate-900"
+                          className="w-full text-sm pl-10 pr-10 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
                         />
                         <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
                         <button
@@ -471,10 +470,10 @@ export default function OnboardingPage() {
                         id="agreeTerms"
                         checked={accountForm.agreeTerms}
                         onChange={(e) => setAccountForm({ ...accountForm, agreeTerms: e.target.checked })}
-                        className="mt-0.5 rounded text-blue-600 focus:ring-blue-500"
+                        className="mt-0.5 rounded text-teal-600 focus:ring-teal-500"
                       />
                       <label htmlFor="agreeTerms" className="text-xs text-slate-600 font-medium leading-relaxed">
-                        I agree to the <a href="#" className="text-blue-600 font-bold hover:underline">Terms of Service</a> and <a href="#" className="text-blue-600 font-bold hover:underline">Privacy Policy</a>.
+                        I agree to the <a href="#" className="text-teal-600 font-bold hover:underline">Terms of Service</a> and <a href="#" className="text-teal-600 font-bold hover:underline">Privacy Policy</a>.
                       </label>
                     </div>
                   </div>
@@ -513,7 +512,7 @@ export default function OnboardingPage() {
                   </div>
 
                   <div className="pt-2 text-xs font-semibold text-slate-500 space-y-2">
-                    <div className="bg-blue-50/80 border border-blue-200/80 text-blue-900 p-2.5 rounded-xl text-[11px] font-medium flex items-center justify-between gap-2">
+                    <div className="bg-teal-50/80 border border-teal-200/80 text-teal-900 p-2.5 rounded-xl text-[11px] font-medium flex items-center justify-between gap-2">
                       <span>💡 <strong>Dev Mode</strong>: Enter <strong>123456</strong> or click auto-fill.</span>
                       <button
                         type="button"
@@ -521,7 +520,7 @@ export default function OnboardingPage() {
                           setOtpDigits(['1', '2', '3', '4', '5', '6']);
                           setOtpResent(true);
                         }}
-                        className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold rounded-lg text-[10px] shrink-0"
+                        className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white font-extrabold rounded-lg text-[10px] shrink-0"
                       >
                         Auto-Fill Code
                       </button>
@@ -535,7 +534,7 @@ export default function OnboardingPage() {
                           setOtpDigits(['1', '2', '3', '4', '5', '6']);
                           setOtpResent(true);
                         }}
-                        className="text-blue-600 font-bold hover:underline"
+                        className="text-teal-600 font-bold hover:underline"
                       >
                         Resend Code
                       </button>
@@ -549,18 +548,18 @@ export default function OnboardingPage() {
               {/* STEP 3: BUSINESS PROFILE                                           */}
               {/* =================================================================== */}
               {currentStep === 3 && (
-                <div className="space-y-6 animate-in fade-in duration-200">
+                <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
                   <div>
-                    <h3 className="text-2xl font-extrabold text-slate-900">Complete Store Profile</h3>
-                    <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">Complete Store Profile</h3>
+                    <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
                       Tell us about your phone retail store or distribution network.
                     </p>
                   </div>
 
-                  <div className="space-y-4">
+                  <div className="space-y-3 sm:space-y-4">
                     {/* Store Name */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      <label className="block text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         Store / Business Name <span className="text-rose-500">*</span>
                       </label>
                       <input
@@ -568,16 +567,16 @@ export default function OnboardingPage() {
                         value={businessForm.storeName}
                         onChange={(e) => setBusinessForm({ ...businessForm, storeName: e.target.value })}
                         placeholder="e.g. TechWorld Mobile Ltd"
-                        className="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 font-medium text-slate-900"
+                        className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
                       />
                     </div>
 
                     {/* Business Type Selector */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      <label className="block text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         Business Category
                       </label>
-                      <div className="grid grid-cols-2 gap-2 text-xs font-bold">
+                      <div className="grid grid-cols-2 gap-2 text-[11px] sm:text-xs font-bold">
                         {[
                           { id: 'retailer', label: 'Phone Retailer', desc: 'Single or multi-branch shop' },
                           { id: 'wholesaler', label: 'Wholesaler', desc: 'Bulk serial hardware supplier' },
@@ -588,14 +587,14 @@ export default function OnboardingPage() {
                             key={cat.id}
                             type="button"
                             onClick={() => setBusinessForm({ ...businessForm, businessType: cat.id })}
-                            className={`p-3 rounded-xl text-left border transition-all ${
+                            className={`p-2.5 sm:p-3 rounded-xl text-left border transition-all ${
                               businessForm.businessType === cat.id
-                                ? 'bg-blue-50/70 border-blue-600 text-blue-900 shadow-sm'
+                                ? 'bg-teal-50/70 border-teal-600 text-teal-900 shadow-sm'
                                 : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
                             }`}
                           >
-                            <div className="font-extrabold">{cat.label}</div>
-                            <div className="text-[10px] font-normal text-slate-500 mt-0.5">{cat.desc}</div>
+                            <div className="font-extrabold text-[11px] sm:text-xs">{cat.label}</div>
+                            <div className="text-[9px] sm:text-[10px] font-normal text-slate-500 mt-0.5">{cat.desc}</div>
                           </button>
                         ))}
                       </div>
@@ -603,13 +602,13 @@ export default function OnboardingPage() {
 
                     {/* Monthly Volume */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      <label className="block text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         Estimated Monthly Phone Sales / Registration Volume
                       </label>
                       <select
                         value={businessForm.monthlyVolume}
                         onChange={(e) => setBusinessForm({ ...businessForm, monthlyVolume: e.target.value })}
-                        className="w-full text-sm px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 font-medium text-slate-900"
+                        className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
                       >
                         <option value="1-50">1 - 50 Phones / month</option>
                         <option value="50-200">50 - 200 Phones / month</option>
@@ -673,7 +672,7 @@ export default function OnboardingPage() {
                       onClick={() => setSelectedPlan('starter')}
                       className={`p-6 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between space-y-5 ${
                         selectedPlan === 'starter'
-                          ? 'border-blue-600 bg-white ring-2 ring-blue-500/30 shadow-lg'
+                          ? 'border-teal-600 bg-white ring-2 ring-teal-500/30 shadow-lg'
                           : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
                       }`}
                     >
@@ -681,7 +680,7 @@ export default function OnboardingPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Starter Package</span>
                           {selectedPlan === 'starter' && (
-                            <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">✓</span>
+                            <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
                           )}
                         </div>
                         <div>
@@ -718,7 +717,7 @@ export default function OnboardingPage() {
                       </div>
 
                       <div className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
-                        selectedPlan === 'starter' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'
+                        selectedPlan === 'starter' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'
                       }`}>
                         {selectedPlan === 'starter' ? 'Selected Package' : 'Select Starter'}
                       </div>
@@ -729,19 +728,19 @@ export default function OnboardingPage() {
                       onClick={() => setSelectedPlan('business')}
                       className={`p-6 rounded-2xl border cursor-pointer transition-all relative flex flex-col justify-between space-y-5 ${
                         selectedPlan === 'business'
-                          ? 'border-blue-600 bg-blue-50/30 ring-2 ring-blue-500/30 shadow-xl'
-                          : 'border-blue-200 bg-white hover:border-blue-300 shadow-sm'
+                          ? 'border-teal-600 bg-teal-50/30 ring-2 ring-teal-500/30 shadow-xl'
+                          : 'border-teal-200 bg-white hover:border-teal-300 shadow-sm'
                       }`}
                     >
-                      <div className="absolute -top-3 right-4 bg-blue-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                      <div className="absolute -top-3 right-4 bg-teal-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                         RECOMMENDED
                       </div>
 
                       <div className="space-y-3">
                         <div className="flex items-center justify-between">
-                          <span className="text-xs font-extrabold text-blue-700 uppercase tracking-wider">Business Package</span>
+                          <span className="text-xs font-extrabold text-teal-700 uppercase tracking-wider">Business Package</span>
                           {selectedPlan === 'business' && (
-                            <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">✓</span>
+                            <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
                           )}
                         </div>
                         <div>
@@ -753,7 +752,7 @@ export default function OnboardingPage() {
                         </div>
 
                         {/* Feature Checklist */}
-                        <div className="space-y-2 pt-3 border-t border-blue-100 text-xs font-medium text-slate-800">
+                        <div className="space-y-2 pt-3 border-t border-teal-100 text-xs font-medium text-slate-800">
                           <div className="flex items-center gap-2 font-bold text-slate-900">
                             <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                             <span>Unlimited device registrations</span>
@@ -782,7 +781,7 @@ export default function OnboardingPage() {
                       </div>
 
                       <div className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
-                        selectedPlan === 'business' ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-800'
+                        selectedPlan === 'business' ? 'bg-teal-600 text-white' : 'bg-teal-100 text-teal-800'
                       }`}>
                         {selectedPlan === 'business' ? 'Selected Package' : 'Select Business'}
                       </div>
@@ -793,7 +792,7 @@ export default function OnboardingPage() {
                       onClick={() => setSelectedPlan('enterprise')}
                       className={`p-6 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between space-y-5 ${
                         selectedPlan === 'enterprise'
-                          ? 'border-blue-600 bg-white ring-2 ring-blue-500/30 shadow-lg'
+                          ? 'border-teal-600 bg-white ring-2 ring-teal-500/30 shadow-lg'
                           : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
                       }`}
                     >
@@ -801,7 +800,7 @@ export default function OnboardingPage() {
                         <div className="flex items-center justify-between">
                           <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Enterprise Package</span>
                           {selectedPlan === 'enterprise' && (
-                            <span className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">✓</span>
+                            <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
                           )}
                         </div>
                         <div>
@@ -834,7 +833,7 @@ export default function OnboardingPage() {
                       </div>
 
                       <div className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
-                        selectedPlan === 'enterprise' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'
+                        selectedPlan === 'enterprise' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'
                       }`}>
                         {selectedPlan === 'enterprise' ? 'Selected Package' : 'Select Enterprise'}
                       </div>
@@ -891,11 +890,11 @@ export default function OnboardingPage() {
                 <Button
                   variant="primary"
                   fullWidth={currentStep === 1 || currentStep === 5}
-                  size="lg"
+                  size="sm"
                   isLoading={isSubmitting}
                   onClick={handleNext}
                   rightIcon={<ArrowRight className="w-4 h-4" />}
-                  className="shadow-md shadow-blue-600/10 ml-auto"
+                  className="shadow-md bg-teal-600 hover:bg-teal-500 font-bold text-xs py-2.5 px-4 ml-auto"
                 >
                   {currentStep === 1 && 'Create Account & Continue'}
                   {currentStep === 2 && 'Verify Email & Continue'}
@@ -910,10 +909,6 @@ export default function OnboardingPage() {
                 <p className="text-[11px] font-semibold text-slate-500 flex items-center justify-center gap-1.5 flex-wrap">
                   <span className="text-amber-500 font-bold">★★★★★</span>
                   <span>"Setup took &lt;5 mins" — Marcus V., Store Owner</span>
-                  <span className="text-slate-300">•</span>
-                  <span className="text-emerald-600 font-bold flex items-center gap-1">
-                    <Lock className="w-3 h-3" /> 256-Bit SSL Secured
-                  </span>
                 </p>
               </div>
 
@@ -923,7 +918,7 @@ export default function OnboardingPage() {
           {/* Right Bottom Footer Link */}
           <div className="max-w-2xl mx-auto w-full text-center text-xs font-medium text-slate-500 pb-6 lg:pb-0">
             Need assistance with workspace setup?{' '}
-            <a href="#" className="text-blue-600 font-bold hover:underline">Contact Store Support</a>
+            <a href="#" className="text-teal-600 font-bold hover:underline">Contact Store Support</a>
           </div>
         </div>
 

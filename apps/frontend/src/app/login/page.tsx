@@ -60,7 +60,7 @@ export default function LoginPage() {
           </div>
           <div>
             <span className="font-extrabold text-slate-900 text-base tracking-tight leading-none block">VerifyFlow</span>
-            <span className="text-[10px] text-blue-600 font-bold uppercase tracking-wider">Enterprise OS</span>
+            <span className="text-[10px] text-teal-600 font-bold uppercase tracking-wider">Enterprise OS</span>
           </div>
         </Link>
 
@@ -108,7 +108,7 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="owner@store.com"
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400 transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition"
                   />
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 </div>
@@ -118,7 +118,7 @@ export default function LoginPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="block font-bold text-slate-800">Password</label>
-                  <Link href="/forgot-password" className="text-[11px] text-blue-600 font-bold hover:underline">
+                  <Link href="/forgot-password" className="text-[11px] text-teal-600 font-bold hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -129,7 +129,7 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 focus:outline-none focus:border-blue-600 focus:bg-white font-medium placeholder:text-slate-400 transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition"
                   />
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 </div>
@@ -149,7 +149,7 @@ export default function LoginPage() {
               {/* Mobile & Card Registration Link */}
               <div className="pt-3 border-t border-slate-100 text-center text-xs">
                 <span className="text-slate-500 font-medium">Don't have a store account? </span>
-                <Link href="/onboarding" className="text-blue-600 font-bold hover:underline block sm:inline mt-1 sm:mt-0">
+                <Link href="/onboarding" className="text-teal-600 font-bold hover:underline block sm:inline mt-1 sm:mt-0">
                   Create a business account →
                 </Link>
               </div>

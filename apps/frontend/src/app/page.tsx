@@ -1235,22 +1235,52 @@ export default function PublicLandingPageV2() {
             Trusted by phone retailers & electronics businesses worldwide
           </p>
 
-          {/* Logo Cloud: Single Row Compact Overflow Bar on Mobile */}
-          <div className="flex items-center justify-start sm:justify-center gap-6 sm:gap-10 overflow-x-auto py-2 no-scrollbar opacity-80 font-bold text-xs sm:text-sm text-slate-800 shrink-0">
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Store className="w-4 h-4 text-blue-600" /> TechWorld Mobile
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Smartphone className="w-4 h-4 text-emerald-600" /> Apex Wireless
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Globe className="w-4 h-4 text-indigo-600" /> MobileWorld Global
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Zap className="w-4 h-4 text-amber-600" /> iTech Hub Retail
-            </div>
-            <div className="flex items-center gap-1.5 shrink-0">
-              <Building className="w-4 h-4 text-slate-700" /> SmartRetail Logistics
+          {/* Animated Infinite Scrolling Logo Marquee Ticker */}
+          <div className="relative w-full overflow-hidden py-3">
+            {/* Side Fade Gradient Masks */}
+            <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
+            <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
+
+            <div className="animate-ticker items-center gap-8 sm:gap-14 font-bold text-xs sm:text-sm text-slate-800 select-none">
+              {/* Set 1 */}
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Store className="w-4 h-4 text-teal-600" /> TechWorld Mobile
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Smartphone className="w-4 h-4 text-emerald-600" /> Apex Wireless
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Globe className="w-4 h-4 text-indigo-600" /> MobileWorld Global
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Zap className="w-4 h-4 text-amber-600" /> iTech Hub Retail
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Building className="w-4 h-4 text-slate-700" /> SmartRetail Logistics
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <ShieldCheck className="w-4 h-4 text-teal-600" /> Matrix Cellular
+              </div>
+
+              {/* Set 2 (Seamless Duplicate Loop) */}
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Store className="w-4 h-4 text-teal-600" /> TechWorld Mobile
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Smartphone className="w-4 h-4 text-emerald-600" /> Apex Wireless
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Globe className="w-4 h-4 text-indigo-600" /> MobileWorld Global
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Zap className="w-4 h-4 text-amber-600" /> iTech Hub Retail
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <Building className="w-4 h-4 text-slate-700" /> SmartRetail Logistics
+              </div>
+              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
+                <ShieldCheck className="w-4 h-4 text-teal-600" /> Matrix Cellular
+              </div>
             </div>
           </div>
 
@@ -1288,32 +1318,27 @@ export default function PublicLandingPageV2() {
             </p>
           </div>
 
-          {/* Large Operational Dashboard Browser Mockup with Real Retail Store Photography */}
-          <div className="vf-card border border-slate-200/80 bg-white p-2 sm:p-4 rounded-3xl shadow-2xl overflow-hidden max-w-5xl mx-auto text-left">
-            {/* Photo Showcase Container */}
-            <div className="relative rounded-2xl overflow-hidden border border-slate-200 shadow-xl group">
-              <img
-                src="/images/verifyflow_store_hero.png"
-                alt="Professional phone retailer operating VerifyFlow retail software on laptop at store counter"
-                className="w-full h-auto max-h-[480px] object-cover object-center transform group-hover:scale-[1.01] transition-transform duration-500"
-              />
-              
-              {/* Overlay Ambient Gradients */}
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent pointer-events-none" />
+          {/* Store Showcase Container */}
+          <div className="relative rounded-3xl overflow-hidden border border-slate-200/80 shadow-2xl max-w-5xl mx-auto group">
+            <img
+              src="/images/verifyflow_store_hero.png"
+              alt="Professional phone retailer operating VerifyFlow retail software at store counter"
+              className="w-full h-auto max-h-[480px] object-cover object-center transform group-hover:scale-[1.01] transition-transform duration-500"
+            />
+            
+            {/* Overlay Ambient Gradients */}
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent pointer-events-none" />
 
-              {/* Floating Live Badge Overlays */}
-              <div className="absolute bottom-4 left-4 right-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-bold text-white">
-                <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-700/80 shadow-lg">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                  <span>Real-Time Store Operations & POS Checkout</span>
-                </div>
-                <div className="flex items-center gap-2 bg-blue-600/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-blue-400/30 shadow-lg text-white font-extrabold">
-                  <ShieldCheck className="w-4 h-4 text-emerald-300" />
-                  <span>100% Serial & IMEI Tracked</span>
-                </div>
+            {/* Floating Live Badge Overlays */}
+            <div className="absolute bottom-4 left-4 right-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-bold text-white">
+              <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-700/80 shadow-lg">
+                <span>Real-Time Store Operations & POS Checkout</span>
+              </div>
+              <div className="flex items-center gap-2 bg-teal-600/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-teal-400/30 shadow-lg text-white font-extrabold">
+                <ShieldCheck className="w-4 h-4 text-emerald-300" />
+                <span>100% Serial & IMEI Tracked</span>
               </div>
             </div>
-
           </div>
         </div>
       </section>
@@ -1993,10 +2018,10 @@ export default function PublicLandingPageV2() {
           <div className="space-y-3">
             <div className="font-extrabold text-slate-900 text-base">Product</div>
             <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><Link href="/pricing" className="hover:text-blue-600 transition">Pricing & Plans</Link></li>
-              <li><a href="#features" className="hover:text-blue-600 transition">Features</a></li>
-              <li><a href="#solutions" className="hover:text-blue-600 transition">Verification Ledger</a></li>
-              <li><Link href="/pricing" className="hover:text-blue-600 transition">Pricing Plans</Link></li>
+              <li><Link href="/pricing" className="hover:text-teal-600 transition">Pricing & Plans</Link></li>
+              <li><a href="#features" className="hover:text-teal-600 transition">Features</a></li>
+              <li><a href="#solutions" className="hover:text-teal-600 transition">Verification Ledger</a></li>
+              <li><Link href="/pricing" className="hover:text-teal-600 transition">Pricing Plans</Link></li>
             </ul>
           </div>
 
@@ -2004,8 +2029,8 @@ export default function PublicLandingPageV2() {
           <div className="space-y-3">
             <div className="font-extrabold text-slate-900 text-base">Resources</div>
             <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><a href="#faq" className="hover:text-blue-600 transition">Help Center</a></li>
-              <li><a href="#faq" className="hover:text-blue-600 transition">Documentation</a></li>
+              <li><a href="#faq" className="hover:text-teal-600 transition">Help Center</a></li>
+              <li><a href="#faq" className="hover:text-teal-600 transition">Documentation</a></li>
               <li><span className="text-slate-400">Developer API (Soon)</span></li>
               <li><span className="text-slate-400">Blog (Soon)</span></li>
             </ul>
@@ -2015,8 +2040,8 @@ export default function PublicLandingPageV2() {
           <div className="space-y-3">
             <div className="font-extrabold text-slate-900 text-base">Company</div>
             <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><a href="#" className="hover:text-blue-600 transition">About VerifyFlow</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition">Contact Sales</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition">About VerifyFlow</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition">Contact Sales</a></li>
               <li><span className="text-slate-400">Careers (Hiring)</span></li>
             </ul>
           </div>
@@ -2025,9 +2050,9 @@ export default function PublicLandingPageV2() {
           <div className="space-y-3">
             <div className="font-extrabold text-slate-900 text-base">Legal & Security</div>
             <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><a href="#" className="hover:text-blue-600 transition">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-blue-600 transition">Cookie Settings</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition">Terms of Service</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition">Cookie Settings</a></li>
             </ul>
           </div>
         </div>

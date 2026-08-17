@@ -277,8 +277,8 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             {user?.firstName?.[0] || 'U'}
           </div>
           <div className="min-w-0">
-            <div className="font-bold text-slate-900 truncate max-w-[100px]">
-              {user?.firstName || 'User'} {user?.lastName || ''}
+            <div className="font-bold text-slate-900 truncate max-w-[110px]">
+              {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Store Owner'}
             </div>
             <div className="text-[10px] text-slate-500 font-medium truncate">{user?.role || 'OWNER'}</div>
           </div>
