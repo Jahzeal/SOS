@@ -37,6 +37,12 @@ import {
   Upload,
   Phone,
 } from 'lucide-react';
+import {
+  extractValidIMEI,
+  validateLuhnIMEI,
+  getCroppedReticleCanvas,
+  preprocessCanvasForOcr as preprocessOcrCanvas,
+} from '@/lib/imei-utils';
 
 export default function PublicLandingPageV2() {
   // Navigation Scroll state
@@ -499,25 +505,31 @@ export default function PublicLandingPageV2() {
 
   const handleSnapAndScanText = async () => {
     const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
+    const reticleElement = document.querySelector('.scanner-overlay-reticle') as HTMLElement;
     if (!videoElement || videoElement.paused) return;
 
     setHeroVerifying(true);
     setHeroVerifiedResult(null);
+    setCameraGuidance({
+      message: 'Looking for IMEI...',
+      type: 'info',
+    });
 
-    // Create high-res 1080p canvas snapshot from live camera feed
-    const snapCanvas = document.createElement('canvas');
-    const snapCtx = snapCanvas.getContext('2d');
-    snapCanvas.width = videoElement.videoWidth || 1280;
-    snapCanvas.height = videoElement.videoHeight || 720;
-    snapCtx?.drawImage(videoElement, 0, 0, snapCanvas.width, snapCanvas.height);
+    const cropResult = getCroppedReticleCanvas(videoElement, reticleElement);
+    if (!cropResult) {
+      setHeroVerifying(false);
+      return;
+    }
 
-    // Render snapshot onto display canvas
+    const { cropCanvas } = cropResult;
+
+    // Render ONLY the cropped reticle region onto the display canvas (zoomed into reticle box)
     const displayCanvas = document.getElementById('google-lens-snap-canvas') as HTMLCanvasElement;
     if (displayCanvas) {
-      displayCanvas.width = snapCanvas.width;
-      displayCanvas.height = snapCanvas.height;
+      displayCanvas.width = cropCanvas.width;
+      displayCanvas.height = cropCanvas.height;
       const dCtx = displayCanvas.getContext('2d');
-      dCtx?.drawImage(snapCanvas, 0, 0);
+      dCtx?.drawImage(cropCanvas, 0, 0);
     }
 
     // Freeze video feed instantly
@@ -525,117 +537,75 @@ export default function PublicLandingPageV2() {
     setIsCameraFrozen(true);
     hasScannedRef.current = true;
 
-    // Crop specifically to the Reticle Focus Zone (center 65% of camera frame)
-    const frameW = snapCanvas.width;
-    const frameH = snapCanvas.height;
-
-    const cropW = Math.round(frameW * 0.80);
-    const cropH = Math.round(frameH * 0.45);
-    const cropX = Math.round((frameW - cropW) / 2);
-    const cropY = Math.round((frameH - cropH) / 2);
-
-    const cropCanvas = document.createElement('canvas');
-    cropCanvas.width = cropW;
-    cropCanvas.height = cropH;
-    const cropCtx = cropCanvas.getContext('2d');
-    cropCtx?.drawImage(snapCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-
-    // Apply high-contrast grayscale pre-processing to eliminate glare
-    const processedReticleCanvas = preprocessCanvasForOcr(cropCanvas);
-    const processedFullCanvas = preprocessCanvasForOcr(snapCanvas);
+    // Apply high-contrast grayscale pre-processing ONLY to cropped reticle canvas
+    const processedCanvas = preprocessOcrCanvas(cropCanvas);
 
     try {
       const { createWorker } = await import('tesseract.js');
       const worker = await createWorker('eng');
 
-      // 1. Primary OCR scan on cropped reticle focus zone only
-      let ret = await worker.recognize(processedReticleCanvas);
-      let ocrText = ret.data.text || '';
-      let cleanedText = cleanOcrNoise(ocrText);
-      let cleanIdentifier = extractImeiAndSerial(cleanedText || ocrText);
-      let activeWords = (ret.data as any).words || [];
-      let offsetX = cropX;
-      let offsetY = cropY;
-
-      // 2. Fallback to full camera frame if reticle crop found no identifier
-      if (!cleanIdentifier || cleanIdentifier.length < 5) {
-        const fullRet = await worker.recognize(processedFullCanvas);
-        const fullText = fullRet.data.text || '';
-        const fullCleaned = cleanOcrNoise(fullText);
-        const fullId = extractImeiAndSerial(fullCleaned || fullText);
-        if (fullId && fullId.length >= 5) {
-          ocrText = fullText;
-          cleanedText = fullCleaned;
-          cleanIdentifier = fullId;
-          activeWords = (fullRet.data as any).words || [];
-          offsetX = 0;
-          offsetY = 0;
-        }
-      }
-
+      // OCR scan strictly on cropped reticle focus zone only
+      const ret = await worker.recognize(processedCanvas);
+      const ocrText = ret.data.text || '';
+      const activeWords = (ret.data as any).words || [];
       await worker.terminate();
-      setScannedRawText(cleanedText.slice(0, 60));
 
-      // Calculate Google Lens Interactive Bounding Box Pills with precise offset scaling
+      // Extract and validate 15-digit IMEI candidate using Luhn Checksum & OCR normalization
+      const validImeiCandidate = extractValidIMEI(ocrText);
+
+      // Generate selection pills for candidate digits
       const pills: any[] = [];
-
       activeWords.forEach((w: any, idx: number) => {
         const rawW = w.text ? w.text.trim() : '';
-        const cleanW = cleanOcrNoise(rawW);
-        if (!cleanW || cleanW.length < 3) return;
-
-        const imei = /\b(35\d{13}|86\d{13}|99\d{13}|01\d{13}|\d{15})\b/.test(cleanW);
-        const serial = /^[A-Z0-9]{8,15}$/i.test(cleanW);
+        const candidate = extractValidIMEI(rawW);
         const bbox = w.bbox;
 
-        if (bbox) {
-          const absoluteX0 = bbox.x0 + offsetX;
-          const absoluteY0 = bbox.y0 + offsetY;
-          const absoluteX1 = bbox.x1 + offsetX;
-          const absoluteY1 = bbox.y1 + offsetY;
-
+        if (bbox && candidate) {
           pills.push({
             id: `lens-pill-${idx}-${bbox.x0}`,
-            type: imei ? 'IMEI' : serial ? 'SERIAL' : 'TEXT',
-            value: extractImeiAndSerial(cleanW) || cleanW,
+            type: 'IMEI',
+            value: candidate,
             rawText: rawW,
-            leftPct: Math.max(0, Math.min(95, (absoluteX0 / frameW) * 100)),
-            topPct: Math.max(0, Math.min(95, (absoluteY0 / frameH) * 100)),
-            widthPct: Math.max(8, Math.min(100, ((absoluteX1 - absoluteX0) / frameW) * 100)),
-            heightPct: Math.max(4, Math.min(20, ((absoluteY1 - absoluteY0) / frameH) * 100)),
-            isPrimary: imei,
+            leftPct: Math.max(0, Math.min(95, (bbox.x0 / cropCanvas.width) * 100)),
+            topPct: Math.max(0, Math.min(95, (bbox.y0 / cropCanvas.height) * 100)),
+            widthPct: Math.max(8, Math.min(100, ((bbox.x1 - bbox.x0) / cropCanvas.width) * 100)),
+            heightPct: Math.max(4, Math.min(20, ((bbox.y1 - bbox.y0) / cropCanvas.height) * 100)),
+            isPrimary: true,
           });
         }
       });
 
       setGoogleLensPills(pills);
 
-      if (cleanIdentifier && cleanIdentifier.length >= 8) {
-        setHeroSearchInput(cleanIdentifier);
-        setScannedFormat('TEXT_OCR');
+      if (validImeiCandidate) {
+        setHeroSearchInput(validImeiCandidate);
+        setScannedFormat('IMEI_LUHN_VALIDATED');
+        setCameraGuidance({
+          message: `✓ IMEI detected: ${validImeiCandidate}`,
+          type: 'success',
+        });
 
-        const data = await api.verifyPublicImei(cleanIdentifier);
-        const formatted = formatVerifiedPhoneResult(data);
-        if (formatted) {
-          setHeroVerifiedResult(formatted);
-        } else {
-          setHeroVerifiedResult({
-            found: false,
-            searchedTerm: cleanIdentifier,
-          });
+        try {
+          const data = await api.verifyPublicImei(validImeiCandidate);
+          processVerificationResult(data, validImeiCandidate);
+        } catch (err) {
+          processVerificationResult(null, validImeiCandidate);
         }
       } else {
-        setHeroVerifiedResult({
-          found: false,
-          searchedTerm: 'No valid 15-digit IMEI or Serial Number recognized on packaging',
+        setCameraGuidance({
+          message: 'No valid IMEI detected. Make sure the 15-digit IMEI is clearly visible inside the scanning frame.',
+          type: 'warning',
         });
+        setNotFoundTerm('No valid 15-digit IMEI detected inside scanning frame');
+        setShowNotFoundModal(true);
       }
     } catch (err) {
       console.error('Snap OCR failed:', err);
-      setHeroVerifiedResult({
-        found: false,
-        searchedTerm: 'Snap OCR Error',
+      setCameraGuidance({
+        message: 'No valid IMEI detected. Make sure the 15-digit IMEI is clearly visible inside the scanning frame.',
+        type: 'warning',
       });
+      setShowNotFoundModal(true);
     } finally {
       setHeroVerifying(false);
     }
@@ -680,19 +650,15 @@ export default function PublicLandingPageV2() {
         try {
           const result = await reader.decodeFromImageElement(imgElement);
           const rawText = result.getText();
-          const cleanIdentifier = extractImeiAndSerial(rawText);
+          const validImei = extractValidIMEI(rawText);
           setScannedRawText(rawText);
-          setHeroSearchInput(cleanIdentifier);
 
-          const data = await api.verifyPublicImei(cleanIdentifier);
-          const formatted = formatVerifiedPhoneResult(data);
-          if (formatted) {
-            setHeroVerifiedResult(formatted);
+          if (validImei) {
+            setHeroSearchInput(validImei);
+            const data = await api.verifyPublicImei(validImei);
+            processVerificationResult(data, validImei);
           } else {
-            setHeroVerifiedResult({
-              found: false,
-              searchedTerm: cleanIdentifier,
-            });
+            throw new Error('Barcode did not contain a valid 15-digit IMEI');
           }
         } catch (decodeErr) {
           console.warn('Image barcode decode failed, trying OCR text recognition:', decodeErr);
@@ -703,64 +669,45 @@ export default function PublicLandingPageV2() {
             await worker.terminate();
 
             const ocrText = data.text || '';
-            const cleanedText = cleanOcrNoise(ocrText);
-            const parsedIdentifier = extractImeiAndSerial(cleanedText || ocrText);
-            setScannedRawText(cleanedText.slice(0, 60));
-
+            const validImeiCandidate = extractValidIMEI(ocrText);
             const imgW = imgElement.naturalWidth || 1;
             const imgH = imgElement.naturalHeight || 1;
             const pills: any[] = [];
 
             ((data as any).words || []).forEach((w: any, idx: number) => {
               const rawW = w.text ? w.text.trim() : '';
-              const cleanW = cleanOcrNoise(rawW);
-              if (!cleanW || cleanW.length < 3) return;
-
-              const imei = /\b(35\d{13}|86\d{13}|99\d{13}|01\d{13}|\d{15})\b/.test(cleanW);
-              const serial = /^[A-Z0-9]{8,15}$/i.test(cleanW);
+              const candidate = extractValidIMEI(rawW);
               const bbox = w.bbox;
 
-              if (bbox) {
+              if (bbox && candidate) {
                 pills.push({
                   id: `upload-pill-${idx}-${bbox.x0}`,
-                  type: imei ? 'IMEI' : serial ? 'SERIAL' : 'TEXT',
-                  value: extractImeiAndSerial(cleanW) || cleanW,
+                  type: 'IMEI',
+                  value: candidate,
                   rawText: rawW,
                   leftPct: Math.max(0, Math.min(95, (bbox.x0 / imgW) * 100)),
                   topPct: Math.max(0, Math.min(95, (bbox.y0 / imgH) * 100)),
                   widthPct: Math.max(8, Math.min(100, ((bbox.x1 - bbox.x0) / imgW) * 100)),
                   heightPct: Math.max(4, Math.min(20, ((bbox.y1 - bbox.y0) / imgH) * 100)),
-                  isPrimary: imei,
+                  isPrimary: true,
                 });
               }
             });
 
             setGoogleLensPills(pills);
 
-            if (parsedIdentifier && parsedIdentifier.length >= 8) {
-              setHeroSearchInput(parsedIdentifier);
-              const data = await api.verifyPublicImei(parsedIdentifier);
-              const formatted = formatVerifiedPhoneResult(data);
-              if (formatted) {
-                setHeroVerifiedResult(formatted);
-              } else {
-                setHeroVerifiedResult({
-                  found: false,
-                  searchedTerm: parsedIdentifier,
-                });
-              }
+            if (validImeiCandidate) {
+              setHeroSearchInput(validImeiCandidate);
+              const data = await api.verifyPublicImei(validImeiCandidate);
+              processVerificationResult(data, validImeiCandidate);
             } else {
-              setHeroVerifiedResult({
-                found: false,
-                searchedTerm: cleanedText ? `"${cleanedText.slice(0, 30)}..." (Not an IMEI or Serial No.)` : 'No clear text recognized',
-              });
+              setNotFoundTerm('No valid 15-digit IMEI found in uploaded photo');
+              setShowNotFoundModal(true);
             }
           } catch (ocrErr) {
             console.error('OCR failed:', ocrErr);
-            setHeroVerifiedResult({
-              found: false,
-              searchedTerm: 'Uploaded Box Photo (Unreadable text)',
-            });
+            setNotFoundTerm('Photo OCR processing failed');
+            setShowNotFoundModal(true);
           }
         } finally {
           setHeroVerifying(false);
@@ -1125,7 +1072,13 @@ export default function PublicLandingPageV2() {
 
                       {!isCameraFrozen && (
                         <>
-                          <div className="scanner-overlay-reticle">
+                          <div className="scanner-overlay-reticle flex flex-col items-center justify-between p-2">
+                            <span className="text-[10px] uppercase tracking-widest font-extrabold text-emerald-400 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shadow-sm">
+                              Scan IMEI
+                            </span>
+                            <span className="text-[9px] font-semibold text-slate-200 bg-slate-950/70 px-2 py-0.5 rounded-full">
+                              PLACE 15-DIGIT IMEI HERE
+                            </span>
                             <div className="scanner-overlay-laser" />
                           </div>
                           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
@@ -1134,7 +1087,7 @@ export default function PublicLandingPageV2() {
                               onClick={handleSnapAndScanText}
                               className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30"
                             >
-                              <Sparkles className="w-3.5 h-3.5" /> Snap & Read Text
+                              <Sparkles className="w-3.5 h-3.5" /> Scan IMEI Frame
                             </button>
                           </div>
                         </>
@@ -1177,7 +1130,7 @@ export default function PublicLandingPageV2() {
                           <RotateCcw className="w-3.5 h-3.5" /> Scan Next Phone
                         </button>
                       ) : (
-                        <span>Position reticle over box sticker</span>
+                        <span>Position the IMEI or IMEI barcode inside the frame.</span>
                       )}
 
                       <label className="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold rounded-xl transition shadow-subtle text-xs cursor-pointer flex items-center gap-1.5">
