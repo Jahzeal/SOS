@@ -136,6 +136,7 @@ export default function VerifyPhonePage() {
             </div>
           )}
         </div>
+      )}
       {/* IMEI NOT FOUND POPUP MODAL */}
       {showNotFoundModal && (
         <div
