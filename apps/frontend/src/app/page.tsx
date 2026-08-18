@@ -39,6 +39,7 @@ import {
 } from 'lucide-react';
 import {
   extractValidIMEI,
+  extractAllValidIMEIs,
   validateLuhnIMEI,
   getCroppedReticleCanvas,
   preprocessCanvasForOcr as preprocessOcrCanvas,
@@ -1070,27 +1071,27 @@ export default function PublicLandingPageV2() {
                         </div>
                       )}
 
+                      {/* SCANNER OVERLAY RETICLE FRAME — VISIBLE AT ALL TIMES */}
+                      <div className="scanner-overlay-reticle flex flex-col items-center justify-between p-2">
+                        <span className="text-[10px] uppercase tracking-widest font-extrabold text-emerald-400 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shadow-sm">
+                          Scan IMEI
+                        </span>
+                        <span className="text-[9px] font-semibold text-slate-200 bg-slate-950/70 px-2 py-0.5 rounded-full">
+                          PLACE 15-DIGIT IMEI HERE
+                        </span>
+                        {!isCameraFrozen && <div className="scanner-overlay-laser" />}
+                      </div>
+
                       {!isCameraFrozen && (
-                        <>
-                          <div className="scanner-overlay-reticle flex flex-col items-center justify-between p-2">
-                            <span className="text-[10px] uppercase tracking-widest font-extrabold text-emerald-400 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shadow-sm">
-                              Scan IMEI
-                            </span>
-                            <span className="text-[9px] font-semibold text-slate-200 bg-slate-950/70 px-2 py-0.5 rounded-full">
-                              PLACE 15-DIGIT IMEI HERE
-                            </span>
-                            <div className="scanner-overlay-laser" />
-                          </div>
-                          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
-                            <button
-                              type="button"
-                              onClick={handleSnapAndScanText}
-                              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30"
-                            >
-                              <Sparkles className="w-3.5 h-3.5" /> Scan IMEI Frame
-                            </button>
-                          </div>
-                        </>
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+                          <button
+                            type="button"
+                            onClick={handleSnapAndScanText}
+                            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30"
+                          >
+                            <Sparkles className="w-3.5 h-3.5" /> Scan IMEI Frame
+                          </button>
+                        </div>
                       )}
 
                       {/* FLOATING GOOGLE LENS BUBBLES DIRECTLY OVER THE SNAPSHOT CANVAS IMAGE */}

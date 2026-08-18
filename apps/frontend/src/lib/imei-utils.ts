@@ -6,6 +6,7 @@
  * Validates a 15-digit IMEI number using the standard Luhn algorithm.
  */
 export function validateLuhnIMEI(imeiStr: string): boolean {
+  if (!imeiStr) return false;
   const clean = imeiStr.replace(/\D/g, '');
   if (clean.length !== 15) return false;
 
@@ -39,58 +40,57 @@ export function normalizeOcrDigits(text: string): string {
 }
 
 /**
- * Extracts 15-digit numeric IMEI candidates from raw OCR text and validates them using Luhn.
+ * Extracts ALL unique 15-digit numeric IMEI candidates from raw text that pass Luhn validation.
  */
-export function extractValidIMEI(rawText: string): string | null {
-  if (!rawText) return null;
+export function extractAllValidIMEIs(rawText: string): string[] {
+  if (!rawText) return [];
 
-  // 1. Direct 15-digit numeric search on raw text
-  const directMatches = rawText.match(/\b\d{15}\b/g) || [];
-  for (const match of directMatches) {
-    if (validateLuhnIMEI(match)) {
-      return match;
-    }
-  }
+  const foundIMEIs = new Set<string>();
 
-  // 2. Search for 15-digit sequences ignoring hyphens, dots, and spaces
-  const sanitized = rawText.replace(/[-.\s]/g, '');
-  const sanitizedMatches = sanitized.match(/\d{15}/g) || [];
-  for (const match of sanitizedMatches) {
-    if (validateLuhnIMEI(match)) {
-      return match;
-    }
-  }
-
-  // 3. Normalized OCR digit substitution search
-  const normalizedText = normalizeOcrDigits(rawText);
-  const normalizedDirect = normalizedText.match(/\b\d{15}\b/g) || [];
-  for (const match of normalizedDirect) {
-    if (validateLuhnIMEI(match)) {
-      return match;
-    }
-  }
-
-  const normalizedSanitized = normalizedText.replace(/[-.\s]/g, '');
-  const normalizedSanitizedMatches = normalizedSanitized.match(/\d{15}/g) || [];
-  for (const match of normalizedSanitizedMatches) {
-    if (validateLuhnIMEI(match)) {
-      return match;
-    }
-  }
-
-  // 4. Check labeled patterns (IMEI: 358240...)
-  const labelMatches = rawText.match(/(?:IMEI|IMEI1|IMEI2|MEID)[:\s]*([A-Z0-9\s.-]{15,22})/gi) || [];
-  for (const labelMatch of labelMatches) {
-    const digitsOnly = normalizeOcrDigits(labelMatch.replace(/\D/g, ''));
-    if (digitsOnly.length >= 15) {
-      const candidate = digitsOnly.slice(0, 15);
-      if (validateLuhnIMEI(candidate)) {
-        return candidate;
+  // Helper to add if valid Luhn
+  const checkAndAdd = (str: string) => {
+    const digits = normalizeOcrDigits(str).replace(/\D/g, '');
+    if (digits.length === 15 && validateLuhnIMEI(digits)) {
+      foundIMEIs.add(digits);
+    } else if (digits.length > 15) {
+      // Check all 15-digit sliding windows in longer numeric strings
+      for (let i = 0; i <= digits.length - 15; i++) {
+        const window = digits.slice(i, i + 15);
+        if (validateLuhnIMEI(window)) {
+          foundIMEIs.add(window);
+        }
       }
     }
+  };
+
+  // 1. Direct 15-digit numeric regex search
+  const directMatches = rawText.match(/\b\d{15}\b/g) || [];
+  directMatches.forEach(checkAndAdd);
+
+  // 2. Normalized digit direct search
+  const normalizedText = normalizeOcrDigits(rawText);
+  const normDirect = normalizedText.match(/\b\d{15}\b/g) || [];
+  normDirect.forEach(checkAndAdd);
+
+  // 3. Search text blocks with spaces/hyphens/colons (e.g. IMEI 1 : 350144374089854)
+  const blockMatches = rawText.match(/(?:IMEI\s*\d*|MEID)?[:\s]*[\d\s.-]{15,30}/gi) || [];
+  blockMatches.forEach(checkAndAdd);
+
+  // 4. Fallback search on entire sanitized string
+  const sanitized = normalizedText.replace(/[^0-9]/g, '');
+  if (sanitized.length >= 15) {
+    checkAndAdd(sanitized);
   }
 
-  return null;
+  return Array.from(foundIMEIs);
+}
+
+/**
+ * Extracts the primary valid 15-digit IMEI candidate from raw text.
+ */
+export function extractValidIMEI(rawText: string): string | null {
+  const list = extractAllValidIMEIs(rawText);
+  return list.length > 0 ? list[0] : null;
 }
 
 /**
@@ -100,10 +100,10 @@ export function getCroppedReticleCanvas(
   videoEl: HTMLVideoElement,
   reticleEl: HTMLElement | null
 ): { cropCanvas: HTMLCanvasElement; fullCanvas: HTMLCanvasElement } | null {
-  if (!videoEl || videoEl.videoWidth === 0 || videoEl.videoHeight === 0) return null;
+  if (!videoEl) return null;
 
-  const videoW = videoEl.videoWidth;
-  const videoH = videoEl.videoHeight;
+  const videoW = videoEl.videoWidth || videoEl.clientWidth || 1280;
+  const videoH = videoEl.videoHeight || videoEl.clientHeight || 720;
 
   const fullCanvas = document.createElement('canvas');
   fullCanvas.width = videoW;
@@ -112,10 +112,10 @@ export function getCroppedReticleCanvas(
   if (!fullCtx) return null;
   fullCtx.drawImage(videoEl, 0, 0, videoW, videoH);
 
-  let cropX = Math.round(videoW * 0.09);
-  let cropY = Math.round(videoH * 0.275);
-  let cropW = Math.round(videoW * 0.82);
-  let cropH = Math.round(videoH * 0.45);
+  let cropX = Math.round(videoW * 0.08);
+  let cropY = Math.round(videoH * 0.25);
+  let cropW = Math.round(videoW * 0.84);
+  let cropH = Math.round(videoH * 0.50);
 
   if (reticleEl) {
     const videoRect = videoEl.getBoundingClientRect();
@@ -162,10 +162,10 @@ export function getCroppedReticleCanvas(
 }
 
 /**
- * Preprocesses cropped canvas for high-contrast OCR digit recognition.
+ * Preprocesses cropped canvas for OCR digit recognition with crisp contrast sharpening.
  */
 export function preprocessCanvasForOcr(sourceCanvas: HTMLCanvasElement): HTMLCanvasElement {
-  const targetW = Math.max(640, sourceCanvas.width * 1.5);
+  const targetW = Math.max(800, sourceCanvas.width * 2);
   const scale = targetW / sourceCanvas.width;
   const targetH = Math.round(sourceCanvas.height * scale);
 
@@ -175,22 +175,25 @@ export function preprocessCanvasForOcr(sourceCanvas: HTMLCanvasElement): HTMLCan
   const ctx = ocrCanvas.getContext('2d', { willReadFrequently: true });
   if (!ctx) return sourceCanvas;
 
+  // High quality linear interpolation scaling
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
   ctx.drawImage(sourceCanvas, 0, 0, targetW, targetH);
 
   const imgData = ctx.getImageData(0, 0, targetW, targetH);
   const data = imgData.data;
 
-  const contrast = 1.4;
+  // Contrast boost without destructive threshold clipping
+  const contrast = 1.3;
   const factor = (259 * (contrast * 255 + 255)) / (255 * (259 - contrast * 255));
 
   for (let i = 0; i < data.length; i += 4) {
     let gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-    gray = factor * (gray - 128) + 128;
-    const finalVal = gray > 140 ? 255 : gray < 85 ? 0 : gray;
+    gray = Math.max(0, Math.min(255, factor * (gray - 128) + 128));
 
-    data[i] = finalVal;
-    data[i + 1] = finalVal;
-    data[i + 2] = finalVal;
+    data[i] = gray;
+    data[i + 1] = gray;
+    data[i + 2] = gray;
   }
 
   ctx.putImageData(imgData, 0, 0);
