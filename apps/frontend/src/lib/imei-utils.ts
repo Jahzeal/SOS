@@ -86,11 +86,59 @@ export function extractAllValidIMEIs(rawText: string): string[] {
 }
 
 /**
+ * Checks if a string is a 12 or 13-digit EAN/UPC product barcode (not an IMEI or Serial).
+ */
+export function isLikelyEANorUPC(str: string): boolean {
+  if (!str) return false;
+  const digits = str.replace(/\D/g, '');
+  return (digits.length === 12 || digits.length === 13) && str.length === digits.length;
+}
+
+/**
  * Extracts the primary valid 15-digit IMEI candidate from raw text.
  */
 export function extractValidIMEI(rawText: string): string | null {
   const list = extractAllValidIMEIs(rawText);
   return list.length > 0 ? list[0] : null;
+}
+
+/**
+ * Intelligently classifies raw barcode or OCR text into an IMEI or Serial Number, filtering out EAN/UPC barcodes.
+ */
+export function extractImeiOrSerial(rawText: string): { type: 'IMEI' | 'SERIAL' | 'NONE'; value: string } {
+  if (!rawText) return { type: 'NONE', value: '' };
+
+  // 1. First priority: Check if text contains a valid 15-digit Luhn IMEI
+  const validImei = extractValidIMEI(rawText);
+  if (validImei) {
+    return { type: 'IMEI', value: validImei };
+  }
+
+  // 2. Check for explicit Serial Number pattern: (S) Serial No. or S/N: or SN:
+  const serialMatch = rawText.match(/(?:\(S\)\s*Serial\s*No\.?|S\/N|SN|Serial\s*No?):?\s*([A-Z0-9]{6,20})/i);
+  if (serialMatch && serialMatch[1]) {
+    return { type: 'SERIAL', value: serialMatch[1] };
+  }
+
+  const clean = rawText.replace(/^(\(1P\)|\(S\)|EID|IMEI\s*\/MEID|IMEI\d?|S\/N|SN|EAN):?\s*/i, '').trim();
+
+  // 3. Reject EAN/UPC retail barcodes (12 or 13 digits)
+  if (isLikelyEANorUPC(clean)) {
+    return { type: 'NONE', value: '' };
+  }
+
+  // 4. Check for valid 15-digit raw IMEI string
+  const cleanDigits = clean.replace(/\D/g, '');
+  if (cleanDigits.length === 15 && validateLuhnIMEI(cleanDigits)) {
+    return { type: 'IMEI', value: cleanDigits };
+  }
+
+  // 5. Standalone alphanumeric serial (8 to 20 alphanumeric chars, must contain letters or non-EAN length)
+  if (/^[A-Z0-9-]{6,20}$/i.test(clean) && !/^(SANDISK|TRANSFER|PRIVATE|ACCESS|DURABLE|CASING|LESS|THAN|SECONDS|SOFTWARE|DRIVE|METAL|FASTER|STORING|OVERWRITE|ULTRA|FLAIR)$/i.test(clean)) {
+    return { type: 'SERIAL', value: clean };
+  }
+
+  return { type: 'NONE', value: '' };
 }
 
 /**

@@ -40,6 +40,7 @@ import {
 import {
   extractValidIMEI,
   extractAllValidIMEIs,
+  extractImeiOrSerial,
   validateLuhnIMEI,
   getCroppedReticleCanvas,
   preprocessCanvasForOcr as preprocessOcrCanvas,
@@ -375,10 +376,14 @@ export default function PublicLandingPageV2() {
               undefined,
               videoElement,
               async (result: any, err: any) => {
-                if (result && !hasScannedRef.current) {
-                  lastDetectionTimeRef.current = Date.now();
                   const rawText = result.getText();
-                  const cleanIdentifier = extractImeiAndSerial(rawText);
+                  const parsed = extractImeiOrSerial(rawText);
+                  
+                  // Ignore 12/13-digit EAN product barcodes — continue live scanning for IMEI/Serial barcode
+                  if (!parsed.value) {
+                    return;
+                  }
+                  const cleanIdentifier = parsed.value;
 
                   hasScannedRef.current = true;
                   const formatName = result.getBarcodeFormat() ? `FORMAT_${result.getBarcodeFormat()}` : 'BARCODE';
@@ -411,7 +416,6 @@ export default function PublicLandingPageV2() {
                     setHeroVerifying(false);
                   }
                 }
-              }
             );
           } catch (err: any) {
             console.warn('ZXing camera start error:', err);
@@ -1016,7 +1020,7 @@ export default function PublicLandingPageV2() {
                   activeHeroTab === 'qr' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
                 }`}
               >
-                QR Code Scan
+                Barcode Scanner
               </button>
             </div>
 
@@ -1074,10 +1078,10 @@ export default function PublicLandingPageV2() {
                       {/* SCANNER OVERLAY RETICLE FRAME — VISIBLE AT ALL TIMES */}
                       <div className="scanner-overlay-reticle flex flex-col items-center justify-between p-2">
                         <span className="text-[10px] uppercase tracking-widest font-extrabold text-emerald-400 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shadow-sm">
-                          Scan IMEI
+                          Scan Box Barcode
                         </span>
                         <span className="text-[9px] font-semibold text-slate-200 bg-slate-950/70 px-2 py-0.5 rounded-full">
-                          PLACE 15-DIGIT IMEI HERE
+                          PLACE 15-DIGIT IMEI BARCODE HERE
                         </span>
                         {!isCameraFrozen && <div className="scanner-overlay-laser" />}
                       </div>

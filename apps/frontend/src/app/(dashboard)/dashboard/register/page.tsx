@@ -24,6 +24,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { extractImeiOrSerial, validateLuhnIMEI } from '@/lib/imei-utils';
 
 export default function RegisterPhonePage() {
   const router = useRouter();
@@ -34,9 +35,9 @@ export default function RegisterPhonePage() {
   // Form Data
   const [imei, setImei] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
-  const [brand, setBrand] = useState('Apple');
-  const [model, setModel] = useState('iPhone 16 Pro Max');
-  const [storage, setStorage] = useState('256 GB');
+  const [brand, setBrand] = useState('');
+  const [model, setModel] = useState('');
+  const [storage, setStorage] = useState('');
   const [condition, setCondition] = useState<'New' | 'Used' | 'Refurb'>('New');
   const [warrantyMonths, setWarrantyMonths] = useState<number>(0);
   const [purchasePrice, setPurchasePrice] = useState<string>('');
@@ -158,15 +159,16 @@ export default function RegisterPhonePage() {
                   }
 
                   const rawText = result.getText();
-                  const clean = rawText.replace(/^(\(1P\)|\(S\)|EID|IMEI\s*\/MEID|IMEI\d?|S\/N|SN|EAN):?\s*/i, '').trim();
+                  const parsed = extractImeiOrSerial(rawText);
 
-                  if (/^\d{15}$/.test(clean)) {
-                    setImei(clean);
-                  } else {
-                    setSerialNumber(clean);
+                  if (parsed.type === 'IMEI') {
+                    setImei(parsed.value);
+                    setShowCameraScanner(false);
+                  } else if (parsed.type === 'SERIAL') {
+                    setSerialNumber(parsed.value);
+                    setShowCameraScanner(false);
                   }
-                  setShowCameraScanner(false);
-                  setStep(2);
+                  // Do NOT auto-advance setStep(2); keep user on Step 1 so they can see what was scanned into the input.
                 }
               }
             );
