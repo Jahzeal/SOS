@@ -35,12 +35,59 @@ import {
   Menu,
   TrendingUp,
   Upload,
+  Phone,
 } from 'lucide-react';
 
 export default function PublicLandingPageV2() {
   // Navigation Scroll state
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // Demo Request Modal State
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [demoFormData, setDemoFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    businessName: '',
+    preferredContact: 'phone' as 'phone' | 'email',
+  });
+  const [demoFormSubmitting, setDemoFormSubmitting] = useState(false);
+  const [demoFormSubmitted, setDemoFormSubmitted] = useState(false);
+
+  const handleDemoFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!demoFormData.fullName || !demoFormData.email || !demoFormData.phone) return;
+    setDemoFormSubmitting(true);
+    setTimeout(() => {
+      setDemoFormSubmitting(false);
+      setDemoFormSubmitted(true);
+    }, 700);
+  };
+
+  const openDemoModal = () => {
+    setDemoFormSubmitted(false);
+    setIsDemoModalOpen(true);
+  };
+
+  // IMEI Not Found Modal State
+  const [showNotFoundModal, setShowNotFoundModal] = useState(false);
+  const [notFoundTerm, setNotFoundTerm] = useState('');
+
+  const processVerificationResult = (data: any, searchedTerm: string) => {
+    const formatted = formatVerifiedPhoneResult(data);
+    if (formatted) {
+      setHeroVerifiedResult(formatted);
+      setShowNotFoundModal(false);
+    } else {
+      setHeroVerifiedResult({
+        found: false,
+        searchedTerm: searchedTerm || 'Searched Identifier',
+      });
+      setNotFoundTerm(searchedTerm || 'Searched Identifier');
+      setShowNotFoundModal(true);
+    }
+  };
 
   // Hero Verification Card Interactive State (Journey 1: Customer)
   const [activeHeroTab, setActiveHeroTab] = useState<'imei' | 'qr' | 'serial'>('imei');
@@ -142,20 +189,38 @@ export default function PublicLandingPageV2() {
       return imeiMatch[1];
     }
 
-    // 2. Look for iPhone Serial Number after (S) Serial No. or S/N:
-    const serialMatch = text.match(/(?:\(S\)\s*Serial\s*No\.?|S\/N|SN|Serial\s*No?):?\s*([A-Z0-9]{8,15})/i);
+    // 2. Look for explicit Serial Number after (S) Serial No. or S/N: or SN:
+    const serialMatch = text.match(/(?:\(S\)\s*Serial\s*No\.?|S\/N|SN|Serial\s*No?):?\s*([A-Z0-9]{6,20})/i);
     if (serialMatch) {
       return serialMatch[1];
     }
 
-    // 3. Look for IMEI /MEID text label pattern
+    // 3. Look for IMEI / MEID text label pattern
     const imeiLabelMatch = text.match(/(?:IMEI\s*\/MEID|IMEI\d?):?\s*(\d{15})/i);
     if (imeiLabelMatch) {
       return imeiLabelMatch[1];
     }
 
-    // 4. Fallback: Strip EID, EAN, (1P), (S) prefixes
-    return text.replace(/^(\(1P\)|\(S\)|EID|IMEI\s*\/MEID|IMEI\d?|S\/N|SN|EAN):?\s*/i, '').trim();
+    // 4. Look for single standalone alphanumeric serial token (8 to 20 chars)
+    const words = text.split(/\s+/);
+    const standaloneSerial = words.find((w) => {
+      const cleanWord = w.replace(/[^A-Za-z0-9-]/g, '');
+      return (
+        /^[A-Z0-9-]{8,20}$/i.test(cleanWord) &&
+        !/^(SANDISK|TRANSFER|PRIVATE|ACCESS|DURABLE|CASING|LESS|THAN|SECONDS|SOFTWARE|DRIVE|METAL|FASTER|STORING|OVERWRITE|ULTRA|FLAIR)$/i.test(cleanWord)
+      );
+    });
+    if (standaloneSerial) {
+      return standaloneSerial.replace(/[^A-Za-z0-9-]/g, '');
+    }
+
+    // 5. If text contains sentences or long paragraphs without an IMEI or Serial, return empty
+    if (words.length > 3 || text.length > 25) {
+      return '';
+    }
+
+    const cleaned = text.replace(/^(\(1P\)|\(S\)|EID|IMEI\s*\/MEID|IMEI\d?|S\/N|SN|EAN):?\s*/i, '').trim();
+    return cleaned.length <= 25 && !cleaned.includes(' ') ? cleaned : '';
   };
 
   const parseTextIntoBadges = (rawText: string) => {
@@ -460,26 +525,61 @@ export default function PublicLandingPageV2() {
     setIsCameraFrozen(true);
     hasScannedRef.current = true;
 
+    // Crop specifically to the Reticle Focus Zone (center 65% of camera frame)
+    const frameW = snapCanvas.width;
+    const frameH = snapCanvas.height;
+
+    const cropW = Math.round(frameW * 0.80);
+    const cropH = Math.round(frameH * 0.45);
+    const cropX = Math.round((frameW - cropW) / 2);
+    const cropY = Math.round((frameH - cropH) / 2);
+
+    const cropCanvas = document.createElement('canvas');
+    cropCanvas.width = cropW;
+    cropCanvas.height = cropH;
+    const cropCtx = cropCanvas.getContext('2d');
+    cropCtx?.drawImage(snapCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
     // Apply high-contrast grayscale pre-processing to eliminate glare
-    const processedCanvas = preprocessCanvasForOcr(snapCanvas);
+    const processedReticleCanvas = preprocessCanvasForOcr(cropCanvas);
+    const processedFullCanvas = preprocessCanvasForOcr(snapCanvas);
 
     try {
       const { createWorker } = await import('tesseract.js');
       const worker = await createWorker('eng');
-      const { data } = await worker.recognize(processedCanvas);
-      await worker.terminate();
 
-      const ocrText = data.text || '';
-      const cleanedText = cleanOcrNoise(ocrText);
-      const cleanIdentifier = extractImeiAndSerial(cleanedText || ocrText);
+      // 1. Primary OCR scan on cropped reticle focus zone only
+      let ret = await worker.recognize(processedReticleCanvas);
+      let ocrText = ret.data.text || '';
+      let cleanedText = cleanOcrNoise(ocrText);
+      let cleanIdentifier = extractImeiAndSerial(cleanedText || ocrText);
+      let activeWords = (ret.data as any).words || [];
+      let offsetX = cropX;
+      let offsetY = cropY;
+
+      // 2. Fallback to full camera frame if reticle crop found no identifier
+      if (!cleanIdentifier || cleanIdentifier.length < 5) {
+        const fullRet = await worker.recognize(processedFullCanvas);
+        const fullText = fullRet.data.text || '';
+        const fullCleaned = cleanOcrNoise(fullText);
+        const fullId = extractImeiAndSerial(fullCleaned || fullText);
+        if (fullId && fullId.length >= 5) {
+          ocrText = fullText;
+          cleanedText = fullCleaned;
+          cleanIdentifier = fullId;
+          activeWords = (fullRet.data as any).words || [];
+          offsetX = 0;
+          offsetY = 0;
+        }
+      }
+
+      await worker.terminate();
       setScannedRawText(cleanedText.slice(0, 60));
 
-      // Calculate Google Lens Interactive Bounding Box Pills
-      const imgW = processedCanvas.width || 1;
-      const imgH = processedCanvas.height || 1;
+      // Calculate Google Lens Interactive Bounding Box Pills with precise offset scaling
       const pills: any[] = [];
 
-      ((data as any).words || []).forEach((w: any, idx: number) => {
+      activeWords.forEach((w: any, idx: number) => {
         const rawW = w.text ? w.text.trim() : '';
         const cleanW = cleanOcrNoise(rawW);
         if (!cleanW || cleanW.length < 3) return;
@@ -489,15 +589,20 @@ export default function PublicLandingPageV2() {
         const bbox = w.bbox;
 
         if (bbox) {
+          const absoluteX0 = bbox.x0 + offsetX;
+          const absoluteY0 = bbox.y0 + offsetY;
+          const absoluteX1 = bbox.x1 + offsetX;
+          const absoluteY1 = bbox.y1 + offsetY;
+
           pills.push({
             id: `lens-pill-${idx}-${bbox.x0}`,
             type: imei ? 'IMEI' : serial ? 'SERIAL' : 'TEXT',
             value: extractImeiAndSerial(cleanW) || cleanW,
             rawText: rawW,
-            leftPct: Math.max(0, Math.min(95, (bbox.x0 / imgW) * 100)),
-            topPct: Math.max(0, Math.min(95, (bbox.y0 / imgH) * 100)),
-            widthPct: Math.max(8, Math.min(100, ((bbox.x1 - bbox.x0) / imgW) * 100)),
-            heightPct: Math.max(4, Math.min(20, ((bbox.y1 - bbox.y0) / imgH) * 100)),
+            leftPct: Math.max(0, Math.min(95, (absoluteX0 / frameW) * 100)),
+            topPct: Math.max(0, Math.min(95, (absoluteY0 / frameH) * 100)),
+            widthPct: Math.max(8, Math.min(100, ((absoluteX1 - absoluteX0) / frameW) * 100)),
+            heightPct: Math.max(4, Math.min(20, ((absoluteY1 - absoluteY0) / frameH) * 100)),
             isPrimary: imei,
           });
         }
@@ -522,7 +627,7 @@ export default function PublicLandingPageV2() {
       } else {
         setHeroVerifiedResult({
           found: false,
-          searchedTerm: cleanedText ? `"${cleanedText.slice(0, 30)}..." (Not an IMEI or Serial No.)` : 'No clear text recognized',
+          searchedTerm: 'No valid 15-digit IMEI or Serial Number recognized on packaging',
         });
       }
     } catch (err) {
@@ -686,20 +791,9 @@ export default function PublicLandingPageV2() {
 
     try {
       const data = await api.verifyPublicImei(heroSearchInput.trim());
-      const formatted = formatVerifiedPhoneResult(data);
-      if (formatted) {
-        setHeroVerifiedResult(formatted);
-      } else {
-        setHeroVerifiedResult({
-          found: false,
-          searchedTerm: heroSearchInput.trim(),
-        });
-      }
+      processVerificationResult(data, heroSearchInput.trim());
     } catch (err) {
-      setHeroVerifiedResult({
-        found: false,
-        searchedTerm: heroSearchInput.trim(),
-      });
+      processVerificationResult(null, heroSearchInput.trim());
     } finally {
       setHeroVerifying(false);
     }
@@ -786,6 +880,12 @@ export default function PublicLandingPageV2() {
 
           {/* Right: Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <button
+              onClick={openDemoModal}
+              className="text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-3.5 py-2 rounded-xl border border-teal-200/80 transition-colors"
+            >
+              Try Verification Demo
+            </button>
             {isLoggedIn ? (
               <Link href="/dashboard">
                 <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
@@ -855,6 +955,15 @@ export default function PublicLandingPageV2() {
               </a>
             </nav>
             <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  openDemoModal();
+                }}
+                className="w-full text-center text-xs font-bold text-teal-700 bg-teal-50 py-2.5 rounded-xl border border-teal-200"
+              >
+                Try Verification Demo
+              </button>
               {isLoggedIn ? (
                 <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="primary" fullWidth size="md">
@@ -907,6 +1016,15 @@ export default function PublicLandingPageV2() {
                 Get Started
               </Button>
             </Link>
+            <Button
+              variant="secondary"
+              size="lg"
+              fullWidth
+              onClick={openDemoModal}
+              leftIcon={<Sparkles className="w-4 h-4 text-teal-600" />}
+            >
+              Try Verification Demo
+            </Button>
           </div>
 
           <p className="text-xs text-slate-500 font-medium pt-1">
@@ -1074,58 +1192,49 @@ export default function PublicLandingPageV2() {
                       </label>
                     </div>
 
-                    {/* Google Lens Interactive Bounding Overlay */}
-                    {isCameraFrozen && googleLensPills.length > 0 && (
+                    {/* Google Lens Interactive Bounding Overlay (IMEI & Serial Pills Only) */}
+                    {isCameraFrozen && googleLensPills.filter((p) => p.type === 'IMEI' || p.type === 'SERIAL').length > 0 && (
                       <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs space-y-2 animate-in fade-in duration-200 shadow-xl">
                         <div className="flex items-center justify-between text-slate-400 font-bold">
                           <span className="flex items-center gap-1.5 text-blue-400">
-                            <Sparkles className="w-3.5 h-3.5" /> Google Lens Interactive Selection:
+                            <Sparkles className="w-3.5 h-3.5" /> Detected Hardware Identifiers:
                           </span>
                           <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-emerald-400 font-mono font-bold">
-                            {googleLensPills.length} TEXT BLOCKS FOUND
+                            {googleLensPills.filter((p) => p.type === 'IMEI' || p.type === 'SERIAL').length} IDENTIFIER(S) FOUND
                           </span>
                         </div>
                         <div className="flex flex-wrap gap-2 pt-1">
-                          {googleLensPills.map((pill) => (
-                            <button
-                              key={pill.id}
-                              type="button"
-                              onClick={() => handleSelectLensPill(pill)}
-                              className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 border shadow-sm ${
-                                pill.type === 'IMEI'
-                                  ? 'bg-emerald-600 text-white border-emerald-400 ring-2 ring-emerald-400/40 shadow-emerald-600/30'
-                                  : pill.type === 'SERIAL'
-                                  ? 'bg-blue-600 text-white border-blue-400 ring-2 ring-blue-400/40 shadow-blue-600/30'
-                                  : 'bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700'
-                              }`}
-                            >
-                              {pill.type === 'IMEI' && <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />}
-                              <span>{pill.label}: {pill.value}</span>
-                            </button>
-                          ))}
+                          {googleLensPills
+                            .filter((p) => p.type === 'IMEI' || p.type === 'SERIAL')
+                            .map((pill) => (
+                              <button
+                                key={pill.id}
+                                type="button"
+                                onClick={() => handleSelectLensPill(pill)}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 border shadow-sm ${
+                                  pill.type === 'IMEI'
+                                    ? 'bg-emerald-600 text-white border-emerald-400 ring-2 ring-emerald-400/40 shadow-emerald-600/30'
+                                    : 'bg-blue-600 text-white border-blue-400 ring-2 ring-blue-400/40 shadow-blue-600/30'
+                                }`}
+                              >
+                                {pill.type === 'IMEI' && <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />}
+                                <span>{pill.label}: {pill.value}</span>
+                              </button>
+                            ))}
                         </div>
                       </div>
                     )}
 
-                    {/* Exact Detection Transparency Card */}
-                    {scannedRawText && !googleLensPills.length && (
-                      <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1 animate-in fade-in duration-200">
-                        <div className="flex items-center justify-between text-slate-400 font-bold">
-                          <span className="flex items-center gap-1.5 text-blue-400">
-                            <Sparkles className="w-3.5 h-3.5" /> Exact Camera / Photo Detection:
-                          </span>
-                          <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-emerald-400 font-mono">
-                            {scannedFormat || 'OCR READ'}
-                          </span>
+                    {/* Clean Extracted Identifier Card (No Raw OCR Jargon) */}
+                    {isCameraFrozen && heroSearchInput && (
+                      <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-xs flex items-center justify-between gap-2 animate-in fade-in duration-200 shadow-md">
+                        <div className="flex items-center gap-2 text-slate-300 font-semibold">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                          <span>Extracted Identifier:</span>
                         </div>
-                        <div className="font-mono text-emerald-400 font-bold truncate text-sm">
-                          Seeing: "{scannedRawText}"
-                        </div>
-                        {scannedRawText !== heroSearchInput && heroSearchInput && (
-                          <div className="text-[11px] text-slate-400 font-medium">
-                            Extracted Identifier: <span className="font-mono font-bold text-white underline">{heroSearchInput}</span>
-                          </div>
-                        )}
+                        <span className="font-mono font-extrabold text-white text-xs bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-700">
+                          {heroSearchInput}
+                        </span>
                       </div>
                     )}
                   </>
@@ -2002,11 +2111,9 @@ export default function PublicLandingPageV2() {
                 Get Started
               </Button>
             </Link>
-            <a href="#verify-widget">
-              <Button variant="secondary" size="lg">
-                Try Verification Demo
-              </Button>
-            </a>
+            <Button variant="secondary" size="lg" onClick={openDemoModal}>
+              Try Verification Demo
+            </Button>
           </div>
         </div>
       </section>
@@ -2065,6 +2172,263 @@ export default function PublicLandingPageV2() {
           </div>
         </div>
       </footer>
+
+      {/* DEMO REQUEST MODAL FORM */}
+      {isDemoModalOpen && (
+        <div
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+          onClick={() => setIsDemoModalOpen(false)}
+        >
+          <div
+            className="relative w-full max-w-lg bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 space-y-6 text-slate-900 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setIsDemoModalOpen(false)}
+              className="absolute top-5 right-5 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {!demoFormSubmitted ? (
+              <form onSubmit={handleDemoFormSubmit} className="space-y-5">
+                <div className="space-y-1.5 text-left">
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-xs font-extrabold">
+                    <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                    Request Live Demo Walkthrough
+                  </div>
+                  <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                    Schedule a Live Verification Demo
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                    Leave your contact info below. Our product specialists will reach out via call or email to guide you through a live store demo.
+                  </p>
+                </div>
+
+                <div className="space-y-4 text-left text-xs font-semibold text-slate-700">
+                  {/* Full Name */}
+                  <div className="space-y-1">
+                    <label className="block text-slate-900 font-extrabold">
+                      Full Name <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={demoFormData.fullName}
+                      onChange={(e) => setDemoFormData({ ...demoFormData, fullName: e.target.value })}
+                      placeholder="e.g. David Okonjo"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all"
+                    />
+                  </div>
+
+                  {/* Email & Phone Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {/* Email */}
+                    <div className="space-y-1">
+                      <label className="block text-slate-900 font-extrabold">
+                        Email Address <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="email"
+                          required
+                          value={demoFormData.email}
+                          onChange={(e) => setDemoFormData({ ...demoFormData, email: e.target.value })}
+                          placeholder="david@store.com"
+                          className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all"
+                        />
+                        <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                      </div>
+                    </div>
+
+                    {/* Phone */}
+                    <div className="space-y-1">
+                      <label className="block text-slate-900 font-extrabold">
+                        Phone Number <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="tel"
+                          required
+                          value={demoFormData.phone}
+                          onChange={(e) => setDemoFormData({ ...demoFormData, phone: e.target.value })}
+                          placeholder="+234 801 234 5678"
+                          className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all"
+                        />
+                        <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Business Name (Optional) */}
+                  <div className="space-y-1">
+                    <label className="block text-slate-900 font-extrabold">
+                      Store / Business Name <span className="text-slate-400 font-normal">(Optional)</span>
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={demoFormData.businessName}
+                        onChange={(e) => setDemoFormData({ ...demoFormData, businessName: e.target.value })}
+                        placeholder="e.g. Apex Cellular Ltd"
+                        className="w-full pl-9 pr-3.5 py-2.5 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-xs font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all"
+                      />
+                      <Building className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                    </div>
+                  </div>
+
+                  {/* Preferred Contact Method */}
+                  <div className="space-y-1.5 pt-1">
+                    <label className="block text-slate-900 font-extrabold">How should we contact you?</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setDemoFormData({ ...demoFormData, preferredContact: 'phone' })}
+                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                          demoFormData.preferredContact === 'phone'
+                            ? 'bg-teal-50 border-teal-500 text-teal-800'
+                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Phone className="w-3.5 h-3.5 text-teal-600" /> Phone Call
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDemoFormData({ ...demoFormData, preferredContact: 'email' })}
+                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                          demoFormData.preferredContact === 'email'
+                            ? 'bg-teal-50 border-teal-500 text-teal-800'
+                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <Mail className="w-3.5 h-3.5 text-teal-600" /> Email Message
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    fullWidth
+                    size="lg"
+                    isLoading={demoFormSubmitting}
+                    rightIcon={<ArrowRight className="w-4 h-4" />}
+                    className="shadow-md shadow-teal-600/20"
+                  >
+                    {demoFormSubmitting ? 'Submitting Request...' : 'Submit Demo Request'}
+                  </Button>
+                  <p className="text-[11px] text-slate-400 text-center mt-2 font-medium">
+                    No spam. We respect your privacy and will only reach out for the demo.
+                  </p>
+                </div>
+              </form>
+            ) : (
+              <div className="py-6 space-y-4 text-center animate-in fade-in duration-200">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto shadow-sm">
+                  <CheckCircle2 className="w-8 h-8" />
+                </div>
+                <div className="space-y-1.5">
+                  <h4 className="text-xl font-extrabold text-slate-900">Demo Request Received!</h4>
+                  <p className="text-xs text-slate-600 max-w-sm mx-auto font-medium leading-relaxed">
+                    Thank you, <span className="font-bold text-slate-900">{demoFormData.fullName}</span>! Our team has recorded your request and will contact you shortly via{' '}
+                    <span className="font-bold text-teal-700">
+                      {demoFormData.preferredContact === 'phone'
+                        ? `phone call at ${demoFormData.phone}`
+                        : `email at ${demoFormData.email}`}
+                    </span>.
+                  </p>
+                </div>
+                <div className="pt-4">
+                  <Button
+                    variant="secondary"
+                    fullWidth
+                    size="md"
+                    onClick={() => setIsDemoModalOpen(false)}
+                  >
+                    Done
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* IMEI NOT FOUND POPUP MODAL */}
+      {showNotFoundModal && (
+        <div
+          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
+          onClick={() => setShowNotFoundModal(false)}
+        >
+          <div
+            className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 space-y-5 text-slate-900 text-center animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setShowNotFoundModal(false)}
+              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Warning Icon Badge */}
+            <div className="w-14 h-14 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center mx-auto shadow-sm">
+              <ShieldAlert className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-extrabold text-slate-900 tracking-tight">
+                IMEI / Serial Not Found
+              </h3>
+              <p className="text-xs text-slate-600 font-medium leading-relaxed">
+                No registered phone record matching{' '}
+                <code className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-rose-900 font-bold border border-slate-200">
+                  {notFoundTerm || 'Searched Identifier'}
+                </code>{' '}
+                was found on the official store ledger.
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 text-left text-xs text-slate-600 space-y-1 font-medium">
+              <span className="font-bold text-slate-900 block">Why am I seeing this?</span>
+              <ul className="list-disc list-inside space-y-1 text-[11px] text-slate-500">
+                <li>The device may not be registered by an authorized retailer yet.</li>
+                <li>The IMEI or Serial Number was mistyped or misread.</li>
+              </ul>
+            </div>
+
+            <div className="pt-2 space-y-2">
+              <Button
+                variant="primary"
+                fullWidth
+                size="md"
+                onClick={() => {
+                  setShowNotFoundModal(false);
+                  resumeCameraScanning();
+                }}
+                leftIcon={<RotateCcw className="w-4 h-4" />}
+              >
+                Try Another Search / Rescan
+              </Button>
+              <Link href="/onboarding" onClick={() => setShowNotFoundModal(false)}>
+                <Button
+                  variant="secondary"
+                  fullWidth
+                  size="md"
+                  rightIcon={<ArrowRight className="w-4 h-4" />}
+                  className="mt-2"
+                >
+                  Register Store & Devices
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

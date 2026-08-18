@@ -215,15 +215,6 @@ export default function OnboardingPage() {
 
           {/* Brand Dynamic Content Area (Comfortable top spacing below logo header) */}
           <div className="relative z-10 mt-12 mb-auto space-y-5 max-w-lg">
-            
-            {/* Icon Box */}
-            <div className="w-14 h-14 rounded-2xl bg-slate-900/90 border border-slate-800 flex items-center justify-center shadow-xl backdrop-blur-md">
-              {currentStep === 1 && <Building className="w-7 h-7 text-teal-400" />}
-              {currentStep === 2 && <Mail className="w-7 h-7 text-emerald-400" />}
-              {currentStep === 3 && <Store className="w-7 h-7 text-teal-400" />}
-              {currentStep === 4 && <Award className="w-7 h-7 text-amber-400" />}
-              {currentStep === 5 && <CheckCircle2 className="w-7 h-7 text-emerald-400" />}
-            </div>
 
             <div className="space-y-2">
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight">
@@ -506,7 +497,7 @@ export default function OnboardingPage() {
                         maxLength={1}
                         value={digit}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
-                        className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-extrabold bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-500/20 font-mono text-slate-900 shadow-inner"
+                        className="w-11 h-13 sm:w-12 sm:h-14 text-center text-xl font-extrabold bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-mono text-slate-900 shadow-inner"
                       />
                     ))}
                   </div>
@@ -550,7 +541,7 @@ export default function OnboardingPage() {
               {currentStep === 3 && (
                 <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-200">
                   <div>
-                    <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">Complete Store Profile</h3>
+                    <h3 className="text-xl sm:text-2xl font-extrabold text-teal-700">Complete Store Profile</h3>
                     <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5">
                       Tell us about your phone retail store or distribution network.
                     </p>

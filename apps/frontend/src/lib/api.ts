@@ -39,16 +39,36 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-      ...options,
-      headers,
-    });
+    let response: Response;
+    try {
+      response = await fetch(`${API_BASE_URL}${endpoint}`, {
+        ...options,
+        headers,
+      });
+    } catch (networkError: any) {
+      const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
+      const customMessage = isOffline
+        ? 'Network connection lost. Please check your internet connection and try again.'
+        : 'Unable to connect to VerifyFlow servers. Please check your connection or server status.';
 
-    const data = await response.json();
+      const err: any = new Error(customMessage);
+      err.isNetworkError = true;
+      err.isOffline = isOffline;
+      throw err;
+    }
+
+    let data: any;
+    try {
+      data = await response.json();
+    } catch {
+      data = null;
+    }
 
     if (!response.ok) {
       const errorMessage = data?.message || response.statusText || 'An error occurred during API request';
-      throw new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+      const err: any = new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
+      err.status = response.status;
+      throw err;
     }
 
     return data as T;
@@ -105,6 +125,24 @@ class ApiClient {
   async getReports(range?: string) {
     const q = range ? `?range=${encodeURIComponent(range)}` : '';
     return this.request<any>(`/dashboard/reports${q}`);
+  }
+
+  async getBusinessProfile() {
+    return this.request<any>('/business/profile');
+  }
+
+  async updateBusinessSettings(payload: any) {
+    return this.request<any>('/business/settings', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateBusinessPlan(plan: string) {
+    return this.request<any>('/business/plan', {
+      method: 'PUT',
+      body: JSON.stringify({ plan }),
+    });
   }
 
   async getBusinessTemplates() {
