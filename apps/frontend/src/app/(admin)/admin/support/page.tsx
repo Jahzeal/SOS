@@ -52,7 +52,7 @@ export interface SupportTicket {
   unreadCount?: number;
 }
 
-export const mockTickets: SupportTicket[] = [
+const mockTickets: SupportTicket[] = [
   {
     id: 'VF-1042',
     businessId: '1',
