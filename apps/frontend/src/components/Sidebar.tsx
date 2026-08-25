@@ -32,7 +32,6 @@ interface MenuItem {
   name: string;
   icon: any;
   href?: string;
-  minPlan: PlanType;
   children?: { name: string; href: string; icon: any }[];
 }
 
@@ -41,86 +40,67 @@ const menuItems: MenuItem[] = [
     name: 'Dashboard',
     icon: LayoutDashboard,
     href: '/dashboard',
-    minPlan: 'STARTER',
   },
   {
     name: 'Register Phone',
     icon: PlusCircle,
     href: '/dashboard/register',
-    minPlan: 'STARTER',
   },
   {
     name: 'Verify IMEI & QR',
     icon: ShieldCheck,
     href: '/dashboard/verify',
-    minPlan: 'STARTER',
   },
   {
     name: 'Phone Records',
     icon: List,
     href: '/dashboard/records',
-    minPlan: 'STARTER',
   },
   {
     name: 'Inventory',
     icon: Package,
     href: '/dashboard/inventory',
-    minPlan: 'ENTERPRISE',
   },
   {
     name: 'Sales & Invoices',
     icon: ShoppingCart,
-    minPlan: 'ENTERPRISE',
     children: [
-      { name: 'New Checkout (POS)', href: '/dashboard/sales/new', icon: PlusCircle },
-      { name: 'Create Invoice', href: '/dashboard/sales/invoices/new', icon: FileText },
-      { name: 'Invoices Registry', href: '/dashboard/sales/invoices', icon: FileText },
-      { name: 'Receipts Archive', href: '/dashboard/sales/receipts', icon: Receipt },
+      { name: 'Checkout (POS)', href: '/dashboard/checkout', icon: PlusCircle },
+      { name: 'Invoices Registry', href: '/dashboard/invoices', icon: FileText },
+      { name: 'Receipts Archive', href: '/dashboard/receipts', icon: Receipt },
     ],
   },
   {
     name: 'Customers',
     icon: Users,
     href: '/dashboard/customers',
-    minPlan: 'ENTERPRISE',
   },
   {
     name: 'Repairs',
     icon: Wrench,
     href: '/dashboard/repairs',
-    minPlan: 'ENTERPRISE',
   },
   {
     name: 'Analytics',
     icon: BarChart3,
     href: '/dashboard/reports',
-    minPlan: 'BUSINESS',
   },
   {
     name: 'Templates',
     icon: Palette,
     href: '/dashboard/templates',
-    minPlan: 'STARTER',
   },
   {
     name: 'Pricing & Plans',
     icon: CreditCard,
     href: '/pricing',
-    minPlan: 'STARTER',
   },
   {
     name: 'Settings',
     icon: Settings,
     href: '/dashboard/settings',
-    minPlan: 'STARTER',
   },
 ];
-
-const PLAN_LEVELS: Record<PlanType, number> = {
-  STARTER: 1,
-  BUSINESS: 2,
-  ENTERPRISE: 3,
-};
 
 interface SidebarProps {
   isOpen?: boolean;
@@ -131,10 +111,10 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout, setPlan } = useAuthStore();
-  const currentPlan = user?.business?.plan || 'STARTER';
-  const currentLevel = PLAN_LEVELS[currentPlan];
+  const currentPlan = user?.business?.plan || 'Active';
 
   const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({
+    'Sales & Invoices': true,
     Verification: true,
   });
 
@@ -182,13 +162,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           <span className="text-[10px] text-slate-500 font-medium">Main Branch</span>
         </div>
         <Badge
-          variant={
-            currentPlan === 'ENTERPRISE'
-              ? 'enterprise'
-              : currentPlan === 'BUSINESS'
-              ? 'business'
-              : 'starter'
-          }
+          variant="business"
           size="sm"
           showDot={false}
         >
@@ -199,9 +173,6 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       {/* Navigation List */}
       <nav className="flex-1 px-3 py-2 space-y-1 overflow-y-auto custom-scrollbar">
         {menuItems.map((item) => {
-          const isVisible = currentLevel >= PLAN_LEVELS[item.minPlan];
-          if (!isVisible) return null;
-
           const Icon = item.icon;
           const hasChildren = !!item.children;
           const isOpen = openSubmenus[item.name];
