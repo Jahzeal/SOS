@@ -20,7 +20,6 @@ import {
   ChevronRight,
   ChevronDown,
   HelpCircle,
-  Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -34,6 +33,33 @@ export default function RebuiltSettingsPage() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  const logoInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const handleLogoFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size exceeds 5MB limit. Please choose a smaller image.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        if (result) {
+          handleProfileChange('logoUrl', result);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    handleProfileChange('logoUrl', '');
+    if (logoInputRef.current) {
+      logoInputRef.current.value = '';
+    }
+  };
 
   // Business Profile State
   const [businessProfile, setBusinessProfile] = useState({
@@ -264,24 +290,52 @@ export default function RebuiltSettingsPage() {
             <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
               <h3 className="text-base font-extrabold text-slate-900">Business Logo</h3>
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                <div className="w-24 h-24 rounded-2xl border-2 border-slate-200 overflow-hidden bg-slate-50 shrink-0 flex items-center justify-center shadow-subtle">
-                  <img
-                    src={businessProfile.logoUrl}
-                    alt="Business Logo"
-                    className="w-full h-full object-cover"
-                  />
+                <div className="w-24 h-24 rounded-2xl border-2 border-slate-200 overflow-hidden bg-slate-50 shrink-0 flex items-center justify-center shadow-subtle relative group">
+                  {businessProfile.logoUrl ? (
+                    <img
+                      src={businessProfile.logoUrl}
+                      alt="Business Logo"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-slate-400 gap-1">
+                      <Building className="w-8 h-8 text-slate-400" />
+                      <span className="text-[10px] font-bold">No Logo</span>
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <p className="text-xs text-slate-500 font-medium leading-relaxed">
                     This logo appears on digital QR receipts, thermal receipts, and public IMEI verification pages. Recommended size: 512x512px.
                   </p>
                   <div className="flex items-center gap-3 pt-1">
-                    <Button variant="primary" size="sm" leftIcon={<Upload className="w-3.5 h-3.5" />}>
+                    <Button
+                      type="button"
+                      variant="primary"
+                      size="sm"
+                      leftIcon={<Upload className="w-3.5 h-3.5" />}
+                      onClick={() => logoInputRef.current?.click()}
+                    >
                       Upload New Logo
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-rose-600 hover:bg-rose-50">
-                      Remove
-                    </Button>
+                    {businessProfile.logoUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="text-rose-600 hover:bg-rose-50 font-bold"
+                        onClick={handleRemoveLogo}
+                      >
+                        Remove
+                      </Button>
+                    )}
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoFileChange}
+                      className="hidden"
+                    />
                   </div>
                 </div>
               </div>

@@ -24,7 +24,6 @@ import {
   Store,
   Receipt,
   RotateCcw,
-  Sparkles,
   ShieldAlert,
   ArrowDown,
   Globe,
@@ -36,6 +35,7 @@ import {
   TrendingUp,
   Upload,
   Phone,
+  Camera,
 } from 'lucide-react';
 import {
   extractValidIMEI,
@@ -973,7 +973,6 @@ export default function PublicLandingPageV2() {
               size="lg"
               fullWidth
               onClick={openDemoModal}
-              leftIcon={<Sparkles className="w-4 h-4 text-teal-600" />}
             >
               Try Verification Demo
             </Button>
@@ -1093,7 +1092,7 @@ export default function PublicLandingPageV2() {
                             onClick={handleSnapAndScanText}
                             className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30"
                           >
-                            <Sparkles className="w-3.5 h-3.5" /> Scan IMEI Frame
+                            <Camera className="w-3.5 h-3.5" /> Scan IMEI Frame
                           </button>
                         </div>
                       )}
@@ -1155,7 +1154,7 @@ export default function PublicLandingPageV2() {
                       <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 text-xs space-y-2 animate-in fade-in duration-200 shadow-xl">
                         <div className="flex items-center justify-between text-slate-400 font-bold">
                           <span className="flex items-center gap-1.5 text-blue-400">
-                            <Sparkles className="w-3.5 h-3.5" /> Detected Hardware Identifiers:
+                            <ShieldCheck className="w-3.5 h-3.5" /> Detected Hardware Identifiers:
                           </span>
                           <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-emerald-400 font-mono font-bold">
                             {googleLensPills.filter((p) => p.type === 'IMEI' || p.type === 'SERIAL').length} IDENTIFIER(S) FOUND
@@ -2153,7 +2152,6 @@ export default function PublicLandingPageV2() {
               <form onSubmit={handleDemoFormSubmit} className="space-y-5">
                 <div className="space-y-1.5 text-left">
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-xs font-extrabold">
-                    <Sparkles className="w-3.5 h-3.5 text-teal-600" />
                     Request Live Demo Walkthrough
                   </div>
                   <h3 className="text-2xl font-extrabold text-slate-900 tracking-tight">

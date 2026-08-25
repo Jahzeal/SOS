@@ -17,7 +17,6 @@ import {
   User,
   Store,
   Check,
-  Sparkles,
   Zap,
   RotateCcw,
   Globe,
@@ -114,7 +113,7 @@ export default function OnboardingPage() {
           password: accountForm.password || 'Password123!',
           firstName,
           lastName,
-          businessName: businessForm.storeName || 'My Phone Store',
+          businessName: businessForm.storeName.trim() || `${firstName}'s Mobile Store`,
           phone: '+15550192834',
           plan: selectedPlan.toUpperCase(),
         });

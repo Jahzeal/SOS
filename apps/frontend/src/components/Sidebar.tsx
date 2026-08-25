@@ -22,7 +22,7 @@ import {
   ArrowDownToLine,
   FileText,
   Receipt,
-  Sparkles,
+  CreditCard,
   Palette,
   LogOut,
 } from 'lucide-react';
@@ -104,7 +104,7 @@ const menuItems: MenuItem[] = [
   },
   {
     name: 'Pricing & Plans',
-    icon: Sparkles,
+    icon: CreditCard,
     href: '/pricing',
     minPlan: 'STARTER',
   },
