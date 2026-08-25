@@ -178,7 +178,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       {/* Store Plan Badge */}
       <div className="mx-3.5 my-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
         <div className="flex flex-col min-w-0">
-          <span className="text-xs font-bold text-slate-900 truncate">{user?.business?.name || 'PhoneWorks Retail'}</span>
+          <span className="text-xs font-bold text-slate-900 truncate">{user?.business?.name || 'Store Account'}</span>
           <span className="text-[10px] text-slate-500 font-medium">Main Branch</span>
         </div>
         <Badge

@@ -1,12 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+
+function SessionExpiredAlert() {
+  const searchParams = useSearchParams();
+  const isExpired = searchParams ? searchParams.get('expired') === 'true' : false;
+
+  if (!isExpired) return null;
+
+  return (
+    <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5 shadow-sm">
+      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+      <div className="font-medium">Your session has expired or is invalid. Please sign in again to access your workspace.</div>
+    </div>
+  );
+}
 
 export default function LoginPage() {
   const router = useRouter();
@@ -90,6 +104,10 @@ export default function LoginPage() {
 
           {/* White Form Card */}
           <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl space-y-5">
+            <Suspense fallback={null}>
+              <SessionExpiredAlert />
+            </Suspense>
+
             {error && (
               <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5">
                 <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />

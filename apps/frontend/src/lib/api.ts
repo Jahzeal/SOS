@@ -65,6 +65,13 @@ class ApiClient {
     }
 
     if (!response.ok) {
+      if (response.status === 401 && typeof window !== 'undefined') {
+        localStorage.removeItem('vf_access_token');
+        localStorage.removeItem('vf_user');
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = '/login?expired=true';
+        }
+      }
       const errorMessage = data?.message || response.statusText || 'An error occurred during API request';
       const err: any = new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
       err.status = response.status;

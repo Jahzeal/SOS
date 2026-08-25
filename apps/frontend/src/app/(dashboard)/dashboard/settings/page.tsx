@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
+import { api } from '@/lib/api';
 import {
   Building,
   Users,
@@ -30,22 +31,48 @@ export default function RebuiltSettingsPage() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Business Profile State
   const [businessProfile, setBusinessProfile] = useState({
-    name: user?.business?.name || 'Ikeja Mobile Hub',
-    legalName: 'Ikeja Mobile Hub Ltd',
+    name: user?.business?.name || '',
+    legalName: '',
     businessType: 'retail',
-    phone: '+234 800 000 0000',
-    email: user?.email || 'hello@ikejamobilehub.com',
-    address: '12 Computer Village Road, Ikeja, Lagos, Nigeria.',
-    logoUrl: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBRntZfETk-UGxQGDWh4XSe1TaWFuDe8dNJdYw4oj6x-PZvGNkVoCfmvWz3TENAMpbz_-XI-qyiJ7DhG9bfiM_LXeJfw38ybHzSawp4-WKHqzF3RVXA3MZ8wJXZNALE0D-9R87Uf5KOtAdQMahBKth1Kc3acJEe-871XUjkiHiAa0eQ5xBpCHzAZDRalkyta2fBIPyGX9Mx-sao2AEmqbJyHmjW-u0uOmi6nuy1FClYutIU2L2gVLypzQ',
+    phone: '',
+    email: user?.email || '',
+    address: '',
+    logoUrl: '',
     showName: true,
     showLogo: true,
     showPhone: true,
     showEmail: false,
     showWebsite: false,
   });
+
+  useEffect(() => {
+    async function loadLiveProfile() {
+      try {
+        const data = await api.getBusinessProfile();
+        if (data) {
+          setBusinessProfile((prev) => ({
+            ...prev,
+            name: data.name || prev.name,
+            phone: data.phone || prev.phone,
+            email: data.email || prev.email,
+            address: data.address || prev.address,
+            logoUrl: data.logoUrl || prev.logoUrl,
+          }));
+        }
+      } catch (err) {
+        console.warn('Backend business profile load skipped/offline:', err);
+      } finally {
+        setLoadingProfile(false);
+      }
+    }
+    loadLiveProfile();
+  }, []);
 
   // Users & Roles State
   const [userSearch, setUserSearch] = useState('');
@@ -73,10 +100,27 @@ export default function RebuiltSettingsPage() {
     setHasUnsavedChanges(true);
   };
 
-  const handleSaveChanges = () => {
-    setHasUnsavedChanges(false);
-    setSavedSuccess(true);
-    setTimeout(() => setSavedSuccess(false), 2500);
+  const handleSaveChanges = async () => {
+    setSaving(true);
+    setSaveError(null);
+    try {
+      await api.updateBusinessSettings({
+        name: businessProfile.name,
+        phone: businessProfile.phone,
+        email: businessProfile.email,
+        address: businessProfile.address,
+        logoUrl: businessProfile.logoUrl,
+      });
+
+      setHasUnsavedChanges(false);
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 2500);
+    } catch (err: any) {
+      console.error('Failed to update business settings:', err);
+      setSaveError(err.message || 'Failed to save settings. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDiscard = () => {

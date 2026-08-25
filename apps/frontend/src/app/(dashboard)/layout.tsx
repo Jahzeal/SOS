@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useAuthStore } from '@/store/useAuthStore';
+import { isTokenExpired } from '@/lib/jwt-utils';
 import { Bell, Search, ShieldCheck, Menu, LayoutDashboard, Plus, List, LogOut, UserCircle } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/search/GlobalSearchModal';
 import Link from 'next/link';
@@ -11,9 +12,38 @@ import { useRouter } from 'next/navigation';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  useEffect(() => {
+    const verifySession = () => {
+      if (typeof window === 'undefined') return;
+      const token = localStorage.getItem('vf_access_token');
+      if (!token || isTokenExpired(token)) {
+        localStorage.removeItem('vf_access_token');
+        localStorage.removeItem('vf_user');
+        logout();
+        setIsAuthorized(false);
+        router.replace('/login?expired=true');
+      } else {
+        setIsAuthorized(true);
+      }
+    };
+
+    verifySession();
+
+    // Active session monitoring: check on window focus and every 10 seconds
+    const handleFocus = () => verifySession();
+    window.addEventListener('focus', handleFocus);
+    const interval = setInterval(verifySession, 10000);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      clearInterval(interval);
+    };
+  }, [router, logout]);
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
@@ -23,6 +53,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     logout();
     router.push('/login');
   };
+
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 rounded-full border-4 border-teal-500 border-t-transparent animate-spin" />
+          <p className="text-xs font-mono font-bold text-slate-400">Verifying session security...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-slate-50 text-slate-900 pb-16 lg:pb-0">
@@ -95,7 +136,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="font-extrabold text-slate-900 truncate text-sm">
                         {user?.firstName || 'Store'} {user?.lastName || 'Owner'}
                       </div>
-                      <div className="text-[11px] text-slate-500 truncate font-medium">{user?.email || 'owner@retailer.com'}</div>
+                      <div className="text-[11px] text-slate-500 truncate font-medium">{user?.email || ''}</div>
                     </div>
 
                     <div className="pt-2 border-t border-slate-200/80 space-y-1 text-[11px]">

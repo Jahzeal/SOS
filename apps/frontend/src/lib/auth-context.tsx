@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from './api';
+import { isTokenExpired } from './jwt-utils';
 
 interface UserProfile {
   id: string;
@@ -34,17 +35,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Restore session from localStorage if available
+    // Restore session from localStorage if available and token is unexpired
     const savedToken = localStorage.getItem('vf_access_token');
     const savedUser = localStorage.getItem('vf_user');
 
-    if (savedToken && savedUser) {
+    if (savedToken && savedUser && !isTokenExpired(savedToken)) {
       try {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
       } catch (e) {
         console.error('Failed to parse cached user session:', e);
       }
+    } else if (savedToken) {
+      // Clear expired session
+      localStorage.removeItem('vf_access_token');
+      localStorage.removeItem('vf_user');
+      setToken(null);
+      setUser(null);
     }
     setIsLoading(false);
   }, []);
