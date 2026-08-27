@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { api } from '@/lib/api';
 import {
   BarChart,
   Bar,
@@ -79,13 +80,28 @@ const DATA_BY_RANGE: Record<TimeRange, DataPoint[]> = {
 
 export default function VerificationActivityChart({ timeRange }: VerificationActivityChartProps) {
   const [viewType, setViewType] = useState<ChartViewType>('stacked');
+  const [liveData, setLiveData] = useState<DataPoint[] | null>(null);
   const [activeSeries, setActiveSeries] = useState({
     verified: true,
     notFound: true,
     invalid: true,
   });
 
-  const rawData = DATA_BY_RANGE[timeRange] || DATA_BY_RANGE['7d'];
+  useEffect(() => {
+    async function loadTraffic() {
+      try {
+        const res = await api.adminGetVerificationTraffic(timeRange);
+        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+          setLiveData(res.data);
+        }
+      } catch (err) {
+        console.error('Failed to load live traffic chart:', err);
+      }
+    }
+    loadTraffic();
+  }, [timeRange]);
+
+  const rawData = liveData || DATA_BY_RANGE[timeRange] || DATA_BY_RANGE['7d'];
 
   // Calculate high-level summary KPIs for this timeframe
   const metrics = useMemo(() => {

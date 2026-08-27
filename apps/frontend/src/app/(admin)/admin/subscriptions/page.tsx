@@ -159,15 +159,16 @@ export default function AdminSubscriptionsPage() {
       {/* Subscribers Table */}
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-subtle">
         <div className="overflow-x-auto w-full custom-scrollbar">
-          <table className="w-full text-left border-collapse text-xs min-w-[760px]">
+          <table className="w-full text-left border-collapse text-xs min-w-[840px]">
             <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase tracking-wider">
               <tr>
                 <th className="px-5 py-3 font-semibold">Subscriber</th>
                 <th className="px-4 py-3 font-semibold">Tier Plan</th>
-                <th className="px-4 py-3 font-semibold">Price / Billing</th>
+                <th className="px-4 py-3 font-semibold">Monthly Price</th>
                 <th className="px-4 py-3 font-semibold text-center">Staff Quota</th>
                 <th className="px-4 py-3 font-semibold text-center">Lookups / Mo</th>
-                <th className="px-5 py-3 font-semibold text-right">Member Since</th>
+                <th className="px-4 py-3 font-semibold text-center">Status</th>
+                <th className="px-5 py-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
 
@@ -181,21 +182,27 @@ export default function AdminSubscriptionsPage() {
                     </td>
 
                     <td className="px-4 py-3.5">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                          s.plan === 'ENTERPRISE'
-                            ? 'bg-purple-100 text-purple-800'
-                            : s.plan === 'BUSINESS'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-slate-100 text-slate-700'
-                        }`}
+                      <select
+                        value={s.plan}
+                        onChange={async (e) => {
+                          const newPlan = e.target.value;
+                          try {
+                            await api.adminUpdateBusinessPlan(s.id, newPlan);
+                            fetchSubscriptions();
+                          } catch (err) {
+                            console.error('Failed to update plan:', err);
+                          }
+                        }}
+                        className="text-[11px] font-extrabold py-1 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-600 cursor-pointer shadow-2xs"
                       >
-                        {s.planDisplayName || s.plan}
-                      </span>
+                        <option value="STARTER">STARTER (₦15k/mo)</option>
+                        <option value="BUSINESS">BUSINESS (₦45k/mo)</option>
+                        <option value="ENTERPRISE">ENTERPRISE (₦120k/mo)</option>
+                      </select>
                     </td>
 
                     <td className="px-4 py-3.5 font-bold text-slate-900">
-                      ₦{s.price.toLocaleString()} <span className="text-[10px] text-slate-400 font-normal">/ mo</span>
+                      ₦{s.price?.toLocaleString()} <span className="text-[10px] text-slate-400 font-normal">/ mo</span>
                     </td>
 
                     <td className="px-4 py-3.5 text-center font-mono font-bold text-slate-800">
@@ -206,15 +213,27 @@ export default function AdminSubscriptionsPage() {
                       {s.limits?.maxLookups?.toLocaleString() || 500}
                     </td>
 
+                    <td className="px-4 py-3.5 text-center">
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                          s.status === 'Active'
+                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                            : 'bg-rose-50 text-rose-700 border border-rose-200'
+                        }`}
+                      >
+                        {s.status}
+                      </span>
+                    </td>
+
                     <td className="px-5 py-3.5 text-right font-mono text-[11px] text-slate-400">
-                      {new Date(s.memberSince).toLocaleDateString()}
+                      {s.memberSince ? new Date(s.memberSince).toLocaleDateString() : 'N/A'}
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
-                    {loading ? 'Loading subscribers...' : 'No subscribers found.'}
+                  <td colSpan={7} className="py-12 text-center text-slate-400 text-xs">
+                    {loading ? 'Loading subscribers...' : 'No subscribers found in database.'}
                   </td>
                 </tr>
               )}

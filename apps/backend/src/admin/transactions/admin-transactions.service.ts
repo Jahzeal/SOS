@@ -12,17 +12,19 @@ export class AdminTransactionsService {
     page?: number;
     limit?: number;
   }) {
-    const { search, paymentMethod, businessId, page = 1, limit = 25 } = query;
-    const skip = (page - 1) * limit;
+    const pageNum = Math.max(1, Number(query.page) || 1);
+    const limitNum = Math.max(1, Number(query.limit) || 25);
+    const skip = (pageNum - 1) * limitNum;
 
     const where: any = {};
-    if (paymentMethod && paymentMethod !== 'ALL') {
-      where.paymentMethod = paymentMethod;
+    if (query.paymentMethod && query.paymentMethod !== 'ALL') {
+      where.paymentMethod = query.paymentMethod;
     }
-    if (businessId && businessId !== 'ALL') {
-      where.businessId = businessId;
+    if (query.businessId && query.businessId !== 'ALL') {
+      where.businessId = query.businessId;
     }
-    if (search) {
+    if (query.search && query.search.trim()) {
+      const search = query.search.trim();
       where.OR = [
         { invoiceNumber: { contains: search, mode: 'insensitive' } },
         { receiptNumber: { contains: search, mode: 'insensitive' } },
@@ -36,7 +38,7 @@ export class AdminTransactionsService {
       this.prisma.sale.findMany({
         where,
         skip,
-        take: Number(limit),
+        take: limitNum,
         orderBy: { createdAt: 'desc' },
         include: {
           business: {

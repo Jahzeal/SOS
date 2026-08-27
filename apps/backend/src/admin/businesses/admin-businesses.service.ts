@@ -7,14 +7,16 @@ export class AdminBusinessesService {
   constructor(private prisma: PrismaService) {}
 
   async findAll(query: { search?: string; plan?: string; page?: number; limit?: number }) {
-    const { search, plan, page = 1, limit = 20 } = query;
-    const skip = (page - 1) * limit;
+    const pageNum = Math.max(1, Number(query.page) || 1);
+    const limitNum = Math.max(1, Number(query.limit) || 20);
+    const skip = (pageNum - 1) * limitNum;
 
     const where: any = {};
-    if (plan && plan !== 'ALL') {
-      where.plan = plan as Plan;
+    if (query.plan && query.plan !== 'ALL') {
+      where.plan = query.plan;
     }
-    if (search) {
+    if (query.search && query.search.trim()) {
+      const search = query.search.trim();
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { slug: { contains: search, mode: 'insensitive' } },
@@ -28,7 +30,7 @@ export class AdminBusinessesService {
       this.prisma.business.findMany({
         where,
         skip,
-        take: Number(limit),
+        take: limitNum,
         orderBy: { createdAt: 'desc' },
         include: {
           _count: {
@@ -56,9 +58,10 @@ export class AdminBusinessesService {
     return {
       success: true,
       total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / limit) || 1,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum) || 1,
+      businesses,
       data: businesses,
     };
   }
