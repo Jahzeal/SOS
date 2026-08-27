@@ -7,7 +7,6 @@ import {
   Bar,
   AreaChart,
   Area,
-  Line,
   ComposedChart,
   XAxis,
   YAxis,
@@ -20,11 +19,6 @@ import {
   TrendingUp,
   Activity,
   Percent,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  Eye,
-  EyeOff,
   Sparkles,
 } from 'lucide-react';
 
@@ -44,43 +38,59 @@ interface DataPoint {
   successRate: number;
 }
 
-// Sample time-series data for each time range
-const DATA_BY_RANGE: Record<TimeRange, DataPoint[]> = {
-  today: [
-    { label: '00:00', verified: 320, notFound: 45, invalid: 12, total: 377, successRate: 84.9 },
-    { label: '03:00', verified: 180, notFound: 28, invalid: 8, total: 216, successRate: 83.3 },
-    { label: '06:00', verified: 490, notFound: 82, invalid: 18, total: 590, successRate: 83.1 },
-    { label: '09:00', verified: 1450, notFound: 210, invalid: 64, total: 1724, successRate: 84.1 },
-    { label: '12:00', verified: 2100, notFound: 340, invalid: 92, total: 2532, successRate: 82.9 },
-    { label: '15:00', verified: 1890, notFound: 290, invalid: 75, total: 2255, successRate: 83.8 },
-    { label: '18:00', verified: 1620, notFound: 230, invalid: 58, total: 1908, successRate: 84.9 },
-    { label: '21:00', verified: 980, notFound: 140, invalid: 32, total: 1152, successRate: 85.1 },
-  ],
-  '7d': [
-    { label: 'Mon', verified: 6850, notFound: 1120, invalid: 310, total: 8280, successRate: 82.7 },
-    { label: 'Tue', verified: 7420, notFound: 1250, invalid: 290, total: 8960, successRate: 82.8 },
-    { label: 'Wed', verified: 8910, notFound: 1480, invalid: 410, total: 10800, successRate: 82.5 },
-    { label: 'Thu', verified: 9650, notFound: 1610, invalid: 480, total: 11740, successRate: 82.2 },
-    { label: 'Fri', verified: 10820, notFound: 1790, invalid: 530, total: 13140, successRate: 82.3 },
-    { label: 'Sat', verified: 6120, notFound: 980, invalid: 240, total: 7340, successRate: 83.4 },
-    { label: 'Sun', verified: 5430, notFound: 840, invalid: 190, total: 6460, successRate: 84.1 },
-  ],
-  '30d': [
-    { label: 'Week 1', verified: 45200, notFound: 7600, invalid: 2100, total: 54900, successRate: 82.3 },
-    { label: 'Week 2', verified: 51300, notFound: 8400, invalid: 2350, total: 62050, successRate: 82.7 },
-    { label: 'Week 3', verified: 58900, notFound: 9800, invalid: 2800, total: 71500, successRate: 82.4 },
-    { label: 'Week 4', verified: 62400, notFound: 10100, invalid: 2950, total: 75450, successRate: 82.7 },
-  ],
-  '90d': [
-    { label: 'Month 1', verified: 198000, notFound: 32000, invalid: 8900, total: 238900, successRate: 82.9 },
-    { label: 'Month 2', verified: 224000, notFound: 36500, invalid: 10200, total: 270700, successRate: 82.7 },
-    { label: 'Month 3', verified: 256000, notFound: 41200, invalid: 11400, total: 308600, successRate: 83.0 },
-  ],
+const getEmptyBuckets = (timeRange: TimeRange): DataPoint[] => {
+  if (timeRange === 'today') {
+    return ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'].map((label) => ({
+      label,
+      verified: 0,
+      notFound: 0,
+      invalid: 0,
+      total: 0,
+      successRate: 100,
+    }));
+  }
+  if (timeRange === '7d') {
+    const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const buckets: DataPoint[] = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      buckets.push({
+        label: days[d.getDay()],
+        verified: 0,
+        notFound: 0,
+        invalid: 0,
+        total: 0,
+        successRate: 100,
+      });
+    }
+    return buckets;
+  }
+  if (timeRange === '30d') {
+    return ['Week 1', 'Week 2', 'Week 3', 'Week 4'].map((label) => ({
+      label,
+      verified: 0,
+      notFound: 0,
+      invalid: 0,
+      total: 0,
+      successRate: 100,
+    }));
+  }
+  return ['Month 1', 'Month 2', 'Month 3'].map((label) => ({
+    label,
+    verified: 0,
+    notFound: 0,
+    invalid: 0,
+    total: 0,
+    successRate: 100,
+  }));
 };
 
 export default function VerificationActivityChart({ timeRange }: VerificationActivityChartProps) {
   const [viewType, setViewType] = useState<ChartViewType>('stacked');
-  const [liveData, setLiveData] = useState<DataPoint[] | null>(null);
+  const [liveData, setLiveData] = useState<DataPoint[]>(getEmptyBuckets(timeRange));
+  const [loading, setLoading] = useState(false);
   const [activeSeries, setActiveSeries] = useState({
     verified: true,
     notFound: true,
@@ -89,31 +99,37 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
 
   useEffect(() => {
     async function loadTraffic() {
+      setLoading(true);
       try {
         const res = await api.adminGetVerificationTraffic(timeRange);
-        if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+        if (res?.success && Array.isArray(res.data)) {
           setLiveData(res.data);
+        } else {
+          setLiveData(getEmptyBuckets(timeRange));
         }
       } catch (err) {
         console.error('Failed to load live traffic chart:', err);
+        setLiveData(getEmptyBuckets(timeRange));
+      } finally {
+        setLoading(false);
       }
     }
     loadTraffic();
   }, [timeRange]);
 
-  const rawData = liveData || DATA_BY_RANGE[timeRange] || DATA_BY_RANGE['7d'];
+  const rawData = liveData;
 
-  // Calculate high-level summary KPIs for this timeframe
+  // Calculate high-level summary KPIs for this timeframe (100% Real DB)
   const metrics = useMemo(() => {
-    const totalVerified = rawData.reduce((sum, d) => sum + d.verified, 0);
-    const totalNotFound = rawData.reduce((sum, d) => sum + d.notFound, 0);
-    const totalInvalid = rawData.reduce((sum, d) => sum + d.invalid, 0);
+    const totalVerified = rawData.reduce((sum, d) => sum + (d.verified || 0), 0);
+    const totalNotFound = rawData.reduce((sum, d) => sum + (d.notFound || 0), 0);
+    const totalInvalid = rawData.reduce((sum, d) => sum + (d.invalid || 0), 0);
     const totalLookups = totalVerified + totalNotFound + totalInvalid;
-    const avgSuccessRate = totalLookups > 0 ? ((totalVerified / totalLookups) * 100).toFixed(1) : '0';
+    const avgSuccessRate = totalLookups > 0 ? ((totalVerified / totalLookups) * 100).toFixed(1) : '100';
 
     let peakPoint = rawData[0];
     for (const d of rawData) {
-      if (d.total > (peakPoint?.total || 0)) {
+      if ((d.total || 0) > (peakPoint?.total || 0)) {
         peakPoint = d;
       }
     }
@@ -124,7 +140,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
       totalNotFound,
       totalInvalid,
       avgSuccessRate,
-      peakLabel: peakPoint?.label || '',
+      peakLabel: peakPoint?.label || 'None',
       peakTotal: peakPoint?.total || 0,
     };
   }, [rawData]);
@@ -142,17 +158,17 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
   const formatNumber = (num: number) => {
     if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
     if (num >= 1_000) return `${(num / 1_000).toFixed(1)}k`;
-    return num.toLocaleString();
+    return (num || 0).toLocaleString();
   };
 
-  // Custom Glassmorphism Rich Tooltip
+  // Custom Glassmorphism Tooltip
   const CustomTooltip = ({ active, payload, label }: any) => {
     if (!active || !payload || !payload.length) return null;
 
     const data = payload[0]?.payload as DataPoint;
     if (!data) return null;
 
-    const total = data.verified + data.notFound + data.invalid;
+    const total = (data.verified || 0) + (data.notFound || 0) + (data.invalid || 0);
 
     return (
       <div className="bg-slate-900/95 backdrop-blur-md text-white p-3.5 rounded-xl shadow-2xl border border-slate-700/80 min-w-[210px] text-xs font-sans animate-in fade-in zoom-in-95 duration-150">
@@ -174,9 +190,9 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
                 <span className="text-slate-300">Verified</span>
               </div>
               <div className="font-mono flex items-center gap-1.5 font-bold">
-                <span>{data.verified.toLocaleString()}</span>
+                <span>{(data.verified || 0).toLocaleString()}</span>
                 <span className="text-slate-400 text-[10px] font-normal">
-                  ({total > 0 ? ((data.verified / total) * 100).toFixed(0) : 0}%)
+                  ({total > 0 ? (((data.verified || 0) / total) * 100).toFixed(0) : 0}%)
                 </span>
               </div>
             </div>
@@ -189,9 +205,9 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
                 <span className="text-slate-300">Not Found</span>
               </div>
               <div className="font-mono flex items-center gap-1.5 font-bold">
-                <span className="text-amber-300">{data.notFound.toLocaleString()}</span>
+                <span className="text-amber-300">{(data.notFound || 0).toLocaleString()}</span>
                 <span className="text-slate-400 text-[10px] font-normal">
-                  ({total > 0 ? ((data.notFound / total) * 100).toFixed(0) : 0}%)
+                  ({total > 0 ? (((data.notFound || 0) / total) * 100).toFixed(0) : 0}%)
                 </span>
               </div>
             </div>
@@ -204,9 +220,9 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
                 <span className="text-slate-300">Invalid</span>
               </div>
               <div className="font-mono flex items-center gap-1.5 font-bold">
-                <span className="text-rose-400">{data.invalid.toLocaleString()}</span>
+                <span className="text-rose-400">{(data.invalid || 0).toLocaleString()}</span>
                 <span className="text-slate-400 text-[10px] font-normal">
-                  ({total > 0 ? ((data.invalid / total) * 100).toFixed(0) : 0}%)
+                  ({total > 0 ? (((data.invalid || 0) / total) * 100).toFixed(0) : 0}%)
                 </span>
               </div>
             </div>
@@ -217,7 +233,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
               <Sparkles className="w-3 h-3 text-emerald-400" />
               Success Rate:
             </span>
-            <span className="text-emerald-400 font-mono font-extrabold">{data.successRate}%</span>
+            <span className="text-emerald-400 font-mono font-extrabold">{data.successRate || 100}%</span>
           </div>
         </div>
       </div>
@@ -232,11 +248,11 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
           <div className="flex items-center gap-2">
             <h3 className="text-base font-extrabold text-slate-900">Verification Activity</h3>
             <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
-              Live Flow
+              Live DB Flow
             </span>
           </div>
           <p className="text-xs text-slate-500 font-medium mt-0.5">
-            Total traffic breakdown & verification outcome distribution
+            Total traffic breakdown & verification outcome distribution from PostgreSQL ledger.
           </p>
         </div>
 
@@ -244,7 +260,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
         <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/80 self-start sm:self-auto text-xs font-semibold">
           <button
             onClick={() => setViewType('stacked')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
               viewType === 'stacked'
                 ? 'bg-white text-blue-700 shadow-sm font-bold'
                 : 'text-slate-600 hover:text-slate-900'
@@ -257,7 +273,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
 
           <button
             onClick={() => setViewType('area')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
               viewType === 'area'
                 ? 'bg-white text-blue-700 shadow-sm font-bold'
                 : 'text-slate-600 hover:text-slate-900'
@@ -270,7 +286,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
 
           <button
             onClick={() => setViewType('composed')}
-            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all ${
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
               viewType === 'composed'
                 ? 'bg-white text-blue-700 shadow-sm font-bold'
                 : 'text-slate-600 hover:text-slate-900'
@@ -283,7 +299,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
         </div>
       </div>
 
-      {/* Mini KPI Highlights Bar */}
+      {/* Mini KPI Highlights Bar (100% Real DB Data) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 py-1">
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex flex-col justify-between">
           <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Total Volume</span>
@@ -307,7 +323,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
         </div>
 
         <div className="bg-rose-50/50 border border-rose-100 rounded-xl p-2.5 flex flex-col justify-between">
-          <span className="text-[11px] font-bold text-rose-700 uppercase tracking-tight">Peak Period</span>
+          <span className="text-[11px] font-bold text-rose-700 uppercase tracking-tight">Peak Activity</span>
           <span className="text-sm font-extrabold text-slate-900 font-mono mt-1 truncate">
             {metrics.peakLabel} ({formatNumber(metrics.peakTotal)})
           </span>
@@ -319,226 +335,157 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
         <div className="flex items-center gap-2 text-xs font-bold flex-wrap">
           <button
             onClick={() => toggleSeries('verified')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all cursor-pointer ${
               activeSeries.verified
-                ? 'bg-blue-50 text-blue-700 border-blue-200 shadow-xs'
-                : 'bg-slate-50 text-slate-400 border-slate-200 opacity-60 line-through'
+                ? 'bg-blue-50 border-blue-300 text-blue-800 shadow-xs'
+                : 'bg-slate-50 border-slate-200 text-slate-400 opacity-60'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-            <span>Verified</span>
-            {activeSeries.verified ? <Eye className="w-3 h-3 ml-0.5 opacity-60" /> : <EyeOff className="w-3 h-3 ml-0.5" />}
+            <span className="w-2 h-2 rounded-full bg-blue-600" />
+            <span>Verified Genuine ({formatNumber(metrics.totalVerified)})</span>
           </button>
 
           <button
             onClick={() => toggleSeries('notFound')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all cursor-pointer ${
               activeSeries.notFound
-                ? 'bg-amber-50 text-amber-700 border-amber-200 shadow-xs'
-                : 'bg-slate-50 text-slate-400 border-slate-200 opacity-60 line-through'
+                ? 'bg-amber-50 border-amber-300 text-amber-800 shadow-xs'
+                : 'bg-slate-50 border-slate-200 text-slate-400 opacity-60'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-            <span>Not Found</span>
-            {activeSeries.notFound ? <Eye className="w-3 h-3 ml-0.5 opacity-60" /> : <EyeOff className="w-3 h-3 ml-0.5" />}
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
+            <span>Not Found ({formatNumber(metrics.totalNotFound)})</span>
           </button>
 
           <button
             onClick={() => toggleSeries('invalid')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border transition-all ${
+            className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg border transition-all cursor-pointer ${
               activeSeries.invalid
-                ? 'bg-rose-50 text-rose-700 border-rose-200 shadow-xs'
-                : 'bg-slate-50 text-slate-400 border-slate-200 opacity-60 line-through'
+                ? 'bg-rose-50 border-rose-300 text-rose-800 shadow-xs'
+                : 'bg-slate-50 border-slate-200 text-slate-400 opacity-60'
             }`}
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-rose-500" />
-            <span>Invalid</span>
-            {activeSeries.invalid ? <Eye className="w-3 h-3 ml-0.5 opacity-60" /> : <EyeOff className="w-3 h-3 ml-0.5" />}
+            <span className="w-2 h-2 rounded-full bg-rose-500" />
+            <span>Flagged/Stolen ({formatNumber(metrics.totalInvalid)})</span>
           </button>
         </div>
-
-        <span className="text-[11px] font-medium text-slate-400 italic">
-          Click series to toggle visibility
-        </span>
       </div>
 
-      {/* SVG Canvas Container */}
-      <div className="flex-1 w-full min-h-[300px] bg-slate-50/70 border border-slate-100 rounded-xl p-3 relative">
+      {/* Chart Canvas Area */}
+      <div className="w-full h-64 sm:h-72 relative">
         <ResponsiveContainer width="100%" height="100%">
           {viewType === 'stacked' ? (
-            <BarChart data={rawData} margin={{ top: 12, right: 12, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <BarChart data={rawData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis
                 dataKey="label"
+                axisLine={false}
                 tickLine={false}
-                axisLine={{ stroke: '#cbd5e1' }}
                 tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
               />
               <YAxis
-                tickLine={false}
                 axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 10 }}
                 tickFormatter={formatNumber}
-                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
               />
-              <Tooltip content={<CustomTooltip />} />
-              {activeSeries.invalid && (
-                <Bar
-                  dataKey="invalid"
-                  name="Invalid"
-                  stackId="traffic"
-                  fill="#f43f5e"
-                  radius={[0, 0, 0, 0]}
-                />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(241, 245, 249, 0.6)' }} />
+              {activeSeries.verified && (
+                <Bar dataKey="verified" name="Verified" stackId="a" fill="#2563eb" radius={[0, 0, 0, 0]} />
               )}
               {activeSeries.notFound && (
-                <Bar
-                  dataKey="notFound"
-                  name="Not Found"
-                  stackId="traffic"
-                  fill="#f59e0b"
-                  radius={[0, 0, 0, 0]}
-                />
+                <Bar dataKey="notFound" name="Not Found" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} />
               )}
-              {activeSeries.verified && (
-                <Bar
-                  dataKey="verified"
-                  name="Verified"
-                  stackId="traffic"
-                  fill="#2563eb"
-                  radius={[4, 4, 0, 0]}
-                />
+              {activeSeries.invalid && (
+                <Bar dataKey="invalid" name="Invalid" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} />
               )}
             </BarChart>
           ) : viewType === 'area' ? (
-            <AreaChart data={rawData} margin={{ top: 12, right: 12, left: -10, bottom: 0 }}>
+            <AreaChart data={rawData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
               <defs>
-                <linearGradient id="verifiedAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="colorVerified" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#2563eb" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0.02} />
+                  <stop offset="95%" stopColor="#2563eb" stopOpacity={0.0} />
                 </linearGradient>
-                <linearGradient id="notFoundAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.02} />
+                <linearGradient id="colorNotFound" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0.0} />
                 </linearGradient>
-                <linearGradient id="invalidAreaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.02} />
+                <linearGradient id="colorInvalid" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#ef4444" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis
                 dataKey="label"
+                axisLine={false}
                 tickLine={false}
-                axisLine={{ stroke: '#cbd5e1' }}
                 tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
               />
               <YAxis
-                tickLine={false}
                 axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 10 }}
                 tickFormatter={formatNumber}
-                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
               />
               <Tooltip content={<CustomTooltip />} />
               {activeSeries.verified && (
                 <Area
                   type="monotone"
                   dataKey="verified"
-                  name="Verified"
                   stroke="#2563eb"
                   strokeWidth={2.5}
                   fillOpacity={1}
-                  fill="url(#verifiedAreaGrad)"
+                  fill="url(#colorVerified)"
                 />
               )}
               {activeSeries.notFound && (
                 <Area
                   type="monotone"
                   dataKey="notFound"
-                  name="Not Found"
                   stroke="#f59e0b"
                   strokeWidth={2}
                   fillOpacity={1}
-                  fill="url(#notFoundAreaGrad)"
+                  fill="url(#colorNotFound)"
                 />
               )}
               {activeSeries.invalid && (
                 <Area
                   type="monotone"
                   dataKey="invalid"
-                  name="Invalid"
-                  stroke="#f43f5e"
+                  stroke="#ef4444"
                   strokeWidth={2}
                   fillOpacity={1}
-                  fill="url(#invalidAreaGrad)"
+                  fill="url(#colorInvalid)"
                 />
               )}
             </AreaChart>
           ) : (
-            <ComposedChart data={rawData} margin={{ top: 12, right: 12, left: -10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+            <ComposedChart data={rawData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
               <XAxis
                 dataKey="label"
+                axisLine={false}
                 tickLine={false}
-                axisLine={{ stroke: '#cbd5e1' }}
                 tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
               />
               <YAxis
-                yAxisId="left"
-                tickLine={false}
                 axisLine={false}
+                tickLine={false}
+                tick={{ fill: '#64748b', fontSize: 10 }}
                 tickFormatter={formatNumber}
-                tick={{ fill: '#64748b', fontSize: 11, fontWeight: 600 }}
-              />
-              <YAxis
-                yAxisId="right"
-                orientation="right"
-                domain={[50, 100]}
-                unit="%"
-                tickLine={false}
-                axisLine={false}
-                tick={{ fill: '#10b981', fontSize: 11, fontWeight: 700 }}
               />
               <Tooltip content={<CustomTooltip />} />
-              {activeSeries.invalid && (
-                <Bar
-                  yAxisId="left"
-                  dataKey="invalid"
-                  name="Invalid"
-                  stackId="traffic"
-                  fill="#f43f5e"
-                  radius={[0, 0, 0, 0]}
-                />
+              {activeSeries.verified && (
+                <Bar dataKey="verified" stackId="a" fill="#2563eb" radius={[0, 0, 0, 0]} />
               )}
               {activeSeries.notFound && (
-                <Bar
-                  yAxisId="left"
-                  dataKey="notFound"
-                  name="Not Found"
-                  stackId="traffic"
-                  fill="#f59e0b"
-                  radius={[0, 0, 0, 0]}
-                />
+                <Bar dataKey="notFound" stackId="a" fill="#f59e0b" radius={[0, 0, 0, 0]} />
               )}
-              {activeSeries.verified && (
-                <Bar
-                  yAxisId="left"
-                  dataKey="verified"
-                  name="Verified"
-                  stackId="traffic"
-                  fill="#2563eb"
-                  radius={[4, 4, 0, 0]}
-                />
+              {activeSeries.invalid && (
+                <Bar dataKey="invalid" stackId="a" fill="#ef4444" radius={[4, 4, 0, 0]} />
               )}
-              <Line
-                yAxisId="right"
-                type="monotone"
-                dataKey="successRate"
-                name="Success Rate %"
-                stroke="#10b981"
-                strokeWidth={3}
-                dot={{ fill: '#10b981', r: 4, strokeWidth: 2, stroke: '#ffffff' }}
-                activeDot={{ r: 6, fill: '#059669' }}
-              />
             </ComposedChart>
           )}
         </ResponsiveContainer>

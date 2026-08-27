@@ -54,150 +54,9 @@ export interface SupportTicket {
   unreadCount?: number;
 }
 
-const mockTickets: SupportTicket[] = [
-  {
-    id: 'VF-1042',
-    businessId: '1',
-    businessName: 'Dave Phones',
-    businessPlan: 'Gold',
-    requesterName: 'Amaka Okafor',
-    requesterRole: 'Sales Staff',
-    requesterEmail: 'amaka@davephones.com',
-    requesterPhone: '+234 802 334 9912',
-    subject: 'IMEI verification showing incorrect result for iPhone 15 Pro',
-    description: 'The customer scanned the QR code on the receipt, but VerifyFlow says the device cannot be found in national registry.',
-    priority: 'High',
-    status: 'Open',
-    assignedTo: 'David',
-    lastUpdated: '2 min ago',
-    lastUpdatedTimestamp: Date.now() - 2 * 60 * 1000,
-    createdAt: '25 Aug 2026, 10:42 AM',
-    createdAtTimestamp: Date.now() - 45 * 60 * 1000,
-    relatedImei: '356892110482910',
-    relatedSerial: 'DNQZX09LMD6P',
-    relatedVerificationId: 'VER-10482',
-  },
-  {
-    id: 'VF-1041',
-    businessId: '2',
-    businessName: 'Apex Cellular',
-    businessPlan: 'Enterprise',
-    requesterName: 'Tunde Adebayo',
-    requesterRole: 'Store Manager',
-    requesterEmail: 'tunde@apexcellular.ng',
-    requesterPhone: '+234 803 112 4455',
-    subject: 'Bulk verification API returning 429 rate limit errors',
-    description: 'Our POS sync script is hitting unexpected rate limits during morning inventory check-in.',
-    priority: 'Urgent',
-    status: 'In Progress',
-    assignedTo: 'Sarah',
-    lastUpdated: '14 min ago',
-    lastUpdatedTimestamp: Date.now() - 14 * 60 * 1000,
-    createdAt: '25 Aug 2026, 09:15 AM',
-    createdAtTimestamp: Date.now() - 120 * 60 * 1000,
-  },
-  {
-    id: 'VF-1040',
-    businessId: '3',
-    businessName: 'Slot Ikeja Hub',
-    businessPlan: 'Enterprise',
-    requesterName: 'Emeka Nwosu',
-    requesterRole: 'Operations Lead',
-    requesterEmail: 'emeka.n@slot.ng',
-    requesterPhone: '+234 809 778 1200',
-    subject: 'Adding new branch in Port Harcourt needs staff allocation quota increase',
-    description: 'We opened our new location on Aba Road and need 3 additional staff account slots.',
-    priority: 'Normal',
-    status: 'Pending',
-    assignedTo: 'David',
-    lastUpdated: '1 hour ago',
-    lastUpdatedTimestamp: Date.now() - 60 * 60 * 1000,
-    createdAt: '25 Aug 2026, 08:30 AM',
-    createdAtTimestamp: Date.now() - 180 * 60 * 1000,
-  },
-  {
-    id: 'VF-1039',
-    businessId: '4',
-    businessName: 'Kano Gadget Hub',
-    businessPlan: 'Silver',
-    requesterName: 'Ibrahim Musa',
-    requesterRole: 'Owner',
-    requesterEmail: 'ibrahim@kanogadgets.com',
-    requesterPhone: '+234 806 554 9901',
-    subject: 'Blacklisted device reported by buyer during trade-in inspection',
-    description: 'Samsung S23 Ultra IMEI flagged as flagged lost/stolen. Customer claims original purchase receipt from Dubai.',
-    priority: 'High',
-    status: 'In Progress',
-    assignedTo: 'Sarah',
-    lastUpdated: '2 hours ago',
-    lastUpdatedTimestamp: Date.now() - 120 * 60 * 1000,
-    createdAt: '24 Aug 2026, 04:12 PM',
-    createdAtTimestamp: Date.now() - 1400 * 60 * 1000,
-    relatedImei: '359812048991204',
-    relatedVerificationId: 'VER-10471',
-  },
-  {
-    id: 'VF-1038',
-    businessId: '5',
-    businessName: '3C Hub Abuja',
-    businessPlan: 'Gold',
-    requesterName: 'Chioma Eze',
-    requesterRole: 'Cashier',
-    requesterEmail: 'chioma@3chub.ng',
-    requesterPhone: '+234 805 221 8844',
-    subject: 'Receipt PDF formatting missing business CAC registration number',
-    description: 'The PDF download template is cutting off our corporate registration text on 58mm thermal printouts.',
-    priority: 'Low',
-    status: 'Open',
-    assignedTo: null,
-    lastUpdated: '3 hours ago',
-    lastUpdatedTimestamp: Date.now() - 180 * 60 * 1000,
-    createdAt: '24 Aug 2026, 02:20 PM',
-    createdAtTimestamp: Date.now() - 1500 * 60 * 1000,
-  },
-  {
-    id: 'VF-1037',
-    businessId: '6',
-    businessName: 'Fine Brothers Enugu',
-    businessPlan: 'Silver',
-    requesterName: 'Obinna Ani',
-    requesterRole: 'Store Manager',
-    requesterEmail: 'obinna@finebrothers.com',
-    requesterPhone: '+234 803 771 9900',
-    subject: 'Subscription renewal payment receipt generation failed after bank transfer',
-    description: 'Paystack bank transfer cleared but plan status was stuck in trial.',
-    priority: 'Normal',
-    status: 'Resolved',
-    assignedTo: 'David',
-    lastUpdated: 'Yesterday',
-    lastUpdatedTimestamp: Date.now() - 1440 * 60 * 1000,
-    createdAt: '23 Aug 2026, 11:10 AM',
-    createdAtTimestamp: Date.now() - 2800 * 60 * 1000,
-  },
-  {
-    id: 'VF-1036',
-    businessId: '1',
-    businessName: 'Dave Phones',
-    businessPlan: 'Gold',
-    requesterName: 'Dave Okon',
-    requesterRole: 'Director',
-    requesterEmail: 'dave@davephones.com',
-    requesterPhone: '+234 802 110 0099',
-    subject: 'Request to update primary business email and WhatsApp webhook notification',
-    description: 'Changed company notification email to ops@davephones.com.',
-    priority: 'Low',
-    status: 'Closed',
-    assignedTo: 'Sarah',
-    lastUpdated: '2 days ago',
-    lastUpdatedTimestamp: Date.now() - 2880 * 60 * 1000,
-    createdAt: '22 Aug 2026, 09:00 AM',
-    createdAtTimestamp: Date.now() - 4000 * 60 * 1000,
-  },
-];
-
 export default function AdminSupportPage() {
   const router = useRouter();
-  const [tickets, setTickets] = useState<SupportTicket[]>(mockTickets);
+  const [tickets, setTickets] = useState<SupportTicket[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [priorityFilter, setPriorityFilter] = useState('ALL');
@@ -211,13 +70,20 @@ export default function AdminSupportPage() {
   const fetchTickets = async () => {
     setLoading(true);
     try {
-      const res = await api.adminGetSupportTickets();
+      const res = await api.adminGetSupportTickets({
+        status: statusFilter !== 'ALL' ? statusFilter : undefined,
+        priority: priorityFilter !== 'ALL' ? priorityFilter : undefined,
+        search: searchTerm || undefined,
+      });
       const incoming = res?.tickets || res?.data;
-      if (res?.success && Array.isArray(incoming) && incoming.length > 0) {
+      if (res?.success && Array.isArray(incoming)) {
         setTickets(incoming);
+      } else {
+        setTickets([]);
       }
     } catch (err) {
       console.error('Failed to load tickets from backend:', err);
+      setTickets([]);
     } finally {
       setLoading(false);
     }

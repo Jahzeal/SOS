@@ -44,112 +44,8 @@ export interface AdminNotification {
   };
 }
 
-const initialNotifications: AdminNotification[] = [
-  {
-    id: 'NOTIF-101',
-    title: 'High Velocity Lookup Anomaly Detected',
-    message: 'IP 102.89.44.12 initiated 2,400 IMEI lookup requests within 3 minutes on Dave Phones API key.',
-    category: 'security',
-    priority: 'urgent',
-    timestamp: '25 Aug 2026, 10:48 AM',
-    timeAgo: '4 min ago',
-    isRead: false,
-    actionUrl: '/admin/businesses',
-    actionLabel: 'Inspect Business Key',
-    meta: {
-      businessName: 'Dave Phones',
-      imei: 'Multiple',
-    },
-  },
-  {
-    id: 'NOTIF-102',
-    title: 'Blacklisted Device Verified in Kano Gadget Hub',
-    message: 'Samsung S23 Ultra (IMEI 359812048991204) was flagged as Stolen during counter inspection.',
-    category: 'security',
-    priority: 'high',
-    timestamp: '25 Aug 2026, 09:30 AM',
-    timeAgo: '1 hour ago',
-    isRead: false,
-    actionUrl: '/admin/support',
-    actionLabel: 'View Flagged Record',
-    meta: {
-      businessName: 'Kano Gadget Hub',
-      imei: '359812048991204',
-    },
-  },
-  {
-    id: 'NOTIF-103',
-    title: 'Enterprise Subscription Auto-Renewed',
-    message: 'Apex Cellular successfully renewed 12-Month Enterprise Tier for ₦1,250,000 via Paystack Direct.',
-    category: 'billing',
-    priority: 'normal',
-    timestamp: '25 Aug 2026, 08:15 AM',
-    timeAgo: '2 hours ago',
-    isRead: false,
-    actionUrl: '/admin/subscriptions',
-    actionLabel: 'View Subscription',
-    meta: {
-      businessName: 'Apex Cellular',
-      amount: '₦1,250,000',
-    },
-  },
-  {
-    id: 'NOTIF-104',
-    title: 'Urgent Support Ticket Escalated',
-    message: 'Ticket #VF-1041 (Bulk verification API 429 rate limit) has been unassigned for over 30 minutes.',
-    category: 'support',
-    priority: 'urgent',
-    timestamp: '25 Aug 2026, 07:45 AM',
-    timeAgo: '3 hours ago',
-    isRead: false,
-    actionUrl: '/admin/support/VF-1041',
-    actionLabel: 'Open Ticket #VF-1041',
-    meta: {
-      ticketId: 'VF-1041',
-      businessName: 'Apex Cellular',
-    },
-  },
-  {
-    id: 'NOTIF-105',
-    title: 'New Store Onboarding Verification Complete',
-    message: 'Phone Plaza Ikeja uploaded CAC document & verified operational phone line. Account ready for activation.',
-    category: 'system',
-    priority: 'normal',
-    timestamp: '24 Aug 2026, 06:10 PM',
-    timeAgo: 'Yesterday',
-    isRead: true,
-    actionUrl: '/admin/businesses',
-    actionLabel: 'Review Merchant',
-    meta: {
-      businessName: 'Phone Plaza Ikeja',
-    },
-  },
-  {
-    id: 'NOTIF-106',
-    title: 'Automated Database Backup Successful',
-    message: 'VerifyFlow Global Ledger snapshot (2.4 GB) securely archived to AWS S3 eu-west-1 repository.',
-    category: 'system',
-    priority: 'info',
-    timestamp: '24 Aug 2026, 02:00 AM',
-    timeAgo: 'Yesterday',
-    isRead: true,
-  },
-  {
-    id: 'NOTIF-107',
-    title: 'Paystack Webhook Sync Warning',
-    message: 'Bank transfer reconciliation delay of 45 seconds detected on Nigerian Inter-Bank Settlement System.',
-    category: 'billing',
-    priority: 'high',
-    timestamp: '23 Aug 2026, 04:20 PM',
-    timeAgo: '2 days ago',
-    isRead: true,
-    actionUrl: '/admin/transactions',
-    actionLabel: 'Check Transactions',
-  },
-];
-
 export default function AdminNotificationsPage() {
-  const [notifications, setNotifications] = useState<AdminNotification[]>(initialNotifications);
+  const [notifications, setNotifications] = useState<AdminNotification[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<'all' | 'system' | 'security' | 'billing' | 'support'>('all');
   const [filterRead, setFilterRead] = useState<'all' | 'unread' | 'read'>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -169,10 +65,10 @@ export default function AdminNotificationsPage() {
 
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
-        const matchTitle = n.title.toLowerCase().includes(q);
-        const matchMessage = n.message.toLowerCase().includes(q);
-        const matchBusiness = n.meta?.businessName?.toLowerCase().includes(q);
-        const matchImei = n.meta?.imei?.toLowerCase().includes(q);
+        const matchTitle = (n.title || '').toLowerCase().includes(q);
+        const matchMessage = (n.message || '').toLowerCase().includes(q);
+        const matchBusiness = (n.meta?.businessName || '').toLowerCase().includes(q);
+        const matchImei = (n.meta?.imei || '').toLowerCase().includes(q);
         return matchTitle || matchMessage || matchBusiness || matchImei;
       }
 
@@ -189,11 +85,14 @@ export default function AdminNotificationsPage() {
         category: selectedCategory !== 'all' ? selectedCategory : undefined,
         status: filterRead !== 'all' ? filterRead : undefined,
       });
-      if (res?.success && Array.isArray(res.data) && res.data.length > 0) {
+      if (res?.success && Array.isArray(res.data)) {
         setNotifications(res.data);
+      } else {
+        setNotifications([]);
       }
     } catch (err) {
-      console.error('Failed to load notifications from backend:', err);
+      console.error('Failed to load notifications:', err);
+      setNotifications([]);
     } finally {
       setLoading(false);
     }

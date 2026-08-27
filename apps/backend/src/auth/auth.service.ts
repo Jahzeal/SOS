@@ -34,12 +34,17 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
+    const trialEndsAt = new Date();
+    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
     const business = await this.prisma.business.create({
       data: {
         name: dto.businessName,
         slug,
         phone: dto.phone,
         plan: (dto.plan || 'STARTER').toUpperCase(),
+        subscriptionStatus: 'TRIAL',
+        trialEndsAt,
         users: {
           create: {
             email: dto.email,

@@ -109,19 +109,14 @@ export default function AdminSubscriptionsPage() {
       name: '',
       code: '',
       description: '',
-      monthlyPriceNgn: 25000,
-      annualPriceNgn: 250000,
-      maxDevices: 500,
-      customBranding: true,
+      monthlyPriceNgn: 0,
+      annualPriceNgn: 0,
+      maxDevices: 100,
+      customBranding: false,
       prioritySupport: false,
       isActive: true,
       isPublic: true,
-      features: [
-        'Digital & 58mm/80mm Thermal Receipts',
-        'QR Origin IMEI Verification on Receipts',
-        'Device Inventory Management & IMEI Tracking',
-        'Point of Sale (POS) & Automated Sales Ledger',
-      ],
+      features: [],
     });
     setShowPlanModal(true);
   };
@@ -598,9 +593,10 @@ export default function AdminSubscriptionsPage() {
                     type="number"
                     min="0"
                     required
-                    value={planForm.monthlyPriceNgn}
+                    placeholder="e.g. 15000"
+                    value={planForm.monthlyPriceNgn === 0 ? '' : planForm.monthlyPriceNgn}
                     onChange={(e) =>
-                      setPlanForm({ ...planForm, monthlyPriceNgn: Number(e.target.value) })
+                      setPlanForm({ ...planForm, monthlyPriceNgn: Number(e.target.value) || 0 })
                     }
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-blue-600"
                   />
@@ -613,9 +609,10 @@ export default function AdminSubscriptionsPage() {
                   <input
                     type="number"
                     min="0"
-                    value={planForm.annualPriceNgn}
+                    placeholder="e.g. 150000"
+                    value={planForm.annualPriceNgn === 0 ? '' : planForm.annualPriceNgn}
                     onChange={(e) =>
-                      setPlanForm({ ...planForm, annualPriceNgn: Number(e.target.value) })
+                      setPlanForm({ ...planForm, annualPriceNgn: Number(e.target.value) || 0 })
                     }
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-blue-600"
                   />
@@ -629,8 +626,9 @@ export default function AdminSubscriptionsPage() {
                 <input
                   type="number"
                   min="1"
-                  value={planForm.maxDevices}
-                  onChange={(e) => setPlanForm({ ...planForm, maxDevices: Number(e.target.value) })}
+                  placeholder="e.g. 500"
+                  value={planForm.maxDevices === 0 ? '' : planForm.maxDevices}
+                  onChange={(e) => setPlanForm({ ...planForm, maxDevices: Number(e.target.value) || 0 })}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-blue-600"
                 />
               </div>

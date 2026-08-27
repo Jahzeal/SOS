@@ -56,8 +56,8 @@ export default function OnboardingPage() {
   const [businessForm, setBusinessForm] = useState({
     storeName: '',
     businessType: 'retailer',
-    monthlyVolume: '100-500',
-    primaryLocation: 'Downtown Store',
+    phone: '',
+    primaryLocation: 'Main Store Branch',
   });
 
   // Step 4 Subscription Plan State
@@ -158,7 +158,7 @@ export default function OnboardingPage() {
           firstName,
           lastName,
           businessName: businessForm.storeName.trim() || `${firstName}'s Mobile Store`,
-          phone: '+15550192834',
+          phone: businessForm.phone?.trim() || undefined,
           plan: selectedPlan.toUpperCase(),
         });
       }
@@ -661,6 +661,20 @@ export default function OnboardingPage() {
                       />
                     </div>
 
+                    {/* Store Phone */}
+                    <div>
+                      <label className="block text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Store Contact Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={businessForm.phone}
+                        onChange={(e) => setBusinessForm({ ...businessForm, phone: e.target.value })}
+                        placeholder="e.g. +234 800 000 0000"
+                        className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
+                      />
+                    </div>
+
                     {/* Business Type Selector */}
                     <div>
                       <label className="block text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
@@ -688,23 +702,6 @@ export default function OnboardingPage() {
                           </button>
                         ))}
                       </div>
-                    </div>
-
-                    {/* Monthly Volume */}
-                    <div>
-                      <label className="block text-[10px] sm:text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Estimated Monthly Phone Sales / Registration Volume
-                      </label>
-                      <select
-                        value={businessForm.monthlyVolume}
-                        onChange={(e) => setBusinessForm({ ...businessForm, monthlyVolume: e.target.value })}
-                        className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
-                      >
-                        <option value="1-50">1 - 50 Phones / month</option>
-                        <option value="50-200">50 - 200 Phones / month</option>
-                        <option value="200-1000">200 - 1,000 Phones / month</option>
-                        <option value="1000+">1,000+ Phones / month (Enterprise Bulk)</option>
-                      </select>
                     </div>
                   </div>
                 </div>
@@ -749,112 +746,98 @@ export default function OnboardingPage() {
                         <div className="text-xs text-slate-600 font-medium">$0 due today • Instant full feature access to test all store tools</div>
                       </div>
                     </div>
-                    <Badge variant="verified" size="sm">
+                    <span className="px-2.5 py-1 rounded-md bg-slate-100/90 border border-slate-200/80 text-[10px] font-mono font-semibold tracking-wider text-slate-500 uppercase shrink-0">
                       NO CREDIT CARD REQUIRED
-                    </Badge>
+                    </span>
                   </div>
 
                   {/* Dynamic Database Plan Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                    {(dynamicPlans.length > 0 ? dynamicPlans : [
-                      {
-                        code: 'STARTER',
-                        name: 'Starter Store',
-                        description: 'Ideal for small single-counter repair & phone shops.',
-                        monthlyPriceNgn: 15000,
-                        annualPriceNgn: 150000,
-                        maxStaffAccounts: 2,
-                        maxMonthlyLookups: 500,
-                        features: ['Up to 500 device checks / mo', 'Up to 2 staff accounts', 'POS thermal QR receipt builder', 'Customer warranty lookup', 'Standard support'],
-                      },
-                      {
-                        code: 'BUSINESS',
-                        name: 'Business Hub',
-                        description: 'Full suite for multi-branch phone retailers and POS.',
-                        monthlyPriceNgn: 45000,
-                        annualPriceNgn: 450000,
-                        maxStaffAccounts: 10,
-                        maxMonthlyLookups: 5000,
-                        features: ['Up to 5,000 device checks / mo', 'Up to 10 staff accounts', 'Custom receipt logo branding', 'Serial fraud prevention lock', 'Priority support queue'],
-                      },
-                      {
-                        code: 'ENTERPRISE',
-                        name: 'Enterprise Network',
-                        description: 'For distributors, wholesalers & large retail chains.',
-                        monthlyPriceNgn: 120000,
-                        annualPriceNgn: 1200000,
-                        maxStaffAccounts: 50,
-                        maxMonthlyLookups: 50000,
-                        features: ['Unlimited / 50k+ IMEI lookups', 'Up to 50 staff logins', 'Bulk verification API access', 'Wholesaler stock allocation', '99.9% SLA & Dedicated AM'],
-                      },
-                    ]).map((planItem) => {
-                      const isSelected = selectedPlan.toUpperCase() === planItem.code.toUpperCase();
-                      const price = billingCycle === 'monthly' ? planItem.monthlyPriceNgn : Math.round(planItem.annualPriceNgn / 12);
-                      const isRecommended = planItem.code.toUpperCase() === 'BUSINESS';
+                    {dynamicPlans.length > 0 ? (
+                      dynamicPlans.map((planItem) => {
+                        const isSelected = selectedPlan.toUpperCase() === planItem.code.toUpperCase();
+                        const price =
+                          billingCycle === 'monthly'
+                            ? planItem.monthlyPriceNgn
+                            : Math.round((planItem.annualPriceNgn || planItem.monthlyPriceNgn * 10) / 12);
+                        const isRecommended = planItem.isRecommended || planItem.code.toUpperCase() === 'BUSINESS';
 
-                      return (
-                        <div
-                          key={planItem.code}
-                          onClick={() => setSelectedPlan(planItem.code.toUpperCase())}
-                          className={`p-5 rounded-2xl border cursor-pointer transition-all relative flex flex-col justify-between space-y-4 ${
-                            isSelected
-                              ? 'border-teal-600 bg-teal-50/20 ring-2 ring-teal-500/30 shadow-lg'
-                              : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
-                          }`}
-                        >
-                          {isRecommended && (
-                            <div className="absolute -top-3 right-4 bg-teal-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-                              RECOMMENDED
-                            </div>
-                          )}
-
-                          <div className="space-y-3">
-                            <div className="flex items-center justify-between">
-                              <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                                {planItem.name}
-                              </span>
-                              {isSelected && (
-                                <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
-                              )}
-                            </div>
-
-                            <div>
-                              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                                ₦{price?.toLocaleString()}
-                                <span className="text-xs font-semibold text-slate-500">/mo after trial</span>
+                        return (
+                          <div
+                            key={planItem.code}
+                            onClick={() => setSelectedPlan(planItem.code.toUpperCase())}
+                            className={`p-5 rounded-2xl border cursor-pointer transition-all relative flex flex-col justify-between space-y-4 ${
+                              isSelected
+                                ? 'border-teal-600 bg-teal-50/20 ring-2 ring-teal-500/30 shadow-lg'
+                                : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
+                            }`}
+                          >
+                            {isRecommended && (
+                              <div className="absolute -top-3 right-4 bg-teal-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                                RECOMMENDED
                               </div>
-                              <p className="text-xs text-slate-500 font-medium mt-1">
-                                {planItem.description || 'Verified device intelligence suite.'}
-                              </p>
-                            </div>
+                            )}
 
-                            {/* Features list */}
-                            <div className="space-y-1.5 pt-3 border-t border-slate-100 text-xs font-medium text-slate-700">
-                              <div className="flex items-center gap-2">
-                                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                                <span>Max Staff: <strong>{planItem.maxStaffAccounts}</strong></span>
+                            <div className="space-y-3">
+                              <div className="flex items-center justify-between">
+                                <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                                  {planItem.name}
+                                </span>
+                                {isSelected && (
+                                  <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
+                                )}
                               </div>
-                              <div className="flex items-center gap-2">
-                                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                                <span>Lookups: <strong>{planItem.maxMonthlyLookups?.toLocaleString()} / mo</strong></span>
-                              </div>
-                              {(planItem.features || []).slice(0, 3).map((feat: string, idx: number) => (
-                                <div key={idx} className="flex items-center gap-2">
-                                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                                  <span>{feat}</span>
+
+                              <div>
+                                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
+                                  ₦{price?.toLocaleString()}
+                                  <span className="text-xs font-semibold text-slate-500 font-sans">/mo after trial</span>
                                 </div>
-                              ))}
+                                <p className="text-xs text-slate-500 font-medium mt-1">
+                                  {planItem.description || 'Verified device intelligence suite.'}
+                                </p>
+                              </div>
+
+                              {/* Features & Specs from Database */}
+                              <div className="space-y-1.5 pt-3 border-t border-slate-100 text-xs font-medium text-slate-700">
+                                <div className="flex items-center gap-2">
+                                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                  <span>Inventory: <strong>{planItem.maxDevices ? `${planItem.maxDevices.toLocaleString()} Devices` : 'Unlimited Devices'}</strong></span>
+                                </div>
+                                {planItem.customBranding && (
+                                  <div className="flex items-center gap-2">
+                                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    <span>Custom Receipt Logo Branding</span>
+                                  </div>
+                                )}
+                                {Array.isArray(planItem.features) &&
+                                  planItem.features.slice(0, 4).map((feat: string, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2">
+                                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                      <span>{feat}</span>
+                                    </div>
+                                  ))}
+                              </div>
+                            </div>
+
+                            <div
+                              className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
+                                isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'
+                              }`}
+                            >
+                              {isSelected ? 'Selected Package' : `Select ${planItem.name}`}
                             </div>
                           </div>
-
-                          <div className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
-                            isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'
-                          }`}>
-                            {isSelected ? 'Selected Package' : `Select ${planItem.name}`}
-                          </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    ) : (
+                      <div className="col-span-3 p-8 rounded-2xl bg-white border border-slate-200 text-center space-y-2">
+                        <p className="text-xs font-bold text-slate-700">14-Day Free Trial Activated</p>
+                        <p className="text-xs text-slate-500">
+                          Full store workspace access with unlimited features is enabled during your free trial period.
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

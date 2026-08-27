@@ -66,6 +66,8 @@ model Business {
   plan                      String         @default("STARTER")
   planId                    String?
   subscriptionPlan          SubscriptionPlan? @relation(fields: [planId], references: [id])
+  subscriptionStatus        String         @default("TRIAL")
+  trialEndsAt               DateTime?
   publicVerificationEnabled Boolean        @default(true)
   customSuccessMessage      String?        @default("This phone is verified and authentic.")
   warrantyTerms             String?
