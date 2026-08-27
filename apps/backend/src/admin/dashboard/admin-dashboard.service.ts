@@ -29,6 +29,7 @@ export class AdminDashboardService {
       this.prisma.user.count(),
       this.prisma.business.groupBy({
         by: ['plan'],
+        where: { subscriptionStatus: 'ACTIVE' },
         _count: { id: true },
       }),
       this.prisma.subscriptionPlan.findMany(),

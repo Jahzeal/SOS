@@ -189,11 +189,14 @@ export default function AdminSubscriptionsPage() {
   };
 
   const filteredSubscribers = subscribers.filter((sub) => {
+    const name = sub?.name || sub?.businessName || '';
+    const slug = sub?.slug || '';
+    const plan = sub?.plan || '';
     const matchesSearch =
-      sub.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sub.slug.toLowerCase().includes(searchTerm.toLowerCase());
+      name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      slug.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesPlan =
-      planFilter === 'ALL' || sub.plan.toUpperCase() === planFilter.toUpperCase();
+      planFilter === 'ALL' || plan.toUpperCase() === planFilter.toUpperCase();
     return matchesSearch && matchesPlan;
   });
 
@@ -472,7 +475,7 @@ export default function AdminSubscriptionsPage() {
                 filteredSubscribers.map((sub) => (
                   <tr key={sub.id} className="hover:bg-slate-50 transition">
                     <td className="py-3 px-4">
-                      <div className="font-bold text-slate-900">{sub.name}</div>
+                      <div className="font-bold text-slate-900">{sub.name || sub.businessName || 'Store'}</div>
                       <div className="text-[11px] text-slate-400 font-mono">/{sub.slug}</div>
                     </td>
                     <td className="py-3 px-4">
@@ -495,9 +498,15 @@ export default function AdminSubscriptionsPage() {
                       {sub.phoneRecordsCount || 0} / {sub.maxDevices ? sub.maxDevices.toLocaleString() : '∞'}
                     </td>
                     <td className="py-3 px-4">
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
-                        {sub.status || 'Active'}
-                      </span>
+                      {sub.subscriptionStatus === 'ACTIVE' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          Active (Paid)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                          14-Day Trial
+                        </span>
+                      )}
                     </td>
                     <td className="py-3 px-4 text-right">
                       <span className="text-[11px] text-slate-400 font-mono">

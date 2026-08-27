@@ -8,16 +8,8 @@ export class AdminSubscriptionsService {
   async getSubscriptionAnalytics() {
     const [businesses, dbPlans] = await Promise.all([
       this.prisma.business.findMany({
-        select: {
-          id: true,
-          name: true,
-          slug: true,
-          plan: true,
-          email: true,
-          phone: true,
-          publicVerificationEnabled: true,
-          createdAt: true,
-          updatedAt: true,
+        include: {
+          subscriptionPlan: true,
           _count: {
             select: {
               users: true,
@@ -48,33 +40,35 @@ export class AdminSubscriptionsService {
     let totalMRR = 0;
 
     const subscribers = businesses.map((b) => {
-      const planCode = (b.plan || 'STARTER').toUpperCase();
-      const planConfig = planMap.get(planCode) || {
-        name: planCode,
-        monthlyPriceNgn: 15000,
-        maxStaffAccounts: 2,
-        maxMonthlyLookups: 500,
-      };
+      const plan = b.subscriptionPlan || planMap.get((b.plan || '').toUpperCase());
+      const planCode = plan?.code || b.plan;
+      const planName = plan?.name || b.plan;
+      const isPaidActive = b.subscriptionStatus === 'ACTIVE';
+      const monthlyFee = (isPaidActive && plan) ? plan.monthlyPriceNgn : 0;
 
-      const monthlyFee = planConfig.monthlyPriceNgn || 0;
-      tierCounts[planCode.toLowerCase()] = (tierCounts[planCode.toLowerCase()] || 0) + 1;
+      if (planCode) {
+        tierCounts[planCode.toLowerCase()] = (tierCounts[planCode.toLowerCase()] || 0) + 1;
+      }
       totalMRR += monthlyFee;
 
       return {
         id: b.id,
+        name: b.name,
         businessName: b.name,
         slug: b.slug,
         plan: planCode,
-        planDisplayName: planConfig.name,
-        price: monthlyFee,
+        planDisplayName: planName,
+        monthlyPrice: monthlyFee,
         currency: 'NGN',
-        status: b.publicVerificationEnabled ? 'Active' : 'Suspended',
+        status: b.subscriptionStatus || 'TRIAL',
+        subscriptionStatus: b.subscriptionStatus || 'TRIAL',
+        trialEndsAt: b.trialEndsAt,
+        publicVerificationEnabled: b.publicVerificationEnabled,
         memberSince: b.createdAt,
+        createdAt: b.createdAt,
         updatedAt: b.updatedAt,
-        limits: {
-          maxStaff: planConfig.maxStaffAccounts || 1,
-          maxLookups: planConfig.maxMonthlyLookups || 500,
-        },
+        maxDevices: plan?.maxDevices || 0,
+        phoneRecordsCount: b._count.phoneRecords,
         usage: {
           registeredDevices: b._count.phoneRecords,
           staffCount: b._count.users,

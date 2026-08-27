@@ -165,21 +165,34 @@ export default function AdminBusinessesManagementPage() {
 
                     <td className="px-4 py-3.5">
                       <div className="text-slate-900 font-semibold">{b.email || '—'}</div>
-                      <div className="text-[11px] text-slate-400">{b.phone || 'No phone'}</div>
+                      <div className="text-[11px] text-slate-400">
+                        {b.phone && b.phone !== '+15550192834' ? b.phone : '—'}
+                      </div>
                     </td>
 
                     <td className="px-4 py-3.5">
-                      <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                          b.plan === 'ENTERPRISE'
-                            ? 'bg-purple-100 text-purple-800'
-                            : b.plan === 'BUSINESS'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-slate-100 text-slate-700'
-                        }`}
-                      >
-                        {b.plan}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                            b.plan === 'ENTERPRISE'
+                              ? 'bg-purple-100 text-purple-800'
+                              : b.plan === 'BUSINESS'
+                              ? 'bg-blue-100 text-blue-800'
+                              : 'bg-slate-100 text-slate-700'
+                          }`}
+                        >
+                          {b.plan}
+                        </span>
+                        {b.subscriptionStatus === 'ACTIVE' ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            Active (Paid)
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                            14-Day Trial
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     <td className="px-4 py-3.5 text-center font-mono font-bold text-slate-800">
