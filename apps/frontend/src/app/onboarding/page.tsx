@@ -602,34 +602,33 @@ export default function OnboardingPage() {
                     ))}
                   </div>
 
-                  <div className="pt-2 text-xs font-semibold text-slate-500 space-y-2">
-                    <div className="bg-teal-50/80 border border-teal-200/80 text-teal-900 p-2.5 rounded-xl text-[11px] font-medium flex items-center justify-between gap-2">
-                      <span>💡 <strong>Dev Mode</strong>: Enter <strong>123456</strong> or click auto-fill.</span>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setOtpDigits(['1', '2', '3', '4', '5', '6']);
-                          setOtpResent(true);
-                        }}
-                        className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white font-extrabold rounded-lg text-[10px] shrink-0"
-                      >
-                        Auto-Fill Code
-                      </button>
-                    </div>
-
+                  <div className="pt-3 text-xs font-semibold text-slate-500 space-y-2">
                     <div>
                       Didn't receive the code?{' '}
                       <button
                         type="button"
-                        onClick={() => {
-                          setOtpDigits(['1', '2', '3', '4', '5', '6']);
-                          setOtpResent(true);
+                        onClick={async () => {
+                          try {
+                            setIsSubmitting(true);
+                            await api.sendOtp(accountForm.email, accountForm.fullName);
+                            setOtpResent(true);
+                            setOtpError(null);
+                          } catch (e: any) {
+                            setOtpError(e.message || 'Failed to resend code. Please try again.');
+                          } finally {
+                            setIsSubmitting(false);
+                          }
                         }}
-                        className="text-teal-600 font-bold hover:underline"
+                        className="text-teal-600 font-bold hover:underline cursor-pointer"
                       >
                         Resend Code
                       </button>
-                      {otpResent && <p className="text-emerald-600 text-xs font-bold mt-1">✓ Code auto-filled: 123456. Click Next to continue!</p>}
+                      {otpResent && (
+                        <p className="text-emerald-600 text-xs font-bold mt-2 flex items-center justify-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" />
+                          <span>A fresh 6-digit verification code has been sent to your email.</span>
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

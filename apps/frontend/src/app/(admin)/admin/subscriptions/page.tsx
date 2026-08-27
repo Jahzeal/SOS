@@ -1,29 +1,45 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { api } from '@/lib/api';
 import {
-  Search,
-  CheckCircle2,
-  TrendingUp,
-  AlertTriangle,
-  Building2,
-  RefreshCw,
-  MoreVertical,
-  Plus,
   CreditCard,
-  Layers,
-  Settings,
+  Building,
+  TrendingUp,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  Plus,
   Edit2,
   Trash2,
+  Layers,
+  Search,
+  Filter,
   Check,
-  X,
-  Shield,
-  Zap,
+  ChevronDown,
   Sparkles,
-  Smartphone,
+  ShieldCheck,
+  RefreshCw,
+  X,
+  Printer,
+  Wrench,
+  QrCode,
+  Tag,
+  Headphones,
 } from 'lucide-react';
-import { api } from '@/lib/api';
+
+const AVAILABLE_APP_FEATURES = [
+  'Digital & 58mm/80mm Thermal Receipts',
+  'QR Origin IMEI Verification on Receipts',
+  'Device Inventory Management & IMEI Tracking',
+  'Point of Sale (POS) & Automated Sales Ledger',
+  'Repair Ticketing & Diagnostics Tracking',
+  'Customer Directory & Warranty Tracking',
+  'Box Barcode & Multi-Identifier Scanner',
+  'Custom Store Logo & Receipt Branding',
+  'Priority Helpdesk Support Queue',
+];
 
 export default function AdminSubscriptionsPage() {
   const [loading, setLoading] = useState(true);
@@ -54,6 +70,7 @@ export default function AdminSubscriptionsPage() {
     prioritySupport: false,
     isActive: true,
     isPublic: true,
+    features: [] as string[],
   });
   const [savingPlan, setSavingPlan] = useState(false);
 
@@ -99,6 +116,12 @@ export default function AdminSubscriptionsPage() {
       prioritySupport: false,
       isActive: true,
       isPublic: true,
+      features: [
+        'Digital & 58mm/80mm Thermal Receipts',
+        'QR Origin IMEI Verification on Receipts',
+        'Device Inventory Management & IMEI Tracking',
+        'Point of Sale (POS) & Automated Sales Ledger',
+      ],
     });
     setShowPlanModal(true);
   };
@@ -116,8 +139,21 @@ export default function AdminSubscriptionsPage() {
       prioritySupport: plan.prioritySupport,
       isActive: plan.isActive,
       isPublic: plan.isPublic,
+      features: Array.isArray(plan.features) ? plan.features : [],
     });
     setShowPlanModal(true);
+  };
+
+  const toggleFeature = (feature: string) => {
+    setPlanForm((prev) => {
+      const exists = prev.features.includes(feature);
+      return {
+        ...prev,
+        features: exists
+          ? prev.features.filter((f) => f !== feature)
+          : [...prev.features, feature],
+      };
+    });
   };
 
   const handleSavePlan = async (e: React.FormEvent) => {
@@ -138,32 +174,37 @@ export default function AdminSubscriptionsPage() {
     }
   };
 
-  const handleDeletePlan = async (plan: any) => {
-    if (confirm(`Are you sure you want to deactivate or delete the "${plan.name}" plan?`)) {
-      try {
-        await api.adminDeletePlan(plan.id);
-        fetchSubscriptionsAndPlans();
-      } catch (err: any) {
-        alert(err.message || 'Failed to delete plan');
-      }
+  const handleDeletePlan = async (id: string, name: string) => {
+    if (!confirm(`Are you sure you want to delete the plan "${name}"?`)) return;
+    try {
+      await api.adminDeletePlan(id);
+      fetchSubscriptionsAndPlans();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete plan');
     }
   };
 
-  const filteredSubscribers = subscribers.filter((s) => {
-    if (planFilter !== 'ALL' && s.plan !== planFilter) return false;
-    if (searchTerm) {
-      const q = searchTerm.toLowerCase();
-      return (
-        s.businessName.toLowerCase().includes(q) ||
-        s.slug.toLowerCase().includes(q)
-      );
+  const handleAssignPlan = async (businessId: string, newPlanCode: string) => {
+    try {
+      await api.adminUpdateSubscriberPlan(businessId, newPlanCode);
+      fetchSubscriptionsAndPlans();
+    } catch (err: any) {
+      alert(err.message || 'Failed to update subscriber plan');
     }
-    return true;
+  };
+
+  const filteredSubscribers = subscribers.filter((sub) => {
+    const matchesSearch =
+      sub.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sub.slug.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesPlan =
+      planFilter === 'ALL' || sub.plan.toUpperCase() === planFilter.toUpperCase();
+    return matchesSearch && matchesPlan;
   });
 
   return (
-    <div className="space-y-8 pb-12 font-sans w-full">
-      {/* Top Header */}
+    <div className="space-y-6 pb-8 font-sans">
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
@@ -177,7 +218,7 @@ export default function AdminSubscriptionsPage() {
         <div className="flex items-center gap-2.5">
           <button
             onClick={handleOpenCreateModal}
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Create New Plan</span>
@@ -186,7 +227,7 @@ export default function AdminSubscriptionsPage() {
           <button
             onClick={fetchSubscriptionsAndPlans}
             title="Refresh Metrics"
-            className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-blue-400 text-slate-600 flex items-center justify-center transition shadow-xs"
+            className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-blue-400 text-slate-600 flex items-center justify-center transition shadow-xs cursor-pointer"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-blue-600' : ''}`} />
           </button>
@@ -209,7 +250,7 @@ export default function AdminSubscriptionsPage() {
           <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
             Monthly Recurring Revenue (MRR)
           </span>
-          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1 font-mono">
             ₦{summary.activeMRR.toLocaleString()}
           </div>
           <span className="text-[11px] font-bold text-emerald-600">Live billings</span>
@@ -219,7 +260,7 @@ export default function AdminSubscriptionsPage() {
           <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
             Projected ARR
           </span>
-          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1 font-mono">
             ₦{summary.projectedARR.toLocaleString()}
           </div>
           <span className="text-[11px] font-bold text-amber-600">Annual run rate</span>
@@ -229,7 +270,7 @@ export default function AdminSubscriptionsPage() {
           <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
             ARPU (Avg Revenue)
           </span>
-          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">
+          <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1 font-mono">
             ₦{summary.averageRevenuePerUser.toLocaleString()}
           </div>
           <span className="text-[11px] font-bold text-purple-600">Per subscriber / mo</span>
@@ -245,194 +286,235 @@ export default function AdminSubscriptionsPage() {
               <span>Configured Store Plans ({dbPlans.length})</span>
             </h2>
             <p className="text-xs text-slate-500 font-medium">
-              Create, adjust pricing, device limits, and receipt branding flags for all live store plans.
+              Create, adjust pricing, device limits, receipt branding, and feature flags.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {dbPlans.map((p) => (
-            <div
-              key={p.id}
-              className="bg-white border border-slate-200 rounded-2xl p-5 shadow-subtle flex flex-col justify-between hover:border-blue-300 transition"
+        {dbPlans.length === 0 ? (
+          <div className="p-8 rounded-2xl bg-white border border-dashed border-slate-300 text-center space-y-3">
+            <Layers className="w-8 h-8 text-slate-400 mx-auto" />
+            <h3 className="text-sm font-bold text-slate-800">No Subscription Plans Configured Yet</h3>
+            <p className="text-xs text-slate-500 max-w-md mx-auto">
+              Click &quot;Create New Plan&quot; to define your first store tier, set device inventory limits, and customize features.
+            </p>
+            <button
+              onClick={handleOpenCreateModal}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
             >
-              <div className="space-y-3">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="text-[10px] font-mono font-extrabold px-2 py-0.5 bg-slate-100 text-slate-700 rounded uppercase">
-                      {p.code}
-                    </span>
-                    <h3 className="text-base font-extrabold text-slate-900 mt-1">{p.name}</h3>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => handleOpenEditModal(p)}
-                      title="Edit Plan"
-                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-600 text-slate-600 transition"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeletePlan(p)}
-                      title="Deactivate/Delete Plan"
-                      className="p-1.5 rounded-lg bg-slate-100 hover:bg-rose-50 hover:text-rose-600 text-slate-600 transition"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-500 line-clamp-2 min-h-[32px]">
-                  {p.description || 'Custom store subscription package.'}
-                </p>
-
-                <div className="py-2 border-y border-slate-100">
-                  <div className="text-2xl font-extrabold text-slate-900">
-                    ₦{p.monthlyPriceNgn?.toLocaleString()}
-                    <span className="text-xs font-semibold text-slate-400"> / mo</span>
-                  </div>
-                  <div className="text-[11px] font-medium text-slate-400">
-                    Annual: ₦{p.annualPriceNgn?.toLocaleString() || (p.monthlyPriceNgn * 10).toLocaleString()} / yr
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 text-xs text-slate-600">
-                  <div className="flex items-center justify-between">
-                    <span>Device Inventory Capacity:</span>
-                    <strong className="text-slate-900 font-mono">{p.maxDevices?.toLocaleString() || 100} devices</strong>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Custom Thermal Receipt Logo:</span>
-                    <strong>{p.customBranding ? '✓ Yes' : '✗ No'}</strong>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span>Priority Helpdesk Support:</span>
-                    <strong>{p.prioritySupport ? '✓ Enabled' : '✗ Standard'}</strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-[11px]">
-                <span className="font-bold text-slate-500">
-                  Active Stores: <strong className="text-blue-600">{p.subscribersCount || 0}</strong>
-                </span>
-                <span
-                  className={`px-2 py-0.5 rounded-full font-extrabold text-[10px] ${
-                    p.isActive ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
-                  }`}
-                >
-                  {p.isActive ? 'Active' : 'Archived'}
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Filter and Search Toolbar */}
-      <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-subtle flex flex-col md:flex-row gap-3 items-center justify-between">
-        <div className="relative w-full md:w-80">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search business subscriber..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full h-[38px] pl-9 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-800 outline-none focus:border-blue-600"
-          />
-        </div>
-
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <select
-            value={planFilter}
-            onChange={(e) => setPlanFilter(e.target.value)}
-            className="h-[38px] px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 outline-none"
-          >
-            <option value="ALL">All Tiers</option>
+              + Create First Plan
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {dbPlans.map((p) => (
-              <option key={p.id} value={p.code}>
-                {p.name} (₦{(p.monthlyPriceNgn / 1000).toFixed(0)}k/mo)
-              </option>
+              <div
+                key={p.id}
+                className="bg-white border border-slate-200 rounded-2xl p-5 shadow-subtle flex flex-col justify-between hover:border-blue-300 transition"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                        {p.code}
+                      </span>
+                      <h3 className="text-lg font-black text-slate-900 mt-1">{p.name}</h3>
+                      <p className="text-xs text-slate-500 font-medium mt-0.5 line-clamp-2">
+                        {p.description || 'Custom store subscription tier.'}
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleOpenEditModal(p)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+                      >
+                        <Edit2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => handleDeletePlan(p.id, p.name)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 border-t border-slate-100">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-2xl font-black text-slate-900 font-mono">
+                        ₦{p.monthlyPriceNgn.toLocaleString()}
+                      </span>
+                      <span className="text-xs text-slate-500 font-bold">/ month</span>
+                    </div>
+                    {p.annualPriceNgn && (
+                      <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5">
+                        ₦{p.annualPriceNgn.toLocaleString()} billed annually
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Plan Specs */}
+                  <div className="space-y-1.5 text-xs text-slate-600 pt-1">
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Device Inventory Limit:</span>
+                      <span className="font-bold text-slate-900 font-mono">
+                        {p.maxDevices ? `${p.maxDevices.toLocaleString()} devices` : 'Unlimited'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Custom Logo Branding:</span>
+                      <span
+                        className={`font-bold ${
+                          p.customBranding ? 'text-emerald-600' : 'text-slate-400'
+                        }`}
+                      >
+                        {p.customBranding ? 'Enabled' : 'Disabled'}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-500">Priority Support:</span>
+                      <span
+                        className={`font-bold ${
+                          p.prioritySupport ? 'text-emerald-600' : 'text-slate-400'
+                        }`}
+                      >
+                        {p.prioritySupport ? 'Included' : 'Standard'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Feature Checklist */}
+                  {Array.isArray(p.features) && p.features.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        Included Features:
+                      </span>
+                      <div className="space-y-1">
+                        {p.features.slice(0, 4).map((f: string, idx: number) => (
+                          <div key={idx} className="flex items-center gap-1.5 text-[11px] text-slate-700 font-medium">
+                            <Check className="w-3 h-3 text-emerald-500 shrink-0" />
+                            <span className="truncate">{f}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-medium">
+                    {summary.tierCounts[p.code.toLowerCase()] || 0} active subscriber(s)
+                  </span>
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                      p.isActive
+                        ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                        : 'bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    {p.isActive ? 'Active Tier' : 'Archived'}
+                  </span>
+                </div>
+              </div>
             ))}
-          </select>
-        </div>
+          </div>
+        )}
       </div>
 
-      {/* Subscribers Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-subtle">
-        <div className="overflow-x-auto w-full custom-scrollbar">
-          <table className="w-full text-left border-collapse text-xs min-w-[840px]">
-            <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase tracking-wider">
+      {/* Subscriber Management Table */}
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-subtle space-y-3 p-5">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div>
+            <h2 className="text-base font-extrabold text-slate-900">Live Merchant Subscribers</h2>
+            <p className="text-xs text-slate-500 font-medium">
+              Real-time directory of registered merchant stores and their active billing tiers.
+            </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="relative flex-1 sm:w-64">
+              <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search store name or slug..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-9 pr-3 h-[36px] bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium outline-none focus:border-blue-600"
+              />
+            </div>
+
+            <select
+              value={planFilter}
+              onChange={(e) => setPlanFilter(e.target.value)}
+              className="h-[36px] px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 outline-none cursor-pointer"
+            >
+              <option value="ALL">All Tiers</option>
+              {dbPlans.map((p) => (
+                <option key={p.code} value={p.code}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto border border-slate-100 rounded-xl">
+          <table className="w-full text-left text-xs border-collapse">
+            <thead className="bg-slate-50/80 font-mono text-[11px] text-slate-500 uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th className="px-5 py-3 font-semibold">Subscriber</th>
-                <th className="px-4 py-3 font-semibold">Tier Plan</th>
-                <th className="px-4 py-3 font-semibold">Monthly Price</th>
-                <th className="px-4 py-3 font-semibold text-center">Registered Inventory</th>
-                <th className="px-4 py-3 font-semibold text-center">Status</th>
-                <th className="px-5 py-3 font-semibold text-right">Member Since</th>
+                <th className="py-3 px-4 font-semibold">Subscriber Store</th>
+                <th className="py-3 px-4 font-semibold">Assigned Tier</th>
+                <th className="py-3 px-4 font-semibold">Monthly Price</th>
+                <th className="py-3 px-4 font-semibold">Device Inventory</th>
+                <th className="py-3 px-4 font-semibold">Status</th>
+                <th className="py-3 px-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
-
             <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
               {filteredSubscribers.length > 0 ? (
-                filteredSubscribers.map((s) => (
-                  <tr key={s.id} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="px-5 py-3.5">
-                      <div className="font-extrabold text-slate-900">{s.businessName}</div>
-                      <div className="text-[11px] text-slate-400 font-mono">/{s.slug}</div>
+                filteredSubscribers.map((sub) => (
+                  <tr key={sub.id} className="hover:bg-slate-50 transition">
+                    <td className="py-3 px-4">
+                      <div className="font-bold text-slate-900">{sub.name}</div>
+                      <div className="text-[11px] text-slate-400 font-mono">/{sub.slug}</div>
                     </td>
-
-                    <td className="px-4 py-3.5">
+                    <td className="py-3 px-4">
                       <select
-                        value={s.plan}
-                        onChange={async (e) => {
-                          const newPlan = e.target.value;
-                          try {
-                            await api.adminUpdateBusinessPlan(s.id, newPlan);
-                            fetchSubscriptionsAndPlans();
-                          } catch (err) {
-                            console.error('Failed to update plan:', err);
-                          }
-                        }}
-                        className="text-[11px] font-extrabold py-1 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-800 outline-none focus:border-blue-600 cursor-pointer shadow-2xs"
+                        value={sub.plan}
+                        onChange={(e) => handleAssignPlan(sub.id, e.target.value)}
+                        className="px-2.5 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 outline-none focus:border-blue-600 cursor-pointer"
                       >
-                        {dbPlans.map((dp) => (
-                          <option key={dp.id} value={dp.code}>
-                            {dp.name} (₦{(dp.monthlyPriceNgn / 1000).toFixed(0)}k/mo)
+                        {dbPlans.map((p) => (
+                          <option key={p.code} value={p.code}>
+                            {p.name} (₦{p.monthlyPriceNgn.toLocaleString()}/mo)
                           </option>
                         ))}
                       </select>
                     </td>
-
-                    <td className="px-4 py-3.5 font-bold text-slate-900">
-                      ₦{s.price?.toLocaleString()} <span className="text-[10px] text-slate-400 font-normal">/ mo</span>
+                    <td className="py-3 px-4 font-mono font-bold text-slate-900">
+                      ₦{(sub.monthlyPrice || 0).toLocaleString()} / mo
                     </td>
-
-                    <td className="px-4 py-3.5 text-center font-mono font-bold text-slate-800">
-                      {s.usage?.registeredDevices || 0} devices
+                    <td className="py-3 px-4 font-mono text-slate-600">
+                      {sub.phoneRecordsCount || 0} / {sub.maxDevices ? sub.maxDevices.toLocaleString() : '∞'}
                     </td>
-
-                    <td className="px-4 py-3.5 text-center">
-                      <span
-                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
-                          s.status === 'Active'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-rose-50 text-rose-700 border border-rose-200'
-                        }`}
-                      >
-                        {s.status}
+                    <td className="py-3 px-4">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        {sub.status || 'Active'}
                       </span>
                     </td>
-
-                    <td className="px-5 py-3.5 text-right font-mono text-[11px] text-slate-400">
-                      {s.memberSince ? new Date(s.memberSince).toLocaleDateString() : 'N/A'}
+                    <td className="py-3 px-4 text-right">
+                      <span className="text-[11px] text-slate-400 font-mono">
+                        {new Date(sub.createdAt).toLocaleDateString()}
+                      </span>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
-                    {loading ? 'Loading subscribers...' : 'No subscribers found in database.'}
+                  <td colSpan={6} className="py-10 text-center text-slate-400 text-xs">
+                    {loading ? 'Loading subscribers...' : 'No merchant subscribers registered yet.'}
                   </td>
                 </tr>
               )}
@@ -443,21 +525,21 @@ export default function AdminSubscriptionsPage() {
 
       {/* Plan Builder Modal (Create / Edit) */}
       {showPlanModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-xs">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-              <h3 className="text-lg font-extrabold text-slate-900">
+        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-xl w-full p-6 space-y-4 animate-in fade-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <h3 className="text-base font-extrabold text-slate-900">
                 {editingPlan ? `Edit "${editingPlan.name}"` : 'Create New Subscription Plan'}
               </h3>
               <button
                 onClick={() => setShowPlanModal(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700"
+                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSavePlan} className="space-y-4 pt-4 text-xs">
+            <form onSubmit={handleSavePlan} className="space-y-4 pt-2 text-xs">
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
@@ -466,7 +548,7 @@ export default function AdminSubscriptionsPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Diamond Wholesaler"
+                    placeholder="e.g. Retail Store Plus"
                     value={planForm.name}
                     onChange={(e) => setPlanForm({ ...planForm, name: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-blue-600"
@@ -481,9 +563,14 @@ export default function AdminSubscriptionsPage() {
                     type="text"
                     required
                     disabled={!!editingPlan}
-                    placeholder="e.g. WHOLESALE_DIAMOND"
+                    placeholder="e.g. RETAIL_PLUS"
                     value={planForm.code}
-                    onChange={(e) => setPlanForm({ ...planForm, code: e.target.value.toUpperCase() })}
+                    onChange={(e) =>
+                      setPlanForm({
+                        ...planForm,
+                        code: e.target.value.toUpperCase().replace(/\s+/g, '_'),
+                      })
+                    }
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono uppercase font-bold outline-none focus:border-blue-600 disabled:opacity-60"
                   />
                 </div>
@@ -495,7 +582,7 @@ export default function AdminSubscriptionsPage() {
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="Target audience and plan description..."
+                  placeholder="Target audience and plan benefits..."
                   value={planForm.description}
                   onChange={(e) => setPlanForm({ ...planForm, description: e.target.value })}
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-blue-600"
@@ -512,7 +599,9 @@ export default function AdminSubscriptionsPage() {
                     min="0"
                     required
                     value={planForm.monthlyPriceNgn}
-                    onChange={(e) => setPlanForm({ ...planForm, monthlyPriceNgn: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setPlanForm({ ...planForm, monthlyPriceNgn: Number(e.target.value) })
+                    }
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-blue-600"
                   />
                 </div>
@@ -525,7 +614,9 @@ export default function AdminSubscriptionsPage() {
                     type="number"
                     min="0"
                     value={planForm.annualPriceNgn}
-                    onChange={(e) => setPlanForm({ ...planForm, annualPriceNgn: Number(e.target.value) })}
+                    onChange={(e) =>
+                      setPlanForm({ ...planForm, annualPriceNgn: Number(e.target.value) })
+                    }
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-blue-600"
                   />
                 </div>
@@ -544,7 +635,42 @@ export default function AdminSubscriptionsPage() {
                 />
               </div>
 
-              {/* Feature Checkboxes */}
+              {/* Real App Features Selector */}
+              <div className="pt-2 border-t border-slate-100 space-y-2">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider">
+                  Select Included Features
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  {AVAILABLE_APP_FEATURES.map((feat) => {
+                    const isSelected = planForm.features.includes(feat);
+                    return (
+                      <button
+                        key={feat}
+                        type="button"
+                        onClick={() => toggleFeature(feat)}
+                        className={`text-left p-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition border cursor-pointer ${
+                          isSelected
+                            ? 'bg-blue-50 border-blue-200 text-blue-800 shadow-xs'
+                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                        }`}
+                      >
+                        <div
+                          className={`w-4 h-4 rounded-md flex items-center justify-center border shrink-0 ${
+                            isSelected
+                              ? 'bg-blue-600 border-blue-600 text-white'
+                              : 'border-slate-300 bg-white'
+                          }`}
+                        >
+                          {isSelected && <Check className="w-3 h-3" />}
+                        </div>
+                        <span className="truncate">{feat}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* High-Level Feature Checkboxes */}
               <div className="pt-2 space-y-2 border-t border-slate-100">
                 <label className="flex items-center gap-2 cursor-pointer font-medium text-slate-700">
                   <input
@@ -581,7 +707,7 @@ export default function AdminSubscriptionsPage() {
                 <button
                   type="button"
                   onClick={() => setShowPlanModal(false)}
-                  className="px-4 py-2 text-slate-600 font-bold hover:text-slate-900"
+                  className="px-4 py-2 text-slate-600 font-bold hover:text-slate-900 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -589,7 +715,7 @@ export default function AdminSubscriptionsPage() {
                 <button
                   type="submit"
                   disabled={savingPlan}
-                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-sm disabled:opacity-60"
+                  className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-sm disabled:opacity-60 cursor-pointer"
                 >
                   {savingPlan ? 'Saving...' : editingPlan ? 'Save Changes' : 'Create Plan'}
                 </button>
