@@ -171,12 +171,12 @@ export default function AdminOverviewDashboard() {
             </div>
           </div>
           <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
-              ₦{(metrics.calculatedMrr / 1000).toFixed(0)}k
+            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1 font-mono">
+              ₦{metrics.calculatedMrr ? metrics.calculatedMrr.toLocaleString() : '0'}
             </div>
             <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600">
               <TrendingUp className="w-3.5 h-3.5" />
-              <span>Subscription revenue</span>
+              <span>Live MRR billing</span>
             </div>
           </div>
         </div>
