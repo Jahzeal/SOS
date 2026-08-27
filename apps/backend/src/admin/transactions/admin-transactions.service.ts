@@ -69,9 +69,9 @@ export class AdminTransactionsService {
     return {
       success: true,
       total,
-      page: Number(page),
-      limit: Number(limit),
-      totalPages: Math.ceil(total / limit) || 1,
+      page: pageNum,
+      limit: limitNum,
+      totalPages: Math.ceil(total / limitNum) || 1,
       stats: {
         totalVolume: statsAgg._sum.totalAmount || 45200000,
         transactionCount: statsAgg._count.id || 1420,
