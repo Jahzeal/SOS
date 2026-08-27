@@ -8,41 +8,21 @@ async function createOrPromoteAdmin() {
   const password = process.env.ADMIN_PASSWORD || 'AdminPass123!';
   const firstName = 'Jahzeal';
   const lastName = 'Admin';
-  const companyName = 'VerifyFlow Headquarters';
-  const companySlug = 'verifyflow-hq';
 
   try {
     console.log(`\n========================================`);
-    console.log(`🔑 Initializing Master Admin Account...`);
+    console.log(`🔑 Initializing Pure Master Admin Account...`);
     console.log(`========================================\n`);
 
-    // 1. Ensure the platform HQ business record exists
-    let hqBusiness = await prisma.business.findUnique({
-      where: { slug: companySlug },
-    });
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    if (!hqBusiness) {
-      hqBusiness = await prisma.business.create({
-        data: {
-          name: companyName,
-          slug: companySlug,
-          email: 'hq@verifyflow.ng',
-          phone: '+234 800 000 0000',
-          publicVerificationEnabled: true,
-        },
-      });
-      console.log(`🏢 Created HQ Business: ${hqBusiness.name} (ID: ${hqBusiness.id})`);
-    }
-
-    // 2. Check if the admin user already exists
+    // 1. Check if the admin user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     if (existingUser) {
-      // Promote existing user to ADMIN and update password
+      // Promote existing user to global ADMIN with no store association
       const updated = await prisma.user.update({
         where: { email },
         data: {
@@ -50,12 +30,12 @@ async function createOrPromoteAdmin() {
           password: hashedPassword,
           firstName,
           lastName,
-          businessId: hqBusiness.id,
+          businessId: null,
         },
       });
-      console.log(`✅ Existing user promoted to ADMIN: ${updated.email}`);
+      console.log(`✅ Master Admin updated: ${updated.email} (Pure Global Admin)`);
     } else {
-      // Create fresh admin user
+      // Create fresh global admin user
       const created = await prisma.user.create({
         data: {
           email,
@@ -63,10 +43,28 @@ async function createOrPromoteAdmin() {
           firstName,
           lastName,
           role: UserRole.ADMIN,
-          businessId: hqBusiness.id,
+          businessId: null,
         },
       });
-      console.log(`✅ Master Admin user created: ${created.email}`);
+      console.log(`✅ Master Admin user created: ${created.email} (Pure Global Admin)`);
+    }
+
+    // 2. Remove any placeholder 'verifyflow-hq' business record
+    const hqBusiness = await prisma.business.findUnique({
+      where: { slug: 'verifyflow-hq' },
+    });
+
+    if (hqBusiness) {
+      // Disassociate any users from this business before deleting
+      await prisma.user.updateMany({
+        where: { businessId: hqBusiness.id },
+        data: { businessId: null },
+      });
+
+      await prisma.business.delete({
+        where: { id: hqBusiness.id },
+      });
+      console.log(`🗑️ Removed placeholder 'verifyflow-hq' from merchant businesses.`);
     }
 
     console.log(`\n----------------------------------------`);
@@ -74,8 +72,8 @@ async function createOrPromoteAdmin() {
     console.log(`----------------------------------------`);
     console.log(`📧 Email:    ${email}`);
     console.log(`🔒 Password: ${password}`);
-    console.log(`🌐 Role:     ADMIN (Full HQ Privileges)`);
-    console.log(`🔗 Login at: http://localhost:3000/login`);
+    console.log(`🌐 Role:     ADMIN (Global Platform Superuser)`);
+    console.log(`🏪 Stores:   0 (Not a merchant subscriber)`);
     console.log(`----------------------------------------\n`);
   } catch (err) {
     console.error('❌ Failed to create/promote admin user:', err);

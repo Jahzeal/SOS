@@ -113,8 +113,8 @@ model User {
   firstName     String
   lastName      String
   role          UserRole       @default(BUSINESS)
-  businessId    String
-  business      Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  businessId    String?
+  business      Business?      @relation(fields: [businessId], references: [id], onDelete: SetNull)
   
   refreshTokens RefreshToken[]
   registeredPhones PhoneRecord[]
