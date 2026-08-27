@@ -11,6 +11,7 @@ import { CustomersModule } from './customers/customers.module';
 import { RepairsModule } from './repairs/repairs.module';
 import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
+import { PlansModule } from './plans/plans.module';
 
 import { AppController } from './app.controller';
 
@@ -19,6 +20,7 @@ import { AppController } from './app.controller';
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
     MailModule,
+    PlansModule,
     AuthModule,
     VerificationModule,
     BusinessModule,

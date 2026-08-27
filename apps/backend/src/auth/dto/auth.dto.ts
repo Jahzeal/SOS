@@ -1,5 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional, IsEnum } from 'class-validator';
-import { Plan } from '@prisma/client';
+import { IsEmail, IsNotEmpty, IsString, MinLength, IsOptional } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -25,9 +24,9 @@ export class RegisterDto {
   @IsOptional()
   phone?: string;
 
-  @IsEnum(Plan)
+  @IsString()
   @IsOptional()
-  plan?: Plan;
+  plan?: string;
 }
 
 export class LoginDto {

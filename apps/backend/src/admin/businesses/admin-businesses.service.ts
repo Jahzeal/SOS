@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Plan } from '@prisma/client';
 
 @Injectable()
 export class AdminBusinessesService {
@@ -98,10 +97,11 @@ export class AdminBusinessesService {
     return { success: true, data: business };
   }
 
-  async updatePlan(id: string, plan: Plan) {
+  async updatePlan(id: string, plan: string) {
+    const cleanPlan = (plan || 'STARTER').toUpperCase();
     const business = await this.prisma.business.update({
       where: { id },
-      data: { plan },
+      data: { plan: cleanPlan },
     });
 
     return { success: true, data: business };

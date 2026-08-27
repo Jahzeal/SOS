@@ -148,6 +148,7 @@ export class VerificationService {
         business: {
           select: {
             name: true,
+            slug: true,
             logoUrl: true,
             publicVerificationEnabled: true,
             customSuccessMessage: true,
@@ -158,11 +159,26 @@ export class VerificationService {
     });
 
     if (!phone) {
+      // Log lookup miss
+      this.prisma.verificationLog.create({
+        data: { identifier: identifier.slice(0, 50), status: 'NOT_FOUND' },
+      }).catch(() => {});
+
       return {
         verified: false,
-        message: 'No registered device found matching this identifier. Proceed with caution.',
+        message: 'No registered device found matching this identifier.',
+        guidance: 'If your device has Dual-SIM or eSIM, please try searching with your IMEI 2 or Serial Number (dial *#06# on your device).',
       };
     }
+
+    // Log verified check
+    this.prisma.verificationLog.create({
+      data: {
+        identifier: identifier.slice(0, 50),
+        status: 'VERIFIED',
+        businessId: phone.businessId,
+      },
+    }).catch(() => {});
 
     if (!phone.business.publicVerificationEnabled) {
       return {
@@ -175,6 +191,7 @@ export class VerificationService {
 
     return {
       verified: true,
+      status: phone.status,
       message: phone.business.customSuccessMessage || 'This device is verified authentic by retailer.',
       deviceInfo: {
         brand: phone.brand,
@@ -193,6 +210,7 @@ export class VerificationService {
       },
       retailer: {
         name: phone.business.name,
+        slug: phone.business.slug,
         logoUrl: phone.business.logoUrl,
       },
     };

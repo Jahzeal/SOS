@@ -4,7 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
-import { Plan, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -39,7 +39,7 @@ export class AuthService {
         name: dto.businessName,
         slug,
         phone: dto.phone,
-        plan: dto.plan || Plan.STARTER,
+        plan: (dto.plan || 'STARTER').toUpperCase(),
         users: {
           create: {
             email: dto.email,

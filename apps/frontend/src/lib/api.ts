@@ -343,10 +343,11 @@ class ApiClient {
   }
 
   // Transactions
-  async adminGetTransactions(params?: { search?: string; status?: string; page?: number; limit?: number }) {
+  async adminGetTransactions(params?: { search?: string; status?: string; paymentMethod?: string; page?: number; limit?: number }) {
     const query = new URLSearchParams();
     if (params?.search) query.append('search', params.search);
     if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+    if (params?.paymentMethod && params.paymentMethod !== 'ALL') query.append('paymentMethod', params.paymentMethod);
     if (params?.page) query.append('page', String(params.page));
     if (params?.limit) query.append('limit', String(params.limit));
     const qs = query.toString() ? `?${query.toString()}` : '';
@@ -413,6 +414,36 @@ class ApiClient {
       body: JSON.stringify(payload),
     });
   }
+
+  // Dynamic Plans Management
+  async getPlans() {
+    return this.request<{ success: boolean; plans: any[] }>('/plans');
+  }
+
+  async adminGetPlans() {
+    return this.request<{ success: boolean; plans: any[] }>('/admin/plans');
+  }
+
+  async adminCreatePlan(data: any) {
+    return this.request<{ success: boolean; message: string; plan: any }>('/admin/plans', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminUpdatePlan(id: string, data: any) {
+    return this.request<{ success: boolean; message: string; plan: any }>(`/admin/plans/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminDeletePlan(id: string) {
+    return this.request<{ success: boolean; message: string }>(`/admin/plans/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export const api = new ApiClient();
+

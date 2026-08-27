@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { PLAN_CONFIGS, getPlanPrice } from '../../common/constants/plans.constant';
 
 @Injectable()
 export class AdminDashboardService {
@@ -15,6 +14,7 @@ export class AdminDashboardService {
       totalRepairs,
       totalUsers,
       businessesByPlan,
+      dbPlans,
     ] = await Promise.all([
       this.prisma.business.count(),
       this.prisma.business.count({
@@ -31,15 +31,22 @@ export class AdminDashboardService {
         by: ['plan'],
         _count: { id: true },
       }),
+      this.prisma.subscriptionPlan.findMany(),
     ]);
 
     const totalRevenue = totalSalesAgg._sum.totalAmount || 0;
     const totalTransactions = totalSalesAgg._count.id || 0;
 
     // Calculate actual active Monthly Recurring Revenue from database plans
+    const planPriceMap = new Map<string, number>();
+    dbPlans.forEach((p) => {
+      planPriceMap.set(p.code.toUpperCase(), p.monthlyPriceNgn);
+    });
+
     let calculatedMrr = 0;
     businessesByPlan.forEach((b) => {
-      calculatedMrr += getPlanPrice(b.plan) * b._count.id;
+      const price = planPriceMap.get((b.plan || '').toUpperCase()) || 0;
+      calculatedMrr += price * b._count.id;
     });
 
     return {
@@ -61,48 +68,164 @@ export class AdminDashboardService {
   }
 
   async getVerificationTraffic(timeRange: 'today' | '7d' | '30d' | '90d' = 'today') {
-    // Generate real-time activity distribution based on database records
-    const phoneRecordsCount = await this.prisma.phoneRecord.count();
-    const multiplier = Math.max(1, Math.round(phoneRecordsCount / 10));
+    const now = new Date();
+    let startDate = new Date();
 
-    const trafficData: Record<string, any[]> = {
-      today: [
-        { label: '00:00', verified: 32 * multiplier, notFound: 4 * multiplier, invalid: 1 * multiplier, total: 37 * multiplier, successRate: 86.5 },
-        { label: '03:00', verified: 18 * multiplier, notFound: 2 * multiplier, invalid: 1 * multiplier, total: 21 * multiplier, successRate: 85.7 },
-        { label: '06:00', verified: 49 * multiplier, notFound: 8 * multiplier, invalid: 2 * multiplier, total: 59 * multiplier, successRate: 83.1 },
-        { label: '09:00', verified: 145 * multiplier, notFound: 21 * multiplier, invalid: 6 * multiplier, total: 172 * multiplier, successRate: 84.3 },
-        { label: '12:00', verified: 210 * multiplier, notFound: 34 * multiplier, invalid: 9 * multiplier, total: 253 * multiplier, successRate: 83.0 },
-        { label: '15:00', verified: 189 * multiplier, notFound: 29 * multiplier, invalid: 7 * multiplier, total: 225 * multiplier, successRate: 84.0 },
-        { label: '18:00', verified: 162 * multiplier, notFound: 23 * multiplier, invalid: 5 * multiplier, total: 190 * multiplier, successRate: 85.2 },
-        { label: '21:00', verified: 98 * multiplier, notFound: 14 * multiplier, invalid: 3 * multiplier, total: 115 * multiplier, successRate: 85.2 },
-      ],
-      '7d': [
-        { label: 'Mon', verified: 685 * multiplier, notFound: 112 * multiplier, invalid: 31 * multiplier, total: 828 * multiplier, successRate: 82.7 },
-        { label: 'Tue', verified: 742 * multiplier, notFound: 125 * multiplier, invalid: 29 * multiplier, total: 896 * multiplier, successRate: 82.8 },
-        { label: 'Wed', verified: 891 * multiplier, notFound: 148 * multiplier, invalid: 41 * multiplier, total: 1080 * multiplier, successRate: 82.5 },
-        { label: 'Thu', verified: 965 * multiplier, notFound: 161 * multiplier, invalid: 48 * multiplier, total: 1174 * multiplier, successRate: 82.2 },
-        { label: 'Fri', verified: 1082 * multiplier, notFound: 179 * multiplier, invalid: 53 * multiplier, total: 1314 * multiplier, successRate: 82.3 },
-        { label: 'Sat', verified: 612 * multiplier, notFound: 98 * multiplier, invalid: 24 * multiplier, total: 734 * multiplier, successRate: 83.4 },
-        { label: 'Sun', verified: 543 * multiplier, notFound: 84 * multiplier, invalid: 19 * multiplier, total: 646 * multiplier, successRate: 84.1 },
-      ],
-      '30d': [
-        { label: 'Week 1', verified: 4520 * multiplier, notFound: 760 * multiplier, invalid: 210 * multiplier, total: 5490 * multiplier, successRate: 82.3 },
-        { label: 'Week 2', verified: 5130 * multiplier, notFound: 840 * multiplier, invalid: 235 * multiplier, total: 6205 * multiplier, successRate: 82.7 },
-        { label: 'Week 3', verified: 5890 * multiplier, notFound: 980 * multiplier, invalid: 280 * multiplier, total: 7150 * multiplier, successRate: 82.4 },
-        { label: 'Week 4', verified: 6240 * multiplier, notFound: 1010 * multiplier, invalid: 295 * multiplier, total: 7545 * multiplier, successRate: 82.7 },
-      ],
-      '90d': [
-        { label: 'Month 1', verified: 19800 * multiplier, notFound: 3200 * multiplier, invalid: 890 * multiplier, total: 23890 * multiplier, successRate: 82.9 },
-        { label: 'Month 2', verified: 22400 * multiplier, notFound: 3650 * multiplier, invalid: 1020 * multiplier, total: 27070 * multiplier, successRate: 82.7 },
-        { label: 'Month 3', verified: 25600 * multiplier, notFound: 4120 * multiplier, invalid: 1140 * multiplier, total: 30860 * multiplier, successRate: 83.0 },
-      ],
-    };
+    if (timeRange === 'today') {
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeRange === '7d') {
+      startDate.setDate(now.getDate() - 6);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeRange === '30d') {
+      startDate.setDate(now.getDate() - 29);
+      startDate.setHours(0, 0, 0, 0);
+    } else if (timeRange === '90d') {
+      startDate.setDate(now.getDate() - 89);
+      startDate.setHours(0, 0, 0, 0);
+    }
+
+    const [logs, phones, totalPhones] = await Promise.all([
+      this.prisma.verificationLog.findMany({
+        where: { createdAt: { gte: startDate } },
+        select: { status: true, createdAt: true },
+      }),
+      this.prisma.phoneRecord.findMany({
+        where: { createdAt: { gte: startDate } },
+        select: { status: true, createdAt: true },
+      }),
+      this.prisma.phoneRecord.count(),
+    ]);
+
+    // Aggregate all real verification and device registration events
+    const allEvents: { status: string; createdAt: Date }[] = [
+      ...logs,
+      ...phones.map((p) => ({
+        status: p.status === 'RETURNED' ? 'FLAGGED_STOLEN' : 'VERIFIED',
+        createdAt: p.createdAt,
+      })),
+    ];
+
+    let resultData: any[] = [];
+
+    if (timeRange === 'today') {
+      const slots = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
+      const buckets = slots.map((label) => ({
+        label,
+        verified: 0,
+        notFound: 0,
+        invalid: 0,
+        total: 0,
+        successRate: 100,
+      }));
+
+      allEvents.forEach((ev) => {
+        const hour = new Date(ev.createdAt).getHours();
+        const slotIdx = Math.min(Math.floor(hour / 3), 7);
+        if (ev.status === 'VERIFIED') buckets[slotIdx].verified++;
+        else if (ev.status === 'NOT_FOUND') buckets[slotIdx].notFound++;
+        else buckets[slotIdx].invalid++;
+      });
+
+      buckets.forEach((b) => {
+        b.total = b.verified + b.notFound + b.invalid;
+        b.successRate = b.total > 0 ? Number(((b.verified / b.total) * 100).toFixed(1)) : 100;
+      });
+
+      resultData = buckets;
+    } else if (timeRange === '7d') {
+      const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const buckets: any[] = [];
+
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(now.getDate() - i);
+        const dayLabel = days[d.getDay()];
+        const dateStr = d.toISOString().slice(0, 10);
+        buckets.push({
+          label: dayLabel,
+          dateStr,
+          verified: 0,
+          notFound: 0,
+          invalid: 0,
+          total: 0,
+          successRate: 100,
+        });
+      }
+
+      allEvents.forEach((ev) => {
+        const dateStr = new Date(ev.createdAt).toISOString().slice(0, 10);
+        const b = buckets.find((item) => item.dateStr === dateStr);
+        if (b) {
+          if (ev.status === 'VERIFIED') b.verified++;
+          else if (ev.status === 'NOT_FOUND') b.notFound++;
+          else b.invalid++;
+        }
+      });
+
+      buckets.forEach((b) => {
+        b.total = b.verified + b.notFound + b.invalid;
+        b.successRate = b.total > 0 ? Number(((b.verified / b.total) * 100).toFixed(1)) : 100;
+        delete b.dateStr;
+      });
+
+      resultData = buckets;
+    } else if (timeRange === '30d') {
+      const buckets = [
+        { label: 'Week 1', verified: 0, notFound: 0, invalid: 0, total: 0, successRate: 100 },
+        { label: 'Week 2', verified: 0, notFound: 0, invalid: 0, total: 0, successRate: 100 },
+        { label: 'Week 3', verified: 0, notFound: 0, invalid: 0, total: 0, successRate: 100 },
+        { label: 'Week 4', verified: 0, notFound: 0, invalid: 0, total: 0, successRate: 100 },
+      ];
+
+      allEvents.forEach((ev) => {
+        const diffDays = Math.floor((now.getTime() - new Date(ev.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+        const weekIdx = Math.min(Math.floor(diffDays / 7), 3);
+        const bucket = buckets[3 - weekIdx];
+        if (bucket) {
+          if (ev.status === 'VERIFIED') bucket.verified++;
+          else if (ev.status === 'NOT_FOUND') bucket.notFound++;
+          else bucket.invalid++;
+        }
+      });
+
+      buckets.forEach((b) => {
+        b.total = b.verified + b.notFound + b.invalid;
+        b.successRate = b.total > 0 ? Number(((b.verified / b.total) * 100).toFixed(1)) : 100;
+      });
+
+      resultData = buckets;
+    } else {
+      const buckets = [
+        { label: 'Month 1', verified: 0, notFound: 0, invalid: 0, total: 0, successRate: 100 },
+        { label: 'Month 2', verified: 0, notFound: 0, invalid: 0, total: 0, successRate: 100 },
+        { label: 'Month 3', verified: 0, notFound: 0, invalid: 0, total: 0, successRate: 100 },
+      ];
+
+      allEvents.forEach((ev) => {
+        const diffDays = Math.floor((now.getTime() - new Date(ev.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+        const monthIdx = Math.min(Math.floor(diffDays / 30), 2);
+        const bucket = buckets[2 - monthIdx];
+        if (bucket) {
+          if (ev.status === 'VERIFIED') bucket.verified++;
+          else if (ev.status === 'NOT_FOUND') bucket.notFound++;
+          else bucket.invalid++;
+        }
+      });
+
+      buckets.forEach((b) => {
+        b.total = b.verified + b.notFound + b.invalid;
+        b.successRate = b.total > 0 ? Number(((b.verified / b.total) * 100).toFixed(1)) : 100;
+      });
+
+      resultData = buckets;
+    }
 
     return {
       success: true,
       timeRange,
-      totalDevicesRecorded: phoneRecordsCount,
-      data: trafficData[timeRange] || trafficData['7d'],
+      totalDevicesRecorded: totalPhones,
+      totalActivityEvents: allEvents.length,
+      data: resultData,
     };
   }
 

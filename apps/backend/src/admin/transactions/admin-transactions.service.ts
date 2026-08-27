@@ -33,7 +33,7 @@ export class AdminTransactionsService {
       ];
     }
 
-    const [total, transactions, statsAgg] = await Promise.all([
+    const [total, transactions, statsAgg, pendingAgg, last24hCount] = await Promise.all([
       this.prisma.sale.count({ where }),
       this.prisma.sale.findMany({
         where,
@@ -64,6 +64,14 @@ export class AdminTransactionsService {
         _sum: { totalAmount: true },
         _count: { id: true },
       }),
+      this.prisma.sale.aggregate({
+        where: { paymentStatus: 'PENDING' },
+        _sum: { totalAmount: true },
+        _count: { id: true },
+      }),
+      this.prisma.sale.count({
+        where: { createdAt: { gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+      }),
     ]);
 
     return {
@@ -73,8 +81,11 @@ export class AdminTransactionsService {
       limit: limitNum,
       totalPages: Math.ceil(total / limitNum) || 1,
       stats: {
-        totalVolume: statsAgg._sum.totalAmount || 45200000,
-        transactionCount: statsAgg._count.id || 1420,
+        totalVolume: statsAgg._sum.totalAmount || 0,
+        transactionCount: statsAgg._count.id || 0,
+        pendingVolume: pendingAgg._sum.totalAmount || 0,
+        pendingCount: pendingAgg._count.id || 0,
+        last24hCount: last24hCount || 0,
       },
       data: transactions,
     };

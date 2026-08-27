@@ -1,50 +1,63 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Plan } from '@prisma/client';
-import { PLAN_CONFIGS, getPlanPrice } from '../../common/constants/plans.constant';
 
 @Injectable()
 export class AdminSubscriptionsService {
   constructor(private prisma: PrismaService) {}
 
   async getSubscriptionAnalytics() {
-    const businesses = await this.prisma.business.findMany({
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        plan: true,
-        email: true,
-        phone: true,
-        publicVerificationEnabled: true,
-        createdAt: true,
-        updatedAt: true,
-        _count: {
-          select: {
-            users: true,
-            phoneRecords: true,
-            sales: true,
-            repairs: true,
+    const [businesses, dbPlans] = await Promise.all([
+      this.prisma.business.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          plan: true,
+          email: true,
+          phone: true,
+          publicVerificationEnabled: true,
+          createdAt: true,
+          updatedAt: true,
+          _count: {
+            select: {
+              users: true,
+              phoneRecords: true,
+              sales: true,
+              repairs: true,
+            },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+        orderBy: { createdAt: 'desc' },
+      }),
+      this.prisma.subscriptionPlan.findMany({
+        orderBy: { sortOrder: 'asc' },
+      }),
+    ]);
 
-    const tierCounts: Record<Plan, number> = {
-      [Plan.STARTER]: 0,
-      [Plan.BUSINESS]: 0,
-      [Plan.ENTERPRISE]: 0,
-    };
+    // Create a plan lookup map
+    const planMap = new Map<string, any>();
+    const tierCounts: Record<string, number> = {};
+    const tierPricing: Record<string, number> = {};
+
+    dbPlans.forEach((p) => {
+      planMap.set(p.code.toUpperCase(), p);
+      tierCounts[p.code.toLowerCase()] = 0;
+      tierPricing[p.code.toUpperCase()] = p.monthlyPriceNgn;
+    });
 
     let totalMRR = 0;
 
     const subscribers = businesses.map((b) => {
-      const planCode = b.plan in PLAN_CONFIGS ? b.plan : Plan.STARTER;
-      const planConfig = PLAN_CONFIGS[planCode];
-      const monthlyFee = planConfig.monthlyPriceNgn;
+      const planCode = (b.plan || 'STARTER').toUpperCase();
+      const planConfig = planMap.get(planCode) || {
+        name: planCode,
+        monthlyPriceNgn: 15000,
+        maxStaffAccounts: 2,
+        maxMonthlyLookups: 500,
+      };
 
-      tierCounts[planCode] = (tierCounts[planCode] || 0) + 1;
+      const monthlyFee = planConfig.monthlyPriceNgn || 0;
+      tierCounts[planCode.toLowerCase()] = (tierCounts[planCode.toLowerCase()] || 0) + 1;
       totalMRR += monthlyFee;
 
       return {
@@ -59,8 +72,8 @@ export class AdminSubscriptionsService {
         memberSince: b.createdAt,
         updatedAt: b.updatedAt,
         limits: {
-          maxStaff: planConfig.maxStaffAccounts,
-          maxLookups: planConfig.maxMonthlyLookups,
+          maxStaff: planConfig.maxStaffAccounts || 1,
+          maxLookups: planConfig.maxMonthlyLookups || 500,
         },
         usage: {
           registeredDevices: b._count.phoneRecords,
@@ -81,25 +94,19 @@ export class AdminSubscriptionsService {
         activeMRR: totalMRR,
         projectedARR: totalMRR * 12,
         averageRevenuePerUser: arpu,
-        tierCounts: {
-          starter: tierCounts[Plan.STARTER],
-          business: tierCounts[Plan.BUSINESS],
-          enterprise: tierCounts[Plan.ENTERPRISE],
-        },
-        tierPricing: {
-          [Plan.STARTER]: PLAN_CONFIGS[Plan.STARTER].monthlyPriceNgn,
-          [Plan.BUSINESS]: PLAN_CONFIGS[Plan.BUSINESS].monthlyPriceNgn,
-          [Plan.ENTERPRISE]: PLAN_CONFIGS[Plan.ENTERPRISE].monthlyPriceNgn,
-        },
+        tierCounts,
+        tierPricing,
       },
       data: subscribers,
+      plans: dbPlans,
     };
   }
 
-  async updateSubscriberPlan(businessId: string, newPlan: Plan) {
+  async updateSubscriberPlan(businessId: string, newPlan: string) {
+    const cleanPlan = (newPlan || 'STARTER').toUpperCase();
     const updated = await this.prisma.business.update({
       where: { id: businessId },
-      data: { plan: newPlan },
+      data: { plan: cleanPlan },
       select: {
         id: true,
         name: true,
@@ -110,11 +117,9 @@ export class AdminSubscriptionsService {
 
     return {
       success: true,
-      message: `Successfully updated ${updated.name} to ${PLAN_CONFIGS[newPlan]?.name || newPlan}`,
-      data: {
-        ...updated,
-        planConfig: PLAN_CONFIGS[newPlan],
-      },
+      message: `Successfully updated ${updated.name} to ${updated.plan}`,
+      data: updated,
     };
   }
 }
+

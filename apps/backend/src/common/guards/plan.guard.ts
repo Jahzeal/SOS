@@ -1,9 +1,8 @@
 import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { Plan } from '@prisma/client';
 import { PLAN_KEY } from '../decorators/roles.decorator';
 
-const PLAN_HIERARCHY: Record<Plan, number> = {
+const PLAN_HIERARCHY: Record<string, number> = {
   STARTER: 1,
   BUSINESS: 2,
   ENTERPRISE: 3,
@@ -14,7 +13,7 @@ export class PlanGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const requiredPlans = this.reflector.getAllAndOverride<Plan[]>(PLAN_KEY, [
+    const requiredPlans = this.reflector.getAllAndOverride<string[]>(PLAN_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);
@@ -37,16 +36,16 @@ export class PlanGuard implements CanActivate {
       return true;
     }
 
-    const userPlan = user.business?.plan as Plan;
+    const userPlan = (user.business?.plan || 'STARTER').toUpperCase();
     const userLevel = PLAN_HIERARCHY[userPlan] || 1;
 
     const hasAccess = requiredPlans.some(
-      (plan) => userLevel >= (PLAN_HIERARCHY[plan] || 1),
+      (plan) => userLevel >= (PLAN_HIERARCHY[plan.toUpperCase()] || 1),
     );
 
     if (!hasAccess) {
       throw new ForbiddenException(
-        `This feature requires a higher plan tier (${requiredPlans.join(' or ')}). Your current plan is ${userPlan}.`,
+        `Your store plan does not have access to this feature. Please upgrade your workspace.`,
       );
     }
 

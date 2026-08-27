@@ -30,6 +30,10 @@ import { AdminNotificationsService } from './notifications/admin-notifications.s
 import { AdminSettingsController } from './settings/admin-settings.controller';
 import { AdminSettingsService } from './settings/admin-settings.service';
 
+// Plans
+import { AdminPlansController } from './plans/admin-plans.controller';
+import { AdminPlansService } from './plans/admin-plans.service';
+
 @Module({
   imports: [PrismaModule],
   controllers: [
@@ -40,6 +44,7 @@ import { AdminSettingsService } from './settings/admin-settings.service';
     AdminSupportController,
     AdminNotificationsController,
     AdminSettingsController,
+    AdminPlansController,
   ],
   providers: [
     AdminGuard,
@@ -50,6 +55,7 @@ import { AdminSettingsService } from './settings/admin-settings.service';
     AdminSupportService,
     AdminNotificationsService,
     AdminSettingsService,
+    AdminPlansService,
   ],
   exports: [
     AdminGuard,
@@ -60,6 +66,7 @@ import { AdminSettingsService } from './settings/admin-settings.service';
     AdminSupportService,
     AdminNotificationsService,
     AdminSettingsService,
+    AdminPlansService,
   ],
 })
 export class AdminModule {}

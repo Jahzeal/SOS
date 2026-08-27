@@ -61,7 +61,8 @@ export default function OnboardingPage() {
   });
 
   // Step 4 Subscription Plan State
-  const [selectedPlan, setSelectedPlan] = useState<'starter' | 'business' | 'enterprise'>('business');
+  const [selectedPlan, setSelectedPlan] = useState<string>('BUSINESS');
+  const [dynamicPlans, setDynamicPlans] = useState<any[]>([]);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
 
   // Step 5 Workspace Loading State
@@ -69,6 +70,13 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     setMounted(true);
+    // Fetch dynamic database plans
+    api.getPlans().then((res) => {
+      if (res?.success && Array.isArray(res.plans) && res.plans.length > 0) {
+        setDynamicPlans(res.plans);
+        setSelectedPlan(res.plans[1]?.code || res.plans[0].code);
+      }
+    }).catch((err) => console.warn('Using fallback plans:', err));
   }, []);
 
   // Step 5 Setup Progress Simulation
@@ -747,181 +755,107 @@ export default function OnboardingPage() {
                     </Badge>
                   </div>
 
-                  {/* 3-Column Detailed Plan Cards */}
+                  {/* Dynamic Database Plan Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                    
-                    {/* Starter Plan */}
-                    <div
-                      onClick={() => setSelectedPlan('starter')}
-                      className={`p-6 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between space-y-5 ${
-                        selectedPlan === 'starter'
-                          ? 'border-teal-600 bg-white ring-2 ring-teal-500/30 shadow-lg'
-                          : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
-                      }`}
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Starter Package</span>
-                          {selectedPlan === 'starter' && (
-                            <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
+                    {(dynamicPlans.length > 0 ? dynamicPlans : [
+                      {
+                        code: 'STARTER',
+                        name: 'Starter Store',
+                        description: 'Ideal for small single-counter repair & phone shops.',
+                        monthlyPriceNgn: 15000,
+                        annualPriceNgn: 150000,
+                        maxStaffAccounts: 2,
+                        maxMonthlyLookups: 500,
+                        features: ['Up to 500 device checks / mo', 'Up to 2 staff accounts', 'POS thermal QR receipt builder', 'Customer warranty lookup', 'Standard support'],
+                      },
+                      {
+                        code: 'BUSINESS',
+                        name: 'Business Hub',
+                        description: 'Full suite for multi-branch phone retailers and POS.',
+                        monthlyPriceNgn: 45000,
+                        annualPriceNgn: 450000,
+                        maxStaffAccounts: 10,
+                        maxMonthlyLookups: 5000,
+                        features: ['Up to 5,000 device checks / mo', 'Up to 10 staff accounts', 'Custom receipt logo branding', 'Serial fraud prevention lock', 'Priority support queue'],
+                      },
+                      {
+                        code: 'ENTERPRISE',
+                        name: 'Enterprise Network',
+                        description: 'For distributors, wholesalers & large retail chains.',
+                        monthlyPriceNgn: 120000,
+                        annualPriceNgn: 1200000,
+                        maxStaffAccounts: 50,
+                        maxMonthlyLookups: 50000,
+                        features: ['Unlimited / 50k+ IMEI lookups', 'Up to 50 staff logins', 'Bulk verification API access', 'Wholesaler stock allocation', '99.9% SLA & Dedicated AM'],
+                      },
+                    ]).map((planItem) => {
+                      const isSelected = selectedPlan.toUpperCase() === planItem.code.toUpperCase();
+                      const price = billingCycle === 'monthly' ? planItem.monthlyPriceNgn : Math.round(planItem.annualPriceNgn / 12);
+                      const isRecommended = planItem.code.toUpperCase() === 'BUSINESS';
+
+                      return (
+                        <div
+                          key={planItem.code}
+                          onClick={() => setSelectedPlan(planItem.code.toUpperCase())}
+                          className={`p-5 rounded-2xl border cursor-pointer transition-all relative flex flex-col justify-between space-y-4 ${
+                            isSelected
+                              ? 'border-teal-600 bg-teal-50/20 ring-2 ring-teal-500/30 shadow-lg'
+                              : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
+                          }`}
+                        >
+                          {isRecommended && (
+                            <div className="absolute -top-3 right-4 bg-teal-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                              RECOMMENDED
+                            </div>
                           )}
-                        </div>
-                        <div>
-                          <div className="text-3xl font-extrabold text-slate-900">
-                            {billingCycle === 'monthly' ? '$29' : '$23'}
-                            <span className="text-xs font-semibold text-slate-500">/mo after trial</span>
-                          </div>
-                          <p className="text-xs text-slate-500 font-medium mt-1">Ideal for small single-counter repair & phone shops.</p>
-                        </div>
 
-                        {/* Feature Checklist */}
-                        <div className="space-y-2 pt-3 border-t border-slate-100 text-xs font-medium text-slate-700">
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Up to 200 device checks / mo</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Single store location</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>80mm POS thermal QR receipt builder</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Customer warranty portal lookup</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Standard email support</span>
-                          </div>
-                        </div>
-                      </div>
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                                {planItem.name}
+                              </span>
+                              {isSelected && (
+                                <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
+                              )}
+                            </div>
 
-                      <div className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
-                        selectedPlan === 'starter' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'
-                      }`}>
-                        {selectedPlan === 'starter' ? 'Selected Package' : 'Select Starter'}
-                      </div>
-                    </div>
+                            <div>
+                              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                                ₦{price?.toLocaleString()}
+                                <span className="text-xs font-semibold text-slate-500">/mo after trial</span>
+                              </div>
+                              <p className="text-xs text-slate-500 font-medium mt-1">
+                                {planItem.description || 'Verified device intelligence suite.'}
+                              </p>
+                            </div>
 
-                    {/* Business Plan (Recommended) */}
-                    <div
-                      onClick={() => setSelectedPlan('business')}
-                      className={`p-6 rounded-2xl border cursor-pointer transition-all relative flex flex-col justify-between space-y-5 ${
-                        selectedPlan === 'business'
-                          ? 'border-teal-600 bg-teal-50/30 ring-2 ring-teal-500/30 shadow-xl'
-                          : 'border-teal-200 bg-white hover:border-teal-300 shadow-sm'
-                      }`}
-                    >
-                      <div className="absolute -top-3 right-4 bg-teal-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-                        RECOMMENDED
-                      </div>
+                            {/* Features list */}
+                            <div className="space-y-1.5 pt-3 border-t border-slate-100 text-xs font-medium text-slate-700">
+                              <div className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                <span>Max Staff: <strong>{planItem.maxStaffAccounts}</strong></span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                <span>Lookups: <strong>{planItem.maxMonthlyLookups?.toLocaleString()} / mo</strong></span>
+                              </div>
+                              {(planItem.features || []).slice(0, 3).map((feat: string, idx: number) => (
+                                <div key={idx} className="flex items-center gap-2">
+                                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                  <span>{feat}</span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
 
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-extrabold text-teal-700 uppercase tracking-wider">Business Package</span>
-                          {selectedPlan === 'business' && (
-                            <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-3xl font-extrabold text-slate-900">
-                            {billingCycle === 'monthly' ? '$79' : '$63'}
-                            <span className="text-xs font-semibold text-slate-500">/mo after trial</span>
-                          </div>
-                          <p className="text-xs text-slate-500 font-medium mt-1">Full suite for multi-branch phone retailers.</p>
-                        </div>
-
-                        {/* Feature Checklist */}
-                        <div className="space-y-2 pt-3 border-t border-teal-100 text-xs font-medium text-slate-800">
-                          <div className="flex items-center gap-2 font-bold text-slate-900">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Unlimited device registrations</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Up to 5 store locations</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Serial IMEI fraud prevention lock</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Live customer & staff verification feed</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Multi-staff RBAC role permissions</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Priority phone & chat support</span>
+                          <div className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
+                            isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'
+                          }`}>
+                            {isSelected ? 'Selected Package' : `Select ${planItem.name}`}
                           </div>
                         </div>
-                      </div>
-
-                      <div className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
-                        selectedPlan === 'business' ? 'bg-teal-600 text-white' : 'bg-teal-100 text-teal-800'
-                      }`}>
-                        {selectedPlan === 'business' ? 'Selected Package' : 'Select Business'}
-                      </div>
-                    </div>
-
-                    {/* Enterprise Plan */}
-                    <div
-                      onClick={() => setSelectedPlan('enterprise')}
-                      className={`p-6 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between space-y-5 ${
-                        selectedPlan === 'enterprise'
-                          ? 'border-teal-600 bg-white ring-2 ring-teal-500/30 shadow-lg'
-                          : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
-                      }`}
-                    >
-                      <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Enterprise Package</span>
-                          {selectedPlan === 'enterprise' && (
-                            <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
-                          )}
-                        </div>
-                        <div>
-                          <div className="text-3xl font-extrabold text-slate-900">
-                            {billingCycle === 'monthly' ? '$199' : '$159'}
-                            <span className="text-xs font-semibold text-slate-500">/mo after trial</span>
-                          </div>
-                          <p className="text-xs text-slate-500 font-medium mt-1">For distributors, wholesalers & large chains.</p>
-                        </div>
-
-                        {/* Feature Checklist */}
-                        <div className="space-y-2 pt-3 border-t border-slate-100 text-xs font-medium text-slate-700">
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Unlimited stores & bulk API access</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Wholesaler stock allocation tools</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Custom white-label thermal receipt logo</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span>Dedicated account manager & 99.9% SLA</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
-                        selectedPlan === 'enterprise' ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'
-                      }`}>
-                        {selectedPlan === 'enterprise' ? 'Selected Package' : 'Select Enterprise'}
-                      </div>
-                    </div>
-
+                      );
+                    })}
                   </div>
                 </div>
               )}

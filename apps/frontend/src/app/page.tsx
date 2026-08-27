@@ -1278,14 +1278,22 @@ export default function PublicLandingPageV2() {
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200/90 text-slate-900 shadow-sm space-y-2 text-xs">
+                  <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200/90 text-slate-900 shadow-sm space-y-2.5 text-xs">
                     <div className="flex items-center gap-2 font-extrabold text-rose-800 text-sm">
                       <ShieldAlert className="w-4 h-4 text-rose-600 shrink-0" />
                       <span>No Registered Record Found</span>
                     </div>
                     <p className="text-slate-600 text-xs font-medium leading-relaxed">
-                      Identifier <code className="font-mono bg-white px-1.5 py-0.5 rounded border border-rose-200 text-rose-900 font-bold">{heroVerifiedResult.searchedTerm}</code> is not registered on the network.
+                      Identifier <code className="font-mono bg-white px-1.5 py-0.5 rounded border border-rose-200 text-rose-900 font-bold">{heroVerifiedResult.searchedTerm}</code> was not found on the registry.
                     </p>
+                    <div className="p-3 rounded-xl bg-white border border-rose-200/60 text-slate-700 text-[11px] leading-relaxed font-medium space-y-1">
+                      <div className="font-bold text-slate-900 flex items-center gap-1.5 text-blue-700">
+                        <span>💡 Dual-SIM / Alternate Identifier Tip:</span>
+                      </div>
+                      <p className="text-slate-600">
+                        If your device is Dual-SIM or eSIM, please try searching with your <strong>IMEI 2</strong> or <strong>Serial Number</strong> (dial <code className="font-mono font-bold text-slate-900 bg-slate-100 px-1 py-0.5 rounded">*#06#</code> on your phone).
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

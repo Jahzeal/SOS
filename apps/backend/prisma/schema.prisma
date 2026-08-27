@@ -63,7 +63,9 @@ model Business {
   address                   String?
   phone                     String?
   email                     String?
-  plan                      Plan           @default(STARTER)
+  plan                      String         @default("STARTER")
+  planId                    String?
+  subscriptionPlan          SubscriptionPlan? @relation(fields: [planId], references: [id])
   publicVerificationEnabled Boolean        @default(true)
   customSuccessMessage      String?        @default("This phone is verified and authentic.")
   warrantyTerms             String?
@@ -77,9 +79,31 @@ model Business {
   sales                     Sale[]
   repairs                   RepairTicket[]
   supportTickets            SupportTicket[]
+  verificationLogs          VerificationLog[]
 
   createdAt                 DateTime       @default(now())
   updatedAt                 DateTime       @updatedAt
+}
+
+model SubscriptionPlan {
+  id                  String     @id @default(uuid())
+  code                String     @unique
+  name                String
+  description         String?
+  monthlyPriceNgn     Float      @default(0)
+  annualPriceNgn      Float      @default(0)
+  maxDevices          Int        @default(100)
+  customBranding      Boolean    @default(false)
+  prioritySupport     Boolean    @default(false)
+  features            String[]   @default([])
+  isActive            Boolean    @default(true)
+  isPublic            Boolean    @default(true)
+  sortOrder           Int        @default(0)
+
+  businesses          Business[]
+
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 }
 
 model User {
@@ -308,4 +332,20 @@ model PlatformSetting {
   description String?
   updatedAt   DateTime @updatedAt
 }
+
+model VerificationLog {
+  id           String    @id @default(uuid())
+  identifier   String
+  status       String    // "VERIFIED", "NOT_FOUND", "FLAGGED_STOLEN"
+  ipAddress    String?
+  userAgent    String?
+  businessId   String?
+  business     Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+
+  @@index([createdAt])
+  @@index([status])
+  @@index([businessId])
+}
+
 
