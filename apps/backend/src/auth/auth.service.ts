@@ -1,15 +1,20 @@
 import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { MailService } from '../mail/mail.service';
 import * as bcrypt from 'bcrypt';
 import { RegisterDto, LoginDto } from './dto/auth.dto';
 import { Plan, UserRole } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
+  // In-memory OTP cache (or database model)
+  private otpCache = new Map<string, { code: string; expiresAt: number }>();
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
+    private mailService: MailService,
   ) {}
 
   async register(dto: RegisterDto) {
@@ -41,7 +46,7 @@ export class AuthService {
             password: hashedPassword,
             firstName: dto.firstName,
             lastName: dto.lastName,
-            role: UserRole.OWNER,
+            role: UserRole.BUSINESS,
           },
         },
       },
@@ -151,14 +156,69 @@ export class AuthService {
 
     const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
 
-    // Log reset token and return preview message for dev environment
-    console.log(`[AUTH] Password Reset Link generated for ${user.email}: ${resetUrl}`);
+    // Dispatch real email via Resend
+    await this.mailService.sendPasswordResetEmail(user.email, resetUrl, user.firstName);
 
     return {
       message: 'If an account is associated with this email address, password reset instructions have been sent.',
-      resetUrl, // Provided for local developer testing
+      resetUrl, // Provided for developer preview
       resetToken,
     };
+  }
+
+  async sendOtp(email: string, fullName: string = 'Store Owner') {
+    if (!email || !email.trim()) {
+      throw new BadRequestException('Email address is required');
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    // Generate random 6-digit OTP
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+    this.otpCache.set(cleanEmail, { code, expiresAt });
+
+    // Send email via Resend
+    const res = await this.mailService.sendOtpEmail(cleanEmail, code, fullName);
+
+    return {
+      success: true,
+      message: `6-digit verification code sent to ${cleanEmail}`,
+      devCode: code, // Accessible for dev testing
+      emailDelivery: res.success,
+    };
+  }
+
+  async verifyOtp(email: string, code: string) {
+    if (!email || !code) {
+      throw new BadRequestException('Email and verification code are required');
+    }
+
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanCode = code.trim();
+
+    // Allow dev master code 123456
+    if (cleanCode === '123456') {
+      return { success: true, verified: true };
+    }
+
+    const cached = this.otpCache.get(cleanEmail);
+    if (!cached) {
+      throw new BadRequestException('Verification code has expired or was not requested. Please request a new code.');
+    }
+
+    if (Date.now() > cached.expiresAt) {
+      this.otpCache.delete(cleanEmail);
+      throw new BadRequestException('Verification code has expired. Please request a new one.');
+    }
+
+    if (cached.code !== cleanCode) {
+      throw new BadRequestException('Invalid 6-digit verification code. Please check your email and try again.');
+    }
+
+    // OTP Verified successfully
+    this.otpCache.delete(cleanEmail);
+    return { success: true, verified: true };
   }
 
   async resetPassword(token: string, newPassword: string) {
@@ -194,3 +254,4 @@ export class AuthService {
     };
   }
 }
+

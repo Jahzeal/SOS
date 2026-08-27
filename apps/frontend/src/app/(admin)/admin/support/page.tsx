@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 import {
   Search,
   Filter,
@@ -26,6 +27,7 @@ import {
   Eye,
   Inbox,
   AlertTriangle,
+  Mail,
 } from 'lucide-react';
 
 export interface SupportTicket {
@@ -195,32 +197,81 @@ const mockTickets: SupportTicket[] = [
 
 export default function AdminSupportPage() {
   const router = useRouter();
+  const [tickets, setTickets] = useState<SupportTicket[]>(mockTickets);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [priorityFilter, setPriorityFilter] = useState('ALL');
-  const [assigneeFilter, setAssigneeFilter] = useState('ALL');
   const [businessFilter, setBusinessFilter] = useState('ALL');
   const [sortBy, setSortBy] = useState<'recently_updated' | 'newest' | 'oldest' | 'priority'>('recently_updated');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
+  const [loading, setLoading] = useState(false);
+
+  const fetchTickets = async () => {
+    setLoading(true);
+    try {
+      const res = await api.adminGetSupportTickets();
+      const incoming = res?.tickets || res?.data;
+      if (res?.success && Array.isArray(incoming) && incoming.length > 0) {
+        setTickets(incoming);
+      }
+    } catch (err) {
+      console.error('Failed to load tickets from backend:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, []);
+
+  // Quick Action Handlers
+  const handleStatusUpdate = async (e: React.MouseEvent, ticketId: string, newStatus: SupportTicket['status']) => {
+    e.stopPropagation();
+    setTickets((prev) =>
+      prev.map((t) =>
+        t.id === ticketId
+          ? {
+              ...t,
+              status: newStatus,
+              lastUpdated: 'Just now',
+              lastUpdatedTimestamp: Date.now(),
+            }
+          : t
+      )
+    );
+
+    try {
+      await api.adminUpdateSupportTicketStatus(ticketId, newStatus);
+    } catch (err) {
+      console.error('Failed to update ticket status on server:', err);
+    }
+  };
+
+  const handleSendEmail = (e: React.MouseEvent, ticket: SupportTicket) => {
+    e.stopPropagation();
+    const subject = encodeURIComponent(`[${ticket.id}] Re: ${ticket.subject}`);
+    const body = encodeURIComponent(
+      `Hello ${ticket.requesterName},\n\nRegarding your support ticket #${ticket.id} (${ticket.subject}):\n\n`
+    );
+    window.open(`mailto:${ticket.requesterEmail}?subject=${subject}&body=${body}`, '_blank');
+  };
+
   // Real Calculated Workload Metrics (calculated directly from ticket data)
-  const openCount = mockTickets.filter((t) => t.status === 'Open').length;
-  const inProgressCount = mockTickets.filter((t) => t.status === 'In Progress').length;
-  const pendingCount = mockTickets.filter((t) => t.status === 'Pending').length;
-  const highUrgentCount = mockTickets.filter((t) => t.priority === 'High' || t.priority === 'Urgent').length;
-  const resolvedCount = mockTickets.filter((t) => t.status === 'Resolved' || t.status === 'Closed').length;
+  const openCount = tickets.filter((t) => t.status === 'Open').length;
+  const inProgressCount = tickets.filter((t) => t.status === 'In Progress').length;
+  const pendingCount = tickets.filter((t) => t.status === 'Pending').length;
+  const highUrgentCount = tickets.filter((t) => t.priority === 'High' || t.priority === 'Urgent').length;
+  const resolvedCount = tickets.filter((t) => t.status === 'Resolved' || t.status === 'Closed').length;
 
   // Filter & Search Logic
   const filteredTickets = useMemo(() => {
-    return mockTickets
+    return tickets
       .filter((t) => {
         if (statusFilter !== 'ALL' && t.status.toLowerCase() !== statusFilter.toLowerCase()) return false;
         if (priorityFilter !== 'ALL' && t.priority.toLowerCase() !== priorityFilter.toLowerCase()) return false;
-        if (assigneeFilter !== 'ALL') {
-          if (assigneeFilter === 'UNASSIGNED' && t.assignedTo !== null) return false;
-          if (assigneeFilter !== 'UNASSIGNED' && t.assignedTo?.toLowerCase() !== assigneeFilter.toLowerCase()) return false;
-        }
         if (businessFilter !== 'ALL' && t.businessName !== businessFilter) return false;
 
         if (searchTerm.trim()) {
@@ -245,7 +296,7 @@ export default function AdminSupportPage() {
         }
         return 0;
       });
-  }, [searchTerm, statusFilter, priorityFilter, assigneeFilter, businessFilter, sortBy]);
+  }, [tickets, searchTerm, statusFilter, priorityFilter, businessFilter, sortBy]);
 
   const copyTicketId = (e: React.MouseEvent, id: string) => {
     e.stopPropagation();
@@ -258,7 +309,6 @@ export default function AdminSupportPage() {
     setSearchTerm('');
     setStatusFilter('ALL');
     setPriorityFilter('ALL');
-    setAssigneeFilter('ALL');
     setBusinessFilter('ALL');
     setSortBy('recently_updated');
   };
@@ -266,7 +316,6 @@ export default function AdminSupportPage() {
   const hasActiveFilters =
     statusFilter !== 'ALL' ||
     priorityFilter !== 'ALL' ||
-    assigneeFilter !== 'ALL' ||
     businessFilter !== 'ALL' ||
     searchTerm.trim().length > 0;
 
@@ -407,7 +456,7 @@ export default function AdminSupportPage() {
 
         {/* Expandable Filter Row */}
         {showFilters && (
-          <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs animate-in fade-in-50 duration-150">
+          <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs animate-in fade-in-50 duration-150">
             <div>
               <label className="block text-[11px] font-bold text-slate-500 mb-1">Status</label>
               <select
@@ -436,20 +485,6 @@ export default function AdminSupportPage() {
                 <option value="High">High</option>
                 <option value="Normal">Normal</option>
                 <option value="Low">Low</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1">Assigned To</label>
-              <select
-                value={assigneeFilter}
-                onChange={(e) => setAssigneeFilter(e.target.value)}
-                className="w-full h-[36px] px-2.5 bg-slate-50 border border-slate-200 rounded-lg font-semibold text-slate-800 outline-none"
-              >
-                <option value="ALL">All Agents</option>
-                <option value="David">David</option>
-                <option value="Sarah">Sarah</option>
-                <option value="UNASSIGNED">Unassigned</option>
               </select>
             </div>
 
@@ -494,8 +529,8 @@ export default function AdminSupportPage() {
               <th className="py-3 px-4">Subject</th>
               <th className="py-3 px-3">Priority</th>
               <th className="py-3 px-3">Status</th>
-              <th className="py-3 px-4">Assigned To</th>
               <th className="py-3 px-4">Last Updated</th>
+              <th className="py-3 px-4 text-center">Actions</th>
               <th className="py-3 px-4 text-right">Created</th>
             </tr>
           </thead>
@@ -579,23 +614,54 @@ export default function AdminSupportPage() {
                     </span>
                   </td>
 
-                  {/* Assigned To */}
-                  <td className="py-3.5 px-4 whitespace-nowrap">
-                    {t.assignedTo ? (
-                      <div className="flex items-center gap-1.5">
-                        <div className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px] font-bold">
-                          {t.assignedTo[0]}
-                        </div>
-                        <span className="font-semibold text-slate-700">{t.assignedTo}</span>
-                      </div>
-                    ) : (
-                      <span className="text-slate-400 font-medium italic">Unassigned</span>
-                    )}
-                  </td>
-
                   {/* Last Updated */}
                   <td className="py-3.5 px-4 whitespace-nowrap font-medium text-slate-500">
                     {t.lastUpdated}
+                  </td>
+
+                  {/* Quick Actions (In Progress, Done, Mail) */}
+                  <td className="py-3.5 px-4 whitespace-nowrap text-center" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center justify-center gap-1.5">
+                      {/* In Progress Action */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleStatusUpdate(e, t.id, 'In Progress')}
+                        title={t.status === 'In Progress' ? 'Currently In Progress' : 'Set to In Progress'}
+                        className={`px-2 py-1 rounded-lg text-xs transition-all flex items-center gap-1 ${
+                          t.status === 'In Progress'
+                            ? 'bg-blue-100 text-blue-800 border border-blue-300 font-bold shadow-xs'
+                            : 'bg-slate-100/80 text-slate-600 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-transparent'
+                        }`}
+                      >
+                        <Clock className="w-3.5 h-3.5 text-blue-600" />
+                        <span className="text-[11px] font-bold hidden xl:inline">In Progress</span>
+                      </button>
+
+                      {/* Done / Resolved Action */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleStatusUpdate(e, t.id, 'Resolved')}
+                        title={t.status === 'Resolved' || t.status === 'Closed' ? 'Already Resolved' : 'Mark as Done'}
+                        className={`px-2 py-1 rounded-lg text-xs transition-all flex items-center gap-1 ${
+                          t.status === 'Resolved' || t.status === 'Closed'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold shadow-xs'
+                            : 'bg-slate-100/80 text-slate-600 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 border border-transparent'
+                        }`}
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-[11px] font-bold hidden xl:inline">Done</span>
+                      </button>
+
+                      {/* Mail Action */}
+                      <button
+                        type="button"
+                        onClick={(e) => handleSendEmail(e, t)}
+                        title={`Email requester (${t.requesterEmail})`}
+                        className="p-1.5 rounded-lg bg-slate-100/80 text-slate-600 hover:bg-amber-50 hover:text-amber-700 hover:border-amber-200 border border-transparent transition-all flex items-center justify-center"
+                      >
+                        <Mail className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
                   </td>
 
                   {/* Created */}
@@ -606,7 +672,7 @@ export default function AdminSupportPage() {
               ))
             ) : (
               <tr>
-                <td colSpan={8} className="py-12 text-center text-slate-500">
+                <td colSpan={9} className="py-12 text-center text-slate-500">
                   <div className="flex flex-col items-center justify-center gap-2">
                     <Inbox className="w-8 h-8 text-slate-300" />
                     <span className="text-sm font-bold text-slate-700">No tickets match your filters</span>
@@ -669,9 +735,49 @@ export default function AdminSupportPage() {
 
               <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
                 <span>Updated {t.lastUpdated}</span>
-                <span className="font-semibold text-slate-700">
-                  {t.assignedTo ? `Agent: ${t.assignedTo}` : 'Unassigned'}
+                <span className="font-semibold text-slate-700 font-mono text-[10px]">
+                  #{t.id}
                 </span>
+              </div>
+
+              {/* Mobile Quick Action Buttons */}
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={(e) => handleStatusUpdate(e, t.id, 'In Progress')}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 ${
+                      t.status === 'In Progress'
+                        ? 'bg-blue-100 text-blue-800 border border-blue-300'
+                        : 'bg-slate-100 text-slate-700 hover:bg-blue-50'
+                    }`}
+                  >
+                    <Clock className="w-3 h-3 text-blue-600" />
+                    <span>In Progress</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => handleStatusUpdate(e, t.id, 'Resolved')}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 ${
+                      t.status === 'Resolved'
+                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                        : 'bg-slate-100 text-slate-700 hover:bg-emerald-50'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <span>Done</span>
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={(e) => handleSendEmail(e, t)}
+                  title={`Email ${t.requesterEmail}`}
+                  className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-amber-50 hover:text-amber-700 border border-slate-200"
+                >
+                  <Mail className="w-3.5 h-3.5" />
+                </button>
               </div>
             </div>
           ))

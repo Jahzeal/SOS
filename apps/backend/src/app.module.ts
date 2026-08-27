@@ -9,6 +9,8 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { SalesModule } from './sales/sales.module';
 import { CustomersModule } from './customers/customers.module';
 import { RepairsModule } from './repairs/repairs.module';
+import { AdminModule } from './admin/admin.module';
+import { MailModule } from './mail/mail.module';
 
 import { AppController } from './app.controller';
 
@@ -16,6 +18,7 @@ import { AppController } from './app.controller';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     PrismaModule,
+    MailModule,
     AuthModule,
     VerificationModule,
     BusinessModule,
@@ -24,6 +27,7 @@ import { AppController } from './app.controller';
     SalesModule,
     CustomersModule,
     RepairsModule,
+    AdminModule,
   ],
   controllers: [AppController],
 })

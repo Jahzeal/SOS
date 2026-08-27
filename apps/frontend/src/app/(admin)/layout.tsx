@@ -42,8 +42,8 @@ const mainNavItems: NavItem[] = [
 ];
 
 const bottomNavItems: NavItem[] = [
+  { name: 'Notifications', href: '/admin/notifications', icon: Bell, badge: '4' },
   { name: 'Support', href: '/admin/support', icon: HelpCircle },
-  { name: 'Audit Logs', href: '/admin/audit-logs', icon: FileText },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
@@ -97,14 +97,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               key={item.name}
               href={item.href}
               onClick={() => setMobileDrawerOpen(false)}
-              className={`flex items-center gap-3 px-4 py-2.5 text-xs font-semibold transition-all duration-150 border-l-4 ${
+              className={`flex items-center justify-between px-4 py-2.5 text-xs font-semibold transition-all duration-150 border-l-4 ${
                 isActive
                   ? 'bg-blue-50/80 text-blue-700 border-blue-600 font-bold shadow-sm'
                   : 'text-slate-600 border-transparent hover:bg-slate-100/80 hover:text-slate-900'
               }`}
             >
-              <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
-              <span>{item.name}</span>
+              <div className="flex items-center gap-3">
+                <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-blue-600' : 'text-slate-400'}`} />
+                <span>{item.name}</span>
+              </div>
+              {item.badge && (
+                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-700 border border-blue-200">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           );
         })}
@@ -172,10 +179,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="flex items-center gap-3">
-            <button className="w-8 h-8 rounded-lg bg-slate-50 hover:bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-600 transition shadow-subtle relative">
+            <Link
+              href="/admin/notifications"
+              className={`w-8 h-8 rounded-lg border flex items-center justify-center transition shadow-subtle relative ${
+                pathname.startsWith('/admin/notifications')
+                  ? 'bg-blue-50 border-blue-200 text-blue-600'
+                  : 'bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-600'
+              }`}
+              title="Notifications Center"
+            >
               <Bell className="w-4 h-4" />
               <span className="w-2 h-2 rounded-full bg-blue-600 absolute top-1.5 right-1.5 ring-2 ring-white" />
-            </button>
+            </Link>
             <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center border border-blue-200 shadow-subtle cursor-pointer">
               AU
             </div>
@@ -256,13 +271,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <span className="text-[10px] mt-0.5">Subs</span>
         </Link>
         <Link
-          href="/admin/audit-logs"
-          className={`flex flex-col items-center justify-center px-3 py-1 rounded-xl transition ${
-            pathname.startsWith('/admin/audit-logs') ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-500 hover:text-slate-900'
+          href="/admin/notifications"
+          className={`flex flex-col items-center justify-center px-3 py-1 rounded-xl transition relative ${
+            pathname.startsWith('/admin/notifications') ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-500 hover:text-slate-900'
           }`}
         >
-          <Activity className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">Logs</span>
+          <Bell className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Alerts</span>
+        </Link>
+        <Link
+          href="/admin/support"
+          className={`flex flex-col items-center justify-center px-3 py-1 rounded-xl transition ${
+            pathname.startsWith('/admin/support') ? 'bg-blue-600 text-white font-bold shadow-sm' : 'text-slate-500 hover:text-slate-900'
+          }`}
+        >
+          <HelpCircle className="w-5 h-5" />
+          <span className="text-[10px] mt-0.5">Support</span>
         </Link>
         <Link
           href="/admin/settings"

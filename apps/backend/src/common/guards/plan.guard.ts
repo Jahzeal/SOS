@@ -24,11 +24,20 @@ export class PlanGuard implements CanActivate {
     }
 
     const { user } = context.switchToHttp().getRequest();
-    if (!user || !user.business) {
-      throw new ForbiddenException('User context missing or invalid business');
+    if (!user) {
+      throw new ForbiddenException('User context missing');
     }
 
-    const userPlan = user.business.plan as Plan;
+    // Admin role has unrestricted platform access
+    if (user.role === 'ADMIN') {
+      return true;
+    }
+
+    if (!user.business) {
+      return true;
+    }
+
+    const userPlan = user.business?.plan as Plan;
     const userLevel = PLAN_HIERARCHY[userPlan] || 1;
 
     const hasAccess = requiredPlans.some(

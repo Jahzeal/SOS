@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, use } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { api } from '@/lib/api';
 import {
   ArrowLeft,
   Building2,
@@ -104,6 +105,22 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
     { id: 'a5', actor: 'David', action: 'Added internal investigation note', timestamp: '11:05 AM' },
   ]);
 
+  useEffect(() => {
+    async function loadTicket() {
+      try {
+        const res = await api.adminGetSupportTicket(ticketId);
+        if (res?.success && res.ticket) {
+          if (res.ticket.status) setStatus(res.ticket.status);
+          if (res.ticket.priority) setPriority(res.ticket.priority);
+          if (res.ticket.assignedTo) setAssignee(res.ticket.assignedTo);
+        }
+      } catch (err) {
+        console.error('Failed to fetch ticket from API:', err);
+      }
+    }
+    loadTicket();
+  }, [ticketId]);
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
     if (!messageText.trim()) return;
@@ -132,6 +149,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
       if (composerMode === 'reply' && status === 'Open') {
         setStatus('In Progress');
+        api.adminUpdateSupportTicketStatus(ticketId, 'In Progress').catch(() => {});
       }
 
       setMessageText('');
@@ -142,6 +160,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
   const handleResolveTicket = () => {
     setStatus('Resolved');
     setShowResolveModal(false);
+    api.adminUpdateSupportTicketStatus(ticketId, 'Resolved').catch(() => {});
     setActivityEvents((prev) => [
       {
         id: `a_${Date.now()}`,
@@ -155,6 +174,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
   const handleReopenTicket = () => {
     setStatus('In Progress');
+    api.adminUpdateSupportTicketStatus(ticketId, 'In Progress').catch(() => {});
     setActivityEvents((prev) => [
       {
         id: `a_${Date.now()}`,

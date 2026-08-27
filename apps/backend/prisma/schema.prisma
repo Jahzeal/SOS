@@ -16,11 +16,8 @@ enum Plan {
 }
 
 enum UserRole {
-  SUPER_ADMIN
-  OWNER
-  MANAGER
-  TECHNICIAN
-  SALES_REP
+  ADMIN
+  BUSINESS
 }
 
 enum PhoneCondition {
@@ -80,6 +77,7 @@ model Business {
   customers                 Customer[]
   sales                     Sale[]
   repairs                   RepairTicket[]
+  supportTickets            SupportTicket[]
 
   createdAt                 DateTime       @default(now())
   updatedAt                 DateTime       @updatedAt
@@ -91,7 +89,7 @@ model User {
   password      String
   firstName     String
   lastName      String
-  role          UserRole       @default(OWNER)
+  role          UserRole       @default(BUSINESS)
   businessId    String
   business      Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
   
@@ -230,3 +228,85 @@ model SaleItem {
   quantity      Int          @default(1)
   totalPrice    Float
 }
+
+enum TicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  PENDING
+  RESOLVED
+  CLOSED
+}
+
+enum NotificationCategory {
+  SYSTEM
+  SECURITY
+  BILLING
+  SUPPORT
+}
+
+enum NotificationPriority {
+  INFO
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model SupportTicket {
+  id                    String         @id @default(uuid())
+  ticketNumber          String         @unique
+  businessId            String
+  business              Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  
+  requesterName         String
+  requesterEmail        String
+  requesterPhone        String?
+  requesterRole         String?        @default("Staff")
+  subject               String
+  description           String
+  priority              TicketPriority @default(NORMAL)
+  status                TicketStatus   @default(OPEN)
+  
+  relatedImei           String?
+  relatedSerial         String?
+  relatedVerificationId String?
+
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  @@index([businessId])
+  @@index([status])
+}
+
+model AdminNotification {
+  id          String               @id @default(uuid())
+  title       String
+  message     String
+  category    NotificationCategory @default(SYSTEM)
+  priority    NotificationPriority @default(NORMAL)
+  isRead      Boolean              @default(false)
+  actionUrl   String?
+  actionLabel String?
+  meta        Json?
+
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([isRead])
+  @@index([category])
+}
+
+model PlatformSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+

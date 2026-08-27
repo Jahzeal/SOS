@@ -18,6 +18,16 @@ export class AuthController {
     return this.authService.login(dto);
   }
 
+  @Post('send-otp')
+  async sendOtp(@Body('email') email: string, @Body('fullName') fullName?: string) {
+    return this.authService.sendOtp(email, fullName);
+  }
+
+  @Post('verify-otp')
+  async verifyOtp(@Body('email') email: string, @Body('code') code: string) {
+    return this.authService.verifyOtp(email, code);
+  }
+
   @Post('forgot-password')
   async forgotPassword(@Body('email') email: string) {
     return this.authService.forgotPassword(email);

@@ -96,6 +96,20 @@ class ApiClient {
     });
   }
 
+  async sendOtp(email: string, fullName?: string) {
+    return this.request<{ success: boolean; message: string; devCode?: string; emailDelivery?: boolean }>('/auth/send-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, fullName }),
+    });
+  }
+
+  async verifyOtp(email: string, code: string) {
+    return this.request<{ success: boolean; verified: boolean }>('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, code }),
+    });
+  }
+
   async forgotPassword(email: string) {
     return this.request<{ message: string; resetUrl?: string; resetToken?: string }>('/auth/forgot-password', {
       method: 'POST',
@@ -268,6 +282,136 @@ class ApiClient {
   // --- Public Verification Endpoint ---
   async verifyPublicImei(identifier: string) {
     return this.request<any>(`/verification/public/${encodeURIComponent(identifier)}`);
+  }
+
+  // ==========================================
+  // --- HQ ADMIN ENDPOINTS ---
+  // ==========================================
+
+  // Dashboard
+  async adminGetMetrics(timeRange: string = 'today') {
+    return this.request<any>(`/admin/dashboard/metrics?timeRange=${timeRange}`);
+  }
+
+  async adminGetVerificationTraffic(timeRange: string = 'today') {
+    return this.request<any>(`/admin/dashboard/chart?timeRange=${timeRange}`);
+  }
+
+  async adminGetSystemLogs() {
+    return this.request<any>('/admin/dashboard/logs');
+  }
+
+  // Businesses Directory
+  async adminGetBusinesses(params?: { search?: string; plan?: string; status?: string; page?: number; limit?: number }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.plan && params.plan !== 'ALL') query.append('plan', params.plan);
+    if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request<any>(`/admin/businesses${qs}`);
+  }
+
+  async adminGetBusiness(id: string) {
+    return this.request<any>(`/admin/businesses/${id}`);
+  }
+
+  async adminUpdateBusinessPlan(id: string, plan: string) {
+    return this.request<any>(`/admin/businesses/${id}/plan`, {
+      method: 'PATCH',
+      body: JSON.stringify({ plan }),
+    });
+  }
+
+  async adminToggleBusinessVerification(id: string) {
+    return this.request<any>(`/admin/businesses/${id}/toggle-verification`, {
+      method: 'PATCH',
+    });
+  }
+
+  // Subscriptions & Plans
+  async adminGetSubscriptions() {
+    return this.request<any>('/admin/subscriptions');
+  }
+
+  async adminUpdateSubscriberPlan(id: string, plan: string) {
+    return this.request<any>(`/admin/subscriptions/${id}/plan`, {
+      method: 'PATCH',
+      body: JSON.stringify({ plan }),
+    });
+  }
+
+  // Transactions
+  async adminGetTransactions(params?: { search?: string; status?: string; page?: number; limit?: number }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+    if (params?.page) query.append('page', String(params.page));
+    if (params?.limit) query.append('limit', String(params.limit));
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request<any>(`/admin/transactions${qs}`);
+  }
+
+  // Support Tickets
+  async adminGetSupportTickets(params?: { status?: string; priority?: string; search?: string }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+    if (params?.priority && params.priority !== 'ALL') query.append('priority', params.priority);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request<any>(`/admin/support/tickets${qs}`);
+  }
+
+  async adminGetSupportTicket(id: string) {
+    return this.request<any>(`/admin/support/tickets/${id}`);
+  }
+
+  async adminUpdateSupportTicketStatus(id: string, status: string) {
+    return this.request<any>(`/admin/support/tickets/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
+    });
+  }
+
+  // Notifications Center
+  async adminGetNotifications(params?: { category?: string; status?: string; search?: string }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.category && params.category !== 'all') query.append('category', params.category);
+    if (params?.status && params.status !== 'all') query.append('status', params.status);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request<any>(`/admin/notifications${qs}`);
+  }
+
+  async adminMarkNotificationRead(id: string) {
+    return this.request<any>(`/admin/notifications/${id}/read`, {
+      method: 'PATCH',
+    });
+  }
+
+  async adminMarkAllNotificationsRead() {
+    return this.request<any>('/admin/notifications/mark-all-read', {
+      method: 'POST',
+    });
+  }
+
+  async adminDeleteNotification(id: string) {
+    return this.request<any>(`/admin/notifications/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  // Platform Settings
+  async adminGetSettings() {
+    return this.request<any>('/admin/settings');
+  }
+
+  async adminUpdateSettings(payload: any) {
+    return this.request<any>('/admin/settings', {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
   }
 }
 
