@@ -210,7 +210,7 @@ class ApiClient {
     customerEmail?: string;
     paymentMethod?: string;
     paymentStatus?: string;
-    items: { phoneRecordId: string; price: number }[];
+    items: { phoneRecordId?: string; description?: string; price: number; quantity?: number }[];
   }) {
     return this.request<any>('/sales/checkout', {
       method: 'POST',

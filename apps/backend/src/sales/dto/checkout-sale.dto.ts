@@ -4,11 +4,19 @@ import { PaymentMethod } from '@prisma/client';
 
 export class SaleItemDto {
   @IsString()
-  @IsNotEmpty()
-  phoneRecordId: string;
+  @IsOptional()
+  phoneRecordId?: string;
+
+  @IsString()
+  @IsOptional()
+  description?: string;
 
   @IsNumber()
   price: number;
+
+  @IsNumber()
+  @IsOptional()
+  quantity?: number;
 }
 
 export class CheckoutSaleDto {

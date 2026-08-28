@@ -181,14 +181,15 @@ export default function CreateInvoicePage() {
     setIsSaving(true);
     setErrorMessage(null);
     try {
-      const deviceItems = items.filter((i) => i.isDevice);
-      if (deviceItems.length === 0) {
-        throw new Error('At least one device from inventory is required to issue an invoice statement.');
+      if (items.length === 0) {
+        throw new Error('At least one item or appliance is required to issue an invoice statement.');
       }
 
-      const payloadItems = deviceItems.map((item) => ({
-        phoneRecordId: item.id,
+      const payloadItems = items.map((item) => ({
+        phoneRecordId: item.isDevice ? item.id : undefined,
+        description: item.description,
         price: item.unitPrice,
+        quantity: item.quantity || 1,
       }));
 
       const finalStatus = status === 'DRAFT' ? 'DRAFT' : invoicePaymentStatus;

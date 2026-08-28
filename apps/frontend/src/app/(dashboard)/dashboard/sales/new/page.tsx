@@ -208,14 +208,15 @@ function CheckoutPOSContent() {
     setIsProcessing(true);
     setErrorMessage(null);
     try {
-      const deviceItems = cart.filter((item) => item.isDevice);
-      if (deviceItems.length === 0) {
-        throw new Error('At least one device from inventory is required to checkout.');
+      if (cart.length === 0) {
+        throw new Error('At least one item or appliance is required to checkout.');
       }
 
-      const payloadItems = deviceItems.map((item) => ({
-        phoneRecordId: item.id,
+      const payloadItems = cart.map((item) => ({
+        phoneRecordId: item.isDevice ? item.id : undefined,
+        description: item.isDevice ? `${item.brand} ${item.model}` : item.model,
         price: item.price,
+        quantity: item.quantity || 1,
       }));
 
       const sale = await api.checkoutSale({
