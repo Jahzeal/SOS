@@ -12,6 +12,7 @@ import { RepairsModule } from './repairs/repairs.module';
 import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
 import { PlansModule } from './plans/plans.module';
+import { PaymentsModule } from './payments/payments.module';
 
 import { AppController } from './app.controller';
 
@@ -21,6 +22,7 @@ import { AppController } from './app.controller';
     PrismaModule,
     MailModule,
     PlansModule,
+    PaymentsModule,
     AuthModule,
     VerificationModule,
     BusinessModule,

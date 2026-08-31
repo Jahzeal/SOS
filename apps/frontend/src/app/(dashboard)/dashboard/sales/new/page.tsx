@@ -25,6 +25,7 @@ import {
   AlertTriangle,
   Loader2,
   Check,
+  Copy,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -40,7 +41,7 @@ interface CartDeviceItem {
   color: string;
   price: number;
   quantity: number;
-  isDevice: boolean;
+  isDevice?: boolean;
 }
 
 function CheckoutPOSContent() {
@@ -72,8 +73,32 @@ function CheckoutPOSContent() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Store Settlement Bank Account & Payment Verification State
+  const [storeBankDetails, setStoreBankDetails] = useState<{
+    bankName?: string;
+    accountNumber?: string;
+    accountName?: string;
+  }>({});
+  const [copiedAccount, setCopiedAccount] = useState(false);
+  const [seenPaymentConfirmed, setSeenPaymentConfirmed] = useState(false);
+
   // Finalized Receipt Data
   const [finalReceipt, setFinalReceipt] = useState<any>(null);
+
+  // Load store profile bank settlement details
+  useEffect(() => {
+    api.getBusinessProfile()
+      .then((data) => {
+        if (data) {
+          setStoreBankDetails({
+            bankName: data.bankName,
+            accountNumber: data.accountNumber,
+            accountName: data.accountName,
+          });
+        }
+      })
+      .catch((err) => console.warn('Could not load store bank settlement details:', err));
+  }, []);
 
   // Load initial device if ?device=<id> passed in URL
   useEffect(() => {
@@ -710,6 +735,105 @@ function CheckoutPOSContent() {
               </div>
             )}
 
+            {/* Store Bank Settlement Details (If Bank Transfer or Card Selected) */}
+            {(paymentMethod === 'BANK_TRANSFER' || paymentMethod === 'CARD') && (
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white space-y-3 text-xs shadow-md">
+                <div className="flex items-center justify-between border-b border-white/10 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Building2 className="w-4 h-4 text-teal-400" />
+                    <span className="font-extrabold text-white">Store Settlement Bank Account</span>
+                  </div>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    {paymentMethod === 'BANK_TRANSFER' ? 'Direct Transfer' : 'POS Settlement'}
+                  </span>
+                </div>
+
+                {storeBankDetails.accountNumber ? (
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block">Bank Name</span>
+                        <span className="font-extrabold text-white text-sm">{storeBankDetails.bankName || 'Store Bank'}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block">Transfer Amount</span>
+                        <span className="font-mono font-black text-emerald-400 text-base">₦{grandTotal.toLocaleString()}</span>
+                      </div>
+                    </div>
+
+                    <div className="p-3 bg-white/10 rounded-xl flex items-center justify-between border border-white/10">
+                      <div>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase block">Account Number</span>
+                        <span className="font-mono font-black text-white text-lg tracking-wider">
+                          {storeBankDetails.accountNumber}
+                        </span>
+                        {storeBankDetails.accountName && (
+                          <span className="text-[11px] text-slate-300 font-medium block mt-0.5">
+                            {storeBankDetails.accountName}
+                          </span>
+                        )}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (storeBankDetails.accountNumber) {
+                            navigator.clipboard.writeText(storeBankDetails.accountNumber);
+                            setCopiedAccount(true);
+                            setTimeout(() => setCopiedAccount(false), 2000);
+                          }
+                        }}
+                        className="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                      >
+                        {copiedAccount ? (
+                          <>
+                            <Check className="w-3.5 h-3.5 text-white" />
+                            <span>Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3.5 h-3.5" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3 bg-white/5 border border-white/10 rounded-xl text-slate-300 text-xs flex items-center justify-between">
+                    <span>No store bank account configured in Settings yet.</span>
+                    <Link
+                      href="/dashboard/settings"
+                      target="_blank"
+                      className="text-teal-400 hover:underline font-bold"
+                    >
+                      Set Up Account →
+                    </Link>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Mandatory "I Have Confirmed / Seen Payment" Checkbox */}
+            <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 space-y-2">
+              <label className="flex items-start gap-3 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={seenPaymentConfirmed}
+                  onChange={(e) => setSeenPaymentConfirmed(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-amber-400 cursor-pointer"
+                />
+                <div className="text-xs">
+                  <span className="font-extrabold text-amber-950 block">
+                    Confirm Receipt of Payment
+                  </span>
+                  <span className="text-amber-900 font-medium leading-relaxed">
+                    I have verified and confirmed receipt of <strong>₦{grandTotal.toLocaleString()}</strong> in store account / cash in hand before issuing this receipt.
+                  </span>
+                </div>
+              </label>
+            </div>
+
             {/* Action Buttons */}
             <div className="flex items-center justify-between gap-3 pt-2">
               <Button
@@ -724,9 +848,10 @@ function CheckoutPOSContent() {
               <Button
                 variant="primary"
                 size="md"
+                disabled={!seenPaymentConfirmed || isProcessing || (paymentMethod === 'CASH' && (Number(cashTendered) || 0) < grandTotal)}
                 isLoading={isProcessing}
                 onClick={handleConfirmPayment}
-                className="bg-emerald-600 hover:bg-emerald-500 font-bold px-6 shadow-md shadow-emerald-600/20"
+                className="bg-emerald-600 hover:bg-emerald-500 font-bold px-6 shadow-md shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 rightIcon={<CheckCircle2 className="w-4 h-4" />}
               >
                 Confirm Payment & Process Sale

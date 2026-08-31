@@ -449,6 +449,31 @@ class ApiClient {
       method: 'DELETE',
     });
   }
+
+  // Paystack Subscription Billing
+  async initializeSubscriptionPayment(payload: { planCode: string; billingCycle?: 'MONTHLY' | 'ANNUAL' }) {
+    return this.request<{
+      success: boolean;
+      reference: string;
+      accessCode: string;
+      authorizationUrl: string;
+      amountNgn: number;
+      planCode: string;
+      planName: string;
+      billingCycle: string;
+    }>('/payments/initialize', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async verifySubscriptionPayment(reference: string) {
+    return this.request<{
+      success: boolean;
+      message: string;
+      business: any;
+    }>(`/payments/verify/${encodeURIComponent(reference)}`);
+  }
 }
 
 export const api = new ApiClient();

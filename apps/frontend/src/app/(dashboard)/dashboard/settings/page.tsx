@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModal';
 
 export default function RebuiltSettingsPage() {
   const { user } = useAuthStore();
@@ -33,6 +34,12 @@ export default function RebuiltSettingsPage() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Paystack & Billing State
+  const [availablePlans, setAvailablePlans] = useState<any[]>([]);
+  const [liveBusinessData, setLiveBusinessData] = useState<any>(null);
+  const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<any>(null);
+  const [isPaystackModalOpen, setIsPaystackModalOpen] = useState(false);
 
   const logoInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -70,6 +77,9 @@ export default function RebuiltSettingsPage() {
     email: user?.email || '',
     address: '',
     logoUrl: '',
+    bankName: '',
+    accountNumber: '',
+    accountName: '',
     showName: true,
     showLogo: true,
     showPhone: true,
@@ -77,27 +87,40 @@ export default function RebuiltSettingsPage() {
     showWebsite: false,
   });
 
-  useEffect(() => {
-    async function loadLiveProfile() {
-      try {
-        const data = await api.getBusinessProfile();
-        if (data) {
-          setBusinessProfile((prev) => ({
-            ...prev,
-            name: data.name || prev.name,
-            phone: data.phone || prev.phone,
-            email: data.email || prev.email,
-            address: data.address || prev.address,
-            logoUrl: data.logoUrl || prev.logoUrl,
-          }));
-        }
-      } catch (err) {
-        console.warn('Backend business profile load skipped/offline:', err);
-      } finally {
-        setLoadingProfile(false);
+  const loadLiveProfileAndPlans = async () => {
+    try {
+      const [profileData, plansData] = await Promise.all([
+        api.getBusinessProfile().catch(() => null),
+        api.getPlans().catch(() => null),
+      ]);
+
+      if (profileData) {
+        setLiveBusinessData(profileData);
+        setBusinessProfile((prev) => ({
+          ...prev,
+          name: profileData.name || prev.name,
+          phone: profileData.phone || prev.phone,
+          email: profileData.email || prev.email,
+          address: profileData.address || prev.address,
+          logoUrl: profileData.logoUrl || prev.logoUrl,
+          bankName: profileData.bankName || '',
+          accountNumber: profileData.accountNumber || '',
+          accountName: profileData.accountName || '',
+        }));
       }
+
+      if (plansData?.plans) {
+        setAvailablePlans(plansData.plans);
+      }
+    } catch (err) {
+      console.warn('Backend business profile load skipped/offline:', err);
+    } finally {
+      setLoadingProfile(false);
     }
-    loadLiveProfile();
+  };
+
+  useEffect(() => {
+    loadLiveProfileAndPlans();
   }, []);
 
   // Users & Roles State
@@ -136,6 +159,9 @@ export default function RebuiltSettingsPage() {
         email: businessProfile.email,
         address: businessProfile.address,
         logoUrl: businessProfile.logoUrl,
+        bankName: businessProfile.bankName,
+        accountNumber: businessProfile.accountNumber,
+        accountName: businessProfile.accountName,
       });
 
       setHasUnsavedChanges(false);
@@ -410,6 +436,59 @@ export default function RebuiltSettingsPage() {
                   onChange={(e) => handleProfileChange('address', e.target.value)}
                   className="w-full p-3.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-teal-600 focus:bg-white resize-none"
                 />
+              </div>
+            </div>
+
+            {/* Store Settlement & Bank Transfer Account Card */}
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                  <h3 className="text-base font-extrabold text-slate-900">
+                    Store Settlement & Bank Account
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Displayed to cashiers on the POS counter checkout screen when customers pay via Bank Transfer.
+                  </p>
+                </div>
+                <div className="p-2 rounded-xl bg-blue-50 text-blue-700 border border-blue-100">
+                  <CreditCard className="w-4 h-4" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-800">Bank Name</label>
+                  <input
+                    type="text"
+                    value={businessProfile.bankName}
+                    onChange={(e) => handleProfileChange('bankName', e.target.value)}
+                    placeholder="e.g. Access Bank, Opay, GTBank"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-teal-600 focus:bg-white"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-800">Account Number (10 Digits)</label>
+                  <input
+                    type="text"
+                    maxLength={10}
+                    value={businessProfile.accountNumber}
+                    onChange={(e) => handleProfileChange('accountNumber', e.target.value.replace(/[^0-9]/g, ''))}
+                    placeholder="e.g. 0123456789"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-mono font-bold focus:outline-none focus:border-teal-600 focus:bg-white"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-800">Account Beneficiary Name</label>
+                  <input
+                    type="text"
+                    value={businessProfile.accountName}
+                    onChange={(e) => handleProfileChange('accountName', e.target.value)}
+                    placeholder="e.g. Apex Cellular Hub Ltd"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-900 font-medium focus:outline-none focus:border-teal-600 focus:bg-white"
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -713,64 +792,204 @@ export default function RebuiltSettingsPage() {
 
       {/* TAB 4: BILLING & PLAN */}
       {activeSubTab === 'billing' && (
-        <div className="space-y-6">
-          {/* Current Subscription Card */}
-          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-slate-900 to-slate-950 text-white shadow-xl space-y-6 border border-slate-800">
+        <div className="space-y-8">
+          {/* Current Subscription Status Card */}
+          <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white shadow-xl space-y-6 border border-slate-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
               <div>
-                <Badge variant="verified" size="sm" className="bg-teal-600 text-white border-none mb-2">
-                  ACTIVE SUBSCRIPTION
-                </Badge>
-                <h2 className="text-2xl font-extrabold tracking-tight">Business Scale Plan</h2>
+                <div className="flex items-center gap-2 mb-2">
+                  {liveBusinessData?.subscriptionStatus === 'ACTIVE' ? (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500 text-white shadow-sm">
+                      Active (Paid Subscription)
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-blue-500 text-white shadow-sm">
+                      14-Day Free Trial
+                    </span>
+                  )}
+                  <span className="text-xs font-bold text-slate-400 font-mono">
+                    Tier: {liveBusinessData?.plan || user?.business?.plan || 'STARTER'}
+                  </span>
+                </div>
+
+                <h2 className="text-2xl font-black tracking-tight text-white">
+                  {liveBusinessData?.plan === 'ENTERPRISE'
+                    ? 'Enterprise Network Plan'
+                    : liveBusinessData?.plan === 'BUSINESS'
+                    ? 'Business Hub Plan'
+                    : 'Starter Retailer Plan'}
+                </h2>
+                
                 <p className="text-xs text-slate-400 font-medium mt-1">
-                  Renews on September 12, 2026 • ₦45,000 / month
+                  {liveBusinessData?.subscriptionEndsAt ? (
+                    <>Active until {new Date(liveBusinessData.subscriptionEndsAt).toLocaleDateString()} • Renews via Paystack</>
+                  ) : liveBusinessData?.trialEndsAt ? (
+                    <>Trial ends on {new Date(liveBusinessData.trialEndsAt).toLocaleDateString()} • Upgrade to maintain full access</>
+                  ) : (
+                    <>Instant verification, POS, and thermal receipt generation active</>
+                  )}
                 </p>
               </div>
 
               <div className="flex items-center gap-3">
-                <Button variant="secondary" size="sm" className="bg-white/10 text-white hover:bg-white/20 border-white/10 font-bold">
-                  Manage Billing
-                </Button>
-                <Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-500 text-white font-bold">
-                  Upgrade Plan →
+                <Button
+                  variant="primary"
+                  size="md"
+                  onClick={() => {
+                    const upgradePlan = availablePlans.find((p) => p.code !== (liveBusinessData?.plan || 'STARTER')) || availablePlans[0];
+                    if (upgradePlan) {
+                      setSelectedPlanForCheckout(upgradePlan);
+                      setIsPaystackModalOpen(true);
+                    }
+                  }}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/20"
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Upgrade with Paystack →
                 </Button>
               </div>
             </div>
 
-            {/* Plan Usage Bars */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs">
+            {/* Live Store Usage */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
               <div className="space-y-2 p-4 rounded-2xl bg-white/5 border border-white/10">
                 <div className="flex justify-between font-bold">
-                  <span className="text-slate-300">Phone Registrations</span>
-                  <span className="text-emerald-400">1,240 / 2,000</span>
+                  <span className="text-slate-300">Registered Devices</span>
+                  <span className="text-emerald-400 font-mono">
+                    {liveBusinessData?._count?.phoneRecords || 0} Devices
+                  </span>
                 </div>
-                <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-[62%]" />
+                <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-emerald-500 rounded-full w-full" />
                 </div>
               </div>
 
               <div className="space-y-2 p-4 rounded-2xl bg-white/5 border border-white/10">
                 <div className="flex justify-between font-bold">
-                  <span className="text-slate-300">Store Branches</span>
-                  <span className="text-teal-400">2 / 3 Branches</span>
+                  <span className="text-slate-300">Total Sales Processed</span>
+                  <span className="text-teal-400 font-mono">
+                    {liveBusinessData?._count?.sales || 0} Receipts
+                  </span>
                 </div>
-                <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-teal-500 rounded-full w-[66%]" />
+                <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-teal-500 rounded-full w-full" />
                 </div>
               </div>
 
               <div className="space-y-2 p-4 rounded-2xl bg-white/5 border border-white/10">
                 <div className="flex justify-between font-bold">
                   <span className="text-slate-300">Staff Accounts</span>
-                  <span className="text-indigo-400">5 / 10 Accounts</span>
+                  <span className="text-indigo-400 font-mono">
+                    {liveBusinessData?._count?.users || 1} Staff
+                  </span>
                 </div>
-                <div className="h-2 rounded-full bg-slate-800 overflow-hidden">
-                  <div className="h-full bg-indigo-500 rounded-full w-[50%]" />
+                <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                  <div className="h-full bg-indigo-500 rounded-full w-full" />
                 </div>
               </div>
             </div>
           </div>
+
+          {/* Available Subscription Plans */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-extrabold text-slate-900">Available Subscription Tiers</h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5">
+                  Select a subscription plan to upgrade or renew your store directly with Paystack.
+                </p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {availablePlans.map((p) => {
+                const isCurrent = (liveBusinessData?.plan || 'STARTER').toUpperCase() === p.code.toUpperCase();
+                return (
+                  <div
+                    key={p.code}
+                    className={`p-6 rounded-3xl bg-white border flex flex-col justify-between transition-all ${
+                      isCurrent
+                        ? 'border-blue-600 ring-2 ring-blue-600/20 shadow-md'
+                        : 'border-slate-200/80 hover:border-slate-300 shadow-sm'
+                    }`}
+                  >
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <span className="font-extrabold text-slate-900 text-lg">{p.name}</span>
+                        {isCurrent && (
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                            Current Tier
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                        {p.description || 'Ideal for expanding phone stores & gadget retailers.'}
+                      </p>
+
+                      <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl">
+                        <div className="text-2xl font-black text-slate-900 font-mono">
+                          ₦{p.monthlyPriceNgn.toLocaleString()}
+                          <span className="text-xs text-slate-400 font-sans font-medium ml-1">/ month</span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-medium mt-1">
+                          or ₦{(p.annualPriceNgn || p.monthlyPriceNgn * 10).toLocaleString()} / year (Save ~17%)
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 pt-2 text-xs">
+                        <div className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">Features Included:</div>
+                        <div className="space-y-1.5 text-slate-600 font-medium">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                            <span>{p.maxDevices ? `Up to ${p.maxDevices.toLocaleString()} Devices` : 'Unlimited Devices'}</span>
+                          </div>
+                          {Array.isArray(p.features) &&
+                            p.features.map((feat: string, fIdx: number) => (
+                              <div key={fIdx} className="flex items-center gap-2">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                                <span>{feat}</span>
+                              </div>
+                            ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="pt-6 mt-6 border-t border-slate-100">
+                      <button
+                        onClick={() => {
+                          setSelectedPlanForCheckout(p);
+                          setIsPaystackModalOpen(true);
+                        }}
+                        className={`w-full py-3 rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer ${
+                          isCurrent
+                            ? 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200'
+                            : 'bg-emerald-600 hover:bg-emerald-500 text-white shadow-md shadow-emerald-600/20'
+                        }`}
+                      >
+                        <CreditCard className="w-3.5 h-3.5" />
+                        <span>{isCurrent ? 'Renew / Extend with Paystack' : `Upgrade to ${p.name}`}</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* Paystack Checkout Modal */}
+      {isPaystackModalOpen && selectedPlanForCheckout && (
+        <PaystackCheckoutModal
+          isOpen={isPaystackModalOpen}
+          onClose={() => setIsPaystackModalOpen(false)}
+          plan={selectedPlanForCheckout}
+          onSuccess={(updatedBiz) => {
+            setLiveBusinessData(updatedBiz);
+            loadLiveProfileAndPlans();
+          }}
+        />
       )}
 
       {/* Sticky Unsaved Changes Floating Bar */}

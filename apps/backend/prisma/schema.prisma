@@ -68,6 +68,11 @@ model Business {
   subscriptionPlan          SubscriptionPlan? @relation(fields: [planId], references: [id])
   subscriptionStatus        String         @default("TRIAL")
   trialEndsAt               DateTime?
+  subscriptionEndsAt        DateTime?
+  paystackCustomerCode      String?
+  bankName                  String?
+  accountNumber             String?
+  accountName               String?
   publicVerificationEnabled Boolean        @default(true)
   customSuccessMessage      String?        @default("This phone is verified and authentic.")
   warrantyTerms             String?
@@ -82,9 +87,29 @@ model Business {
   repairs                   RepairTicket[]
   supportTickets            SupportTicket[]
   verificationLogs          VerificationLog[]
+  subscriptionPayments      SubscriptionPayment[]
 
   createdAt                 DateTime       @default(now())
   updatedAt                 DateTime       @updatedAt
+}
+
+model SubscriptionPayment {
+  id                  String     @id @default(uuid())
+  businessId          String
+  business            Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  reference           String     @unique
+  amountNgn           Float
+  planCode            String
+  billingCycle        String     @default("MONTHLY")
+  status              String     @default("PENDING")
+  channel             String?
+  paystackAccessCode  String?
+  paidAt              DateTime?
+  rawMetadata         Json?
+
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
 }
 
 model SubscriptionPlan {
