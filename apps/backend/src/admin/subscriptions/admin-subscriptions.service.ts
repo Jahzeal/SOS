@@ -44,7 +44,8 @@ export class AdminSubscriptionsService {
       const planCode = plan?.code || b.plan;
       const planName = plan?.name || b.plan;
       const isPaidActive = b.subscriptionStatus === 'ACTIVE';
-      const monthlyFee = (isPaidActive && plan) ? plan.monthlyPriceNgn : 0;
+      const planPrice = plan?.monthlyPriceNgn || 0;
+      const monthlyFee = isPaidActive ? planPrice : 0;
 
       if (planCode) {
         tierCounts[planCode.toLowerCase()] = (tierCounts[planCode.toLowerCase()] || 0) + 1;
@@ -58,6 +59,7 @@ export class AdminSubscriptionsService {
         slug: b.slug,
         plan: planCode,
         planDisplayName: planName,
+        planPrice: planPrice,
         monthlyPrice: monthlyFee,
         currency: 'NGN',
         status: b.subscriptionStatus || 'TRIAL',
@@ -112,6 +114,28 @@ export class AdminSubscriptionsService {
     return {
       success: true,
       message: `Successfully updated ${updated.name} to ${updated.plan}`,
+      data: updated,
+    };
+  }
+
+  async cancelSubscriberPlan(businessId: string) {
+    const updated = await this.prisma.business.update({
+      where: { id: businessId },
+      data: {
+        subscriptionStatus: 'CANCELLED',
+      },
+      select: {
+        id: true,
+        name: true,
+        plan: true,
+        subscriptionStatus: true,
+        updatedAt: true,
+      },
+    });
+
+    return {
+      success: true,
+      message: `Successfully cancelled subscription for ${updated.name}`,
       data: updated,
     };
   }

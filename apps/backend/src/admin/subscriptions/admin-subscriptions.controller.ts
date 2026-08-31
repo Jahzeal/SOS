@@ -20,5 +20,12 @@ export class AdminSubscriptionsController {
   ) {
     return this.subscriptionsService.updateSubscriberPlan(businessId, plan);
   }
+
+  @Patch(':businessId/cancel')
+  async cancelPlan(
+    @Param('businessId') businessId: string,
+  ) {
+    return this.subscriptionsService.cancelSubscriberPlan(businessId);
+  }
 }
 

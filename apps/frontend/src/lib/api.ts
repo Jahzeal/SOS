@@ -342,6 +342,12 @@ class ApiClient {
     });
   }
 
+  async adminCancelSubscriberPlan(id: string) {
+    return this.request<any>(`/admin/subscriptions/${id}/cancel`, {
+      method: 'PATCH',
+    });
+  }
+
   // Transactions
   async adminGetTransactions(params?: { search?: string; status?: string; paymentMethod?: string; page?: number; limit?: number }) {
     const query = new URLSearchParams();

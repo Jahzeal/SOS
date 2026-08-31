@@ -15,6 +15,9 @@ import {
   Shield,
   Smartphone,
   Check,
+  Mail,
+  Phone,
+  MessageCircle,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 
@@ -142,7 +145,7 @@ export default function AdminBusinessesManagementPage() {
                 <th className="px-4 py-3 font-semibold">Contact / Email</th>
                 <th className="px-4 py-3 font-semibold">Plan</th>
                 <th className="px-4 py-3 font-semibold text-center">Devices</th>
-                <th className="px-4 py-3 font-semibold text-center">Public Verification</th>
+                <th className="px-4 py-3 font-semibold text-center">Contact Store</th>
                 <th className="px-5 py-3 font-semibold text-right">Registered</th>
               </tr>
             </thead>
@@ -200,26 +203,40 @@ export default function AdminBusinessesManagementPage() {
                     </td>
 
                     <td className="px-4 py-3.5 text-center">
-                      <button
-                        onClick={() => handleToggleVerification(b.id)}
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition ${
-                          b.publicVerificationEnabled
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100'
-                        }`}
-                      >
-                        {b.publicVerificationEnabled ? (
+                      <div className="flex items-center justify-center gap-1.5">
+                        {b.email && (
+                          <a
+                            href={`mailto:${b.email}?subject=VerifyFlow Store Support`}
+                            title={`Email ${b.email}`}
+                            className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition"
+                          >
+                            <Mail className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {b.phone && b.phone !== '+15550192834' && (
                           <>
-                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                            <span>Enabled</span>
-                          </>
-                        ) : (
-                          <>
-                            <AlertCircle className="w-3.5 h-3.5 text-amber-600" />
-                            <span>Disabled</span>
+                            <a
+                              href={`tel:${b.phone}`}
+                              title={`Call ${b.phone}`}
+                              className="p-1.5 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 transition"
+                            >
+                              <Phone className="w-3.5 h-3.5" />
+                            </a>
+                            <a
+                              href={`https://wa.me/${b.phone.replace(/[^0-9]/g, '')}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={`WhatsApp ${b.phone}`}
+                              className="p-1.5 rounded-lg bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200 transition"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                            </a>
                           </>
                         )}
-                      </button>
+                        {!b.email && (!b.phone || b.phone === '+15550192834') && (
+                          <span className="text-slate-400 text-[11px]">—</span>
+                        )}
+                      </div>
                     </td>
 
                     <td className="px-5 py-3.5 text-right font-mono text-[11px] text-slate-400">

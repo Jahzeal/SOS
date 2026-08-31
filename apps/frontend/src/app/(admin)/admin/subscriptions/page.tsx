@@ -188,6 +188,18 @@ export default function AdminSubscriptionsPage() {
     }
   };
 
+  const handleCancelPlan = async (businessId: string, businessName: string) => {
+    if (!confirm(`Are you sure you want to cancel the subscription plan for "${businessName}"?`)) {
+      return;
+    }
+    try {
+      await api.adminCancelSubscriberPlan(businessId);
+      fetchSubscriptionsAndPlans();
+    } catch (err: any) {
+      alert(err.message || 'Failed to cancel subscriber plan');
+    }
+  };
+
   const filteredSubscribers = subscribers.filter((sub) => {
     const name = sub?.name || sub?.businessName || '';
     const slug = sub?.slug || '';
@@ -492,7 +504,21 @@ export default function AdminSubscriptionsPage() {
                       </select>
                     </td>
                     <td className="py-3 px-4 font-mono font-bold text-slate-900">
-                      ₦{(sub.monthlyPrice || 0).toLocaleString()} / mo
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span>
+                          ₦{((sub.planPrice ?? dbPlans.find((p) => p.code === sub.plan)?.monthlyPriceNgn) || 0).toLocaleString()} / mo
+                        </span>
+                        {sub.subscriptionStatus === 'TRIAL' && (
+                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                            (Trial)
+                          </span>
+                        )}
+                        {sub.subscriptionStatus === 'CANCELLED' && (
+                          <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200/80 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                            (Cancelled)
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 px-4 font-mono text-slate-600">
                       {sub.phoneRecordsCount || 0} / {sub.maxDevices ? sub.maxDevices.toLocaleString() : '∞'}
@@ -502,6 +528,10 @@ export default function AdminSubscriptionsPage() {
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
                           Active (Paid)
                         </span>
+                      ) : sub.subscriptionStatus === 'CANCELLED' ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-rose-50 text-rose-700 border border-rose-200">
+                          Cancelled
+                        </span>
                       ) : (
                         <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
                           14-Day Trial
@@ -509,9 +539,19 @@ export default function AdminSubscriptionsPage() {
                       )}
                     </td>
                     <td className="py-3 px-4 text-right">
-                      <span className="text-[11px] text-slate-400 font-mono">
-                        {new Date(sub.createdAt).toLocaleDateString()}
-                      </span>
+                      <div className="flex items-center justify-end gap-2">
+                        {sub.subscriptionStatus !== 'CANCELLED' ? (
+                          <button
+                            onClick={() => handleCancelPlan(sub.id, sub.name || sub.businessName || 'Store')}
+                            className="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition cursor-pointer"
+                            title="Cancel Subscriber Plan"
+                          >
+                            Cancel Plan
+                          </button>
+                        ) : (
+                          <span className="text-[11px] font-semibold text-slate-400 italic">Cancelled</span>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))

@@ -47,8 +47,13 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(() => {
-        return caches.match(event.request);
+      .catch(async () => {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+        return new Response('', {
+          status: 408,
+          statusText: 'Request Timeout Offline',
+        });
       })
   );
 });

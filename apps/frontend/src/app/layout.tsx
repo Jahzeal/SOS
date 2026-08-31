@@ -2,6 +2,7 @@ import React from 'react';
 import type { Viewport, Metadata } from 'next';
 import { Providers } from './providers';
 import { PwaRegister } from '@/components/PwaRegister';
+import { NetworkStatusBanner } from '@/components/NetworkStatusBanner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="bg-slate-50 text-slate-900 antialiased min-h-screen">
+        <NetworkStatusBanner />
         <PwaRegister />
         <Providers>{children}</Providers>
       </body>
