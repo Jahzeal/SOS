@@ -25,6 +25,11 @@ import {
   EyeOff,
   Layers,
   Award,
+  Info,
+  Sparkles,
+  CreditCard,
+  Printer,
+  QrCode,
 } from 'lucide-react';
 
 import { useAuth } from '@/lib/auth-context';
@@ -64,6 +69,7 @@ export default function OnboardingPage() {
   const [selectedPlan, setSelectedPlan] = useState<string>('BUSINESS');
   const [dynamicPlans, setDynamicPlans] = useState<any[]>([]);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
+  const [viewingPlanDetails, setViewingPlanDetails] = useState<any | null>(null);
 
   // Step 5 Workspace Loading State
   const [setupProgress, setSetupProgress] = useState(0);
@@ -751,94 +757,262 @@ export default function OnboardingPage() {
                     </span>
                   </div>
 
-                  {/* Dynamic Database Plan Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
-                    {dynamicPlans.length > 0 ? (
-                      dynamicPlans.map((planItem) => {
-                        const isSelected = selectedPlan.toUpperCase() === planItem.code.toUpperCase();
-                        const price =
-                          billingCycle === 'monthly'
-                            ? planItem.monthlyPriceNgn
-                            : Math.round((planItem.annualPriceNgn || planItem.monthlyPriceNgn * 10) / 12);
-                        const isRecommended = planItem.isRecommended || planItem.code.toUpperCase() === 'BUSINESS';
+                  {/* Dynamic Database Plan Cards OR Full About Plan Details View */}
+                  {viewingPlanDetails ? (
+                    /* DEDICATED ABOUT PLAN DETAIL VIEW */
+                    <div className="p-6 sm:p-8 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-6 animate-in zoom-in duration-200">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                        <button
+                          type="button"
+                          onClick={() => setViewingPlanDetails(null)}
+                          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 px-3 py-1.5 rounded-xl transition cursor-pointer"
+                        >
+                          <ArrowLeft className="w-4 h-4" />
+                          <span>Back to All Plans</span>
+                        </button>
 
-                        return (
-                          <div
-                            key={planItem.code}
-                            onClick={() => setSelectedPlan(planItem.code.toUpperCase())}
-                            className={`p-5 rounded-2xl border cursor-pointer transition-all relative flex flex-col justify-between space-y-4 ${
-                              isSelected
-                                ? 'border-teal-600 bg-teal-50/20 ring-2 ring-teal-500/30 shadow-lg'
-                                : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
-                            }`}
-                          >
-                            {isRecommended && (
-                              <div className="absolute -top-3 right-4 bg-teal-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-                                RECOMMENDED
-                              </div>
-                            )}
+                        <div className="flex items-center gap-2">
+                          <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase bg-teal-50 text-teal-700 border border-teal-200">
+                            {viewingPlanDetails.code} Tier
+                          </span>
+                        </div>
+                      </div>
 
-                            <div className="space-y-3">
-                              <div className="flex items-center justify-between">
-                                <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                                  {planItem.name}
-                                </span>
-                                {isSelected && (
-                                  <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
-                                )}
-                              </div>
+                      {/* Plan Header & Pricing Banner */}
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white shadow-lg">
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2 text-teal-400 text-xs font-bold uppercase tracking-wider">
+                            <Sparkles className="w-4 h-4" />
+                            <span>Package Specifications</span>
+                          </div>
+                          <h2 className="text-2xl sm:text-3xl font-black text-white">{viewingPlanDetails.name}</h2>
+                          <p className="text-xs text-slate-300 font-medium max-w-lg">
+                            {viewingPlanDetails.description || 'Designed for retail gadget stores seeking verified device tracking, POS, and thermal receipts.'}
+                          </p>
+                        </div>
 
-                              <div>
-                                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
-                                  ₦{price?.toLocaleString()}
-                                  <span className="text-xs font-semibold text-slate-500 font-sans">/mo after trial</span>
-                                </div>
-                                <p className="text-xs text-slate-500 font-medium mt-1">
-                                  {planItem.description || 'Verified device intelligence suite.'}
-                                </p>
-                              </div>
+                        <div className="p-4 rounded-xl bg-white/10 border border-white/10 text-right shrink-0">
+                          <div className="text-[10px] font-bold text-slate-400 uppercase">
+                            {billingCycle === 'monthly' ? 'Monthly Pricing' : 'Annual Pricing'}
+                          </div>
+                          <div className="text-2xl sm:text-3xl font-black text-white font-mono mt-0.5">
+                            ₦{billingCycle === 'monthly'
+                              ? viewingPlanDetails.monthlyPriceNgn?.toLocaleString()
+                              : (viewingPlanDetails.annualPriceNgn || viewingPlanDetails.monthlyPriceNgn * 10)?.toLocaleString()}
+                            <span className="text-xs text-slate-400 font-sans font-normal ml-1">
+                              /{billingCycle === 'monthly' ? 'mo' : 'yr'}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-emerald-400 font-bold mt-1">
+                            14-Day Free Trial • ₦0 Due Today
+                          </div>
+                        </div>
+                      </div>
 
-                              {/* Features & Specs from Database */}
-                              <div className="space-y-1.5 pt-3 border-t border-slate-100 text-xs font-medium text-slate-700">
-                                <div className="flex items-center gap-2">
-                                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                                  <span>Inventory: <strong>{planItem.maxDevices ? `${planItem.maxDevices.toLocaleString()} Devices` : 'Unlimited Devices'}</strong></span>
-                                </div>
-                                {planItem.customBranding && (
-                                  <div className="flex items-center gap-2">
-                                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                                    <span>Custom Receipt Logo Branding</span>
-                                  </div>
-                                )}
-                                {Array.isArray(planItem.features) &&
-                                  planItem.features.slice(0, 4).map((feat: string, idx: number) => (
-                                    <div key={idx} className="flex items-center gap-2">
-                                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
-                                      <span>{feat}</span>
-                                    </div>
-                                  ))}
-                              </div>
+                      {/* Detailed Capabilities Grid */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+                          What's Included in {viewingPlanDetails.name}:
+                        </h4>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-700">
+                          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-teal-50 text-teal-700 shrink-0">
+                              <Smartphone className="w-4 h-4" />
                             </div>
-
-                            <div
-                              className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
-                                isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'
-                              }`}
-                            >
-                              {isSelected ? 'Selected Package' : `Select ${planItem.name}`}
+                            <div>
+                              <div className="font-bold text-slate-900">
+                                {viewingPlanDetails.maxDevices
+                                  ? `Up to ${viewingPlanDetails.maxDevices.toLocaleString()} Devices`
+                                  : 'Unlimited Device Inventory'}
+                              </div>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                Register serial numbers, specs, battery health, and test reports.
+                              </p>
                             </div>
                           </div>
-                        );
-                      })
-                    ) : (
-                      <div className="col-span-3 p-8 rounded-2xl bg-white border border-slate-200 text-center space-y-2">
-                        <p className="text-xs font-bold text-slate-700">14-Day Free Trial Activated</p>
-                        <p className="text-xs text-slate-500">
-                          Full store workspace access with unlimited features is enabled during your free trial period.
-                        </p>
+
+                          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-blue-50 text-blue-700 shrink-0">
+                              <Printer className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900">Thermal Receipts & QR Origin</div>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                58mm and 80mm instant thermal printing with unique cryptographic QR origin codes.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-purple-50 text-purple-700 shrink-0">
+                              <ShieldCheck className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900">Anti-Theft IMEI Blacklist Check</div>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                Cross-check incoming swap/buyback phones against national stolen registers.
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3">
+                            <div className="p-2 rounded-lg bg-emerald-50 text-emerald-700 shrink-0">
+                              <Building className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <div className="font-bold text-slate-900">Store Staff & Branch Access</div>
+                              <p className="text-[11px] text-slate-500 mt-0.5">
+                                Granular permissions for managers, cashiers, sales reps, and repair techs.
+                              </p>
+                            </div>
+                          </div>
+
+                          {Array.isArray(viewingPlanDetails.features) &&
+                            viewingPlanDetails.features.map((feat: string, fIdx: number) => (
+                              <div
+                                key={fIdx}
+                                className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-3"
+                              >
+                                <div className="p-2 rounded-lg bg-emerald-50 text-emerald-700 shrink-0">
+                                  <Check className="w-4 h-4" />
+                                </div>
+                                <div>
+                                  <div className="font-bold text-slate-900">{feat}</div>
+                                  <p className="text-[11px] text-slate-500 mt-0.5">Full access included in tier.</p>
+                                </div>
+                              </div>
+                            ))}
+                        </div>
                       </div>
-                    )}
-                  </div>
+
+                      {/* Detail Footer CTA */}
+                      <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-4">
+                        <button
+                          type="button"
+                          onClick={() => setViewingPlanDetails(null)}
+                          className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                        >
+                          ← Back to All Plans
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedPlan(viewingPlanDetails.code.toUpperCase());
+                            setViewingPlanDetails(null);
+                          }}
+                          className="px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold shadow-md shadow-teal-600/20 transition flex items-center gap-2 cursor-pointer"
+                        >
+                          <span>Select {viewingPlanDetails.name} & Continue</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    /* REGULAR 3-PLAN CARDS GRID */
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                      {dynamicPlans.length > 0 ? (
+                        dynamicPlans.map((planItem) => {
+                          const isSelected = selectedPlan.toUpperCase() === planItem.code.toUpperCase();
+                          const price =
+                            billingCycle === 'monthly'
+                              ? planItem.monthlyPriceNgn
+                              : Math.round((planItem.annualPriceNgn || planItem.monthlyPriceNgn * 10) / 12);
+                          const isRecommended = planItem.isRecommended || planItem.code.toUpperCase() === 'BUSINESS';
+
+                          return (
+                            <div
+                              key={planItem.code}
+                              onClick={() => setSelectedPlan(planItem.code.toUpperCase())}
+                              className={`p-5 rounded-2xl border cursor-pointer transition-all relative flex flex-col justify-between space-y-4 ${
+                                isSelected
+                                  ? 'border-teal-600 bg-teal-50/20 ring-2 ring-teal-500/30 shadow-lg'
+                                  : 'border-slate-200 bg-white hover:border-slate-300 shadow-sm'
+                              }`}
+                            >
+                              {isRecommended && (
+                                <div className="absolute -top-3 right-4 bg-teal-600 text-white text-[10px] font-extrabold px-3 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                                  RECOMMENDED
+                                </div>
+                              )}
+
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                                    {planItem.name}
+                                  </span>
+                                  {isSelected && (
+                                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
+                                  )}
+                                </div>
+
+                                <div>
+                                  <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
+                                    ₦{price?.toLocaleString()}
+                                    <span className="text-xs font-semibold text-slate-500 font-sans">/mo after trial</span>
+                                  </div>
+                                  <p className="text-xs text-slate-500 font-medium mt-1">
+                                    {planItem.description || 'Verified device intelligence suite.'}
+                                  </p>
+                                </div>
+
+                                {/* Features & Specs from Database */}
+                                <div className="space-y-1.5 pt-3 border-t border-slate-100 text-xs font-medium text-slate-700">
+                                  <div className="flex items-center gap-2">
+                                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                    <span>Inventory: <strong>{planItem.maxDevices ? `${planItem.maxDevices.toLocaleString()} Devices` : 'Unlimited Devices'}</strong></span>
+                                  </div>
+                                  {planItem.customBranding && (
+                                    <div className="flex items-center gap-2">
+                                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                      <span>Custom Receipt Logo Branding</span>
+                                    </div>
+                                  )}
+                                  {Array.isArray(planItem.features) &&
+                                    planItem.features.slice(0, 3).map((feat: string, idx: number) => (
+                                      <div key={idx} className="flex items-center gap-2">
+                                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                        <span>{feat}</span>
+                                      </div>
+                                    ))}
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 pt-2 border-t border-slate-100">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setViewingPlanDetails(planItem);
+                                  }}
+                                  className="w-full text-center text-[11px] font-bold text-teal-600 hover:text-teal-700 hover:underline py-1 flex items-center justify-center gap-1 cursor-pointer"
+                                >
+                                  <Info className="w-3.5 h-3.5" />
+                                  <span>About {planItem.name} Plan →</span>
+                                </button>
+
+                                <div
+                                  className={`p-2.5 rounded-xl text-center text-xs font-bold transition ${
+                                    isSelected ? 'bg-teal-600 text-white' : 'bg-slate-100 text-slate-700'
+                                  }`}
+                                >
+                                  {isSelected ? 'Selected Package' : `Select ${planItem.name}`}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="col-span-3 p-8 rounded-2xl bg-white border border-slate-200 text-center space-y-2">
+                          <p className="text-xs font-bold text-slate-700">14-Day Free Trial Activated</p>
+                          <p className="text-xs text-slate-500">
+                            Full store workspace access with unlimited features is enabled during your free trial period.
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
 
