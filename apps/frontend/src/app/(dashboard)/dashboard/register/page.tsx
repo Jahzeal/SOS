@@ -24,7 +24,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
-import { extractImeiOrSerial, validateLuhnIMEI } from '@/lib/imei-utils';
+import { ImeiCameraScanner } from '@/components/scanner/ImeiCameraScanner';
 
 export default function RegisterPhonePage() {
   const router = useRouter();
@@ -53,140 +53,6 @@ export default function RegisterPhonePage() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [registeredItem, setRegisteredItem] = useState<any>(null);
   const [brandOpen, setBrandOpen] = useState(false);
-  const [registerCameraGuidance, setRegisterCameraGuidance] = useState<{
-    message: string;
-    type: 'success' | 'warning' | 'dark' | 'info';
-  }>({
-    message: 'Align box barcode inside green box',
-    type: 'info',
-  });
-
-  const lastRegisterDetectionRef = React.useRef(Date.now());
-
-  React.useEffect(() => {
-    let controls: any = null;
-    let isMounted = true;
-    let frameCheckInterval: any = null;
-
-    if (showCameraScanner) {
-      setRegisterCameraGuidance({ message: 'Align box barcode inside green box', type: 'info' });
-
-      import('@zxing/browser').then(({ BrowserMultiFormatReader }) => {
-        if (!isMounted) return;
-        setTimeout(async () => {
-          const videoElement = document.getElementById('zxing-register-video') as HTMLVideoElement;
-          if (!videoElement) return;
-
-          // Low-light canvas analyzer
-          const canvas = document.createElement('canvas');
-          const ctx = canvas.getContext('2d', { willReadFrequently: true });
-          canvas.width = 160;
-          canvas.height = 120;
-
-          frameCheckInterval = setInterval(() => {
-            if (
-              !videoElement ||
-              videoElement.paused ||
-              videoElement.ended ||
-              videoElement.readyState < 2 ||
-              !videoElement.videoWidth
-            ) {
-              return;
-            }
-            try {
-              ctx?.drawImage(videoElement, 0, 0, 160, 120);
-              const imgData = ctx?.getImageData(0, 0, 160, 120);
-              if (imgData) {
-                let totalLuminance = 0;
-                const pixels = imgData.data;
-                for (let i = 0; i < pixels.length; i += 16) {
-                  const r = pixels[i];
-                  const g = pixels[i + 1];
-                  const b = pixels[i + 2];
-                  totalLuminance += 0.2126 * r + 0.7152 * g + 0.0722 * b;
-                }
-                const avgLuminance = totalLuminance / (pixels.length / 16);
-                if (avgLuminance < 25) {
-                  setRegisterCameraGuidance({
-                    message: '🌙 Environment Too Dark — Turn on lighting',
-                    type: 'dark',
-                  });
-                } else if (Date.now() - lastRegisterDetectionRef.current > 2500) {
-                  setRegisterCameraGuidance({
-                    message: '⚠️ No IMEI or Barcode Detected — Align phone box inside reticle',
-                    type: 'warning',
-                  });
-                }
-              }
-            } catch (e) {}
-          }, 500);
-
-          try {
-            const codeReader = new BrowserMultiFormatReader();
-            controls = await codeReader.decodeFromVideoDevice(
-              undefined,
-              videoElement,
-              (result: any) => {
-                if (result) {
-                  const points = result.getResultPoints();
-                  if (points && points.length > 0) {
-                    const videoWidth = videoElement.videoWidth || 640;
-                    const videoHeight = videoElement.videoHeight || 480;
-
-                    let sumX = 0;
-                    let sumY = 0;
-                    points.forEach((p: any) => {
-                      sumX += p.getX();
-                      sumY += p.getY();
-                    });
-                    const barcodeCenterX = sumX / points.length;
-                    const barcodeCenterY = sumY / points.length;
-
-                    const deltaX = barcodeCenterX - (videoWidth / 2);
-                    const deltaY = barcodeCenterY - (videoHeight / 2);
-
-                    if (deltaX < -60) {
-                      setRegisterCameraGuidance({ message: 'Move Camera Right ➡️', type: 'warning' });
-                    } else if (deltaX > 60) {
-                      setRegisterCameraGuidance({ message: 'Move Camera Left ⬅️', type: 'warning' });
-                    } else if (deltaY < -50) {
-                      setRegisterCameraGuidance({ message: 'Move Camera Down ⬇️', type: 'warning' });
-                    } else if (deltaY > 50) {
-                      setRegisterCameraGuidance({ message: 'Move Camera Up ⬆️', type: 'warning' });
-                    } else {
-                      setRegisterCameraGuidance({ message: 'Perfect Alignment — Hold Still 🟢', type: 'success' });
-                    }
-                  }
-
-                  const rawText = result.getText();
-                  const parsed = extractImeiOrSerial(rawText);
-
-                  if (parsed.type === 'IMEI') {
-                    setImei(parsed.value);
-                    setShowCameraScanner(false);
-                  } else if (parsed.type === 'SERIAL') {
-                    setSerialNumber(parsed.value);
-                    setShowCameraScanner(false);
-                  }
-                  // Do NOT auto-advance setStep(2); keep user on Step 1 so they can see what was scanned into the input.
-                }
-              }
-            );
-          } catch (e) {
-            console.warn('Register camera start error:', e);
-          }
-        }, 150);
-      });
-    }
-
-    return () => {
-      isMounted = false;
-      if (frameCheckInterval) clearInterval(frameCheckInterval);
-      if (controls) {
-        try { controls.stop(); } catch (e) {}
-      }
-    };
-  }, [showCameraScanner]);
 
   const BRANDS = [
     'Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Huawei',
@@ -870,62 +736,18 @@ export default function RegisterPhonePage() {
         </div>
       )}
 
-      {/* ZXing Camera Scanner Modal */}
-      {showCameraScanner && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-200 animate-in zoom-in duration-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div className="flex items-center gap-2">
-                <Camera className="w-5 h-5 text-blue-600" />
-                <h3 className="font-extrabold text-slate-900 text-base">Scan Box Barcode</h3>
-              </div>
-              <button
-                onClick={() => setShowCameraScanner(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="relative w-full rounded-2xl overflow-hidden bg-slate-900 min-h-[260px] flex items-center justify-center">
-              <video id="zxing-register-video" className="w-full h-full min-h-[260px] object-cover" muted playsInline />
-              
-              <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-max max-w-[90%]">
-                <div
-                  className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-1.5 ${
-                    registerCameraGuidance.type === 'dark'
-                      ? 'bg-amber-500 text-slate-950 animate-pulse border border-amber-300'
-                      : registerCameraGuidance.type === 'warning'
-                      ? 'bg-slate-900/90 text-amber-400 border border-amber-500/40'
-                      : registerCameraGuidance.type === 'success'
-                      ? 'bg-emerald-600 text-white border border-emerald-300'
-                      : 'bg-slate-900/80 text-white border border-slate-700'
-                  }`}
-                >
-                  {registerCameraGuidance.message}
-                </div>
-              </div>
-
-              <div className="scanner-overlay-reticle">
-                <div className="scanner-overlay-laser" />
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-500 text-center font-medium">
-              Align phone box IMEI or Serial Number barcode inside green box to auto-populate form.
-            </p>
-
-            <Button
-              variant="secondary"
-              fullWidth
-              size="md"
-              onClick={() => setShowCameraScanner(false)}
-            >
-              Cancel Scan
-            </Button>
-          </div>
-        </div>
-      )}
+      {/* Reusable Camera Scanner Modal */}
+      <ImeiCameraScanner
+        mode="modal"
+        isOpen={showCameraScanner}
+        onClose={() => setShowCameraScanner(false)}
+        onDetected={(result) => {
+          if (result.imei) setImei(result.imei);
+          if (result.serial) setSerialNumber(result.serial);
+        }}
+        title="Scan Phone Box / IMEI"
+        subtitle="Align phone box IMEI or Serial Number barcode inside green box to auto-populate form."
+      />
 
     </div>
   );

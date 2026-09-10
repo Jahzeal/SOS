@@ -185,6 +185,8 @@ export default function PublicLandingPageV2() {
   });
 
   const hasScannedRef = React.useRef(false);
+  const isProcessingRef = React.useRef(false);
+  const lastScanTimeRef = React.useRef(0);
   const lastDetectionTimeRef = React.useRef(Date.now());
 
   const extractImeiAndSerial = (rawText: string): string => {
@@ -285,6 +287,7 @@ export default function PublicLandingPageV2() {
       setIsCameraFrozen(false);
       setScannedFormat(null);
       hasScannedRef.current = false;
+      isProcessingRef.current = false;
       lastDetectionTimeRef.current = Date.now();
       setCameraGuidance({ message: 'Align IMEI / Serial Number inside reticle 🎯', type: 'info' });
 
@@ -327,7 +330,8 @@ export default function PublicLandingPageV2() {
               videoElement.ended ||
               videoElement.readyState < 2 ||
               !videoElement.videoWidth ||
-              hasScannedRef.current
+              hasScannedRef.current ||
+              isProcessingRef.current
             ) {
               return;
             }
@@ -376,46 +380,53 @@ export default function PublicLandingPageV2() {
               undefined,
               videoElement,
               async (result: any, err: any) => {
-                  const rawText = result.getText();
-                  const parsed = extractImeiOrSerial(rawText);
-                  
-                  // Ignore 12/13-digit EAN product barcodes — continue live scanning for IMEI/Serial barcode
-                  if (!parsed.value) {
-                    return;
-                  }
-                  const cleanIdentifier = parsed.value;
-
-                  hasScannedRef.current = true;
-                  const formatName = result.getBarcodeFormat() ? `FORMAT_${result.getBarcodeFormat()}` : 'BARCODE';
-                  
-                  // Snapshot & Freeze Camera Feed immediately
-                  videoElement.pause();
-                  setIsCameraFrozen(true);
-                  setScannedFormat(formatName);
-                  setHeroSearchInput(cleanIdentifier);
-                  setHeroVerifying(true);
-                  setHeroVerifiedResult(null);
-
-                  try {
-                    const data = await api.verifyPublicImei(cleanIdentifier);
-                    const formatted = formatVerifiedPhoneResult(data);
-                    if (formatted) {
-                      setHeroVerifiedResult(formatted);
-                    } else {
-                      setHeroVerifiedResult({
-                        found: false,
-                        searchedTerm: cleanIdentifier,
-                      });
-                    }
-                  } catch (e) {
-                    setHeroVerifiedResult({
-                      found: false,
-                      searchedTerm: cleanIdentifier,
-                    });
-                  } finally {
-                    setHeroVerifying(false);
-                  }
+                if (!result || hasScannedRef.current || isProcessingRef.current) {
+                  return;
                 }
+
+                // Cooldown buffer: Ignore triggers within 2 seconds of last scan
+                if (Date.now() - lastScanTimeRef.current < 2000) {
+                  return;
+                }
+
+                const rawText = result.getText ? result.getText() : (result.text || '');
+                if (!rawText) return;
+
+                const parsed = extractImeiOrSerial(rawText);
+                
+                // Ignore 12/13-digit EAN product barcodes — continue live scanning for IMEI/Serial barcode
+                if (!parsed || !parsed.value) {
+                  return;
+                }
+                const cleanIdentifier = parsed.value;
+
+                // Set synchronous guards immediately to stop concurrent frame triggers
+                hasScannedRef.current = true;
+                isProcessingRef.current = true;
+                lastScanTimeRef.current = Date.now();
+
+                const formatName = result.getBarcodeFormat ? `FORMAT_${result.getBarcodeFormat()}` : 'BARCODE';
+                
+                // Snapshot & Freeze Camera Feed immediately
+                try {
+                  videoElement.pause();
+                } catch (e) {}
+                setIsCameraFrozen(true);
+                setScannedFormat(formatName);
+                setHeroSearchInput(cleanIdentifier);
+                setHeroVerifying(true);
+                setHeroVerifiedResult(null);
+
+                try {
+                  const data = await api.verifyPublicImei(cleanIdentifier);
+                  processVerificationResult(data, cleanIdentifier);
+                } catch (e) {
+                  processVerificationResult(null, cleanIdentifier);
+                } finally {
+                  setHeroVerifying(false);
+                  isProcessingRef.current = false;
+                }
+              }
             );
           } catch (err: any) {
             console.warn('ZXing camera start error:', err);
@@ -439,11 +450,19 @@ export default function PublicLandingPageV2() {
   }, [activeHeroTab]);
 
   const resumeCameraScanning = () => {
-    hasScannedRef.current = false;
     setIsCameraFrozen(false);
     setHeroVerifiedResult(null);
     setScannedFormat(null);
     setScannedRawText(null);
+    setGoogleLensPills([]);
+    lastScanTimeRef.current = Date.now();
+    
+    // Allow a 1.2s positioning buffer before re-enabling automatic barcode detection
+    setTimeout(() => {
+      hasScannedRef.current = false;
+      isProcessingRef.current = false;
+    }, 1200);
+
     const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
     if (videoElement) {
       videoElement.play().catch(() => {});
