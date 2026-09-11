@@ -882,18 +882,24 @@ export default function PublicLandingPageV2() {
             )}
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="md:hidden p-2 text-slate-700 hover:text-slate-900 focus:outline-none"
-          >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Right Controls: PWA install & Hamburger */}
+          <div className="flex md:hidden items-center gap-2">
+            <PwaInstallButton variant="header" />
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-slate-700 hover:text-slate-900 focus:outline-none rounded-xl hover:bg-slate-100 transition"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
         </div>
 
         {/* Mobile Animated Drawer Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden bg-white border-b border-slate-200 px-6 py-6 space-y-4 shadow-dropdown animate-in slide-in-from-top-2 duration-200">
+            <PwaInstallButton variant="drawer" />
+
             <nav className="flex flex-col space-y-3 text-sm font-semibold text-slate-700">
               <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-teal-600 font-bold py-1">
                 Pricing & Plans

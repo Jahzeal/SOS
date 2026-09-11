@@ -309,27 +309,27 @@ export default function OnboardingPage() {
             
             {/* Mobile Top Brand & Progress Header (Clean light styling: block lg:hidden) */}
             <div className="block lg:hidden bg-white -mx-4 -mt-4 p-4 mb-2 border-b border-slate-200 shadow-sm rounded-b-xl space-y-3">
-              <div className="flex items-center justify-between">
-                <Link href="/" className="flex items-center gap-2 font-black text-lg text-slate-900">
-                  <div className="w-7 h-7 rounded-lg bg-teal-600 flex items-center justify-center text-white">
+              <div className="flex items-center justify-between gap-2">
+                <Link href="/" className="flex items-center gap-2 font-black text-base sm:text-lg text-slate-900 shrink-0">
+                  <div className="w-7 h-7 rounded-lg bg-teal-600 flex items-center justify-center text-white shrink-0">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
-                  <span>VerifyFlow</span>
+                  <span className="truncate max-w-[110px] sm:max-w-none">VerifyFlow</span>
                 </Link>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   <Link href="/login" className="text-xs font-bold text-teal-600 hover:underline">
                     Sign In
                   </Link>
                   {currentStep > 1 && (
                     <button
                       onClick={handleBack}
-                      className="text-xs text-slate-600 hover:text-slate-900 font-bold flex items-center gap-1 bg-slate-100 px-2.5 py-1 rounded-lg border border-slate-200"
+                      className="text-xs text-slate-600 hover:text-slate-900 font-bold flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200"
                     >
-                      <ArrowLeft className="w-3.5 h-3.5" /> Back
+                      <ArrowLeft className="w-3 h-3" /> Back
                     </button>
                   )}
-                  <span className="text-[11px] font-extrabold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
-                    Step {currentStep} of 5
+                  <span className="text-[10px] sm:text-[11px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-teal-200">
+                    Step {currentStep}/5
                   </span>
                 </div>
               </div>
