@@ -110,7 +110,7 @@ export function PwaInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose:
         </button>
 
         <div className="flex items-center gap-3 pr-6">
-          <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-base shadow-md shrink-0">
+          <div className="w-11 h-11 rounded-2xl bg-teal-600 text-white flex items-center justify-center font-extrabold text-base shadow-md shadow-teal-600/20 shrink-0">
             VF
           </div>
           <div>
@@ -147,9 +147,9 @@ export function PwaInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose:
 
         <button
           onClick={onClose}
-          className="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-md transition"
+          className="w-full py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs rounded-xl shadow-md shadow-teal-600/20 transition flex items-center justify-center gap-1.5"
         >
-          Got It
+          <span>Got It</span>
         </button>
       </div>
     </div>
@@ -249,9 +249,9 @@ export function PwaInstallButton({
     <>
       <button
         onClick={handleClick}
-        className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition ${className}`}
+        className={`inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shadow-md shadow-teal-600/20 transition ${className}`}
       >
-        <Download className="w-4 h-4 text-teal-400" />
+        <Download className="w-4 h-4 text-white" />
         <span>Install / Download PWA</span>
       </button>
       <PwaInstallModal isOpen={showModal} onClose={() => setShowModal(false)} />
