@@ -409,17 +409,7 @@ class ApiClient {
     });
   }
 
-  // Platform Settings
-  async adminGetSettings() {
-    return this.request<any>('/admin/settings');
-  }
 
-  async adminUpdateSettings(payload: any) {
-    return this.request<any>('/admin/settings', {
-      method: 'PATCH',
-      body: JSON.stringify(payload),
-    });
-  }
 
   // Dynamic Plans Management
   async getPlans() {
@@ -473,6 +463,58 @@ class ApiClient {
       message: string;
       business: any;
     }>(`/payments/verify/${encodeURIComponent(reference)}`);
+  }
+
+  // --- Admin Platform & Email Template Settings ---
+  async adminGetSettings() {
+    return this.request<{
+      success: boolean;
+      data: {
+        platformName?: string;
+        maintenanceMode?: boolean;
+        allowPublicRegistrations?: boolean;
+        defaultTrialDays?: number;
+        rateLimitPerMinute?: number;
+        maxLookupsPerDayFree?: number;
+        alertEmail?: string;
+        webhookSecret?: string;
+        paystackLiveEnabled?: boolean;
+        welcomeEmailEnabled?: boolean;
+        welcomeEmailSubject?: string;
+        welcomeEmailHeading?: string;
+        welcomeEmailSubheading?: string;
+        welcomeEmailBody?: string;
+        welcomeEmailCtaText?: string;
+      };
+    }>('/admin/settings');
+  }
+
+  async adminUpdateSettings(partial: any) {
+    return this.request<{ success: boolean; data: any }>('/admin/settings', {
+      method: 'PATCH',
+      body: JSON.stringify(partial),
+    });
+  }
+
+  async adminSendTestWelcomeEmail(payload: {
+    email: string;
+    template?: {
+      subject?: string;
+      heading?: string;
+      subheading?: string;
+      body?: string;
+      ctaText?: string;
+    };
+  }) {
+    return this.request<{
+      success: boolean;
+      messageId?: string;
+      error?: string;
+      recipient: string;
+    }>('/admin/settings/test-email', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   }
 }
 

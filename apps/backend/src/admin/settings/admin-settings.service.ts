@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { MailService } from '../../mail/mail.service';
 
 export interface AdminPlatformSettingsDto {
   platformName: string;
@@ -11,11 +12,21 @@ export interface AdminPlatformSettingsDto {
   alertEmail: string;
   webhookSecret: string;
   paystackLiveEnabled: boolean;
+  // Email Customization
+  welcomeEmailEnabled: boolean;
+  welcomeEmailSubject: string;
+  welcomeEmailHeading: string;
+  welcomeEmailSubheading: string;
+  welcomeEmailBody: string;
+  welcomeEmailCtaText: string;
 }
 
 @Injectable()
 export class AdminSettingsService implements OnModuleInit {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   async onModuleInit() {
     await this.ensureInitialSettings();
@@ -32,6 +43,14 @@ export class AdminSettingsService implements OnModuleInit {
       alertEmail: process.env.ALERT_EMAIL || 'security@verifyflow.ng',
       webhookSecret: process.env.WEBHOOK_SECRET || 'whsec_verifyflow_live_89410384',
       paystackLiveEnabled: process.env.PAYSTACK_LIVE_ENABLED || 'true',
+      // Email defaults
+      welcomeEmailEnabled: 'true',
+      welcomeEmailSubject: 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready! 🚀',
+      welcomeEmailHeading: 'Welcome to VerifyFlow!',
+      welcomeEmailSubheading: 'Your Verified Phone Inventory & Retail OS is Live',
+      welcomeEmailBody:
+        'Congratulations! Your store workspace "{{businessName}}" has been successfully created. You now have full access to our high-speed IMEI ledger, express POS checkout, and fraud prevention suite.',
+      welcomeEmailCtaText: 'Go to Your Store Dashboard →',
     };
 
     for (const [key, value] of Object.entries(defaultSettings)) {
@@ -58,6 +77,17 @@ export class AdminSettingsService implements OnModuleInit {
       alertEmail: map.get('alertEmail') || 'security@verifyflow.ng',
       webhookSecret: map.get('webhookSecret') || 'whsec_verifyflow_live_89410384',
       paystackLiveEnabled: map.get('paystackLiveEnabled') === 'true',
+      // Email fields
+      welcomeEmailEnabled: map.get('welcomeEmailEnabled') !== 'false',
+      welcomeEmailSubject:
+        map.get('welcomeEmailSubject') || 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready! 🚀',
+      welcomeEmailHeading: map.get('welcomeEmailHeading') || 'Welcome to VerifyFlow!',
+      welcomeEmailSubheading:
+        map.get('welcomeEmailSubheading') || 'Your Verified Phone Inventory & Retail OS is Live',
+      welcomeEmailBody:
+        map.get('welcomeEmailBody') ||
+        'Congratulations! Your store workspace "{{businessName}}" has been successfully created. You now have full access to our high-speed IMEI ledger, express POS checkout, and fraud prevention suite.',
+      welcomeEmailCtaText: map.get('welcomeEmailCtaText') || 'Go to Your Store Dashboard →',
     };
 
     return {
@@ -80,5 +110,36 @@ export class AdminSettingsService implements OnModuleInit {
     }
 
     return this.getSettings();
+  }
+
+  async sendTestWelcomeEmail(payload: {
+    email: string;
+    template?: {
+      subject?: string;
+      heading?: string;
+      subheading?: string;
+      body?: string;
+      ctaText?: string;
+    };
+  }) {
+    const targetEmail = payload.email?.trim();
+    if (!targetEmail) {
+      throw new Error('Target email address is required to send a test email.');
+    }
+
+    const res: any = await this.mailService.sendWelcomeEmail(
+      targetEmail,
+      'Test Merchant',
+      'Apex Digital Gadgets (Test)',
+      'Enterprise Pro Trial',
+      payload.template,
+    );
+
+    return {
+      success: res.success,
+      messageId: res.messageId,
+      error: res.error,
+      recipient: targetEmail,
+    };
   }
 }

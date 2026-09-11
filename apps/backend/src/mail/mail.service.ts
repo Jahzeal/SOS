@@ -1,6 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Resend } from 'resend';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class MailService {
@@ -9,7 +10,7 @@ export class MailService {
   private resend: Resend | null = null;
   private fromEmail: string;
 
-  constructor() {
+  constructor(@Optional() private prisma?: PrismaService) {
     const smtpUser = process.env.SMTP_USER || process.env.GMAIL_USER;
     const smtpPass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
     const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
@@ -165,26 +166,107 @@ export class MailService {
     });
   }
 
-  async sendWelcomeEmail(to: string, recipientName: string, businessName: string, planName: string = 'Starter Trial') {
+  async sendWelcomeEmail(
+    to: string,
+    recipientName: string,
+    businessName: string,
+    planName: string = 'Starter Trial',
+    customTemplateOverrides?: {
+      subject?: string;
+      heading?: string;
+      subheading?: string;
+      body?: string;
+      ctaText?: string;
+    },
+  ) {
     this.logger.log(`Preparing welcome email for ${to} (${recipientName}, ${businessName})...`);
+
+    let enabled = true;
+    let subject = 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready! 🚀';
+    let heading = 'Welcome to VerifyFlow!';
+    let subheading = 'Your Verified Phone Inventory & Retail OS is Live';
+    let bodyText =
+      'Congratulations! Your store workspace "{{businessName}}" has been successfully created. You now have full access to our high-speed IMEI ledger, express POS checkout, and fraud prevention suite.';
+    let ctaText = 'Go to Your Store Dashboard →';
+
+    if (this.prisma) {
+      try {
+        const settings = await this.prisma.platformSetting.findMany({
+          where: {
+            key: {
+              in: [
+                'welcomeEmailEnabled',
+                'welcomeEmailSubject',
+                'welcomeEmailHeading',
+                'welcomeEmailSubheading',
+                'welcomeEmailBody',
+                'welcomeEmailCtaText',
+              ],
+            },
+          },
+        });
+        const map = new Map(settings.map((s) => [s.key, s.value]));
+        if (map.has('welcomeEmailEnabled')) {
+          enabled = map.get('welcomeEmailEnabled') === 'true';
+        }
+        if (map.get('welcomeEmailSubject')) subject = map.get('welcomeEmailSubject')!;
+        if (map.get('welcomeEmailHeading')) heading = map.get('welcomeEmailHeading')!;
+        if (map.get('welcomeEmailSubheading')) subheading = map.get('welcomeEmailSubheading')!;
+        if (map.get('welcomeEmailBody')) bodyText = map.get('welcomeEmailBody')!;
+        if (map.get('welcomeEmailCtaText')) ctaText = map.get('welcomeEmailCtaText')!;
+      } catch (err) {
+        this.logger.warn('Could not read welcome email template settings from db, using defaults:', err);
+      }
+    }
+
+    // Apply manual overrides if test preview
+    if (customTemplateOverrides) {
+      if (customTemplateOverrides.subject) subject = customTemplateOverrides.subject;
+      if (customTemplateOverrides.heading) heading = customTemplateOverrides.heading;
+      if (customTemplateOverrides.subheading) subheading = customTemplateOverrides.subheading;
+      if (customTemplateOverrides.body) bodyText = customTemplateOverrides.body;
+      if (customTemplateOverrides.ctaText) ctaText = customTemplateOverrides.ctaText;
+    }
+
+    if (!enabled && !customTemplateOverrides) {
+      this.logger.log('Welcome email is disabled in Admin Settings. Skipping dispatch.');
+      return { success: true, skipped: true };
+    }
 
     const frontendUrl = process.env.FRONTEND_URL || 'https://sos-frontend-indol.vercel.app';
     const dashboardUrl = `${frontendUrl}/dashboard`;
+
+    // Helper for variable interpolation
+    const interpolate = (text: string) => {
+      return (text || '')
+        .replace(/{{recipientName}}/g, recipientName || 'Store Owner')
+        .replace(/{{businessName}}/g, businessName || 'My Store')
+        .replace(/{{email}}/g, to)
+        .replace(/{{planName}}/g, planName || 'Starter')
+        .replace(/{{dashboardUrl}}/g, dashboardUrl)
+        .replace(/{{platformName}}/g, 'VerifyFlow');
+    };
+
+    const finalSubject = interpolate(subject);
+    const finalHeading = interpolate(heading);
+    const finalSubheading = interpolate(subheading);
+    const finalBody = interpolate(bodyText);
+    const finalCta = interpolate(ctaText);
 
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 20px; background-color: #0f172a; border-radius: 20px; color: #ffffff;">
         <div style="text-align: center; margin-bottom: 28px;">
           <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%); color: #ffffff; border-radius: 14px; font-weight: 800; font-size: 20px; box-shadow: 0 4px 12px rgba(13,148,136,0.4);">VF</div>
-          <h1 style="color: #ffffff; font-size: 24px; font-weight: 800; margin: 16px 0 4px 0; letter-spacing: -0.5px;">Welcome to VerifyFlow!</h1>
-          <p style="color: #94a3b8; font-size: 13px; margin: 0;">Your Verified Phone Inventory & Retail OS is Live</p>
+          <h1 style="color: #ffffff; font-size: 24px; font-weight: 800; margin: 16px 0 4px 0; letter-spacing: -0.5px;">${finalHeading}</h1>
+          <p style="color: #94a3b8; font-size: 13px; margin: 0;">${finalSubheading}</p>
         </div>
 
         <div style="background-color: #1e293b; padding: 32px 24px; border-radius: 18px; border: 1px solid #334155; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
           <h2 style="color: #f8fafc; font-size: 18px; font-weight: 700; margin-top: 0;">
             Hello ${recipientName || 'Store Owner'} 👋
           </h2>
-          <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-bottom: 20px;">
-            Congratulations! Your store workspace <strong style="color: #38bdf8;">"${businessName}"</strong> has been successfully created. You now have full access to our high-speed IMEI ledger, express POS checkout, and fraud prevention suite.
+          <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-bottom: 20px; white-space: pre-line;">
+            ${finalBody}
           </p>
 
           <!-- Store Summary Card -->
@@ -228,7 +310,7 @@ export class MailService {
           <!-- CTA Button -->
           <div style="text-align: center; margin: 30px 0 10px 0;">
             <a href="${dashboardUrl}" style="display: inline-block; background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%); color: #ffffff; padding: 14px 36px; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(13,148,136,0.4); text-transform: uppercase; letter-spacing: 0.5px;">
-              Go to Your Store Dashboard →
+              ${finalCta}
             </a>
           </div>
         </div>
@@ -242,9 +324,9 @@ export class MailService {
 
     return this.dispatchEmail({
       to,
-      subject: `Welcome to VerifyFlow - Your ${businessName} Store is Ready! 🚀`,
+      subject: finalSubject,
       html,
-      text: `Welcome to VerifyFlow, ${recipientName}! Your store "${businessName}" is ready. Log in to your dashboard at ${dashboardUrl} to start stocking devices and managing POS sales.`,
+      text: `${finalHeading}\n\n${finalBody}\n\nAccess your dashboard: ${dashboardUrl}`,
     });
   }
 }
