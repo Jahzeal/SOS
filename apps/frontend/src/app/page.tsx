@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { PwaInstallButton } from '@/components/PwaInstallButton';
 import {
   ShieldCheck,
   Smartphone,
@@ -851,6 +852,7 @@ export default function PublicLandingPageV2() {
 
           {/* Right: Actions */}
           <div className="hidden md:flex items-center gap-3">
+            <PwaInstallButton variant="header" />
             <button
               onClick={openDemoModal}
               className="text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-3.5 py-2 rounded-xl border border-teal-200/80 transition-colors"

@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Mail, Lock, AlertCircle, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowRight, Eye, EyeOff, Loader2, Sparkles, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { PwaInstallButton } from '@/components/PwaInstallButton';
 
 function SessionExpiredAlert() {
   const searchParams = useSearchParams();
@@ -33,6 +34,10 @@ export default function LoginPage() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Luxury transition overlay state
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [redirectStatus, setRedirectStatus] = useState('Verifying credentials...');
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email || !password) {
@@ -54,23 +59,29 @@ export default function LoginPage() {
 
       setAuth(data.user, data.accessToken);
       const targetRoute = data.user?.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard';
-      if (typeof window !== 'undefined') {
-        window.location.href = targetRoute;
-      } else {
-        router.push(targetRoute);
-      }
+
+      // Trigger animated workspace initialization overlay
+      setIsRedirecting(true);
+      setRedirectStatus('Credentials verified. Initializing secure workspace...');
+
+      setTimeout(() => {
+        if (typeof window !== 'undefined') {
+          window.location.href = targetRoute;
+        } else {
+          router.push(targetRoute);
+        }
+      }, 500);
     } catch (err: any) {
       console.error('Login failed:', err);
       setError(err.message || 'Invalid email or password. Please try again.');
-    } finally {
       setLoading(false);
+      setIsRedirecting(false);
     }
   };
 
   const handleGoogleSignIn = () => {
     setGoogleLoading(true);
     setError(null);
-    // Trigger Google OAuth flow or notification
     setTimeout(() => {
       setGoogleLoading(false);
       setError('Google Sign-In integration initialized. To complete authorization, connect Google Client ID in Admin Settings.');
@@ -78,7 +89,46 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-blue-600 selection:text-white relative font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-teal-600 selection:text-white relative font-sans">
+      
+      {/* Full-screen Branded Transition Overlay */}
+      {isRedirecting && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex flex-col items-center justify-center p-6 animate-in fade-in duration-200">
+          <div className="bg-slate-900 border border-slate-700/80 shadow-2xl rounded-3xl p-8 max-w-sm w-full text-center space-y-6 relative overflow-hidden">
+            {/* Ambient background glows */}
+            <div className="absolute -top-12 -left-12 w-28 h-28 bg-teal-500/20 rounded-full blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-12 -right-12 w-28 h-28 bg-blue-500/20 rounded-full blur-2xl pointer-events-none" />
+
+            {/* Branded dual-ring spinner */}
+            <div className="relative w-20 h-20 mx-auto flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full border-4 border-slate-800 border-t-teal-400 border-r-teal-500 animate-spin" />
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-800 border border-slate-700 flex items-center justify-center font-extrabold text-white text-base shadow-inner">
+                VF
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-base font-extrabold text-white tracking-tight">
+                Authenticating Session
+              </h3>
+              <p className="text-xs text-slate-400 font-medium">
+                {redirectStatus}
+              </p>
+            </div>
+
+            {/* Glowing animated progress line */}
+            <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div className="bg-gradient-to-r from-teal-500 via-emerald-400 to-teal-300 h-full rounded-full animate-pulse w-full" />
+            </div>
+
+            <div className="flex items-center justify-center gap-2 text-[11px] font-semibold text-teal-400">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
+              <span>Encrypted Session Establishing</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header Navigation */}
       <header className="px-6 py-4 flex items-center justify-between border-b border-slate-200 bg-white shadow-subtle z-10">
         <Link href="/" className="flex items-center gap-3">
@@ -91,13 +141,17 @@ export default function LoginPage() {
           </div>
         </Link>
 
-        <div className="hidden sm:flex items-center gap-4 text-xs font-semibold">
-          <span className="text-slate-500">Don't have a store account?</span>
-          <Link href="/onboarding">
-            <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800 font-bold">
-              Register Business →
-            </Button>
-          </Link>
+        <div className="flex items-center gap-3">
+          <PwaInstallButton variant="header" />
+          
+          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold">
+            <span className="text-slate-500">No store account?</span>
+            <Link href="/onboarding">
+              <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800 font-bold">
+                Register Business →
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
@@ -132,11 +186,11 @@ export default function LoginPage() {
             <button
               type="button"
               onClick={handleGoogleSignIn}
-              disabled={googleLoading || loading}
+              disabled={googleLoading || loading || isRedirecting}
               className="w-full h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl px-4 text-xs font-bold flex items-center justify-center gap-3 transition shadow-xs hover:border-slate-400 disabled:opacity-60"
             >
               {googleLoading ? (
-                <span className="inline-block w-4 h-4 border-2 border-slate-400 border-t-slate-800 rounded-full animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin text-slate-700" />
               ) : (
                 <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                   <path
@@ -180,7 +234,8 @@ export default function LoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="owner@store.com"
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition"
+                    disabled={loading || isRedirecting}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition disabled:opacity-75"
                   />
                   <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                 </div>
@@ -201,13 +256,15 @@ export default function LoginPage() {
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 pr-10 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition"
+                    disabled={loading || isRedirecting}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 pr-10 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition disabled:opacity-75"
                   />
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
+                    disabled={loading || isRedirecting}
                     className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition p-0.5 rounded focus:outline-none"
                     title={showPassword ? 'Hide password' : 'Show password'}
                   >
@@ -220,15 +277,25 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Submit Button */}
+              {/* Submit Button with Animated Spinner */}
               <Button
                 type="submit"
                 variant="primary"
                 size="md"
-                disabled={loading}
+                disabled={loading || isRedirecting}
                 className="w-full py-2.5 font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white border-none shadow-md mt-2"
               >
-                {loading ? 'Authenticating Session...' : 'Sign In to Workspace →'}
+                {loading || isRedirecting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-teal-400" />
+                    <span>Authenticating Credentials...</span>
+                  </span>
+                ) : (
+                  <span className="flex items-center justify-center gap-1.5">
+                    <span>Sign In to Workspace</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
+                )}
               </Button>
 
               {/* Mobile & Card Registration Link */}

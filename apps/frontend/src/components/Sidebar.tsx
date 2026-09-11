@@ -28,6 +28,7 @@ import {
   X,
 } from 'lucide-react';
 import { Badge } from './ui/Badge';
+import { PwaInstallButton } from './PwaInstallButton';
 
 interface MenuItem {
   name: string;
@@ -241,6 +242,11 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           );
         })}
       </nav>
+
+      {/* PWA Download / Native App Launcher Card */}
+      <div className="px-3 pb-2">
+        <PwaInstallButton variant="sidebar" />
+      </div>
 
       {/* User Footer with Log Out */}
       <div className="p-3.5 border-t border-slate-100 flex items-center justify-between text-xs bg-slate-50/50">
