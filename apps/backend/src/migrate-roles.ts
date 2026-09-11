@@ -12,7 +12,7 @@ async function migrate() {
     await prisma.$executeRawUnsafe(`CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'BUSINESS');`);
     await prisma.$executeRawUnsafe(`ALTER TABLE "User" ALTER COLUMN role TYPE "UserRole" USING (role::"UserRole");`);
     await prisma.$executeRawUnsafe(`ALTER TABLE "User" ALTER COLUMN role SET DEFAULT 'BUSINESS'::"UserRole";`);
-    console.log('✅ UserRole enum successfully migrated in PostgreSQL!');
+    console.log(' UserRole enum successfully migrated in PostgreSQL!');
   } catch (err) {
     console.error('Migration error:', err);
   } finally {

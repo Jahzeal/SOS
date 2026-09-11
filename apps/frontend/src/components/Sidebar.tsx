@@ -25,6 +25,7 @@ import {
   CreditCard,
   Palette,
   LogOut,
+  X,
 } from 'lucide-react';
 import { Badge } from './ui/Badge';
 
@@ -150,7 +151,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
             title="Close menu"
           >
-            ✕
+            <X className="w-4 h-4" />
           </button>
         )}
       </div>

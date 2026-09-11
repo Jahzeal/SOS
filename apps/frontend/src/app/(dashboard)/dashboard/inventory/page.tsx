@@ -70,7 +70,7 @@ export default function InventoryPage() {
           label: 'Sale Confirmed',
           detail: first ? `${first.brand} ${first.model} sold` : 'Device sold',
           time: s.createdAt,
-          icon: '✓',
+          icon: '',
           color: 'bg-emerald-100 text-emerald-700',
         };
       });

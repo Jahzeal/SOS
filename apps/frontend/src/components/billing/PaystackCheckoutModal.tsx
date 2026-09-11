@@ -237,7 +237,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
               {errorMessage && (
                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-xl flex items-center justify-between">
                   <span>{errorMessage}</span>
-                  <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800">✕</button>
+                  <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800"></button>
                 </div>
               )}
 

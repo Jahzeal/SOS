@@ -289,7 +289,7 @@ export default function PublicLandingPageV2() {
       hasScannedRef.current = false;
       isProcessingRef.current = false;
       lastDetectionTimeRef.current = Date.now();
-      setCameraGuidance({ message: 'Align IMEI / Serial Number inside reticle 🎯', type: 'info' });
+      setCameraGuidance({ message: 'Align IMEI / Serial Number inside reticle', type: 'info' });
 
       Promise.all([
         import('@zxing/browser'),
@@ -605,7 +605,7 @@ export default function PublicLandingPageV2() {
         setHeroSearchInput(validImeiCandidate);
         setScannedFormat('IMEI_LUHN_VALIDATED');
         setCameraGuidance({
-          message: `✓ IMEI detected: ${validImeiCandidate}`,
+          message: `IMEI detected: ${validImeiCandidate}`,
           type: 'success',
         });
 
@@ -964,9 +964,9 @@ export default function PublicLandingPageV2() {
       <section className="pt-28 pb-16 md:pt-36 md:pb-24 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[90vh]">
         {/* Left Side: Business Owner Journey */}
         <div className="lg:w-1/2 space-y-6 text-left">
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-zinc-900 tracking-tight leading-[1.1]">
+          <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl font-normal text-zinc-900 tracking-tight leading-[1.05]">
             Know Every Phone.{' '}
-            <span className="text-teal-600 font-extrabold">
+            <span className="text-teal-600 font-editorial italic font-normal">
               Verify Every Sale.
             </span>
           </h1>
@@ -1307,7 +1307,7 @@ export default function PublicLandingPageV2() {
                     </p>
                     <div className="p-3 rounded-xl bg-white border border-rose-200/60 text-slate-700 text-[11px] leading-relaxed font-medium space-y-1">
                       <div className="font-bold text-slate-900 flex items-center gap-1.5 text-blue-700">
-                        <span>💡 Dual-SIM / Alternate Identifier Tip:</span>
+                        <span>Dual-SIM / Alternate Identifier Tip:</span>
                       </div>
                       <p className="text-slate-600">
                         If your device is Dual-SIM or eSIM, please try searching with your <strong>IMEI 2</strong> or <strong>Serial Number</strong> (dial <code className="font-mono font-bold text-slate-900 bg-slate-100 px-1 py-0.5 rounded">*#06#</code> on your phone).
@@ -1975,7 +1975,7 @@ export default function PublicLandingPageV2() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="vf-card p-6 space-y-4">
-            <div className="flex text-amber-400 gap-1 text-sm">★★★★★</div>
+            <div className="flex text-amber-400 gap-1 text-sm"></div>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
               "VerifyFlow stopped customer warranty swaps completely. Now every phone we sell has a scanned QR receipt linked to its IMEI."
             </p>
@@ -1991,7 +1991,7 @@ export default function PublicLandingPageV2() {
           </div>
 
           <div className="vf-card p-6 space-y-4">
-            <div className="flex text-amber-400 gap-1 text-sm">★★★★★</div>
+            <div className="flex text-amber-400 gap-1 text-sm"></div>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
               "Managing 4 store branches used to require constant phone calls. With VerifyFlow, serial stock transfers take 10 seconds."
             </p>
@@ -2007,7 +2007,7 @@ export default function PublicLandingPageV2() {
           </div>
 
           <div className="vf-card p-6 space-y-4">
-            <div className="flex text-amber-400 gap-1 text-sm">★★★★★</div>
+            <div className="flex text-amber-400 gap-1 text-sm"></div>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
               "Our buyers love scanning the QR receipt on their phone to verify warranty expiration. It makes us look extremely professional."
             </p>

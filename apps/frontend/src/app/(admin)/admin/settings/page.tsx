@@ -15,12 +15,10 @@ import {
   Key,
   Building,
   Check,
-  Send,
   Sparkles,
-  ExternalLink,
-  Eye,
-  RefreshCw,
   Code,
+  Send,
+  Eye,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { api } from '@/lib/api';
@@ -46,7 +44,7 @@ export default function AdminSettingsPage() {
 
   // Email Templates State
   const [welcomeEmailEnabled, setWelcomeEmailEnabled] = useState(true);
-  const [welcomeEmailSubject, setWelcomeEmailSubject] = useState('Welcome to VerifyFlow - Your {{businessName}} Store is Ready! 🚀');
+  const [welcomeEmailSubject, setWelcomeEmailSubject] = useState('Welcome to VerifyFlow - Your {{businessName}} Store is Ready!');
   const [welcomeEmailHeading, setWelcomeEmailHeading] = useState('Welcome to VerifyFlow!');
   const [welcomeEmailSubheading, setWelcomeEmailSubheading] = useState('Your Verified Phone Inventory & Retail OS is Live');
   const [welcomeEmailBody, setWelcomeEmailBody] = useState(
@@ -134,12 +132,12 @@ export default function AdminSettingsPage() {
       });
 
       if (res.success) {
-        setTestEmailStatus(`✅ Test email delivered to ${testEmailAddress}`);
+        setTestEmailStatus(`Test email delivered to ${testEmailAddress}`);
       } else {
-        setTestEmailStatus(`❌ Failed: ${res.error || 'Check server mail logs'}`);
+        setTestEmailStatus(`Failed: ${res.error || 'Check server mail logs'}`);
       }
     } catch (err: any) {
-      setTestEmailStatus(`❌ Error: ${err.message}`);
+      setTestEmailStatus(`Error: ${err.message}`);
     } finally {
       setIsSendingTest(false);
     }
@@ -188,11 +186,10 @@ export default function AdminSettingsPage() {
         <button
           type="button"
           onClick={() => setActiveTab('profile')}
-          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'profile'
+          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'profile'
               ? 'border-blue-600 text-blue-700 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
-          }`}
+            }`}
         >
           <User className="w-4 h-4" />
           <span>Admin Profile</span>
@@ -201,11 +198,10 @@ export default function AdminSettingsPage() {
         <button
           type="button"
           onClick={() => setActiveTab('email')}
-          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'email'
+          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'email'
               ? 'border-blue-600 text-blue-700 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
-          }`}
+            }`}
         >
           <Mail className="w-4 h-4" />
           <span className="flex items-center gap-1.5">
@@ -217,11 +213,10 @@ export default function AdminSettingsPage() {
         <button
           type="button"
           onClick={() => setActiveTab('contact')}
-          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'contact'
+          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'contact'
               ? 'border-blue-600 text-blue-700 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
-          }`}
+            }`}
         >
           <Phone className="w-4 h-4" />
           <span>Support & Contact</span>
@@ -230,11 +225,10 @@ export default function AdminSettingsPage() {
         <button
           type="button"
           onClick={() => setActiveTab('paystack')}
-          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'paystack'
+          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'paystack'
               ? 'border-blue-600 text-blue-700 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
-          }`}
+            }`}
         >
           <CreditCard className="w-4 h-4" />
           <span>Paystack Gateway</span>
@@ -243,11 +237,10 @@ export default function AdminSettingsPage() {
         <button
           type="button"
           onClick={() => setActiveTab('platform')}
-          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${
-            activeTab === 'platform'
+          className={`pb-3 px-3.5 border-b-2 transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'platform'
               ? 'border-blue-600 text-blue-700 font-extrabold'
               : 'border-transparent text-slate-500 hover:text-slate-900'
-          }`}
+            }`}
         >
           <Sliders className="w-4 h-4" />
           <span>Platform Controls</span>
@@ -256,7 +249,7 @@ export default function AdminSettingsPage() {
 
       {/* Main Settings Form */}
       <form onSubmit={handleSave} className="space-y-6">
-        
+
         {/* ========================================================================= */}
         {/* TAB 1: ADMIN PROFILE                                                      */}
         {/* ========================================================================= */}
@@ -340,7 +333,7 @@ export default function AdminSettingsPage() {
         {/* ========================================================================= */}
         {activeTab === 'email' && (
           <div className="space-y-6 animate-in fade-in duration-200">
-            
+
             {/* Top Config & Status */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
@@ -403,7 +396,7 @@ export default function AdminSettingsPage() {
 
             {/* Split Grid: Left Editor & Right Live Preview */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-              
+
               {/* Left 6 Cols: Template Editor */}
               <div className="lg:col-span-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                 <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
@@ -417,7 +410,7 @@ export default function AdminSettingsPage() {
                     type="text"
                     value={welcomeEmailSubject}
                     onChange={(e) => setWelcomeEmailSubject(e.target.value)}
-                    placeholder="Welcome to VerifyFlow - Your {{businessName}} Store is Ready! 🚀"
+                    placeholder="Welcome to VerifyFlow - Your {{businessName}} Store is Ready!"
                     className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -476,7 +469,7 @@ export default function AdminSettingsPage() {
                   <p className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
                     <Send className="w-3.5 h-3.5 text-blue-600" /> Send Real Test Email
                   </p>
-                  
+
                   <div className="flex flex-col sm:flex-row gap-2">
                     <input
                       type="email"
@@ -506,7 +499,7 @@ export default function AdminSettingsPage() {
                   </div>
 
                   {testEmailStatus && (
-                    <p className={`text-xs font-bold ${testEmailStatus.startsWith('✅') ? 'text-emerald-700' : 'text-rose-600'}`}>
+                    <p className={`text-xs font-bold ${testEmailStatus.startsWith('Test email') ? 'text-emerald-700' : 'text-rose-600'}`}>
                       {testEmailStatus}
                     </p>
                   )}
@@ -527,7 +520,7 @@ export default function AdminSettingsPage() {
 
                 {/* Email Mock Window */}
                 <div className="rounded-2xl border border-slate-300 shadow-md bg-[#0f172a] text-slate-100 p-5 font-sans space-y-4 overflow-hidden">
-                  
+
                   {/* Mock Subject Header */}
                   <div className="border-b border-slate-800 pb-3 space-y-1">
                     <p className="text-[10px] uppercase font-bold text-slate-400">Subject:</p>
@@ -545,7 +538,7 @@ export default function AdminSettingsPage() {
 
                   {/* Inner Card */}
                   <div className="bg-[#1e293b] p-5 rounded-xl border border-slate-700/80 space-y-4">
-                    <h3 className="text-sm font-bold text-slate-100">Hello Alex Vance 👋</h3>
+                    <h3 className="text-sm font-bold text-slate-100">Hello Alex Vance</h3>
                     <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
                       {previewBody}
                     </p>
@@ -568,9 +561,9 @@ export default function AdminSettingsPage() {
                     {/* Features Checklist */}
                     <div className="space-y-1.5 text-[11px] text-slate-300 pt-1">
                       <p className="font-bold text-slate-200">What you can do next:</p>
-                      <p>📱 <strong className="text-white">Scan & Stock Inventory:</strong> Add IMEIs with duplicate check.</p>
-                      <p>⚡ <strong className="text-white">Express POS Checkout:</strong> Print or email digital thermal receipts.</p>
-                      <p>🛡️ <strong className="text-white">Public Verification:</strong> Verified scannable QR badge.</p>
+                      <p>• <strong className="text-white">Scan & Stock Inventory:</strong> Add IMEIs with duplicate check.</p>
+                      <p>• <strong className="text-white">Express POS Checkout:</strong> Print or email digital thermal receipts.</p>
+                      <p>• <strong className="text-white">Public Verification:</strong> Verified scannable QR badge.</p>
                     </div>
 
                     {/* Mock Button */}

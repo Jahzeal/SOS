@@ -47,7 +47,7 @@ export function ImeiCameraScanner({
     message: string;
     type: 'success' | 'warning' | 'dark' | 'info';
   }>({
-    message: 'Align IMEI / Serial barcode inside reticle 🎯',
+    message: 'Align IMEI / Serial barcode inside reticle',
     type: 'info',
   });
 
@@ -78,7 +78,7 @@ export function ImeiCameraScanner({
     hasScannedRef.current = false;
     isProcessingRef.current = false;
     lastDetectionTimeRef.current = Date.now();
-    setCameraGuidance({ message: 'Align IMEI / Serial barcode inside reticle 🎯', type: 'info' });
+    setCameraGuidance({ message: 'Align IMEI / Serial barcode inside reticle', type: 'info' });
 
     Promise.all([
       import('@zxing/browser'),
@@ -188,14 +188,14 @@ export function ImeiCameraScanner({
                 if (parsed.type === 'IMEI') {
                   setScannedImei(cleanIdentifier);
                   setCameraGuidance({
-                    message: `✓ IMEI detected: ${cleanIdentifier}`,
+                    message: `IMEI detected: ${cleanIdentifier}`,
                     type: 'success',
                   });
                   onDetected({ imei: cleanIdentifier, format: formatName, rawText });
                 } else {
                   setScannedSerial(cleanIdentifier);
                   setCameraGuidance({
-                    message: `✓ Serial detected: ${cleanIdentifier}`,
+                    message: `Serial detected: ${cleanIdentifier}`,
                     type: 'success',
                   });
                   onDetected({ serial: cleanIdentifier, format: formatName, rawText });
@@ -304,7 +304,7 @@ export function ImeiCameraScanner({
         setScannedImei(validImeiCandidate);
         setScannedFormat('IMEI_LUHN_VALIDATED');
         setCameraGuidance({
-          message: `✓ IMEI detected: ${validImeiCandidate}`,
+          message: `IMEI detected: ${validImeiCandidate}`,
           type: 'success',
         });
         onDetected({ imei: validImeiCandidate, format: 'IMEI_LUHN_VALIDATED', rawText: ocrText });
@@ -314,7 +314,7 @@ export function ImeiCameraScanner({
           setScannedSerial(parsed.value);
           setScannedFormat('SERIAL_OCR');
           setCameraGuidance({
-            message: `✓ Serial detected: ${parsed.value}`,
+            message: `Serial detected: ${parsed.value}`,
             type: 'success',
           });
           onDetected({ serial: parsed.value, format: 'SERIAL_OCR', rawText: ocrText });
@@ -346,7 +346,7 @@ export function ImeiCameraScanner({
       onDetected({ serial: pill.value, format: 'PILL_SELECT', rawText: pill.rawText });
     }
     setCameraGuidance({
-      message: `✓ Selected: ${pill.value}`,
+      message: `Selected: ${pill.value}`,
       type: 'success',
     });
   };
@@ -356,7 +356,7 @@ export function ImeiCameraScanner({
     setGoogleLensPills([]);
     setScannedFormat(null);
     lastScanTimeRef.current = Date.now();
-    setCameraGuidance({ message: 'Align IMEI / Serial barcode inside reticle 🎯', type: 'info' });
+    setCameraGuidance({ message: 'Align IMEI / Serial barcode inside reticle', type: 'info' });
 
     setTimeout(() => {
       hasScannedRef.current = false;

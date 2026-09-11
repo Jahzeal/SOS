@@ -367,7 +367,7 @@ Thank you for shopping with us!`;
         <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-800 text-xs font-bold animate-in fade-in duration-200">
           <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
           <div className="flex-1">{errorMessage}</div>
-          <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 font-bold text-sm">✕</button>
+          <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 font-bold text-sm"></button>
         </div>
       )}
 

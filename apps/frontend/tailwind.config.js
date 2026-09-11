@@ -7,6 +7,12 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['"Plus Jakarta Sans"', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        editorial: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
+        display: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
+        serif: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
+      },
       colors: {
         // Deep trustworthy primary blue
         primary: {

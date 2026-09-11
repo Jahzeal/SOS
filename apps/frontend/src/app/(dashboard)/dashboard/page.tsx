@@ -110,7 +110,7 @@ export default function BusinessDashboardPage() {
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening'}, {userName} 👋
+            {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening'}, {userName} 
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-xl leading-relaxed">
             Welcome back to VerifyFlow. Here's a real-time summary of your store's inventory, phone registrations, sales, and warranty activity today.
@@ -433,10 +433,10 @@ export default function BusinessDashboardPage() {
             <p className="text-slate-600 font-medium">Need help configuring box QR printers or multi-branch stock transfers?</p>
             <div className="space-y-1.5 pt-1">
               <a href="#" className="block p-2 rounded-lg bg-slate-50 hover:bg-slate-100 font-bold text-slate-800">
-                📚 Documentation & Guides
+                 Documentation & Guides
               </a>
               <a href="#" className="block p-2 rounded-lg bg-teal-50 text-teal-700 font-bold hover:bg-teal-100">
-                💬 Contact Store Support
+                 Contact Store Support
               </a>
             </div>
           </div>

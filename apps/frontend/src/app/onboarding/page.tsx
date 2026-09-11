@@ -210,27 +210,27 @@ export default function OnboardingPage() {
     1: {
       headline: "Let's Set Up Your Business",
       description: "You're just a few minutes away from creating your secure phone business operating workspace.",
-      highlight: '✓ Instant IMEI & QR Verification Ledger',
+      highlight: 'Instant IMEI & QR Verification Ledger',
     },
     2: {
       headline: 'Check Your Inbox',
       description: `We've sent a 6-digit verification code to ${accountForm.email || 'your email'}.`,
-      highlight: '✓ Enterprise Grade Account Security',
+      highlight: 'Enterprise Grade Account Security',
     },
     3: {
       headline: 'Tell Us About Your Store',
       description: 'Customize VerifyFlow modules according to your retail scale and inventory workflow.',
-      highlight: '✓ Multi-Branch Inventory Tracking',
+      highlight: 'Multi-Branch Inventory Tracking',
     },
     4: {
       headline: 'Choose the Right Plan',
       description: 'Select a plan that fits your current store scale. All plans include a 14-day free trial.',
-      highlight: '✓ 14-Day Free Trial • Cancel Anytime',
+      highlight: '14-Day Free Trial • Cancel Anytime',
     },
     5: {
       headline: 'Welcome to VerifyFlow!',
       description: 'Your workspace is ready. You can now register phones, issue QR receipts, and track warranties.',
-      highlight: '✓ 100% Operational Ready',
+      highlight: '100% Operational Ready',
     },
   };
 
@@ -277,7 +277,7 @@ export default function OnboardingPage() {
             {/* Testimonial Card */}
             <div className="p-4 rounded-2xl bg-slate-900/80 border border-slate-800/90 text-xs space-y-2.5 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
-                <div className="flex text-amber-400 gap-0.5 text-xs">★★★★★</div>
+                <div className="flex text-amber-400 gap-0.5 text-xs"></div>
                 <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Store Owner Review</span>
               </div>
               <p className="text-slate-200 font-medium italic leading-relaxed text-[11px]">
@@ -943,7 +943,7 @@ export default function OnboardingPage() {
                                     {planItem.name}
                                   </span>
                                   {isSelected && (
-                                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
+                                    <span className="w-5 h-5 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs"></span>
                                   )}
                                 </div>
 
@@ -1080,7 +1080,7 @@ export default function OnboardingPage() {
               {/* Mobile Social Proof Banner (block lg:hidden) */}
               <div className="block lg:hidden pt-3 border-t border-slate-100 text-center">
                 <p className="text-[11px] font-semibold text-slate-500 flex items-center justify-center gap-1.5 flex-wrap">
-                  <span className="text-amber-500 font-bold">★★★★★</span>
+                  <span className="text-amber-500 font-bold"></span>
                   <span>"Setup took &lt;5 mins" — Marcus V., Store Owner</span>
                 </p>
               </div>

@@ -11,7 +11,7 @@ async function createOrPromoteAdmin() {
 
   try {
     console.log(`\n========================================`);
-    console.log(`🔑 Initializing Pure Master Admin Account...`);
+    console.log(` Initializing Pure Master Admin Account...`);
     console.log(`========================================\n`);
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -33,7 +33,7 @@ async function createOrPromoteAdmin() {
           businessId: null,
         },
       });
-      console.log(`✅ Master Admin updated: ${updated.email} (Pure Global Admin)`);
+      console.log(` Master Admin updated: ${updated.email} (Pure Global Admin)`);
     } else {
       // Create fresh global admin user
       const created = await prisma.user.create({
@@ -46,7 +46,7 @@ async function createOrPromoteAdmin() {
           businessId: null,
         },
       });
-      console.log(`✅ Master Admin user created: ${created.email} (Pure Global Admin)`);
+      console.log(` Master Admin user created: ${created.email} (Pure Global Admin)`);
     }
 
     // 2. Remove any placeholder 'verifyflow-hq' business record
@@ -64,19 +64,19 @@ async function createOrPromoteAdmin() {
       await prisma.business.delete({
         where: { id: hqBusiness.id },
       });
-      console.log(`🗑️ Removed placeholder 'verifyflow-hq' from merchant businesses.`);
+      console.log(` Removed placeholder 'verifyflow-hq' from merchant businesses.`);
     }
 
     console.log(`\n----------------------------------------`);
-    console.log(`📋 ADMIN LOGIN CREDENTIALS:`);
+    console.log(` ADMIN LOGIN CREDENTIALS:`);
     console.log(`----------------------------------------`);
-    console.log(`📧 Email:    ${email}`);
-    console.log(`🔒 Password: ${password}`);
-    console.log(`🌐 Role:     ADMIN (Global Platform Superuser)`);
-    console.log(`🏪 Stores:   0 (Not a merchant subscriber)`);
+    console.log(` Email:    ${email}`);
+    console.log(` Password: ${password}`);
+    console.log(` Role:     ADMIN (Global Platform Superuser)`);
+    console.log(` Stores:   0 (Not a merchant subscriber)`);
     console.log(`----------------------------------------\n`);
   } catch (err) {
-    console.error('❌ Failed to create/promote admin user:', err);
+    console.error(' Failed to create/promote admin user:', err);
   } finally {
     await prisma.$disconnect();
   }

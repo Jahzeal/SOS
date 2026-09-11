@@ -27,15 +27,15 @@ export class MailService {
         },
       });
       this.fromEmail = process.env.MAIL_FROM || `VerifyFlow <${smtpUser}>`;
-      this.logger.log(`📧 Gmail/SMTP Email Transport initialized with user: ${smtpUser}`);
+      this.logger.log(`Gmail/SMTP Email Transport initialized with user: ${smtpUser}`);
     } else {
       const apiKey = process.env.RESEND_API_KEY;
       if (apiKey) {
         this.resend = new Resend(apiKey);
         this.fromEmail = process.env.MAIL_FROM || 'VerifyFlow <onboarding@resend.dev>';
-        this.logger.log('📧 Resend Email Transport initialized.');
+        this.logger.log('Resend Email Transport initialized.');
       } else {
-        this.logger.warn('⚠️ Neither SMTP_USER/SMTP_PASS nor RESEND_API_KEY configured in .env! Real email sending is disabled.');
+        this.logger.warn('Neither SMTP_USER/SMTP_PASS nor RESEND_API_KEY configured in .env! Real email sending is disabled.');
         this.fromEmail = 'VerifyFlow <noreply@verifyflow.com>';
       }
     }
@@ -54,10 +54,10 @@ export class MailService {
           html,
           text,
         });
-        this.logger.log(`✅ Email successfully sent via SMTP to ${to}. MessageId: ${info.messageId}`);
+        this.logger.log(`Email successfully sent via SMTP to ${to}. MessageId: ${info.messageId}`);
         return { success: true, messageId: info.messageId };
       } catch (err: any) {
-        this.logger.error(`❌ SMTP sending failed to ${to}: ${err.message}`, err.stack);
+        this.logger.error(`SMTP sending failed to ${to}: ${err.message}`, err.stack);
         return { success: false, error: err.message };
       }
     }
@@ -74,19 +74,19 @@ export class MailService {
         });
 
         if (res.error) {
-          this.logger.error(`❌ Resend rejected email to ${to}: ${res.error.message} (${res.error.name})`);
+          this.logger.error(`Resend rejected email to ${to}: ${res.error.message} (${res.error.name})`);
           return { success: false, error: res.error.message };
         }
 
-        this.logger.log(`✅ Email successfully sent via Resend to ${to}. ID: ${res.data?.id}`);
+        this.logger.log(`Email successfully sent via Resend to ${to}. ID: ${res.data?.id}`);
         return { success: true, messageId: res.data?.id };
       } catch (err: any) {
-        this.logger.error(`❌ Resend exception sending to ${to}:`, err);
+        this.logger.error(`Resend exception sending to ${to}:`, err);
         return { success: false, error: err.message };
       }
     }
 
-    this.logger.warn(`⚠️ No active mail transport. Simulated email to ${to}: "${subject}"`);
+    this.logger.warn(`No active mail transport. Simulated email to ${to}: "${subject}"`);
     return { success: false, error: 'No email service configured in backend .env' };
   }
 
@@ -182,7 +182,7 @@ export class MailService {
     this.logger.log(`Preparing welcome email for ${to} (${recipientName}, ${businessName})...`);
 
     let enabled = true;
-    let subject = 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready! 🚀';
+    let subject = 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready! ';
     let heading = 'Welcome to VerifyFlow!';
     let subheading = 'Your Verified Phone Inventory & Retail OS is Live';
     let bodyText =
@@ -263,7 +263,7 @@ export class MailService {
 
         <div style="background-color: #1e293b; padding: 32px 24px; border-radius: 18px; border: 1px solid #334155; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
           <h2 style="color: #f8fafc; font-size: 18px; font-weight: 700; margin-top: 0;">
-            Hello ${recipientName || 'Store Owner'} 👋
+            Hello ${recipientName || 'Store Owner'} 
           </h2>
           <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-bottom: 20px; white-space: pre-line;">
             ${finalBody}
@@ -288,19 +288,19 @@ export class MailService {
           
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
             <tr>
-              <td style="padding: 8px 0; vertical-align: top; width: 28px; font-size: 16px;">📱</td>
+              <td style="padding: 8px 0; vertical-align: top; width: 28px; font-size: 16px;">•</td>
               <td style="padding: 8px 0; font-size: 13px; color: #cbd5e1; line-height: 1.4;">
                 <strong style="color: #ffffff;">Scan & Stock Inventory:</strong> Use your phone camera or barcode scanner to add IMEIs in seconds with automated duplicate protection.
               </td>
             </tr>
             <tr>
-              <td style="padding: 8px 0; vertical-align: top; width: 28px; font-size: 16px;">⚡</td>
+              <td style="padding: 8px 0; vertical-align: top; width: 28px; font-size: 16px;">•</td>
               <td style="padding: 8px 0; font-size: 13px; color: #cbd5e1; line-height: 1.4;">
                 <strong style="color: #ffffff;">Express POS Checkout:</strong> Sell phones or accessories, print thermal receipts, or send digital receipts directly to customer inboxes.
               </td>
             </tr>
             <tr>
-              <td style="padding: 8px 0; vertical-align: top; width: 28px; font-size: 16px;">🛡️</td>
+              <td style="padding: 8px 0; vertical-align: top; width: 28px; font-size: 16px;">•</td>
               <td style="padding: 8px 0; font-size: 13px; color: #cbd5e1; line-height: 1.4;">
                 <strong style="color: #ffffff;">Public IMEI Verification:</strong> Give buyers confidence with scannable QR verification badges proving device legitimacy.
               </td>

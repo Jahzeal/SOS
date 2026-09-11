@@ -45,7 +45,7 @@ export class AdminSettingsService implements OnModuleInit {
       paystackLiveEnabled: process.env.PAYSTACK_LIVE_ENABLED || 'true',
       // Email defaults
       welcomeEmailEnabled: 'true',
-      welcomeEmailSubject: 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready! 🚀',
+      welcomeEmailSubject: 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready!',
       welcomeEmailHeading: 'Welcome to VerifyFlow!',
       welcomeEmailSubheading: 'Your Verified Phone Inventory & Retail OS is Live',
       welcomeEmailBody:
@@ -80,7 +80,7 @@ export class AdminSettingsService implements OnModuleInit {
       // Email fields
       welcomeEmailEnabled: map.get('welcomeEmailEnabled') !== 'false',
       welcomeEmailSubject:
-        map.get('welcomeEmailSubject') || 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready! 🚀',
+        map.get('welcomeEmailSubject') || 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready!',
       welcomeEmailHeading: map.get('welcomeEmailHeading') || 'Welcome to VerifyFlow!',
       welcomeEmailSubheading:
         map.get('welcomeEmailSubheading') || 'Your Verified Phone Inventory & Retail OS is Live',

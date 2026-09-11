@@ -8,7 +8,7 @@ async function clearDatabase() {
   const adminPassword = process.env.ADMIN_PASSWORD || 'AdminPass123!';
 
   console.log(`\n========================================`);
-  console.log(`🧹 Clearing Database to Pure Clean State...`);
+  console.log(` Clearing Database to Pure Clean State...`);
   console.log(`========================================\n`);
 
   try {
@@ -73,7 +73,7 @@ async function clearDatabase() {
           businessId: null,
         },
       });
-      console.log(`✅ Master Admin verified: ${adminEmail}`);
+      console.log(` Master Admin verified: ${adminEmail}`);
     } else {
       await prisma.user.create({
         data: {
@@ -85,7 +85,7 @@ async function clearDatabase() {
           businessId: null,
         },
       });
-      console.log(`✅ Master Admin created: ${adminEmail}`);
+      console.log(` Master Admin created: ${adminEmail}`);
     }
 
     const businessCount = await prisma.business.count();
@@ -94,17 +94,17 @@ async function clearDatabase() {
     const salesCount = await prisma.sale.count();
 
     console.log(`\n----------------------------------------`);
-    console.log(`🎉 DATABASE PURGE COMPLETE:`);
+    console.log(` DATABASE PURGE COMPLETE:`);
     console.log(`----------------------------------------`);
-    console.log(`🏪 Stores:             ${businessCount}`);
-    console.log(`👥 Users:              ${userCount} (Master Admin only)`);
-    console.log(`📱 Phones/Inventory:   ${phoneCount}`);
-    console.log(`🧾 Sales/Transactions: ${salesCount}`);
-    console.log(`📧 Master Admin:       ${adminEmail}`);
-    console.log(`🔒 Master Password:    ${adminPassword}`);
+    console.log(` Stores:             ${businessCount}`);
+    console.log(` Users:              ${userCount} (Master Admin only)`);
+    console.log(` Phones/Inventory:   ${phoneCount}`);
+    console.log(` Sales/Transactions: ${salesCount}`);
+    console.log(` Master Admin:       ${adminEmail}`);
+    console.log(` Master Password:    ${adminPassword}`);
     console.log(`----------------------------------------\n`);
   } catch (err) {
-    console.error('❌ Error clearing database:', err);
+    console.error(' Error clearing database:', err);
   } finally {
     await prisma.$disconnect();
   }
