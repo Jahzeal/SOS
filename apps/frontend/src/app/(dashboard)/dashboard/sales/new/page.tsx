@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
 import { api } from '@/lib/api';
 
 interface CartDeviceItem {
@@ -54,6 +55,7 @@ function CheckoutPOSContent() {
   // Customer Info State
   const [customerName, setCustomerName] = useState<string>('');
   const [customerPhone, setCustomerPhone] = useState<string>('');
+  const [customerEmail, setCustomerEmail] = useState<string>('');
 
   // Cart State (empty by default)
   const [cart, setCart] = useState<CartDeviceItem[]>([]);
@@ -84,6 +86,7 @@ function CheckoutPOSContent() {
 
   // Finalized Receipt Data
   const [finalReceipt, setFinalReceipt] = useState<any>(null);
+  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   // Load store profile bank settlement details
   useEffect(() => {
@@ -151,8 +154,7 @@ function CheckoutPOSContent() {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cart]);
 
-  const tax = useMemo(() => subtotal * 0.08, [subtotal]);
-  const grandTotal = useMemo(() => subtotal + tax, [subtotal, tax]);
+  const grandTotal = useMemo(() => subtotal, [subtotal]);
 
   const changeDue = useMemo(() => {
     const tendered = parseFloat(cashTendered) || 0;
@@ -247,6 +249,7 @@ function CheckoutPOSContent() {
       const sale = await api.checkoutSale({
         customerName: customerName.trim() || 'Retail Buyer',
         customerPhone: customerPhone.trim() || undefined,
+        customerEmail: customerEmail.trim() || undefined,
         paymentMethod: paymentMethod,
         items: payloadItems,
       });
@@ -257,9 +260,9 @@ function CheckoutPOSContent() {
         receiptNumber: sale.receiptNumber,
         customerName: sale.customer?.name || customerName || 'Retail Buyer',
         customerPhone: sale.customer?.phone || customerPhone || 'N/A',
+        customerEmail: sale.customer?.email || customerEmail || (customerPhone.includes('@') ? customerPhone : ''),
         items: cart,
         subtotal,
-        tax,
         total: sale.totalAmount || grandTotal,
         paymentMethod: sale.paymentMethod || paymentMethod,
         cashTendered: parseFloat(cashTendered) || grandTotal,
@@ -287,12 +290,31 @@ function CheckoutPOSContent() {
   };
 
   const handleEmailReceipt = () => {
-    const receiptNum = finalReceipt?.receiptNumber || finalReceipt?.id || 'Receipt';
-    const subject = encodeURIComponent(`Sales Receipt #${receiptNum}`);
-    const body = encodeURIComponent(
-      `Hello ${finalReceipt?.customerName || 'Valued Customer'},\n\nThank you for your purchase! Your sales receipt #${receiptNum} for ₦${finalReceipt?.total?.toLocaleString() || '0'} is confirmed.\n\nThank you for shopping with us!`
-    );
-    window.location.href = `mailto:${finalReceipt?.customerPhone?.includes('@') ? finalReceipt.customerPhone : ''}?subject=${subject}&body=${body}`;
+    if (!finalReceipt) return;
+
+    // Open the comprehensive email modal with options for Default Mail, Gmail, Outlook, Yahoo, and Copy
+    setIsEmailModalOpen(true);
+
+    // If customer email is available, also attempt opening default mail directly
+    const recipient = finalReceipt.customerEmail || (finalReceipt.customerPhone?.includes('@') ? finalReceipt.customerPhone : '');
+    if (recipient && recipient.includes('@')) {
+      const receiptNum = finalReceipt.receiptNumber || finalReceipt.invoiceNumber || finalReceipt.id || 'Receipt';
+      const storeName = storeBankDetails?.accountName || 'VerifyFlow Retail Store';
+      const emailSubject = `Sales Receipt #${receiptNum} - ${storeName}`;
+      const emailBody = `Dear ${finalReceipt.customerName || 'Valued Customer'},
+
+Thank you for your purchase! Here is your official sales receipt:
+
+Receipt #: ${receiptNum}
+Date: ${finalReceipt.date || new Date().toLocaleString()}
+Customer: ${finalReceipt.customerName || 'Retail Customer'}
+Total Paid: ₦${Number(finalReceipt.total || 0).toLocaleString()}
+
+Thank you for shopping with us!`;
+
+      const mailtoUrl = `mailto:${encodeURIComponent(recipient.trim())}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+      window.location.href = mailtoUrl;
+    }
   };
 
   const resetForm = () => {
@@ -303,6 +325,7 @@ function CheckoutPOSContent() {
     setErrorMessage(null);
     setCustomerName('');
     setCustomerPhone('');
+    setCustomerEmail('');
   };
 
   return (
@@ -364,7 +387,7 @@ function CheckoutPOSContent() {
                 <span className="text-[10px] text-slate-400 font-bold uppercase">Buyer Profile</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-slate-700">Customer Name</label>
                   <div className="relative">
@@ -373,21 +396,35 @@ function CheckoutPOSContent() {
                       type="text"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="e.g. Johnathan Doe or Retail Buyer..."
+                      placeholder="e.g. Johnathan Doe"
                       className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Phone Number / Email</label>
+                  <label className="text-xs font-bold text-slate-700">Phone Number</label>
                   <div className="relative">
                     <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                     <input
                       type="text"
                       value={customerPhone}
                       onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="e.g. +1 (555) 234-5678"
+                      placeholder="e.g. +234 801 234 5678"
+                      className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700">Customer Email (Optional)</label>
+                  <div className="relative">
+                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="email"
+                      value={customerEmail}
+                      onChange={(e) => setCustomerEmail(e.target.value)}
+                      placeholder="e.g. buyer@gmail.com"
                       className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -619,10 +656,6 @@ function CheckoutPOSContent() {
                 <div className="flex justify-between">
                   <span>Subtotal</span>
                   <span className="font-bold text-slate-900">₦{subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Tax (8%)</span>
-                  <span className="font-bold text-slate-900">₦{tax.toLocaleString()}</span>
                 </div>
 
                 <div className="flex justify-between items-baseline pt-3 border-t border-slate-200 text-slate-900 font-extrabold">
@@ -912,10 +945,6 @@ function CheckoutPOSContent() {
                   <span>Subtotal</span>
                   <span>₦{finalReceipt.subtotal.toLocaleString()}</span>
                 </div>
-                <div className="flex justify-between text-slate-500">
-                  <span>Tax (8%)</span>
-                  <span>₦{finalReceipt.tax.toLocaleString()}</span>
-                </div>
                 <div className="flex justify-between font-extrabold text-sm border-t border-slate-200 pt-2 text-slate-900">
                   <span>TOTAL PAID</span>
                   <span className="text-blue-600">₦{finalReceipt.total.toLocaleString()}</span>
@@ -960,6 +989,13 @@ function CheckoutPOSContent() {
           </div>
         </div>
       )}
+
+      {/* Email Receipt Dialog Modal */}
+      <EmailReceiptModal
+        isOpen={isEmailModalOpen}
+        onClose={() => setIsEmailModalOpen(false)}
+        receipt={finalReceipt ? { ...finalReceipt, storeName: storeBankDetails?.accountName } : null}
+      />
 
     </div>
   );

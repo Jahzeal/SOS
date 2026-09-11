@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
 import { api } from '@/lib/api';
 
 export default function ReceiptsArchivePage() {
@@ -31,6 +32,7 @@ export default function ReceiptsArchivePage() {
   const [search, setSearch] = useState('');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('ALL');
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
+  const [receiptForEmailModal, setReceiptForEmailModal] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -90,14 +92,17 @@ export default function ReceiptsArchivePage() {
 
   const handleEmailReceipt = (rcp: any) => {
     if (!rcp) return;
+    setReceiptForEmailModal(rcp);
+
     const email = rcp.customer?.email || '';
-    const name = rcp.customer?.name || 'Valued Customer';
-    const rcpNum = rcp.receiptNumber || rcp.invoiceNumber || rcp.id;
-    const subject = encodeURIComponent(`Receipt & Sales Record #${rcpNum}`);
-    const body = encodeURIComponent(
-      `Hello ${name},\n\nThank you for your purchase! Your sales receipt #${rcpNum} for ₦${rcp.totalAmount?.toLocaleString() || '0'} is confirmed.\n\nThank you for your business!`
-    );
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    if (email && email.includes('@')) {
+      const name = rcp.customer?.name || 'Valued Customer';
+      const rcpNum = rcp.receiptNumber || rcp.invoiceNumber || rcp.id;
+      const subject = `Receipt & Sales Record #${rcpNum}`;
+      const body = `Hello ${name},\n\nThank you for your purchase! Your sales receipt #${rcpNum} for ₦${Number(rcp.totalAmount || 0).toLocaleString()} is confirmed.\n\nThank you for your business!`;
+      const mailtoUrl = `mailto:${encodeURIComponent(email.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      window.location.href = mailtoUrl;
+    }
   };
 
   return (
@@ -490,6 +495,20 @@ export default function ReceiptsArchivePage() {
           </div>
         </div>
       )}
+
+      {/* Email Receipt Modal */}
+      <EmailReceiptModal
+        isOpen={Boolean(receiptForEmailModal)}
+        onClose={() => setReceiptForEmailModal(null)}
+        receipt={receiptForEmailModal ? {
+          ...receiptForEmailModal,
+          customerName: receiptForEmailModal.customer?.name,
+          customerEmail: receiptForEmailModal.customer?.email,
+          customerPhone: receiptForEmailModal.customer?.phone,
+          storeName: summaryData?.business?.name,
+          total: receiptForEmailModal.totalAmount,
+        } : null}
+      />
 
     </div>
   );

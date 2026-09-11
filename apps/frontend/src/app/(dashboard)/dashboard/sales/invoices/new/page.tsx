@@ -106,8 +106,7 @@ export default function CreateInvoicePage() {
     return items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
   }, [items]);
 
-  const tax = useMemo(() => subtotal * 0.08, [subtotal]);
-  const totalAmount = useMemo(() => subtotal + tax, [subtotal, tax]);
+  const totalAmount = useMemo(() => subtotal, [subtotal]);
 
   // Add In-Stock Device from Inventory
   const handleAddDeviceToInvoice = (phone: any) => {
@@ -676,10 +675,6 @@ export default function CreateInvoicePage() {
               <div className="flex justify-between">
                 <span>Subtotal</span>
                 <span className="font-bold text-slate-900">₦{subtotal.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Tax (8%)</span>
-                <span className="font-bold text-slate-900">₦{tax.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 text-slate-900 font-extrabold">
                 <span className="text-sm">Total Due</span>

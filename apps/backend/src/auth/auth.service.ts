@@ -63,6 +63,11 @@ export class AuthService {
     const user = business.users[0];
     const tokens = await this.generateTokens(user.id, user.email);
 
+    // Send Welcome Email asynchronously in background
+    this.mailService
+      .sendWelcomeEmail(user.email, user.firstName || 'Store Owner', business.name, business.plan)
+      .catch((err) => console.error('Failed to send welcome email:', err));
+
     return {
       user: {
         id: user.id,
@@ -189,8 +194,6 @@ export class AuthService {
     return {
       success: true,
       message: `6-digit verification code sent to ${cleanEmail}`,
-      devCode: code, // Accessible for dev testing
-      emailDelivery: res.success,
     };
   }
 
