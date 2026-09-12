@@ -16,7 +16,6 @@ import {
   Filter,
   ArrowUpRight,
   ExternalLink,
-  Sparkles,
   Search,
   CheckCheck,
   Inbox,

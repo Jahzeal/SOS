@@ -15,7 +15,6 @@ import {
   Key,
   Building,
   Check,
-  Sparkles,
   Code,
   Send,
   Eye,
@@ -339,7 +338,7 @@ export default function AdminSettingsPage() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
                 <div>
                   <h2 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-indigo-600" />
+                    <Mail className="w-5 h-5 text-indigo-600" />
                     Merchant Welcome Email Template
                   </h2>
                   <p className="text-xs text-slate-500 font-medium mt-0.5">

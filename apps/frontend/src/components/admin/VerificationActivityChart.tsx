@@ -19,7 +19,7 @@ import {
   TrendingUp,
   Activity,
   Percent,
-  Sparkles,
+  CheckCircle2,
 } from 'lucide-react';
 
 export type TimeRange = 'today' | '7d' | '30d' | '90d';
@@ -230,7 +230,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
 
           <div className="pt-2 border-t border-slate-700/80 flex items-center justify-between text-[11px] font-bold text-slate-300">
             <span className="flex items-center gap-1">
-              <Sparkles className="w-3 h-3 text-emerald-400" />
+              <CheckCircle2 className="w-3 h-3 text-emerald-400" />
               Success Rate:
             </span>
             <span className="text-emerald-400 font-mono font-extrabold">{data.successRate || 100}%</span>

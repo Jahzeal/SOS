@@ -7,7 +7,6 @@ import {
   X,
   CreditCard,
   Building,
-  Sparkles,
   Zap,
   Lock,
   ArrowRight,
@@ -133,7 +132,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
           </button>
 
           <div className="flex items-center gap-2.5 text-blue-400 font-bold text-xs uppercase tracking-wider mb-2">
-            <Sparkles className="w-4 h-4" />
+            <CreditCard className="w-4 h-4" />
             <span>Upgrade Store Subscription</span>
           </div>
 
@@ -251,7 +250,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                   {isInitializing || isVerifying ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span>{isVerifying ? 'Verifying with Paystack...' : 'Connecting to Paystack...'}</span>
+                      <span>{isVerifying ? 'Verifying...' : 'Processing...'}</span>
                     </>
                   ) : (
                     <>

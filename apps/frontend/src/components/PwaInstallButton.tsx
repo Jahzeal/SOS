@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Download, Smartphone, Check, Share, X, Sparkles, Monitor } from 'lucide-react';
+import { Download, Smartphone, Check, Share, X, Monitor } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -186,7 +186,6 @@ export function PwaInstallButton({
       <>
         <div className={`p-3 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white space-y-2.5 shadow-md border border-slate-700/50 ${className}`}>
           <div className="flex items-center gap-2 text-xs font-bold text-teal-300">
-            <Sparkles className="w-3.5 h-3.5" />
             <span>Install Native Kiosk App</span>
           </div>
           <p className="text-[11px] text-slate-300 leading-snug">

@@ -12,7 +12,11 @@ import { useRouter } from 'next/navigation';
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const [isAuthorized, setIsAuthorized] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    const token = localStorage.getItem('vf_access_token');
+    return Boolean(token && !isTokenExpired(token));
+  });
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -56,11 +60,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   if (!isAuthorized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900 text-white">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-8 h-8 rounded-full border-4 border-teal-500 border-t-transparent animate-spin" />
-          <p className="text-xs font-mono font-bold text-slate-400">Verifying session security...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <div className="w-7 h-7 rounded-full border-2 border-slate-300 border-t-teal-600 animate-spin" />
       </div>
     );
   }

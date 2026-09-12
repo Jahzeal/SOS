@@ -18,7 +18,6 @@ import {
   Filter,
   Check,
   ChevronDown,
-  Sparkles,
   ShieldCheck,
   RefreshCw,
   X,

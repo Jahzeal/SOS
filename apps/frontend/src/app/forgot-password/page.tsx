@@ -126,7 +126,7 @@ export default function ForgotPasswordPage() {
                 leftIcon={loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Mail className="w-4 h-4" />}
                 className="bg-teal-600 hover:bg-teal-700 font-bold text-xs py-3 shadow-md shadow-teal-600/20 mt-2"
               >
-                {loading ? 'Sending Reset Instructions...' : 'Send Password Reset Link'}
+                {loading ? 'Sending...' : 'Send Password Reset Link'}
               </Button>
 
               <div className="pt-2 text-center">

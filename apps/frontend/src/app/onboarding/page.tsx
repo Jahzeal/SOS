@@ -26,7 +26,6 @@ import {
   Layers,
   Award,
   Info,
-  Sparkles,
   CreditCard,
   Printer,
   QrCode,
@@ -71,9 +70,6 @@ export default function OnboardingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [viewingPlanDetails, setViewingPlanDetails] = useState<any | null>(null);
 
-  // Step 5 Workspace Loading State
-  const [setupProgress, setSetupProgress] = useState(0);
-
   useEffect(() => {
     setMounted(true);
     // Fetch dynamic database plans
@@ -84,22 +80,6 @@ export default function OnboardingPage() {
       }
     }).catch((err) => console.warn('Using fallback plans:', err));
   }, []);
-
-  // Step 5 Setup Progress Simulation
-  useEffect(() => {
-    if (currentStep === 5) {
-      const interval = setInterval(() => {
-        setSetupProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            return 100;
-          }
-          return prev + 25;
-        });
-      }, 400);
-      return () => clearInterval(interval);
-    }
-  }, [currentStep]);
 
   // Validation Handlers
   const validateStep1 = () => {
@@ -782,7 +762,7 @@ export default function OnboardingPage() {
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white shadow-lg">
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-2 text-teal-400 text-xs font-bold uppercase tracking-wider">
-                            <Sparkles className="w-4 h-4" />
+                            <Layers className="w-4 h-4" />
                             <span>Package Specifications</span>
                           </div>
                           <h2 className="text-2xl sm:text-3xl font-black text-white">{viewingPlanDetails.name}</h2>
@@ -1026,23 +1006,25 @@ export default function OnboardingPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-3xl font-extrabold text-slate-900">Setup Complete!</h3>
-                    <p className="text-sm text-slate-600 font-medium mt-1">
-                      Your store workspace <strong className="text-slate-900">{businessForm.storeName || 'TechWorld Mobile'}</strong> is live on the <strong className="text-blue-600">{selectedPlan.toUpperCase()}</strong> plan.
+                    <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">Setup Complete!</h3>
+                    <p className="text-sm text-slate-600 font-medium mt-1.5 max-w-md mx-auto">
+                      Your store workspace <strong className="text-slate-900">{businessForm.storeName || 'Store Workspace'}</strong> is ready on the <strong className="text-teal-600">{selectedPlan.toUpperCase()}</strong> plan.
                     </p>
                   </div>
 
-                  {/* Simulated Progress Bar */}
-                  <div className="space-y-2 text-left bg-slate-50 p-4 rounded-xl border border-slate-200">
-                    <div className="flex justify-between text-xs font-bold text-slate-700">
-                      <span>Initializing Cloud Ledger</span>
-                      <span className="text-emerald-600">{setupProgress}%</span>
+                  {/* Ready Checklist */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-left">
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                      <div className="text-[11px] font-bold text-slate-500 uppercase">Inventory & POS</div>
+                      <div className="text-xs font-extrabold text-slate-900 mt-0.5">Ready to Add Phones</div>
                     </div>
-                    <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
-                      <div
-                        className="bg-emerald-500 h-full transition-all duration-300"
-                        style={{ width: `${setupProgress}%` }}
-                      />
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                      <div className="text-[11px] font-bold text-slate-500 uppercase">Verification</div>
+                      <div className="text-xs font-extrabold text-slate-900 mt-0.5">IMEI Registry Active</div>
+                    </div>
+                    <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl">
+                      <div className="text-[11px] font-bold text-slate-500 uppercase">Billing</div>
+                      <div className="text-xs font-extrabold text-slate-900 mt-0.5">14-Day Free Trial</div>
                     </div>
                   </div>
                 </div>

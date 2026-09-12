@@ -363,7 +363,7 @@ export default function CreateInvoicePage() {
             <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
               {isSearchingDevices ? (
                 <div className="py-6 text-center text-slate-400 text-xs font-semibold flex items-center justify-center gap-2">
-                  <Loader2 className="w-4 h-4 animate-spin" /> Searching devices...
+                  <Loader2 className="w-4 h-4 animate-spin" /> Searching...
                 </div>
               ) : inStockDevices.length === 0 ? (
                 <div className="py-6 text-center text-slate-400 text-xs font-medium">

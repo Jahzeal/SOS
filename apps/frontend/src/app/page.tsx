@@ -1262,9 +1262,9 @@ export default function PublicLandingPageV2() {
 
             {/* Live Verification Status Loading Banner */}
             {heroVerifying && (
-              <div className="mt-4 p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold flex items-center justify-center gap-2.5 animate-pulse shadow-sm">
-                <div className="w-4 h-4 rounded-full border-2 border-blue-600 border-t-transparent animate-spin" />
-                <span>Searching live database ledger...</span>
+              <div className="mt-4 p-3 rounded-xl bg-teal-50 border border-teal-200 text-teal-900 text-xs font-bold flex items-center justify-center gap-2">
+                <div className="w-4 h-4 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
+                <span>Searching...</span>
               </div>
             )}
 
