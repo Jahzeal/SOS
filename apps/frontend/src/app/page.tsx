@@ -972,14 +972,6 @@ export default function PublicLandingPageV2() {
                 Get Started
               </Button>
             </Link>
-            <Button
-              variant="secondary"
-              size="lg"
-              fullWidth
-              onClick={openDemoModal}
-            >
-              Try Verification Demo
-            </Button>
           </div>
 
           <p className="text-xs text-slate-500 font-medium pt-1">
@@ -2076,13 +2068,10 @@ export default function PublicLandingPageV2() {
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link href="/onboarding">
-              <Button variant="primary" size="lg" className="shadow-md shadow-blue-600/10">
+              <Button variant="primary" size="lg" className="shadow-md shadow-teal-600/10" rightIcon={<ArrowRight className="w-4 h-4" />}>
                 Get Started
               </Button>
             </Link>
-            <Button variant="secondary" size="lg" onClick={openDemoModal}>
-              Try Verification Demo
-            </Button>
           </div>
         </div>
       </section>
