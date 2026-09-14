@@ -165,6 +165,12 @@ export function PwaInstallButton({
 }) {
   const { deferredPrompt, isStandalone, triggerInstall } = usePwaInstall();
   const [showModal, setShowModal] = useState(false);
+  const [isDismissed, setIsDismissed] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('vf_pwa_sidebar_dismissed') === 'true';
+    }
+    return false;
+  });
 
   const handleClick = async () => {
     if (deferredPrompt) {
@@ -177,23 +183,39 @@ export function PwaInstallButton({
     }
   };
 
-  if (isStandalone) {
-    return null; // Hide completely if already running in standalone PWA window
+  const handleDismiss = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsDismissed(true);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('vf_pwa_sidebar_dismissed', 'true');
+    }
+  };
+
+  if (isStandalone || (variant === 'sidebar' && isDismissed)) {
+    return null; // Hide completely if already running in standalone PWA window or dismissed
   }
 
   if (variant === 'sidebar') {
     return (
       <>
-        <div className={`p-3 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white space-y-2.5 shadow-md border border-slate-700/50 ${className}`}>
-          <div className="flex items-center gap-2 text-xs font-bold text-teal-300">
+        <div className={`relative p-3 bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl text-white space-y-2.5 shadow-md border border-slate-700/50 ${className}`}>
+          <div className="flex items-center justify-between gap-2 text-xs font-bold text-teal-300">
             <span>Install Native Kiosk App</span>
+            <button
+              onClick={handleDismiss}
+              className="p-1 -mr-1 -mt-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/60 transition cursor-pointer"
+              title="Dismiss banner"
+              aria-label="Dismiss banner"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
           </div>
           <p className="text-[11px] text-slate-300 leading-snug">
             Run VerifyFlow with offline thermal receipts and instant camera scanning.
           </p>
           <button
             onClick={handleClick}
-            className="w-full py-2 px-3 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition shadow-sm"
+            className="w-full py-2 px-3 bg-teal-500 hover:bg-teal-400 text-slate-950 font-extrabold text-xs rounded-xl flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer"
           >
             <Download className="w-3.5 h-3.5" />
             <span>Download / Install App</span>
