@@ -961,13 +961,12 @@ export default function PublicLandingPageV2() {
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-            <Link href="/onboarding">
+            <Link href="/onboarding" className="w-full sm:w-auto">
               <Button
                 variant="primary"
                 size="lg"
-                fullWidth
-                rightIcon={<ArrowRight className="w-4 h-4" />}
-                className="shadow-md shadow-slate-900/10"
+                rightIcon={<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1.5" />}
+                className="w-full sm:w-auto sm:min-w-[320px] px-9 py-4 rounded-2xl border-2 border-teal-500/50 ring-4 ring-teal-500/15 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-teal-950/15 hover:shadow-xl transition-all group justify-center tracking-tight"
               >
                 Get Started
               </Button>
@@ -2067,8 +2066,13 @@ export default function PublicLandingPageV2() {
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link href="/onboarding">
-              <Button variant="primary" size="lg" className="shadow-md shadow-teal-600/10" rightIcon={<ArrowRight className="w-4 h-4" />}>
+            <Link href="/onboarding" className="w-full sm:w-auto">
+              <Button
+                variant="primary"
+                size="lg"
+                rightIcon={<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1.5" />}
+                className="w-full sm:w-auto sm:min-w-[320px] px-9 py-4 rounded-2xl border-2 border-teal-500/50 ring-4 ring-teal-500/15 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-teal-950/15 hover:shadow-xl transition-all group justify-center tracking-tight"
+              >
                 Get Started
               </Button>
             </Link>
