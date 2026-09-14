@@ -111,16 +111,16 @@ export default function LoginPage() {
 
 
       {/* Header Navigation */}
-      <header className="px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b border-slate-200 bg-white shadow-subtle z-10 gap-2">
+      <header className="px-4 sm:px-6 xl:px-12 py-3.5 sm:py-4 xl:py-5 flex items-center justify-between border-b border-slate-200 bg-white shadow-subtle z-10 gap-2">
         <Logo size="md" />
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <PwaInstallButton variant="header" />
           
-          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold">
+          <div className="hidden sm:flex items-center gap-2 text-xs xl:text-sm font-semibold">
             <span className="text-slate-500">No store account?</span>
             <Link href="/onboarding">
-              <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800 font-bold">
+              <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800 font-bold px-3 py-1.5 xl:px-4 xl:py-2 text-xs xl:text-sm rounded-xl">
                 Register Business →
               </Button>
             </Link>
@@ -129,28 +129,28 @@ export default function LoginPage() {
       </header>
 
       {/* Main Login Card Container */}
-      <main className="flex-1 flex items-center justify-center px-4 py-12 z-10">
-        <div className="w-full max-w-md space-y-6">
+      <main className="flex-1 flex items-center justify-center px-4 py-8 sm:py-12 xl:py-16 z-10">
+        <div className="w-full max-w-md xl:max-w-lg 2xl:max-w-xl space-y-6 xl:space-y-8">
           
           {/* Card Header */}
-          <div className="text-center space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <div className="text-center space-y-2 xl:space-y-3">
+            <h1 className="text-2xl sm:text-3xl xl:text-4xl font-extrabold text-slate-900 tracking-tight">
               Sign In to Your Workspace
             </h1>
-            <p className="text-xs sm:text-sm text-slate-500 max-w-sm mx-auto font-medium">
+            <p className="text-xs sm:text-sm xl:text-base text-slate-500 max-w-sm xl:max-w-md mx-auto font-medium">
               Access your inventory, phone IMEI registry, thermal receipts, and real-time sales ledger.
             </p>
           </div>
 
           {/* White Form Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xl space-y-5">
+          <div className="bg-white border border-slate-200 rounded-2xl xl:rounded-3xl p-6 sm:p-8 xl:p-10 shadow-xl space-y-5 xl:space-y-6">
             <Suspense fallback={null}>
               <SessionExpiredAlert />
             </Suspense>
 
             {error && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs xl:text-sm flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 xl:w-5 xl:h-5 text-rose-600 shrink-0 mt-0.5" />
                 <div className="font-medium">{error}</div>
               </div>
             )}
@@ -166,16 +166,16 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="relative flex items-center justify-center my-4">
               <div className="border-t border-slate-200 w-full" />
-              <span className="bg-white px-3 text-[11px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+              <span className="bg-white px-3 text-[11px] xl:text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                 or sign in with email
               </span>
               <div className="border-t border-slate-200 w-full" />
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            <form onSubmit={handleSubmit} className="space-y-4 xl:space-y-5 text-xs xl:text-sm">
               {/* Store Email */}
               <div className="space-y-1.5">
-                <label className="block font-bold text-slate-800">Email Address</label>
+                <label className="block font-bold text-slate-800 text-xs xl:text-sm">Email Address</label>
                 <div className="relative">
                   <input
                     type="email"
@@ -184,17 +184,17 @@ export default function LoginPage() {
                     placeholder="owner@store.com"
                     required
                     disabled={loading}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition disabled:opacity-75"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl xl:rounded-2xl px-3.5 py-2.5 xl:py-3.5 text-slate-900 text-xs xl:text-sm pl-9 xl:pl-10 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition disabled:opacity-75"
                   />
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                  <Mail className="w-4 h-4 xl:w-5 xl:h-5 text-slate-400 absolute left-3 top-3 xl:top-3.5" />
                 </div>
               </div>
 
               {/* Password with Eye Toggle */}
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="block font-bold text-slate-800">Password</label>
-                  <Link href="/forgot-password" className="text-[11px] text-teal-600 font-bold hover:underline">
+                  <label className="block font-bold text-slate-800 text-xs xl:text-sm">Password</label>
+                  <Link href="/forgot-password" className="text-[11px] xl:text-xs text-teal-600 font-bold hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -206,21 +206,21 @@ export default function LoginPage() {
                     placeholder="••••••••••••"
                     required
                     disabled={loading}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-slate-900 text-xs pl-9 pr-10 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition disabled:opacity-75"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl xl:rounded-2xl px-3.5 py-2.5 xl:py-3.5 text-slate-900 text-xs xl:text-sm pl-9 xl:pl-10 pr-10 xl:pr-11 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition disabled:opacity-75"
                   />
-                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                  <Lock className="w-4 h-4 xl:w-5 xl:h-5 text-slate-400 absolute left-3 top-3 xl:top-3.5" />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                     disabled={loading}
-                    className="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 transition p-0.5 rounded focus:outline-none"
+                    className="absolute right-3 top-2.5 xl:top-3 text-slate-400 hover:text-slate-600 transition p-0.5 rounded focus:outline-none"
                     title={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? (
-                      <EyeOff className="w-4 h-4" />
+                      <EyeOff className="w-4 h-4 xl:w-5 xl:h-5" />
                     ) : (
-                      <Eye className="w-4 h-4" />
+                      <Eye className="w-4 h-4 xl:w-5 xl:h-5" />
                     )}
                   </button>
                 </div>
@@ -232,7 +232,7 @@ export default function LoginPage() {
                 variant="primary"
                 size="md"
                 disabled={loading}
-                className="w-full py-2.5 font-bold text-xs bg-slate-900 hover:bg-slate-800 text-white border-none shadow-md mt-2"
+                className="w-full py-2.5 xl:py-3.5 font-bold text-xs xl:text-sm bg-slate-900 hover:bg-slate-800 text-white border-none shadow-md mt-2 rounded-xl xl:rounded-2xl"
               >
                 {loading ? (
                   <span className="flex items-center justify-center gap-2">
@@ -242,13 +242,13 @@ export default function LoginPage() {
                 ) : (
                   <span className="flex items-center justify-center gap-1.5">
                     <span>Sign In to Workspace</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 xl:w-5 xl:h-5" />
                   </span>
                 )}
               </Button>
 
               {/* Mobile & Card Registration Link */}
-              <div className="pt-3 border-t border-slate-100 text-center text-xs">
+              <div className="pt-3 border-t border-slate-100 text-center text-xs xl:text-sm">
                 <span className="text-slate-500 font-medium">Don't have a store account? </span>
                 <Link href="/onboarding" className="text-teal-600 font-bold hover:underline block sm:inline mt-1 sm:mt-0">
                   Create a business account →
@@ -261,7 +261,7 @@ export default function LoginPage() {
       </main>
 
       {/* Page Footer */}
-      <footer className="py-4 text-center text-[11px] text-slate-500 border-t border-slate-200 bg-white">
+      <footer className="py-4 xl:py-6 text-center text-[11px] xl:text-xs text-slate-500 border-t border-slate-200 bg-white">
         © {new Date().getFullYear()} VerifyFlow Enterprise Inc. All rights reserved.
       </footer>
     </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Loader2 } from 'lucide-react';
 
 interface GoogleAuthButtonProps {
@@ -43,60 +43,83 @@ export function GoogleAuthButton({
   const [scriptLoaded, setScriptLoaded] = useState(false);
   const googleBtnContainerRef = useRef<HTMLDivElement>(null);
 
-  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+  const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c.apps.googleusercontent.com';
 
-  const handleGoogleCredentialResponse = (response: any) => {
-    setLoading(true);
-    try {
-      if (!response.credential) {
-        throw new Error('No Google authorization token received.');
-      }
-
-      // Decode JWT token payload
-      const parts = response.credential.split('.');
-      let profile: any = {};
-      if (parts.length === 3) {
-        try {
-          const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-          profile = {
-            email: payload.email,
-            firstName: payload.given_name || (payload.name ? payload.name.split(' ')[0] : 'Store'),
-            lastName: payload.family_name || (payload.name ? payload.name.split(' ').slice(1).join(' ') : 'Owner'),
-            fullName: payload.name || `${payload.given_name || 'Store'} ${payload.family_name || 'Owner'}`,
-            picture: payload.picture,
-          };
-        } catch (e) {
-          console.warn('Could not decode Google token claims on client:', e);
+  const handleGoogleCredentialResponse = useCallback(
+    (response: any) => {
+      setLoading(true);
+      try {
+        if (!response?.credential) {
+          throw new Error('No Google authorization token received.');
         }
+
+        // Decode JWT token payload
+        const parts = response.credential.split('.');
+        let profile: any = {};
+        if (parts.length === 3) {
+          try {
+            const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+            profile = {
+              email: payload.email,
+              firstName: payload.given_name || (payload.name ? payload.name.split(' ')[0] : 'Store'),
+              lastName: payload.family_name || (payload.name ? payload.name.split(' ').slice(1).join(' ') : 'Owner'),
+              fullName: payload.name || `${payload.given_name || 'Store'} ${payload.family_name || 'Owner'}`,
+              picture: payload.picture,
+            };
+          } catch (e) {
+            console.warn('Could not decode Google token claims on client:', e);
+          }
+        }
+
+        onSuccess({
+          credential: response.credential,
+          ...profile,
+        });
+      } catch (err: any) {
+        console.error('Google Auth Error:', err);
+        onError?.(err.message || 'Google authentication failed.');
+      } finally {
+        setLoading(false);
+      }
+    },
+    [onSuccess, onError]
+  );
+
+  const initGoogle = useCallback(() => {
+    if (!clientId || !window.google?.accounts?.id) return;
+
+    try {
+      window.google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+        context: mode === 'signup' ? 'signup' : 'signin',
+        itp_support: true,
+      });
+
+      if (googleBtnContainerRef.current) {
+        googleBtnContainerRef.current.innerHTML = '';
+        const containerWidth = googleBtnContainerRef.current.offsetWidth || 380;
+        window.google.accounts.id.renderButton(googleBtnContainerRef.current, {
+          theme: 'outline',
+          size: 'large',
+          type: 'standard',
+          shape: 'rectangular',
+          text: mode === 'signup' ? 'signup_with' : 'signin_with',
+          width: Math.min(Math.max(containerWidth, 240), 400),
+          logo_alignment: 'left',
+        });
       }
 
-      onSuccess({
-        credential: response.credential,
-        ...profile,
-      });
-    } catch (err: any) {
-      console.error('Google Auth Error:', err);
-      onError?.(err.message || 'Google authentication failed.');
-    } finally {
-      setLoading(false);
+      setScriptLoaded(true);
+    } catch (e) {
+      console.warn('Google Identity initialization warning:', e);
     }
-  };
+  }, [clientId, mode, handleGoogleCredentialResponse]);
 
   useEffect(() => {
     if (!clientId) return;
-
-    const initGoogle = () => {
-      if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: clientId,
-          callback: handleGoogleCredentialResponse,
-          auto_select: false,
-          cancel_on_tap_outside: true,
-          context: mode === 'signup' ? 'signup' : 'signin',
-        });
-        setScriptLoaded(true);
-      }
-    };
 
     if (window.google?.accounts?.id) {
       initGoogle();
@@ -114,13 +137,13 @@ export function GoogleAuthButton({
         initGoogle();
       };
       script.onerror = () => {
-        onError?.('Failed to load Google Sign-In SDK. Please check your internet connection.');
+        onError?.('Failed to load Google Sign-In SDK. Please check your network connection.');
       };
       document.body.appendChild(script);
     } else {
       existingScript.addEventListener('load', initGoogle);
     }
-  }, [clientId, mode]);
+  }, [clientId, initGoogle, onError]);
 
   const handleClick = () => {
     if (disabled || loading) return;
@@ -128,16 +151,12 @@ export function GoogleAuthButton({
     if (window.google?.accounts?.id) {
       setLoading(true);
       try {
-        // Trigger Google One-Tap or Google Account Selection prompt
         window.google.accounts.id.prompt((notification: any) => {
-          if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
             setLoading(false);
-            // If prompt was suppressed by browser, click Google button in container if present
             const renderedBtn = googleBtnContainerRef.current?.querySelector('div[role="button"]') as HTMLElement;
             if (renderedBtn) {
               renderedBtn.click();
-            } else if (notification.getNotDisplayedReason) {
-              console.warn('Google prompt reason:', notification.getNotDisplayedReason());
             }
           }
         });
@@ -151,12 +170,12 @@ export function GoogleAuthButton({
   };
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={handleClick}
-        disabled={disabled || loading}
-        className={`w-full h-11 bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl px-4 text-xs sm:text-sm font-bold flex items-center justify-center gap-3 transition shadow-xs hover:border-slate-400 disabled:opacity-60 cursor-pointer ${className}`}
+    <div className={`relative w-full h-11 xl:h-12 overflow-hidden rounded-xl xl:rounded-2xl select-none ${className}`}>
+      {/* Visual Custom Design Button */}
+      <div
+        className={`w-full h-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl xl:rounded-2xl px-4 text-xs sm:text-sm font-bold flex items-center justify-center gap-3 transition shadow-xs hover:border-slate-400 ${
+          disabled || loading ? 'opacity-60 pointer-events-none' : ''
+        }`}
       >
         {loading ? (
           <Loader2 className="w-4 h-4 animate-spin text-slate-600" />
@@ -187,10 +206,15 @@ export function GoogleAuthButton({
             ? 'Sign up with Google'
             : 'Sign in with Google'}
         </span>
-      </button>
+      </div>
 
-      {/* Hidden GIS container */}
-      <div ref={googleBtnContainerRef} className="hidden" />
-    </>
+      {/* Direct Interactive GIS Overlay Container */}
+      <div
+        ref={googleBtnContainerRef}
+        onClick={handleClick}
+        className="absolute inset-0 w-full h-full opacity-[0.001] z-20 cursor-pointer overflow-hidden flex items-center justify-center [&>div]:!w-full [&>div]:!h-full [&>div>iframe]:!w-full [&>div>iframe]:!h-full [&>div>iframe]:!cursor-pointer"
+        title={mode === 'signup' ? 'Sign up with Google' : 'Sign in with Google'}
+      />
+    </div>
   );
 }

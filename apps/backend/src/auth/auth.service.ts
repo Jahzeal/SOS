@@ -24,14 +24,22 @@ export class AuthService {
     picture?: string;
     sub?: string;
   }> {
+    const expectedClientId = process.env.GOOGLE_CLIENT_ID;
+
     // 1. Attempt verifying with Google's tokeninfo API
     try {
       const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
       if (res.ok) {
         const data = await res.json();
+        
+        // Security check: Validate audience if GOOGLE_CLIENT_ID is configured
+        if (expectedClientId && data.aud && data.aud !== expectedClientId) {
+          throw new BadRequestException('Google token audience mismatch. Unauthorized application.');
+        }
+
         if (data.email) {
           return {
-            email: data.email.toLowerCase(),
+            email: data.email.toLowerCase().trim(),
             firstName: data.given_name || (data.name ? data.name.split(' ')[0] : 'Store'),
             lastName: data.family_name || (data.name ? data.name.split(' ').slice(1).join(' ') : 'Owner'),
             picture: data.picture,
@@ -39,7 +47,8 @@ export class AuthService {
           };
         }
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err instanceof BadRequestException) throw err;
       console.warn('Google tokeninfo API lookup failed, trying fallback decode:', err);
     }
 
@@ -49,9 +58,14 @@ export class AuthService {
       if (parts.length === 3) {
         const payloadJson = Buffer.from(parts[1], 'base64').toString('utf-8');
         const payload = JSON.parse(payloadJson);
+
+        if (expectedClientId && payload.aud && payload.aud !== expectedClientId) {
+          throw new BadRequestException('Google token audience mismatch.');
+        }
+
         if (payload.email) {
           return {
-            email: payload.email.toLowerCase(),
+            email: payload.email.toLowerCase().trim(),
             firstName: payload.given_name || (payload.name ? payload.name.split(' ')[0] : 'Store'),
             lastName: payload.family_name || (payload.name ? payload.name.split(' ').slice(1).join(' ') : 'Owner'),
             picture: payload.picture,
@@ -59,7 +73,8 @@ export class AuthService {
           };
         }
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (err instanceof BadRequestException) throw err;
       console.warn('Failed to parse JWT payload:', err);
     }
 
