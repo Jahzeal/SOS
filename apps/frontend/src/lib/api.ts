@@ -96,6 +96,21 @@ class ApiClient {
     });
   }
 
+  async googleAuth(payload: {
+    credential: string;
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    businessName?: string;
+    phone?: string;
+    plan?: string;
+  }) {
+    return this.request<{ accessToken: string; refreshToken: string; user: any; isNewUser?: boolean }>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
   async sendOtp(email: string, fullName?: string) {
     return this.request<{ success: boolean; message: string; devCode?: string; emailDelivery?: boolean }>('/auth/send-otp', {
       method: 'POST',

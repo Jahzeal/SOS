@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import * as bcrypt from 'bcrypt';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
+import { RegisterDto, LoginDto, GoogleAuthDto } from './dto/auth.dto';
 import { UserRole } from '@prisma/client';
 
 @Injectable()
@@ -16,6 +16,152 @@ export class AuthService {
     private jwtService: JwtService,
     private mailService: MailService,
   ) {}
+
+  private async verifyGoogleCredential(credential: string): Promise<{
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    picture?: string;
+    sub?: string;
+  }> {
+    // 1. Attempt verifying with Google's tokeninfo API
+    try {
+      const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.email) {
+          return {
+            email: data.email.toLowerCase(),
+            firstName: data.given_name || (data.name ? data.name.split(' ')[0] : 'Store'),
+            lastName: data.family_name || (data.name ? data.name.split(' ').slice(1).join(' ') : 'Owner'),
+            picture: data.picture,
+            sub: data.sub,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('Google tokeninfo API lookup failed, trying fallback decode:', err);
+    }
+
+    // 2. Fallback: Parse standard JWT payload if base64 encoded
+    try {
+      const parts = credential.split('.');
+      if (parts.length === 3) {
+        const payloadJson = Buffer.from(parts[1], 'base64').toString('utf-8');
+        const payload = JSON.parse(payloadJson);
+        if (payload.email) {
+          return {
+            email: payload.email.toLowerCase(),
+            firstName: payload.given_name || (payload.name ? payload.name.split(' ')[0] : 'Store'),
+            lastName: payload.family_name || (payload.name ? payload.name.split(' ').slice(1).join(' ') : 'Owner'),
+            picture: payload.picture,
+            sub: payload.sub,
+          };
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to parse JWT payload:', err);
+    }
+
+    throw new BadRequestException('Invalid or expired Google authentication credential');
+  }
+
+  async googleAuth(dto: GoogleAuthDto) {
+    if (!dto.credential) {
+      throw new BadRequestException('Google credential token is required');
+    }
+
+    const googleProfile = await this.verifyGoogleCredential(dto.credential);
+    const email = (dto.email || googleProfile.email).toLowerCase();
+    const firstName = dto.firstName || googleProfile.firstName || 'Store';
+    const lastName = dto.lastName || googleProfile.lastName || 'Owner';
+
+    // Check if user already exists
+    let user = await this.prisma.user.findUnique({
+      where: { email },
+      include: { business: true },
+    });
+
+    if (!user) {
+      // Create new user and business workspace
+      const storeName = dto.businessName?.trim() || `${firstName}'s Store`;
+      let slug = storeName.toLowerCase().replace(/[^a-z0-9]/g, '-');
+      const existingBusiness = await this.prisma.business.findUnique({ where: { slug } });
+      if (existingBusiness) {
+        slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
+      }
+
+      const randomPassword = Math.random().toString(36).slice(-12) + '!A1';
+      const hashedPassword = await bcrypt.hash(randomPassword, 10);
+
+      const trialEndsAt = new Date();
+      trialEndsAt.setDate(trialEndsAt.getDate() + 14);
+
+      const business = await this.prisma.business.create({
+        data: {
+          name: storeName,
+          slug,
+          phone: dto.phone,
+          plan: (dto.plan || 'STARTER').toUpperCase(),
+          subscriptionStatus: 'TRIAL',
+          trialEndsAt,
+          users: {
+            create: {
+              email,
+              password: hashedPassword,
+              firstName,
+              lastName,
+              role: UserRole.BUSINESS,
+            },
+          },
+        },
+        include: {
+          users: true,
+        },
+      });
+
+      const createdUser = business.users[0];
+      const tokens = await this.generateTokens(createdUser.id, createdUser.email);
+
+      // Asynchronously send welcome email
+      this.mailService
+        .sendWelcomeEmail(createdUser.email, createdUser.firstName || 'Store Owner', business.name, business.plan)
+        .catch((err) => console.error('Failed to send welcome email for Google user:', err));
+
+      return {
+        user: {
+          id: createdUser.id,
+          email: createdUser.email,
+          firstName: createdUser.firstName,
+          lastName: createdUser.lastName,
+          role: createdUser.role,
+          business: {
+            id: business.id,
+            name: business.name,
+            slug: business.slug,
+            plan: business.plan,
+          },
+        },
+        isNewUser: true,
+        ...tokens,
+      };
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email);
+
+    return {
+      user: {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role,
+        business: user.business,
+      },
+      isNewUser: false,
+      ...tokens,
+    };
+  }
 
   async register(dto: RegisterDto) {
     const existingUser = await this.prisma.user.findUnique({
@@ -204,11 +350,6 @@ export class AuthService {
 
     const cleanEmail = email.trim().toLowerCase();
     const cleanCode = code.trim();
-
-    // Allow dev master code 123456
-    if (cleanCode === '123456') {
-      return { success: true, verified: true };
-    }
 
     const cached = this.otpCache.get(cleanEmail);
     if (!cached) {

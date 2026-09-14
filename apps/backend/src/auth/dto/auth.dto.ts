@@ -37,3 +37,34 @@ export class LoginDto {
   @IsNotEmpty()
   password: string;
 }
+
+export class GoogleAuthDto {
+  @IsString()
+  @IsNotEmpty()
+  credential: string;
+
+  @IsString()
+  @IsOptional()
+  businessName?: string;
+
+  @IsString()
+  @IsOptional()
+  phone?: string;
+
+  @IsString()
+  @IsOptional()
+  plan?: string;
+
+  @IsString()
+  @IsOptional()
+  firstName?: string;
+
+  @IsString()
+  @IsOptional()
+  lastName?: string;
+
+  @IsEmail()
+  @IsOptional()
+  email?: string;
+}
+
