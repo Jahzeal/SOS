@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
+import { Logo } from '@/components/ui/Logo';
 import {
   LayoutDashboard,
   Building2,
@@ -169,13 +170,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             >
               <Menu className="w-5 h-5" />
             </button>
-            <Link href="/admin/dashboard" className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-blue-600 shrink-0" />
-              <h1 className="text-sm sm:text-base font-extrabold text-blue-600 tracking-tight">VerifyFlow</h1>
-              <span className="hidden sm:inline-block text-[10px] font-extrabold uppercase tracking-widest px-2 py-0.5 bg-blue-50 text-blue-700 rounded-full border border-blue-200">
-                HQ Admin
-              </span>
-            </Link>
+            <Logo size="sm" subtitle="HQ Admin" href="/admin/dashboard" />
           </div>
 
           <div className="flex items-center gap-3">

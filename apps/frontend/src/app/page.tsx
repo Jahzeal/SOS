@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PwaInstallButton } from '@/components/PwaInstallButton';
+import { Logo } from '@/components/ui/Logo';
 import {
   ShieldCheck,
   Smartphone,
@@ -820,16 +821,7 @@ export default function PublicLandingPageV2() {
       >
         <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
           {/* Left: Logo & Product Name */}
-          <Link href="/" className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white font-extrabold shadow-md shadow-teal-600/20">
-              VF
-            </div>
-            <div>
-              <span className="font-extrabold text-zinc-900 tracking-tight text-lg leading-none block">
-                VerifyFlow
-              </span>
-            </div>
-          </Link>
+          <Logo size="md" />
 
           {/* Center: Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
@@ -853,12 +845,6 @@ export default function PublicLandingPageV2() {
           {/* Right: Actions */}
           <div className="hidden md:flex items-center gap-3">
             <PwaInstallButton variant="header" />
-            <button
-              onClick={openDemoModal}
-              className="text-xs font-bold text-teal-700 hover:text-teal-900 bg-teal-50 hover:bg-teal-100 px-3.5 py-2 rounded-xl border border-teal-200/80 transition-colors"
-            >
-              Try Verification Demo
-            </button>
             {isLoggedIn ? (
               <Link href="/dashboard">
                 <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
@@ -875,7 +861,7 @@ export default function PublicLandingPageV2() {
                 </Link>
                 <Link href="/onboarding">
                   <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    Get Started
+                    Start Free Trial
                   </Button>
                 </Link>
               </>
@@ -934,15 +920,6 @@ export default function PublicLandingPageV2() {
               </a>
             </nav>
             <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-              <button
-                onClick={() => {
-                  setMobileMenuOpen(false);
-                  openDemoModal();
-                }}
-                className="w-full text-center text-xs font-bold text-teal-700 bg-teal-50 py-2.5 rounded-xl border border-teal-200"
-              >
-                Try Verification Demo
-              </button>
               {isLoggedIn ? (
                 <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="primary" fullWidth size="md">

@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import { Badge } from './ui/Badge';
 import { PwaInstallButton } from './PwaInstallButton';
+import { Logo } from './ui/Logo';
 
 interface MenuItem {
   name: string;
@@ -137,15 +138,9 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
     <div className="w-64 bg-white border-r border-slate-200 text-slate-700 flex flex-col h-full shrink-0 shadow-subtle">
       {/* Brand Header */}
       <div className="p-4 border-b border-slate-100 flex items-center justify-between">
-        <Link href="/dashboard" onClick={onClose} className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-teal-600 flex items-center justify-center text-white font-bold shadow-md shadow-teal-600/20">
-            VF
-          </div>
-          <div>
-            <h1 className="font-extrabold text-slate-900 tracking-tight text-base leading-tight">VerifyFlow</h1>
-            <p className="text-[10px] text-teal-600 font-bold uppercase tracking-wider">Enterprise OS</p>
-          </div>
-        </Link>
+        <div onClick={onClose}>
+          <Logo size="md" href="/dashboard" />
+        </div>
         {onClose && (
           <button
             onClick={onClose}

@@ -8,6 +8,7 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { Mail, Lock, AlertCircle, ArrowRight, Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { PwaInstallButton } from '@/components/PwaInstallButton';
+import { Logo } from '@/components/ui/Logo';
 
 function SessionExpiredAlert() {
   const searchParams = useSearchParams();
@@ -83,15 +84,7 @@ export default function LoginPage() {
 
       {/* Header Navigation */}
       <header className="px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between border-b border-slate-200 bg-white shadow-subtle z-10 gap-2">
-        <Link href="/" className="flex items-center gap-2.5 sm:gap-3 shrink-0">
-          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-sm sm:text-base shadow-md">
-            VF
-          </div>
-          <div className="min-w-0">
-            <span className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight leading-none block">VerifyFlow</span>
-            <span className="text-[9px] sm:text-[10px] text-teal-600 font-bold uppercase tracking-wider block">Enterprise OS</span>
-          </div>
-        </Link>
+        <Logo size="md" />
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <PwaInstallButton variant="header" />

@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Lock, CheckCircle2, AlertTriangle, Loader2, KeyRound, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { Logo } from '@/components/ui/Logo';
 
 function ResetPasswordForm() {
   const router = useRouter();
@@ -173,13 +174,10 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans selection:bg-teal-600 selection:text-white">
       {/* Header / Brand */}
-      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-2">
-        <Link href="/" className="inline-flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center font-extrabold text-lg shadow-md shadow-teal-600/20">
-            VF
-          </div>
-          <span className="font-extrabold text-slate-900 text-xl tracking-tight">VerifyFlow</span>
-        </Link>
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center space-y-3">
+        <div className="flex justify-center">
+          <Logo size="lg" />
+        </div>
         <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
           Reset Your Password
         </h2>
