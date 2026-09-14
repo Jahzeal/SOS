@@ -24,7 +24,21 @@ export class AuthService {
     picture?: string;
     sub?: string;
   }> {
-    const expectedClientId = process.env.GOOGLE_CLIENT_ID;
+    const rawExpected = process.env.GOOGLE_CLIENT_ID || '380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c.apps.googleusercontent.com';
+    const cleanExpected = rawExpected.replace(/['"\s]/g, '').trim();
+
+    const isAudienceValid = (aud: any, azp?: any): boolean => {
+      if (!cleanExpected) return true;
+      const audStr = String(aud || '').replace(/['"\s]/g, '').trim();
+      const azpStr = String(azp || '').replace(/['"\s]/g, '').trim();
+
+      return (
+        audStr === cleanExpected ||
+        azpStr === cleanExpected ||
+        audStr.startsWith('380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c') ||
+        azpStr.startsWith('380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c')
+      );
+    };
 
     // 1. Attempt verifying with Google's tokeninfo API
     try {
@@ -32,8 +46,9 @@ export class AuthService {
       if (res.ok) {
         const data = await res.json();
         
-        // Security check: Validate audience if GOOGLE_CLIENT_ID is configured
-        if (expectedClientId && data.aud && data.aud !== expectedClientId) {
+        // Security check: Validate audience
+        if (!isAudienceValid(data.aud, data.azp)) {
+          console.error(`Google token audience mismatch. Received aud="${data.aud}", azp="${data.azp}", expected="${cleanExpected}"`);
           throw new BadRequestException('Google token audience mismatch. Unauthorized application.');
         }
 
@@ -59,7 +74,7 @@ export class AuthService {
         const payloadJson = Buffer.from(parts[1], 'base64').toString('utf-8');
         const payload = JSON.parse(payloadJson);
 
-        if (expectedClientId && payload.aud && payload.aud !== expectedClientId) {
+        if (!isAudienceValid(payload.aud, payload.azp)) {
           throw new BadRequestException('Google token audience mismatch.');
         }
 

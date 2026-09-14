@@ -40,8 +40,8 @@ export function GoogleAuthButton({
   onError,
 }: GoogleAuthButtonProps) {
   const [loading, setLoading] = useState(false);
-  const [scriptLoaded, setScriptLoaded] = useState(false);
   const googleBtnContainerRef = useRef<HTMLDivElement>(null);
+  const initializedRef = useRef(false);
 
   const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c.apps.googleusercontent.com';
 
@@ -85,36 +85,35 @@ export function GoogleAuthButton({
     [onSuccess, onError]
   );
 
-  const initGoogle = useCallback(() => {
-    if (!clientId || !window.google?.accounts?.id) return;
+  const renderGoogleButton = useCallback(() => {
+    if (!clientId || !window.google?.accounts?.id || !googleBtnContainerRef.current) return;
 
     try {
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: handleGoogleCredentialResponse,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-        context: mode === 'signup' ? 'signup' : 'signin',
-        itp_support: true,
-      });
-
-      if (googleBtnContainerRef.current) {
-        googleBtnContainerRef.current.innerHTML = '';
-        const containerWidth = googleBtnContainerRef.current.offsetWidth || 380;
-        window.google.accounts.id.renderButton(googleBtnContainerRef.current, {
-          theme: 'outline',
-          size: 'large',
-          type: 'standard',
-          shape: 'rectangular',
-          text: mode === 'signup' ? 'signup_with' : 'signin_with',
-          width: Math.min(Math.max(containerWidth, 240), 400),
-          logo_alignment: 'left',
+      if (!initializedRef.current) {
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: handleGoogleCredentialResponse,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+          context: mode === 'signup' ? 'signup' : 'signin',
+          use_fedcm_for_prompt: true,
         });
+        initializedRef.current = true;
       }
 
-      setScriptLoaded(true);
+      googleBtnContainerRef.current.innerHTML = '';
+      const containerWidth = googleBtnContainerRef.current.offsetWidth || 380;
+      window.google.accounts.id.renderButton(googleBtnContainerRef.current, {
+        theme: 'outline',
+        size: 'large',
+        type: 'standard',
+        shape: 'rectangular',
+        text: mode === 'signup' ? 'signup_with' : 'signin_with',
+        width: Math.min(Math.max(containerWidth, 240), 400),
+        logo_alignment: 'left',
+      });
     } catch (e) {
-      console.warn('Google Identity initialization warning:', e);
+      console.warn('Google Identity render warning:', e);
     }
   }, [clientId, mode, handleGoogleCredentialResponse]);
 
@@ -122,7 +121,7 @@ export function GoogleAuthButton({
     if (!clientId) return;
 
     if (window.google?.accounts?.id) {
-      initGoogle();
+      renderGoogleButton();
       return;
     }
 
@@ -134,44 +133,20 @@ export function GoogleAuthButton({
       script.async = true;
       script.defer = true;
       script.onload = () => {
-        initGoogle();
+        renderGoogleButton();
       };
       script.onerror = () => {
         onError?.('Failed to load Google Sign-In SDK. Please check your network connection.');
       };
       document.body.appendChild(script);
     } else {
-      existingScript.addEventListener('load', initGoogle);
+      existingScript.addEventListener('load', renderGoogleButton);
     }
-  }, [clientId, initGoogle, onError]);
-
-  const handleClick = () => {
-    if (disabled || loading) return;
-
-    if (window.google?.accounts?.id) {
-      setLoading(true);
-      try {
-        window.google.accounts.id.prompt((notification: any) => {
-          if (notification?.isNotDisplayed?.() || notification?.isSkippedMoment?.()) {
-            setLoading(false);
-            const renderedBtn = googleBtnContainerRef.current?.querySelector('div[role="button"]') as HTMLElement;
-            if (renderedBtn) {
-              renderedBtn.click();
-            }
-          }
-        });
-      } catch (err: any) {
-        setLoading(false);
-        onError?.(err.message || 'Unable to open Google prompt.');
-      }
-    } else {
-      onError?.('Google Sign-In is initializing. Please try again in a few seconds.');
-    }
-  };
+  }, [clientId, renderGoogleButton, onError]);
 
   return (
     <div className={`relative w-full h-11 xl:h-12 overflow-hidden rounded-xl xl:rounded-2xl select-none ${className}`}>
-      {/* Visual Custom Design Button */}
+      {/* Visual Custom Design Layer */}
       <div
         className={`w-full h-full bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-xl xl:rounded-2xl px-4 text-xs sm:text-sm font-bold flex items-center justify-center gap-3 transition shadow-xs hover:border-slate-400 ${
           disabled || loading ? 'opacity-60 pointer-events-none' : ''
@@ -208,10 +183,9 @@ export function GoogleAuthButton({
         </span>
       </div>
 
-      {/* Direct Interactive GIS Overlay Container */}
+      {/* Direct Interactive Native Google GIS Button Overlay */}
       <div
         ref={googleBtnContainerRef}
-        onClick={handleClick}
         className="absolute inset-0 w-full h-full opacity-[0.001] z-20 cursor-pointer overflow-hidden flex items-center justify-center [&>div]:!w-full [&>div]:!h-full [&>div>iframe]:!w-full [&>div>iframe]:!h-full [&>div>iframe]:!cursor-pointer"
         title={mode === 'signup' ? 'Sign up with Google' : 'Sign in with Google'}
       />
