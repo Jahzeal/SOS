@@ -20,20 +20,44 @@ import {
   ChevronRight,
   ChevronDown,
   HelpCircle,
+  UserCircle,
+  Lock,
+  Key,
+  Shield,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModal';
 
 export default function RebuiltSettingsPage() {
-  const { user } = useAuthStore();
-  const [activeSubTab, setActiveSubTab] = useState<'profile' | 'users' | 'branches' | 'billing'>('profile');
+  const { user, setAuth } = useAuthStore();
+  const [activeSubTab, setActiveSubTab] = useState<'account' | 'profile' | 'users' | 'branches' | 'billing'>('account');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Operator Account Profile State
+  const [operatorForm, setOperatorForm] = useState({
+    firstName: user?.firstName || '',
+    lastName: user?.lastName || '',
+    email: user?.email || '',
+    password: '',
+    confirmPassword: '',
+  });
+
+  useEffect(() => {
+    if (user) {
+      setOperatorForm((prev) => ({
+        ...prev,
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+      }));
+    }
+  }, [user]);
 
   // Paystack & Billing State
   const [availablePlans, setAvailablePlans] = useState<any[]>([]);
@@ -143,6 +167,46 @@ export default function RebuiltSettingsPage() {
     { id: 'b2', name: 'Lekki Mall Branch', address: 'Suite 40, Admiralty Way, Lekki Phase 1', phone: '+234 802 333 4444', isHeadquarters: false, staffCount: 3, stockValue: '₦24,200,000' },
   ]);
 
+  // Handle Operator Profile Save
+  const handleSaveOperatorProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!operatorForm.firstName.trim()) {
+      setSaveError('First Name cannot be empty.');
+      return;
+    }
+    if (operatorForm.password && operatorForm.password !== operatorForm.confirmPassword) {
+      setSaveError('Passwords do not match.');
+      return;
+    }
+
+    setSaving(true);
+    setSaveError(null);
+    try {
+      const res = await api.updateUserProfile({
+        firstName: operatorForm.firstName.trim(),
+        lastName: operatorForm.lastName.trim(),
+        password: operatorForm.password ? operatorForm.password.trim() : undefined,
+      });
+
+      if (res?.user) {
+        const token = localStorage.getItem('vf_access_token') || '';
+        setAuth(res.user, token);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('vf_user', JSON.stringify(res.user));
+        }
+      }
+
+      setOperatorForm((prev) => ({ ...prev, password: '', confirmPassword: '' }));
+      setSavedSuccess(true);
+      setTimeout(() => setSavedSuccess(false), 3000);
+    } catch (err: any) {
+      console.error('Failed to update operator profile:', err);
+      setSaveError(err.message || 'Failed to update operator profile. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Handle Form Change Trackers
   const handleProfileChange = (field: string, value: any) => {
     setBusinessProfile((prev) => ({ ...prev, [field]: value }));
@@ -198,10 +262,10 @@ export default function RebuiltSettingsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Store Settings & Operations
+            Settings & Workspace Management
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
-            Manage business credentials, team roles, retail branches, and store subscription plans.
+            Manage your personal operator account, store profile, team members, branches, and subscription.
           </p>
         </div>
 
@@ -219,10 +283,16 @@ export default function RebuiltSettingsPage() {
           className="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-200/80 rounded-2xl shadow-sm text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
         >
           <div className="flex items-center gap-2">
+            {activeSubTab === 'account' && (
+              <>
+                <UserCircle className="w-4 h-4 text-teal-600" />
+                <span>My Account (Operator)</span>
+              </>
+            )}
             {activeSubTab === 'profile' && (
               <>
                 <Building className="w-4 h-4 text-teal-600" />
-                <span>Business Profile</span>
+                <span>Business & Store Profile</span>
               </>
             )}
             {activeSubTab === 'users' && (
@@ -256,6 +326,18 @@ export default function RebuiltSettingsPage() {
             <div className="absolute left-0 mt-2 w-full bg-white rounded-2xl border border-slate-200 shadow-xl p-1.5 z-20 animate-in fade-in slide-in-from-top-1 duration-150 text-xs">
               <button
                 onClick={() => {
+                  setActiveSubTab('account');
+                  setIsDropdownOpen(false);
+                }}
+                className={`w-full flex items-center gap-2 px-3 py-2.5 rounded-xl transition font-bold text-left ${
+                  activeSubTab === 'account' ? 'bg-teal-50 text-teal-700' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+              >
+                <UserCircle className="w-4 h-4 shrink-0 text-teal-600" />
+                <span>My Account (Operator)</span>
+              </button>
+              <button
+                onClick={() => {
                   setActiveSubTab('profile');
                   setIsDropdownOpen(false);
                 }}
@@ -264,7 +346,7 @@ export default function RebuiltSettingsPage() {
                 }`}
               >
                 <Building className="w-4 h-4 shrink-0 text-teal-600" />
-                <span>Business Profile</span>
+                <span>Business & Store Profile</span>
               </button>
               <button
                 onClick={() => {
@@ -306,6 +388,163 @@ export default function RebuiltSettingsPage() {
           </>
         )}
       </div>
+
+      {/* ========================================================================= */}
+      {/* TAB 0: OPERATOR ACCOUNT PROFILE                                          */}
+      {/* ========================================================================= */}
+      {activeSubTab === 'account' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          <div className="lg:col-span-2 space-y-6">
+            <form onSubmit={handleSaveOperatorProfile} className="space-y-6">
+              
+              {saveError && (
+                <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                  <span className="font-semibold">{saveError}</span>
+                </div>
+              )}
+
+              {/* Personal Details Card */}
+              <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-900">Personal Operator Information</h3>
+                    <p className="text-xs text-slate-500 font-medium">This name is used for dashboard greetings, activity logs, and receipts.</p>
+                  </div>
+                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200 uppercase">
+                    {user?.role || 'OWNER'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      First Name <span className="text-rose-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={operatorForm.firstName}
+                      onChange={(e) => setOperatorForm({ ...operatorForm, firstName: e.target.value })}
+                      placeholder="e.g. Collins"
+                      required
+                      className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:bg-white font-medium text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Last Name
+                    </label>
+                    <input
+                      type="text"
+                      value={operatorForm.lastName}
+                      onChange={(e) => setOperatorForm({ ...operatorForm, lastName: e.target.value })}
+                      placeholder="e.g. Nwadia"
+                      className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:bg-white font-medium text-slate-900"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                    Login Email Address
+                  </label>
+                  <input
+                    type="email"
+                    value={operatorForm.email}
+                    disabled
+                    className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-medium text-slate-500 cursor-not-allowed"
+                  />
+                  <p className="text-[11px] text-slate-400 font-medium mt-1">
+                    Your authenticated account identifier. Contact support if you need to transfer ownership.
+                  </p>
+                </div>
+              </div>
+
+              {/* Password & Security Card */}
+              <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
+                <div className="border-b border-slate-100 pb-3">
+                  <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-slate-600" />
+                    <span>Change Password</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 font-medium">Leave blank if you do not want to change your current login password.</p>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={operatorForm.password}
+                      onChange={(e) => setOperatorForm({ ...operatorForm, password: e.target.value })}
+                      placeholder="••••••••••••"
+                      className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:bg-white font-medium text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+                      Confirm New Password
+                    </label>
+                    <input
+                      type="password"
+                      value={operatorForm.confirmPassword}
+                      onChange={(e) => setOperatorForm({ ...operatorForm, confirmPassword: e.target.value })}
+                      placeholder="••••••••••••"
+                      className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:bg-white font-medium text-slate-900"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="md"
+                  isLoading={saving}
+                  className="bg-teal-600 hover:bg-teal-500 font-bold text-xs px-6 py-2.5 rounded-xl shadow-md"
+                >
+                  Save Account Changes
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          {/* Right Operator Summary Card */}
+          <div className="space-y-4">
+            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4 text-center">
+              <div className="w-16 h-16 rounded-full bg-slate-900 text-white flex items-center justify-center font-extrabold text-xl mx-auto shadow-md">
+                {operatorForm.firstName?.[0] || 'U'}
+              </div>
+              <div>
+                <h4 className="font-extrabold text-slate-900 text-base">
+                  {operatorForm.firstName || 'Store'} {operatorForm.lastName || 'Owner'}
+                </h4>
+                <p className="text-xs text-slate-500 font-medium">{operatorForm.email}</p>
+              </div>
+              <div className="pt-3 border-t border-slate-100 text-xs text-left space-y-2">
+                <div className="flex items-center justify-between text-slate-600">
+                  <span className="font-medium">Account Role:</span>
+                  <span className="font-bold text-slate-900">{user?.role || 'STORE OWNER'}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-600">
+                  <span className="font-medium">Primary Store:</span>
+                  <span className="font-bold text-teal-700 truncate max-w-[130px]">{user?.business?.name || 'My Store'}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-600">
+                  <span className="font-medium">Branch Access:</span>
+                  <span className="font-bold text-slate-900">All Branches</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* TAB 1: BUSINESS PROFILE */}
       {activeSubTab === 'profile' && (

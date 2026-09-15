@@ -432,5 +432,38 @@ export class AuthService {
       message: 'Your password has been reset successfully. You may now log in.',
     };
   }
+
+  async updateUserProfile(userId: string, data: { firstName?: string; lastName?: string; password?: string }) {
+    if (!userId) {
+      throw new BadRequestException('User ID is required');
+    }
+
+    const updateData: any = {};
+    if (data.firstName !== undefined && data.firstName.trim()) {
+      updateData.firstName = data.firstName.trim();
+    }
+    if (data.lastName !== undefined && data.lastName.trim()) {
+      updateData.lastName = data.lastName.trim();
+    }
+    if (data.password && data.password.trim()) {
+      if (data.password.length < 6) {
+        throw new BadRequestException('Password must be at least 6 characters long');
+      }
+      updateData.password = await bcrypt.hash(data.password, 10);
+    }
+
+    const updatedUser = await this.prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+      include: { business: true },
+    });
+
+    const { password: _, ...userWithoutPassword } = updatedUser;
+    return {
+      success: true,
+      message: 'Profile updated successfully',
+      user: userWithoutPassword,
+    };
+  }
 }
 

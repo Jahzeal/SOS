@@ -139,6 +139,13 @@ class ApiClient {
     });
   }
 
+  async updateUserProfile(data: { firstName?: string; lastName?: string; password?: string }) {
+    return this.request<{ success: boolean; message: string; user: any }>('/auth/profile', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
   // --- Dashboard Summary Endpoint ---
   async getDashboardSummary() {
     return this.request<{
