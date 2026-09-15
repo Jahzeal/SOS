@@ -4,7 +4,23 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useAuthStore } from '@/store/useAuthStore';
 import { isTokenExpired } from '@/lib/jwt-utils';
-import { Bell, Search, ShieldCheck, Menu, LayoutDashboard, Plus, List, LogOut, UserCircle } from 'lucide-react';
+import {
+  Bell,
+  Search,
+  ShieldCheck,
+  Menu,
+  LayoutDashboard,
+  Plus,
+  List,
+  LogOut,
+  UserCircle,
+  CheckCheck,
+  Smartphone,
+  Sparkles,
+  Receipt,
+  Shield,
+  X,
+} from 'lucide-react';
 import { GlobalSearchModal } from '@/components/search/GlobalSearchModal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -20,6 +36,59 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+
+  // Store Notifications State
+  const [notifications, setNotifications] = useState([
+    {
+      id: '1',
+      title: 'New Device Registered',
+      description: 'iPhone 15 Pro Max (IMEI: 354892...) added to store stock.',
+      time: '10m ago',
+      unread: true,
+      icon: 'phone',
+      href: '/dashboard/records',
+    },
+    {
+      id: '2',
+      title: 'Store Guarantee Active',
+      description: '12-Month warranty registered for POS checkout #VF-8902.',
+      time: '1h ago',
+      unread: true,
+      icon: 'shield',
+      href: '/dashboard/records',
+    },
+    {
+      id: '3',
+      title: 'Thermal QR Receipt Synced',
+      description: '80mm POS receipt layout synced to Ikeja Main Branch.',
+      time: '3h ago',
+      unread: false,
+      icon: 'receipt',
+      href: '/dashboard/settings',
+    },
+    {
+      id: '4',
+      title: 'Workspace Initialized',
+      description: 'Welcome to VerifyFlow Enterprise! 14-day free trial active.',
+      time: 'Yesterday',
+      unread: false,
+      icon: 'sparkle',
+      href: '/dashboard',
+    },
+  ]);
+
+  const unreadCount = notifications.filter((n) => n.unread).length;
+
+  const markAllAsRead = () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  };
+
+  const markItemAsRead = (id: string) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
+    );
+  };
 
   useEffect(() => {
     const verifySession = () => {
@@ -108,11 +177,99 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </kbd>
             </button>
 
-            {/* Notification Bell */}
-            <button className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition relative shadow-subtle">
-              <Bell className="w-4 h-4" />
-              <span className="w-2 h-2 rounded-full bg-teal-600 absolute top-2 right-2 ring-2 ring-white"></span>
-            </button>
+            {/* Notification Bell Dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition relative shadow-subtle cursor-pointer"
+                title="Store Notifications & Alerts"
+                aria-label="Open notifications"
+              >
+                <Bell className="w-4 h-4" />
+                {unreadCount > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-teal-600 absolute top-2 right-2 ring-2 ring-white animate-pulse" />
+                )}
+              </button>
+
+              {isNotificationsOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40"
+                    onClick={() => setIsNotificationsOpen(false)}
+                  />
+                  <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl border border-slate-200 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-xs space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 px-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-slate-900 text-sm">Notifications</span>
+                        {unreadCount > 0 ? (
+                          <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-extrabold text-[10px] border border-teal-200">
+                            {unreadCount} New
+                          </span>
+                        ) : (
+                          <span className="text-[10px] text-slate-400 font-bold">All caught up</span>
+                        )}
+                      </div>
+
+                      {unreadCount > 0 && (
+                        <button
+                          onClick={markAllAsRead}
+                          className="text-[11px] font-bold text-teal-600 hover:text-teal-700 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <CheckCheck className="w-3.5 h-3.5" />
+                          <span>Mark all read</span>
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="space-y-1.5 max-h-72 overflow-y-auto custom-scrollbar">
+                      {notifications.map((n) => (
+                        <Link
+                          key={n.id}
+                          href={n.href}
+                          onClick={() => {
+                            markItemAsRead(n.id);
+                            setIsNotificationsOpen(false);
+                          }}
+                          className={`block p-2.5 rounded-xl transition border ${
+                            n.unread
+                              ? 'bg-teal-50/40 border-teal-100 hover:bg-teal-50/80'
+                              : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-1.5">
+                              {n.icon === 'phone' && <Smartphone className="w-3.5 h-3.5 text-teal-600 shrink-0" />}
+                              {n.icon === 'shield' && <Shield className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
+                              {n.icon === 'receipt' && <Receipt className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                              {n.icon === 'sparkle' && <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                              <span className="font-extrabold text-slate-900 text-xs">{n.title}</span>
+                            </div>
+                            <span className="text-[10px] font-medium text-slate-400 shrink-0">{n.time}</span>
+                          </div>
+                          <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug pl-5">{n.description}</p>
+                        </Link>
+                      ))}
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between px-1">
+                      <Link
+                        href="/dashboard/records"
+                        onClick={() => setIsNotificationsOpen(false)}
+                        className="text-[11px] font-bold text-teal-600 hover:underline"
+                      >
+                        View Store Records →
+                      </Link>
+                      <button
+                        onClick={() => setIsNotificationsOpen(false)}
+                        className="text-[11px] font-bold text-slate-400 hover:text-slate-600"
+                      >
+                        Close
+                      </button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
 
             {/* Top Bar User Profile Dropdown */}
             <div className="relative">

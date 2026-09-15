@@ -107,18 +107,25 @@ export default function InventoryPage() {
     }));
   }, [liveInventory]);
 
-  // Brand breakdown from live data
-  const brandBreakdown = useMemo(() => {
+  // Brand breakdown & unique count from live data
+  const { brandBreakdown, totalUniqueBrands } = useMemo(() => {
     const counts: Record<string, number> = {};
     liveInventory.forEach((item) => {
       const b = item.brand || 'Other';
       counts[b] = (counts[b] || 0) + 1;
     });
     const total = liveInventory.length || 1;
-    return Object.entries(counts)
-      .sort((a, b) => b[1] - a[1])
-      .slice(0, 3)
-      .map(([brand, count]) => ({ brand, count, pct: Math.round((count / total) * 100) }));
+    const sorted = Object.entries(counts)
+      .sort((a, b) => b[1] - a[1]);
+    
+    return {
+      totalUniqueBrands: Object.keys(counts).length,
+      brandBreakdown: sorted.slice(0, 3).map(([brand, count]) => ({
+        brand,
+        count,
+        pct: Math.round((count / total) * 100),
+      })),
+    };
   }, [liveInventory]);
 
   // Storage breakdown from live data
@@ -219,7 +226,7 @@ export default function InventoryPage() {
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider mb-1">Brands in Stock</p>
           <div className="flex items-baseline justify-between">
-            <span className="text-xl font-extrabold text-slate-900">{brandBreakdown.length}</span>
+            <span className="text-xl font-extrabold text-slate-900">{totalUniqueBrands}</span>
             <span className="text-slate-400 font-bold text-[10px]">Brands</span>
           </div>
         </div>
