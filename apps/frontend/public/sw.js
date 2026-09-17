@@ -34,6 +34,8 @@ self.addEventListener('activate', (event) => {
 // Fetch Event (Network First, Cache Fallback for offline access)
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  // Ignore chrome-extension://, moz-extension://, and other non-http schemes
+  if (!event.request.url.startsWith('http://') && !event.request.url.startsWith('https://')) return;
   if (event.request.url.includes('/api/')) return;
 
   event.respondWith(

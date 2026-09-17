@@ -225,19 +225,29 @@ class ApiClient {
     return this.request<any>(`/phones/${id}`);
   }
 
-  // --- Express POS Checkout & Thermal Receipts Endpoints ---
+  // --- Express POS Checkout & Invoices / Receipts Endpoints ---
   async checkoutSale(payload: {
     customerName?: string;
     customerPhone?: string;
     customerEmail?: string;
     paymentMethod?: string;
     paymentStatus?: string;
+    type?: 'RECEIPT' | 'INVOICE';
+    dueDate?: string;
+    paymentTerms?: string;
+    billingAddress?: string;
+    notes?: string;
     items: { phoneRecordId?: string; description?: string; price: number; quantity?: number }[];
   }) {
     return this.request<any>('/sales/checkout', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
+  }
+
+  async getInvoices(search?: string) {
+    const query = search ? `?search=${encodeURIComponent(search)}` : '';
+    return this.request<any[]>(`/sales/invoices${query}`);
   }
 
   async getReceipts(search?: string) {
@@ -247,6 +257,16 @@ class ApiClient {
 
   async getReceiptById(id: string) {
     return this.request<any>(`/sales/receipts/${id}`);
+  }
+
+  async sendSaleEmail(id: string, email?: string) {
+    return this.request<{ success: boolean; message?: string; recipient?: string; dispatched?: boolean }>(
+      `/sales/${id}/email`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      },
+    );
   }
 
   // --- Customers Endpoints ---

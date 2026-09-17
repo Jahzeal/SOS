@@ -86,7 +86,34 @@ TOTAL PAID: ₦${totalAmount.toLocaleString()}
 Thank you for shopping with us!
 For questions or warranty verification, please present this receipt.`;
 
+  const [isSendingDirect, setIsSendingDirect] = useState(false);
+
   const getCleanEmail = () => emailInput.trim();
+
+  // Direct Server Email Dispatch
+  const handleSendDirectEmail = async () => {
+    const to = getCleanEmail();
+    if (!to) {
+      setStatusMessage('Please enter a valid email address first.');
+      return;
+    }
+    if (!receipt?.id) {
+      handleOpenDefaultMail();
+      return;
+    }
+
+    setIsSendingDirect(true);
+    setStatusMessage(null);
+    try {
+      const res = await (await import('@/lib/api')).api.sendSaleEmail(receipt.id, to);
+      setStatusMessage(`Receipt successfully emailed directly to ${to}!`);
+    } catch (err: any) {
+      console.warn('Direct server send failed, falling back to mail client:', err);
+      handleOpenDefaultMail();
+    } finally {
+      setIsSendingDirect(false);
+    }
+  };
 
   // 1. Open Default OS / Desktop Email Client (Standard mailto protocol)
   const handleOpenDefaultMail = () => {
@@ -134,7 +161,7 @@ For questions or warranty verification, please present this receipt.`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed -inset-1 z-[100] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden flex flex-col max-h-[90vh]">
         
         {/* Header */}
@@ -315,15 +342,26 @@ For questions or warranty verification, please present this receipt.`;
           >
             Close
           </button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleOpenDefaultMail}
-            leftIcon={<Mail className="w-4 h-4" />}
-            className="bg-blue-600 hover:bg-blue-500 font-bold"
-          >
-            Open Mail Client
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={handleOpenDefaultMail}
+              leftIcon={<Mail className="w-3.5 h-3.5" />}
+            >
+              Mail App
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={isSendingDirect}
+              onClick={handleSendDirectEmail}
+              leftIcon={<Send className="w-3.5 h-3.5" />}
+              className="bg-blue-600 hover:bg-blue-500 font-bold"
+            >
+              Send Email
+            </Button>
+          </div>
         </div>
 
       </div>

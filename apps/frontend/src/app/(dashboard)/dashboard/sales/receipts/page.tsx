@@ -93,16 +93,6 @@ export default function ReceiptsArchivePage() {
   const handleEmailReceipt = (rcp: any) => {
     if (!rcp) return;
     setReceiptForEmailModal(rcp);
-
-    const email = rcp.customer?.email || '';
-    if (email && email.includes('@')) {
-      const name = rcp.customer?.name || 'Valued Customer';
-      const rcpNum = rcp.receiptNumber || rcp.invoiceNumber || rcp.id;
-      const subject = `Receipt & Sales Record #${rcpNum}`;
-      const body = `Hello ${name},\n\nThank you for your purchase! Your sales receipt #${rcpNum} for ₦${Number(rcp.totalAmount || 0).toLocaleString()} is confirmed.\n\nThank you for your business!`;
-      const mailtoUrl = `mailto:${encodeURIComponent(email.trim())}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-      window.location.href = mailtoUrl;
-    }
   };
 
   return (

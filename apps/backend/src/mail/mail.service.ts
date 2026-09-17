@@ -41,8 +41,14 @@ export class MailService {
     }
   }
 
-  private async dispatchEmail(options: { to: string; subject: string; html: string; text?: string }) {
-    const { to, subject, html, text } = options;
+  public async dispatchEmail(options: {
+    to: string;
+    subject: string;
+    html: string;
+    text?: string;
+    attachments?: Array<{ filename: string; content: Buffer | string; contentType?: string }>;
+  }) {
+    const { to, subject, html, text, attachments } = options;
 
     // 1. Try Nodemailer / Gmail SMTP if configured
     if (this.transporter) {
@@ -53,8 +59,13 @@ export class MailService {
           subject,
           html,
           text,
+          attachments: attachments?.map((att) => ({
+            filename: att.filename,
+            content: att.content,
+            contentType: att.contentType,
+          })),
         });
-        this.logger.log(`Email successfully sent via SMTP to ${to}. MessageId: ${info.messageId}`);
+        this.logger.log(`Email successfully sent via SMTP to ${to} (Attachments: ${attachments?.length || 0}). MessageId: ${info.messageId}`);
         return { success: true, messageId: info.messageId };
       } catch (err: any) {
         this.logger.error(`SMTP sending failed to ${to}: ${err.message}`, err.stack);
@@ -71,6 +82,10 @@ export class MailService {
           subject,
           html,
           text,
+          attachments: attachments?.map((att) => ({
+            filename: att.filename,
+            content: Buffer.isBuffer(att.content) ? att.content : Buffer.from(att.content),
+          })),
         });
 
         if (res.error) {

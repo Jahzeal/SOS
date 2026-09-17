@@ -40,6 +40,26 @@ export class CheckoutSaleDto {
   @IsOptional()
   paymentStatus?: string;
 
+  @IsString()
+  @IsOptional()
+  type?: 'RECEIPT' | 'INVOICE';
+
+  @IsString()
+  @IsOptional()
+  dueDate?: string;
+
+  @IsString()
+  @IsOptional()
+  paymentTerms?: string;
+
+  @IsString()
+  @IsOptional()
+  billingAddress?: string;
+
+  @IsString()
+  @IsOptional()
+  notes?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => SaleItemDto)

@@ -15,6 +15,12 @@ export class SalesController {
     return this.salesService.checkout(businessId, userId, dto);
   }
 
+  @Get('invoices')
+  async findAllInvoices(@Request() req, @Query('search') search?: string) {
+    const businessId = req.user.businessId;
+    return this.salesService.findAllInvoices(businessId, search);
+  }
+
   @Get('receipts')
   async findAllReceipts(@Request() req, @Query('search') search?: string) {
     const businessId = req.user.businessId;
@@ -25,5 +31,17 @@ export class SalesController {
   async findOneReceipt(@Request() req, @Param('id') id: string) {
     const businessId = req.user.businessId;
     return this.salesService.findOneReceipt(businessId, id);
+  }
+
+  @Post(':id/email')
+  async sendSaleEmail(@Request() req, @Param('id') id: string, @Body() body?: { email?: string }) {
+    const businessId = req.user.businessId;
+    return this.salesService.sendSaleEmail(businessId, id, body?.email);
+  }
+
+  @Post('email')
+  async sendSaleEmailDirect(@Request() req, @Body() body: { id: string; email?: string }) {
+    const businessId = req.user.businessId;
+    return this.salesService.sendSaleEmail(businessId, body.id, body.email);
   }
 }

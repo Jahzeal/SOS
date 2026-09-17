@@ -63,11 +63,8 @@ function formatRelativeTime(dateString: string | Date): string {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const [isAuthorized, setIsAuthorized] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    const token = localStorage.getItem('vf_access_token');
-    return Boolean(token && !isTokenExpired(token));
-  });
+  const [isMounted, setIsMounted] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -114,38 +111,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }, [readStorageKey]);
 
   useEffect(() => {
-    if (isAuthorized) {
-      fetchNotifications();
-      // Poll every 30s for real-time activity updates
-      const notifInterval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(notifInterval);
-    }
-  }, [isAuthorized, fetchNotifications]);
-
-  const unreadCount = notifications.filter((n) => n.unread).length;
-
-  const markAllAsRead = () => {
-    const allIds = notifications.map((n) => n.id);
-    try {
-      localStorage.setItem(readStorageKey, JSON.stringify(allIds));
-    } catch {}
-    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
-  };
-
-  const markItemAsRead = (id: string) => {
-    try {
-      let readIds: string[] = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
-      if (!readIds.includes(id)) {
-        readIds.push(id);
-        localStorage.setItem(readStorageKey, JSON.stringify(readIds));
-      }
-    } catch {}
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
-    );
-  };
-
-  useEffect(() => {
+    setIsMounted(true);
     const verifySession = () => {
       if (typeof window === 'undefined') return;
       const token = localStorage.getItem('vf_access_token');
@@ -173,6 +139,38 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     };
   }, [router, logout]);
 
+  useEffect(() => {
+    if (isAuthorized && isMounted) {
+      fetchNotifications();
+      // Poll every 30s for real-time activity updates
+      const notifInterval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(notifInterval);
+    }
+  }, [isAuthorized, isMounted, fetchNotifications]);
+
+  const unreadCount = notifications.filter((n) => n.unread).length;
+
+  const markAllAsRead = () => {
+    const allIds = notifications.map((n) => n.id);
+    try {
+      localStorage.setItem(readStorageKey, JSON.stringify(allIds));
+    } catch {}
+    setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
+  };
+
+  const markItemAsRead = (id: string) => {
+    try {
+      let readIds: string[] = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
+      if (!readIds.includes(id)) {
+        readIds.push(id);
+        localStorage.setItem(readStorageKey, JSON.stringify(readIds));
+      }
+    } catch {}
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
+    );
+  };
+
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('vf_access_token');
@@ -182,7 +180,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     router.push('/login');
   };
 
-  if (!isAuthorized) {
+  if (!isMounted || !isAuthorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50">
         <div className="w-7 h-7 rounded-full border-2 border-slate-300 border-t-teal-600 animate-spin" />

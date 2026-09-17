@@ -91,7 +91,7 @@ export default function FeaturesPage() {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
-            VerifyFlow replaces disconnected spreadsheets and generic tools with a single hardware-aware operating system: IMEI-level verification, POS receipts, Odoo-style commercial invoices, live repair tickets, and digital warranty passports.
+            VerifyFlow replaces disconnected spreadsheets and generic tools with a single hardware-aware operating system: IMEI-level verification, POS receipts, corporate commercial invoices, live repair tickets, and digital warranty passports.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -116,7 +116,7 @@ export default function FeaturesPage() {
               📱 Serial Inventory
             </a>
             <a href="#invoicing" className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
-              🧾 POS & Odoo Invoices
+              🧾 POS & Corporate Invoices
             </a>
             <a href="#warranty" className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
               🛡️ Digital Warranties
@@ -282,18 +282,18 @@ export default function FeaturesPage() {
           </div>
         </section>
 
-        {/* PILLAR 3: POS & ODOO INVOICING */}
+        {/* PILLAR 3: POS & CORPORATE INVOICING */}
         <section id="invoicing" className="scroll-mt-24 grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
           <div className="lg:col-span-6 space-y-5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 font-extrabold text-xs border border-indigo-200">
               <Receipt className="w-4 h-4" />
-              <span>PILLAR 03 • POS & ODOO-STYLE INVOICING</span>
+              <span>PILLAR 03 • POS & CORPORATE INVOICING</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Dual-Mode Checkout: 80mm POS Thermal & Odoo Invoices
+              Dual-Mode Checkout: 80mm POS Thermal & Corporate A4 Invoices
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-medium">
-              Run fast counter checkout with thermal QR receipts, or generate structured Odoo-style corporate A4 commercial invoices with complete payment logs, bank details, and legal warranty clauses.
+              Run fast counter checkout with thermal QR receipts, or generate structured corporate A4 commercial invoices with complete payment logs, bank details, and legal warranty clauses.
             </p>
             <ul className="space-y-3 text-xs font-semibold text-slate-700">
               <li className="flex items-start gap-2.5">
@@ -302,7 +302,7 @@ export default function FeaturesPage() {
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />
-                <span><strong>Odoo-Style Commercial A4 Statements:</strong> Dual header cards, detailed specs, Payment History ledger, and tax breakdown.</span>
+                <span><strong>Corporate Commercial A4 Statements:</strong> Dual header cards, detailed specs, Payment History ledger, and tax breakdown.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0 mt-0.5" />

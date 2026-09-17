@@ -1457,9 +1457,9 @@ export default function PublicLandingPageV2() {
             <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
               <Receipt className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">POS & Odoo Invoicing</h3>
+            <h3 className="text-base font-bold text-slate-900">POS & Corporate Invoicing</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Fast counter checkout with 80mm thermal receipts or full A4 Odoo-style corporate commercial invoices.
+              Fast counter checkout with 80mm thermal receipts or full A4 corporate commercial invoices with payment ledgers.
             </p>
             <Link href="/features#invoicing" className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />

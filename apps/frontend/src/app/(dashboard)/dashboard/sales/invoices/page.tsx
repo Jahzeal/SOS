@@ -46,12 +46,14 @@ export default function InvoicesRegistryPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [emailStatusMsg, setEmailStatusMsg] = useState<string | null>(null);
 
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const [salesData, summary] = await Promise.all([
-        api.getReceipts(search.trim() || undefined),
+        api.getInvoices(search.trim() || undefined),
         api.getDashboardSummary(),
       ]);
       setInvoices(salesData || []);
@@ -133,9 +135,17 @@ export default function InvoicesRegistryPage() {
     setEmailStatusMsg(null);
   };
 
-  const handleSendEmailClient = () => {
+  const handleSendEmailClient = async () => {
     if (!emailModalInvoice) return;
     const email = recipientEmail.trim() || emailModalInvoice.customer?.email || '';
+    if (!email) {
+      setEmailStatusMsg('Please enter a recipient email address.');
+      return;
+    }
+
+    setIsSendingEmail(true);
+    setEmailStatusMsg(null);
+
     const name = emailModalInvoice.customer?.name || 'Valued Customer';
     const invNum = emailModalInvoice.invoiceNumber || emailModalInvoice.receiptNumber || emailModalInvoice.id;
     const amount = Number(emailModalInvoice.totalAmount || 0).toLocaleString();
@@ -143,8 +153,17 @@ export default function InvoicesRegistryPage() {
     const body = encodeURIComponent(
       `Hello ${name},\n\nPlease find your invoice statement #${invNum} for ₦${amount}.\n\nThank you for your business!`
     );
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-    setEmailStatusMsg('Dispatched to your mail client.');
+
+    try {
+      await api.sendSaleEmail(emailModalInvoice.id, email);
+      setEmailStatusMsg(`Invoice statement sent directly to ${email}!`);
+    } catch (err: any) {
+      console.warn('Backend email failed, opening mail client fallback:', err);
+      window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+      setEmailStatusMsg(`Dispatched to your mail client.`);
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const handleCopyLink = () => {
@@ -458,7 +477,7 @@ export default function InvoicesRegistryPage() {
                           <button
                             onClick={() => setViewModalInvoice(inv)}
                             className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded transition"
-                            title="View Odoo Invoice"
+                            title="View Commercial Invoice"
                           >
                             <Eye className="w-3.5 h-3.5" />
                           </button>
@@ -505,13 +524,13 @@ export default function InvoicesRegistryPage() {
 
       {/* Send Invoice by Email Modal */}
       {emailModalInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-scale-up">
+        <div className="fixed -inset-1 z-[100] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden animate-scale-up">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/80">
+            <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
-                  <Mail className="w-5 h-5" />
+                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                  <Mail className="w-4 h-4" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-base text-slate-900">Send Invoice Statement</h3>
@@ -564,8 +583,22 @@ export default function InvoicesRegistryPage() {
                 </p>
               </div>
 
+              {/* PDF Attachment Notice */}
+              <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-950 space-y-1">
+                <div className="flex items-center gap-1.5 font-bold text-blue-900">
+                  <FileText className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>Official PDF Document Attached:</span>
+                </div>
+                <p className="text-blue-800/90 font-mono text-[11px] pl-5">
+                  Invoice-{emailModalInvoice.invoiceNumber || emailModalInvoice.id}.pdf
+                </p>
+                <p className="text-[10px] text-blue-700/80 pl-5 pt-0.5">
+                  The recipient will receive an email with the complete commercial template and attached A4 PDF statement.
+                </p>
+              </div>
+
               {emailStatusMsg && (
-                <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-2 border border-emerald-200">
+                <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-2 border border-emerald-200 animate-in fade-in">
                   <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                   {emailStatusMsg}
                 </div>
@@ -587,7 +620,7 @@ export default function InvoicesRegistryPage() {
                 ) : (
                   <>
                     <Copy className="w-3.5 h-3.5 text-slate-500" />
-                    <span>Copy Statement Link</span>
+                    <span>Copy Link</span>
                   </>
                 )}
               </button>
@@ -602,11 +635,21 @@ export default function InvoicesRegistryPage() {
                 </button>
                 <button
                   type="button"
+                  disabled={isSendingEmail}
                   onClick={handleSendEmailClient}
-                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-sm shadow-blue-500/20 flex items-center justify-center gap-1.5 w-full sm:w-auto"
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-sm shadow-blue-500/20 flex items-center justify-center gap-1.5 w-full sm:w-auto disabled:opacity-60"
                 >
-                  <Send className="w-3.5 h-3.5" />
-                  <span>Send via Email Client</span>
+                  {isSendingEmail ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Sending PDF...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Send PDF Email</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -614,15 +657,15 @@ export default function InvoicesRegistryPage() {
         </div>
       )}
 
-      {/* Full Odoo-Style Invoice View & Print Modal */}
+      {/* Full Commercial Invoice View & Print Modal */}
       {viewModalInvoice && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto animate-fade-in">
+        <div className="fixed -inset-1 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto animate-fade-in">
           <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full my-auto overflow-hidden animate-scale-up">
             {/* Modal Controls Bar */}
             <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50/90 print:hidden">
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-sm text-slate-900">
-                  Odoo Invoice Statement Preview
+                  Commercial Invoice Statement Preview
                 </span>
                 <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-mono font-bold text-xs">
                   {viewModalInvoice.invoiceNumber || viewModalInvoice.receiptNumber || viewModalInvoice.id}
@@ -647,7 +690,7 @@ export default function InvoicesRegistryPage() {
               </div>
             </div>
 
-            {/* Printable Odoo Document Body */}
+            {/* Printable Document Body */}
             <div id="odoo-printable-invoice" className="p-6 sm:p-10 bg-white text-slate-900 font-sans space-y-6 text-xs">
               {/* Header Top: Store Details on Left, Logo on Right */}
               <div className="flex justify-between items-start gap-4">
@@ -658,8 +701,11 @@ export default function InvoicesRegistryPage() {
                   <p>Email: billing@techworldmobile.com</p>
                 </div>
 
-                <div className="text-right">
-                  <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-mono">odoo</span>
+                <div className="text-right flex items-center gap-1.5 justify-end">
+                  <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                    VF
+                  </div>
+                  <span className="text-lg font-black text-slate-900 tracking-tight">Verify<span className="text-blue-600">Flow</span></span>
                 </div>
               </div>
 

@@ -408,7 +408,7 @@ export default function ReceiptInvoiceTemplatesPage() {
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
               <div className="border-b border-slate-100 pb-3">
                 <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                  <Building className="w-4 h-4 text-blue-600" /> Commercial Invoice & Odoo Layout Settings
+                  <Building className="w-4 h-4 text-blue-600" /> Commercial Invoice & Corporate Layout Settings
                 </h2>
                 <p className="text-xs text-slate-500">Configure corporate information, payment history rules, and footer clauses for formal PDF invoices.</p>
               </div>
@@ -585,8 +585,11 @@ export default function ReceiptInvoiceTemplatesPage() {
                     <img src={logoUrl} alt="Logo" className="max-h-12 max-w-full object-contain" />
                   </div>
                 ) : (
-                  <div className="text-right">
-                    <span className="text-2xl font-black text-slate-800 tracking-tight font-mono">odoo</span>
+                  <div className="text-right flex items-center gap-1.5 justify-end">
+                    <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                      VF
+                    </div>
+                    <span className="text-lg font-black text-slate-900 tracking-tight">Verify<span className="text-blue-600">Flow</span></span>
                   </div>
                 )}
               </div>

@@ -251,10 +251,13 @@ function CheckoutPOSContent() {
         customerPhone: customerPhone.trim() || undefined,
         customerEmail: customerEmail.trim() || undefined,
         paymentMethod: paymentMethod,
+        paymentStatus: 'PAID',
+        type: 'RECEIPT',
         items: payloadItems,
       });
 
       setFinalReceipt({
+        rawId: sale.id,
         id: sale.receiptNumber || sale.invoiceNumber || sale.id,
         invoiceNumber: sale.invoiceNumber,
         receiptNumber: sale.receiptNumber,

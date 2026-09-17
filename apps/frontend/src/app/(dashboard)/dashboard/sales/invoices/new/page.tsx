@@ -148,21 +148,45 @@ export default function CreateInvoicePage() {
     setNewItemPrice('');
   };
 
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailNotice, setEmailNotice] = useState<string | null>(null);
+
   const handlePrintPDF = () => {
     window.print();
   };
 
-  const handleEmailPDF = () => {
-    if (!customerEmail.trim()) {
-      alert('Please enter a customer email address first.');
+  const handleEmailPDF = async () => {
+    const targetEmail = customerEmail.trim();
+    if (!targetEmail) {
+      alert('Please enter a customer email address in the customer details section.');
       return;
     }
+
+    setIsSendingEmail(true);
+    setEmailNotice(null);
+
     const invNum = createdInvoice?.invoiceNumber || createdInvoice?.id || 'Statement';
+    const amountStr = `₦${Number(createdInvoice?.totalAmount || totalAmount).toLocaleString()}`;
     const subject = encodeURIComponent(`Invoice Statement #${invNum}`);
     const body = encodeURIComponent(
-      `Hello ${customerName.trim() || 'Valued Customer'},\n\nPlease find your invoice statement for ₦${totalAmount.toLocaleString()} due on ${dueDate}.\n\nThank you for your business!`
+      `Hello ${customerName.trim() || 'Valued Customer'},\n\nPlease find your invoice statement #${invNum} for ${amountStr} due on ${dueDate}.\n\nThank you for your business!`
     );
-    window.location.href = `mailto:${customerEmail.trim()}?subject=${subject}&body=${body}`;
+
+    try {
+      if (createdInvoice?.rawId || createdInvoice?.id) {
+        await api.sendSaleEmail(createdInvoice.rawId || createdInvoice.id, targetEmail);
+        setEmailNotice(`Invoice statement successfully emailed to ${targetEmail}!`);
+      } else {
+        window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+        setEmailNotice(`Dispatched to your email client.`);
+      }
+    } catch (err: any) {
+      console.warn('Backend email dispatch failed, opening mail client fallback:', err);
+      window.location.href = `mailto:${targetEmail}?subject=${subject}&body=${body}`;
+      setEmailNotice(`Opened email client for ${targetEmail}.`);
+    } finally {
+      setIsSendingEmail(false);
+    }
   };
 
   const removeItem = (id: string) => {
@@ -179,6 +203,7 @@ export default function CreateInvoicePage() {
   const handleIssueInvoice = async (status: 'ISSUED' | 'DRAFT') => {
     setIsSaving(true);
     setErrorMessage(null);
+    setEmailNotice(null);
     try {
       if (items.length === 0) {
         throw new Error('At least one item or appliance is required to issue an invoice statement.');
@@ -199,11 +224,17 @@ export default function CreateInvoicePage() {
         customerEmail: customerEmail.trim() || undefined,
         paymentMethod: 'CASH',
         paymentStatus: finalStatus,
+        type: 'INVOICE',
+        dueDate,
+        paymentTerms,
+        billingAddress: billingAddress.trim() || undefined,
+        notes: notes.trim() || undefined,
         items: payloadItems,
       });
 
       setCreatedInvoice({
-        id: sale.invoiceNumber || sale.receiptNumber || sale.id,
+        rawId: sale.id,
+        id: sale.invoiceNumber || sale.id,
         invoiceNumber: sale.invoiceNumber,
         receiptNumber: sale.receiptNumber,
         customerName: sale.customer?.name || customerName || 'Invoice Customer',
@@ -749,7 +780,7 @@ export default function CreateInvoicePage() {
 
       {/* Success Statement Share Modal */}
       {showSuccessModal && createdInvoice && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed -inset-1 z-[100] bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center space-y-4 border border-slate-200 animate-in fade-in zoom-in duration-200">
             <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto border border-blue-200">
               <FileText className="w-8 h-8" />
@@ -769,23 +800,29 @@ export default function CreateInvoicePage() {
               </div>
               <div className="flex justify-between font-bold text-slate-900 text-sm pt-1">
                 <span>Total Amount Owed</span>
-                <span className="text-blue-600 font-extrabold">${createdInvoice.totalAmount.toFixed(2)}</span>
+                <span className="text-blue-600 font-extrabold">₦{Number(createdInvoice.totalAmount || 0).toLocaleString()}</span>
               </div>
             </div>
+
+            {emailNotice && (
+              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold text-center animate-in fade-in">
+                {emailNotice}
+              </div>
+            )}
 
             <div className="space-y-2 pt-2">
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="primary" size="md" onClick={handlePrintPDF} leftIcon={<Printer className="w-4 h-4" />}>
                   Print PDF
                 </Button>
-                <Button variant="secondary" size="md" onClick={handleEmailPDF} leftIcon={<Mail className="w-4 h-4" />}>
+                <Button variant="secondary" size="md" isLoading={isSendingEmail} onClick={handleEmailPDF} leftIcon={<Mail className="w-4 h-4" />}>
                   Send Email
                 </Button>
               </div>
 
-              <Link href="/dashboard/sales/receipts">
+              <Link href="/dashboard/sales/invoices">
                 <Button variant="secondary" fullWidth size="lg">
-                  View Receipts & Invoices Archive
+                  View Invoices Registry
                 </Button>
               </Link>
             </div>
