@@ -327,7 +327,7 @@ export class DashboardService {
       title: string;
       description: string;
       createdAt: Date;
-      icon: 'phone' | 'shield' | 'receipt' | 'sparkle';
+      icon: 'phone' | 'shield' | 'receipt' | 'bell';
       href: string;
     }> = [];
 
@@ -387,7 +387,7 @@ export class DashboardService {
         title: `Support Ticket #${ticket.ticketNumber}`,
         description: `"${ticket.subject}" is marked as ${ticket.status.replace(/_/g, ' ')}.`,
         createdAt: ticket.updatedAt,
-        icon: 'sparkle',
+        icon: 'bell',
         href: '/dashboard/support',
       });
     }
@@ -399,11 +399,11 @@ export class DashboardService {
         id: `biz_trial_${business.id}`,
         title: 'Workspace Initialized',
         description:
-          diffDays > 0
+            diffDays > 0
             ? `Welcome to VerifyFlow! ${diffDays}-day free trial active.`
             : 'Your free trial has ended. Upgrade to continue syncing store records.',
         createdAt: business.createdAt,
-        icon: 'sparkle',
+        icon: 'bell',
         href: '/dashboard/settings',
       });
     } else {
@@ -412,7 +412,7 @@ export class DashboardService {
         title: 'Workspace Active',
         description: `Store ${business.name} is running with active inventory sync.`,
         createdAt: business.createdAt,
-        icon: 'sparkle',
+        icon: 'bell',
         href: '/dashboard',
       });
     }

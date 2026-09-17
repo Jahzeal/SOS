@@ -195,7 +195,9 @@ export class SalesService {
           select: {
             name: true,
             phone: true,
+            email: true,
             address: true,
+            logoUrl: true,
             warrantyTerms: true,
             bankName: true,
             accountNumber: true,
@@ -243,7 +245,9 @@ export class SalesService {
           select: {
             name: true,
             phone: true,
+            email: true,
             address: true,
+            logoUrl: true,
             warrantyTerms: true,
             bankName: true,
             accountNumber: true,
@@ -268,7 +272,17 @@ export class SalesService {
       },
       include: {
         customer: true,
-        business: true,
+        business: {
+          include: {
+            users: {
+              select: {
+                email: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
         items: {
           include: {
             phoneRecord: true,
@@ -299,6 +313,15 @@ export class SalesService {
     const docTitle = isInvoice ? 'Commercial Invoice Statement' : 'POS Sales Receipt';
     const docNum = isInvoice ? sale.invoiceNumber : sale.receiptNumber || sale.invoiceNumber;
     const storeName = sale.business?.name || 'VerifyFlow Verified Retailer';
+    const storeEmail =
+      sale.business?.email?.trim() ||
+      (sale.business as any)?.users?.[0]?.email?.trim() ||
+      '';
+    const bankName = sale.business?.bankName?.trim();
+    const accountNumber = sale.business?.accountNumber?.trim();
+    const accountName = sale.business?.accountName?.trim() || storeName;
+    const hasBankDetails = Boolean(bankName && accountNumber);
+
     const customerName = sale.customer?.name || 'Valued Corporate Buyer';
     const totalFormatted = `₦${Number(sale.totalAmount || 0).toLocaleString()}`;
     const dateFormatted = new Date(sale.createdAt).toLocaleDateString('en-US', {
@@ -331,6 +354,7 @@ export class SalesService {
       storeName,
       storeAddress: sale.business?.address,
       storePhone: sale.business?.phone,
+      storeEmail,
       logoUrl: sale.business?.logoUrl,
       bankName: sale.business?.bankName,
       accountNumber: sale.business?.accountNumber,
@@ -360,8 +384,22 @@ export class SalesService {
           <div><strong>Payment Status:</strong> <span style="font-weight: 800; color: ${sale.paymentStatus === 'PAID' ? '#16a34a' : '#d97706'}; text-transform: uppercase;">${sale.paymentStatus}</span></div>
         </div>
 
+        ${
+          hasBankDetails
+            ? `
+        <div style="background-color: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 14px 18px; margin: 18px 0; font-size: 13px;">
+          <div style="font-weight: 800; color: #166534; margin-bottom: 6px; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;">Bank Payment / Remittance Details:</div>
+          <div style="margin-bottom: 4px; color: #1e293b;"><strong>Bank Name:</strong> ${bankName}</div>
+          <div style="margin-bottom: 4px; color: #1e293b;"><strong>Account Number:</strong> <span style="font-family: monospace; font-weight: 700;">${accountNumber}</span></div>
+          <div style="margin-bottom: 4px; color: #1e293b;"><strong>Account Name:</strong> ${accountName}</div>
+          <div style="color: #64748b; font-size: 12px; margin-top: 4px;"><strong>Payment Reference:</strong> ${docNum}</div>
+        </div>
+        `
+            : ''
+        }
+
         <p style="font-size: 13px; color: #475569;">
-          Your detailed breakdown with device specs and warranty info is attached as a PDF document (<strong>${pdfFilename}</strong>).
+          Your detailed invoice breakdown with device specs and warranty terms is attached as a PDF document (<strong>${pdfFilename}</strong>).
         </p>
 
         <p style="margin-top: 20px; margin-bottom: 0;">Thank you for your business!</p>
@@ -370,13 +408,20 @@ export class SalesService {
           <strong>${storeName}</strong><br/>
           ${sale.business?.address ? `${sale.business.address}<br/>` : ''}
           ${sale.business?.phone ? `Tel: ${sale.business.phone}<br/>` : ''}
+          ${storeEmail ? `Email: ${storeEmail}<br/>` : ''}
           <span style="font-size: 11px; color: #94a3b8;">Secured by VerifyFlow Electronics Ledger</span>
         </div>
       </div>
     `;
 
     const subject = `[${storeName}] ${docTitle} #${docNum}`;
-    const plainText = `Hello ${customerName},\n\nPlease find attached your ${isInvoice ? 'invoice statement' : 'sales receipt'} #${docNum} from ${storeName}.\n\nTotal Amount: ${totalFormatted}\nDue Date: ${dueDate}\nStatus: ${sale.paymentStatus}\n\nAttached: ${pdfFilename}\n\nThank you for your business!\n${storeName}`;
+    let plainText = `Hello ${customerName},\n\nPlease find attached your ${isInvoice ? 'invoice statement' : 'sales receipt'} #${docNum} from ${storeName}.\n\nTotal Amount: ${totalFormatted}\nDue Date: ${dueDate}\nStatus: ${sale.paymentStatus}\n\n`;
+    if (hasBankDetails) {
+      plainText += `BANK REMITTANCE DETAILS:\nBank: ${bankName}\nAccount Number: ${accountNumber}\nAccount Name: ${accountName}\nPayment Ref: ${docNum}\n\n`;
+    }
+    plainText += `Attached: ${pdfFilename}\n\nThank you for your business!\n${storeName}\n`;
+    if (storeEmail) plainText += `Email: ${storeEmail}\n`;
+    if (sale.business?.phone) plainText += `Tel: ${sale.business.phone}\n`;
 
     const result = await this.mailService.dispatchEmail({
       to: toEmail,

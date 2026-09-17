@@ -67,6 +67,9 @@ export class BusinessService {
         address: true,
         phone: true,
         email: true,
+        bankName: true,
+        accountNumber: true,
+        accountName: true,
         receiptFooter: true,
         receiptTerms: true,
         warrantyTerms: true,
@@ -83,11 +86,14 @@ export class BusinessService {
 
   async updateTemplateSettings(businessId: string, data: any) {
     const updateData: any = {};
-    if (data.name) updateData.name = data.name;
+    if (data.name !== undefined) updateData.name = data.name;
     if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl;
     if (data.address !== undefined) updateData.address = data.address;
     if (data.phone !== undefined) updateData.phone = data.phone;
     if (data.email !== undefined) updateData.email = data.email;
+    if (data.bankName !== undefined) updateData.bankName = data.bankName;
+    if (data.accountNumber !== undefined) updateData.accountNumber = data.accountNumber;
+    if (data.accountName !== undefined) updateData.accountName = data.accountName;
     if (data.receiptFooter !== undefined) updateData.receiptFooter = data.receiptFooter;
     if (data.receiptTerms !== undefined) updateData.receiptTerms = data.receiptTerms;
     if (data.warrantyTerms !== undefined) updateData.warrantyTerms = data.warrantyTerms;

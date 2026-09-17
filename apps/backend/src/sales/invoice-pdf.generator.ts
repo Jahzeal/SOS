@@ -55,11 +55,13 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
 
   // Render Custom Logo or Branded Initials Badge
   let textLeft = 14;
-  if (data.logoUrl && data.logoUrl.startsWith('data:image/')) {
+  if (data.logoUrl) {
     try {
-      const format = data.logoUrl.includes('image/png') ? 'PNG' : 'JPEG';
-      doc.addImage(data.logoUrl, format, 14, 4, 18, 18, undefined, 'FAST');
-      textLeft = 36;
+      if (data.logoUrl.startsWith('data:image/')) {
+        const isPng = data.logoUrl.includes('image/png');
+        doc.addImage(data.logoUrl, isPng ? 'PNG' : 'JPEG', 14, 4, 18, 18, undefined, 'FAST');
+        textLeft = 36;
+      }
     } catch {
       textLeft = 14;
     }
@@ -101,7 +103,7 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
   // 2. Dual Info Boxes (Store Info Left, Invoice & Customer Meta Right)
   const boxTop = 32;
   const boxWidth = (pageWidth - 36) / 2;
-  const boxHeight = 44;
+  const boxHeight = 50;
 
   // Left Box: Store & Remittance Info
   doc.setFillColor(248, 250, 252); // slate-50
@@ -124,13 +126,18 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
   doc.setTextColor(71, 85, 105);
-  doc.text(data.storeAddress || '1725 Slough Ave., Computer Village, Ikeja', 18, boxTop + 18);
-  doc.text(`Phone: ${data.storePhone || '+234 801 234 5678'}`, 18, boxTop + 23);
-  doc.text(`Email: ${data.storeEmail || 'billing@verifyflow.ng'}`, 18, boxTop + 28);
-  if (data.bankName && data.accountNumber) {
-    doc.setFont('helvetica', 'bold');
-    doc.setTextColor(30, 58, 138); // blue-900
-    doc.text(`Bank: ${data.bankName} | Acc: ${data.accountNumber}`, 18, boxTop + 36);
+  let storeY = boxTop + 18;
+  if (data.storeAddress) {
+    doc.text(data.storeAddress, 18, storeY);
+    storeY += 4.5;
+  }
+  if (data.storePhone) {
+    doc.text(`Phone: ${data.storePhone}`, 18, storeY);
+    storeY += 4.5;
+  }
+  if (data.storeEmail) {
+    doc.text(`Email: ${data.storeEmail}`, 18, storeY);
+    storeY += 4.5;
   }
 
   // Right Box: Customer & Billing Meta
@@ -163,7 +170,7 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
   const statusColor = data.paymentStatus === 'PAID' ? [16, 185, 129] : [245, 158, 11];
   doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
   doc.setFont('helvetica', 'bold');
-  doc.text(`Payment Status: ${data.paymentStatus.toUpperCase()}`, rightBoxLeft + 4, boxTop + 36);
+  doc.text(`Payment Status: ${data.paymentStatus.toUpperCase()}`, rightBoxLeft + 4, boxTop + 37);
 
   // 3. Line Items Table with Blue Header
   const tableRows = data.items.map((item, index) => [
@@ -205,22 +212,40 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
 
   const finalY = (doc as any).lastAutoTable.finalY + 8;
 
-  // 4. Financial Summary Card on Right & Terms Notes on Left
+  // 4. Financial Summary Card on Right & Terms Notes + Bank Wire Card on Left
   const summaryWidth = 80;
   const summaryLeft = pageWidth - 14 - summaryWidth;
 
-  // Notes & Payment Instructions on Left
+  // Bank Remittance Box on Left (if bank info is available)
+  if (data.bankName && data.accountNumber) {
+    doc.setFillColor(239, 246, 255); // blue-50
+    doc.setDrawColor(191, 219, 254); // blue-200
+    doc.roundedRect(14, finalY, summaryLeft - 20, 20, 2, 2, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(30, 58, 138); // blue-900
+    doc.text('DIRECT BANK REMITTANCE INSTRUCTIONS:', 18, finalY + 5.5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(30, 64, 175);
+    doc.text(`Bank: ${data.bankName}   |   Account #: ${data.accountNumber}`, 18, finalY + 10.5);
+    doc.text(`Account Name: ${data.accountName || data.storeName}   |   Payment Ref: ${docNum}`, 18, finalY + 15.5);
+  }
+
+  // Notes & Policy Remarks
+  const notesY = data.bankName && data.accountNumber ? finalY + 24 : finalY + 4;
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(8.5);
+  doc.setFontSize(8);
   doc.setTextColor(15, 23, 42);
-  doc.text('Payment Terms & Policy Remarks:', 14, finalY + 4);
+  doc.text('Policy Remarks & Guarantee:', 14, notesY);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
   doc.setTextColor(100, 116, 139);
-  doc.text('• All serial & IMEI numbers are permanently verified in store ledger.', 14, finalY + 9);
-  doc.text('• Store warranty is valid for 12 months from original issue date.', 14, finalY + 14);
-  doc.text('• For direct wire remittance, quote invoice number as payment reference.', 14, finalY + 19);
+  doc.text('• All serial & IMEI numbers are permanently verified in store ledger.', 14, notesY + 5);
+  doc.text('• Store warranty is valid for 12 months from original issue date.', 14, notesY + 9.5);
 
   // Financial Box
   doc.setFillColor(248, 250, 252);
