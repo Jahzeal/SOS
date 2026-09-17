@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { isTokenExpired } from '@/lib/jwt-utils';
 
-export type PlanType = 'STARTER' | 'BUSINESS' | 'ENTERPRISE';
+export type PlanType = 'FREE' | 'STARTER' | 'BUSINESS' | 'ENTERPRISE';
 
 export interface User {
   id: string;

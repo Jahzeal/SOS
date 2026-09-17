@@ -218,7 +218,7 @@ export default function CreateInvoicePage() {
 
       const finalStatus = status === 'DRAFT' ? 'DRAFT' : invoicePaymentStatus;
 
-      const sale = await api.checkoutSale({
+      const sale = await api.createInvoice({
         customerName: customerName.trim() || 'Invoice Customer',
         customerPhone: customerPhone.trim() || undefined,
         customerEmail: customerEmail.trim() || undefined,

@@ -33,6 +33,7 @@ import { api } from '@/lib/api';
 
 export default function InventoryPage() {
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [brandFilter, setBrandFilter] = useState('ALL');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [liveInventory, setLiveInventory] = useState<any[]>([]);
@@ -41,20 +42,19 @@ export default function InventoryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchInventory = async () => {
-    setIsLoading(true);
-    setError(null);
+  // Debounce search query by 300ms to avoid unnecessary network spam
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search]);
+
+  // 1. Fetch Dashboard Summary (KPIs, Activity Feed) once on mount
+  const fetchSummary = async () => {
     try {
-      const [data, summary] = await Promise.all([
-        api.getInventory({
-          search: search || undefined,
-          brand: brandFilter !== 'ALL' ? brandFilter : undefined,
-        }),
-        api.getDashboardSummary(),
-      ]);
-      setLiveInventory(data);
+      const summary = await api.getDashboardSummary();
       setKpis(summary.kpis);
-      // Build activity feed: merge recent registrations + recent sales, sort by date
       const registrations = (summary.recentPhones || []).slice(0, 4).map((p: any) => ({
         type: 'registration',
         label: 'New Registration',
@@ -79,6 +79,21 @@ export default function InventoryPage() {
         .slice(0, 4);
       setRecentActivity(combined);
     } catch (err: any) {
+      console.warn('Failed to load dashboard summary for inventory:', err);
+    }
+  };
+
+  // 2. Fetch Inventory Records when debounced search or brand filter changes
+  const fetchInventory = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await api.getInventory({
+        search: debouncedSearch || undefined,
+        brand: brandFilter !== 'ALL' ? brandFilter : undefined,
+      });
+      setLiveInventory(Array.isArray(data) ? data : []);
+    } catch (err: any) {
       console.error('Failed to fetch inventory:', err);
       setError(err.message || 'Failed to load inventory.');
       setLiveInventory([]);
@@ -88,8 +103,12 @@ export default function InventoryPage() {
   };
 
   useEffect(() => {
+    fetchSummary();
+  }, []);
+
+  useEffect(() => {
     fetchInventory();
-  }, [search, brandFilter]);
+  }, [debouncedSearch, brandFilter]);
 
   const items = useMemo(() => {
     return liveInventory.map((item) => ({

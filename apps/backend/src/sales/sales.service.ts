@@ -163,7 +163,7 @@ export class SalesService {
     return sale;
   }
 
-  async findAllInvoices(businessId: string, search?: string) {
+  async findAllInvoices(businessId: string, search?: string, status?: string) {
     const where: any = {
       businessId,
       OR: [
@@ -172,6 +172,10 @@ export class SalesService {
         { paymentStatus: { in: ['PENDING', 'DRAFT', 'OVERDUE'] } },
       ],
     };
+
+    if (status && status !== 'ALL') {
+      where.paymentStatus = status;
+    }
 
     if (search) {
       const q = search.trim();
@@ -214,9 +218,86 @@ export class SalesService {
     });
   }
 
+  async findOneInvoice(businessId: string, id: string) {
+    const invoice = await this.prisma.sale.findFirst({
+      where: {
+        businessId,
+        OR: [{ id }, { invoiceNumber: id }],
+      },
+      include: {
+        customer: true,
+        business: {
+          include: {
+            users: {
+              select: {
+                email: true,
+                firstName: true,
+                lastName: true,
+              },
+            },
+          },
+        },
+        items: {
+          include: {
+            phoneRecord: true,
+          },
+        },
+      },
+    });
+
+    if (!invoice) {
+      throw new NotFoundException(`Invoice ${id} not found.`);
+    }
+
+    return invoice;
+  }
+
+  async markInvoiceAsPaid(businessId: string, id: string, paymentMethod?: PaymentMethod) {
+    const invoice = await this.findOneInvoice(businessId, id);
+
+    const ref = Math.floor(100000 + Math.random() * 900000);
+    const receiptNumber = invoice.receiptNumber || `VF-REC-${ref}`;
+
+    const deviceItemIds = invoice.items
+      .filter((i) => i.phoneRecordId)
+      .map((i) => i.phoneRecordId as string);
+
+    return this.prisma.$transaction(async (tx) => {
+      const updated = await tx.sale.update({
+        where: { id: invoice.id },
+        data: {
+          paymentStatus: 'PAID',
+          paymentMethod: paymentMethod || invoice.paymentMethod || PaymentMethod.CASH,
+          receiptNumber,
+        },
+        include: {
+          customer: true,
+          items: {
+            include: {
+              phoneRecord: true,
+            },
+          },
+        },
+      });
+
+      if (deviceItemIds.length > 0) {
+        await tx.phoneRecord.updateMany({
+          where: { id: { in: deviceItemIds } },
+          data: {
+            status: PhoneStatus.SOLD,
+            customerId: invoice.customerId,
+          },
+        });
+      }
+
+      return updated;
+    });
+  }
+
   async findAllReceipts(businessId: string, search?: string) {
     const where: any = {
       businessId,
+      paymentStatus: 'PAID',
       receiptNumber: { not: null },
       OR: [
         { notes: null },
@@ -269,7 +350,7 @@ export class SalesService {
     const sale = await this.prisma.sale.findFirst({
       where: {
         businessId,
-        OR: [{ id }, { invoiceNumber: id }, { receiptNumber: id }],
+        OR: [{ id }, { receiptNumber: id }, { invoiceNumber: id }],
       },
       include: {
         customer: true,
@@ -293,7 +374,7 @@ export class SalesService {
     });
 
     if (!sale) {
-      throw new NotFoundException(`Sales record ${id} not found.`);
+      throw new NotFoundException(`Receipt ${id} not found.`);
     }
 
     return sale;

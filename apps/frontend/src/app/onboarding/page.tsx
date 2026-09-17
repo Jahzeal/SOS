@@ -77,13 +77,24 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     setMounted(true);
+    const urlPlan = typeof window !== 'undefined' ? new URLSearchParams(window.location.search).get('plan') : null;
+    if (urlPlan) {
+      setSelectedPlan(urlPlan.toUpperCase());
+    }
+
     // Fetch dynamic database plans
     api.getPlans().then((res) => {
       if (res?.success && Array.isArray(res.plans) && res.plans.length > 0) {
         setDynamicPlans(res.plans);
-        setSelectedPlan(res.plans[1]?.code || res.plans[0].code);
+        if (!urlPlan) {
+          const defaultChoice = res.plans.find((p: any) => p.code === 'BUSINESS') || res.plans[1] || res.plans[0];
+          setSelectedPlan(defaultChoice.code);
+        }
       }
-    }).catch((err) => console.warn('Using fallback plans:', err));
+    }).catch((err) => {
+      console.error('Failed to load database plans:', err);
+      setDynamicPlans([]);
+    });
   }, []);
 
   // Validation Handlers
@@ -922,15 +933,17 @@ export default function OnboardingPage() {
                       </div>
                     </div>
                   ) : (
-                    /* REGULAR 3-PLAN CARDS GRID */
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 xl:gap-6 pt-2">
+                    /* DYNAMIC DATABASE PLAN CARDS GRID (4 RESPONSIVE COLUMNS) */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 xl:gap-5 pt-2">
                       {dynamicPlans.length > 0 ? (
                         dynamicPlans.map((planItem) => {
                           const isSelected = selectedPlan.toUpperCase() === planItem.code.toUpperCase();
-                          const price =
-                            billingCycle === 'monthly'
-                              ? planItem.monthlyPriceNgn
-                              : Math.round((planItem.annualPriceNgn || planItem.monthlyPriceNgn * 10) / 12);
+                          const isFree = planItem.code === 'FREE' || (!planItem.monthlyPriceNgn && !planItem.annualPriceNgn);
+                          const price = isFree
+                            ? 0
+                            : billingCycle === 'monthly'
+                            ? planItem.monthlyPriceNgn
+                            : Math.round((planItem.annualPriceNgn || planItem.monthlyPriceNgn * 10) / 12);
                           const isRecommended = planItem.isRecommended || planItem.code.toUpperCase() === 'BUSINESS';
 
                           return (
@@ -951,41 +964,50 @@ export default function OnboardingPage() {
 
                               <div className="space-y-3 xl:space-y-4">
                                 <div className="flex items-center justify-between">
-                                  <span className="text-xs xl:text-sm font-extrabold text-slate-700 uppercase tracking-wider">
-                                    {planItem.name}
-                                  </span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs xl:text-sm font-extrabold text-slate-700 uppercase tracking-wider">
+                                      {planItem.name}
+                                    </span>
+                                    {isFree && (
+                                      <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                                        FREE
+                                      </span>
+                                    )}
+                                  </div>
                                   {isSelected && (
                                     <span className="w-5 h-5 xl:w-6 xl:h-6 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs">✓</span>
                                   )}
                                 </div>
 
                                 <div>
-                                  <div className="text-2xl sm:text-3xl xl:text-4xl font-extrabold text-slate-900 font-mono">
+                                  <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
                                     ₦{price?.toLocaleString()}
-                                    <span className="text-xs xl:text-sm font-semibold text-slate-500 font-sans">/mo after trial</span>
+                                    <span className="text-xs xl:text-sm font-semibold text-slate-500 font-sans">
+                                      {isFree ? ' / forever' : '/mo after trial'}
+                                    </span>
                                   </div>
-                                  <p className="text-xs xl:text-sm text-slate-500 font-medium mt-1">
+                                  <p className="text-xs text-slate-500 font-medium mt-1 line-clamp-2">
                                     {planItem.description || 'Verified device intelligence suite.'}
                                   </p>
                                 </div>
 
                                 {/* Features & Specs from Database */}
-                                <div className="space-y-2 pt-3 border-t border-slate-100 text-xs xl:text-sm font-medium text-slate-700">
+                                <div className="space-y-2 pt-3 border-t border-slate-100 text-xs font-medium text-slate-700">
                                   <div className="flex items-center gap-2">
-                                    <Check className="w-4 h-4 xl:w-5 xl:h-5 text-emerald-600 shrink-0" />
+                                    <Check className="w-4 h-4 text-emerald-600 shrink-0" />
                                     <span>Inventory: <strong>{planItem.maxDevices ? `${planItem.maxDevices.toLocaleString()} Devices` : 'Unlimited Devices'}</strong></span>
                                   </div>
                                   {planItem.customBranding && (
                                     <div className="flex items-center gap-2">
-                                      <Check className="w-4 h-4 xl:w-5 xl:h-5 text-emerald-600 shrink-0" />
-                                      <span>Custom Receipt Logo Branding</span>
+                                      <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                      <span>Custom Receipt Logo</span>
                                     </div>
                                   )}
                                   {Array.isArray(planItem.features) &&
                                     planItem.features.slice(0, 3).map((feat: string, idx: number) => (
                                       <div key={idx} className="flex items-center gap-2">
-                                        <Check className="w-4 h-4 xl:w-5 xl:h-5 text-emerald-600 shrink-0" />
-                                        <span>{feat}</span>
+                                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                                        <span className="truncate">{feat}</span>
                                       </div>
                                     ))}
                                 </div>
@@ -1016,7 +1038,7 @@ export default function OnboardingPage() {
                           );
                         })
                       ) : (
-                        <div className="col-span-3 p-8 rounded-2xl bg-white border border-slate-200 text-center space-y-2">
+                        <div className="col-span-full p-8 rounded-2xl bg-white border border-slate-200 text-center space-y-2">
                           <p className="text-xs font-bold text-slate-700">14-Day Free Trial Activated</p>
                           <p className="text-xs text-slate-500">
                             Full store workspace access with unlimited features is enabled during your free trial period.

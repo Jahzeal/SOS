@@ -245,11 +245,44 @@ class ApiClient {
     });
   }
 
-  async getInvoices(search?: string) {
-    const query = search ? `?search=${encodeURIComponent(search)}` : '';
-    return this.request<any[]>(`/sales/invoices${query}`);
+  // --- Commercial Invoices Endpoints ---
+  async getInvoices(search?: string, status?: string) {
+    const params = new URLSearchParams();
+    if (search) params.set('search', search);
+    if (status && status !== 'ALL') params.set('status', status);
+    const qs = params.toString() ? `?${params.toString()}` : '';
+    return this.request<any[]>(`/sales/invoices${qs}`);
   }
 
+  async getInvoiceById(id: string) {
+    return this.request<any>(`/sales/invoices/${id}`);
+  }
+
+  async createInvoice(payload: any) {
+    return this.request<any>('/sales/invoices', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async markInvoicePaid(id: string, paymentMethod?: string) {
+    return this.request<any>(`/sales/invoices/${id}/pay`, {
+      method: 'POST',
+      body: JSON.stringify({ paymentMethod }),
+    });
+  }
+
+  async sendInvoiceEmail(id: string, email?: string) {
+    return this.request<{ success: boolean; message?: string; recipient?: string; dispatched?: boolean }>(
+      `/sales/invoices/${id}/email`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      },
+    );
+  }
+
+  // --- POS Receipts Endpoints ---
   async getReceipts(search?: string) {
     const query = search ? `?search=${encodeURIComponent(search)}` : '';
     return this.request<any[]>(`/sales/receipts${query}`);
@@ -257,6 +290,23 @@ class ApiClient {
 
   async getReceiptById(id: string) {
     return this.request<any>(`/sales/receipts/${id}`);
+  }
+
+  async createReceipt(payload: any) {
+    return this.request<any>('/sales/receipts', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async sendReceiptEmail(id: string, email?: string) {
+    return this.request<{ success: boolean; message?: string; recipient?: string; dispatched?: boolean }>(
+      `/sales/receipts/${id}/email`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      },
+    );
   }
 
   async sendSaleEmail(id: string, email?: string) {

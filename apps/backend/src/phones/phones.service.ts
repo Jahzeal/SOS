@@ -147,8 +147,30 @@ export class PhonesService {
 
     return this.prisma.phoneRecord.findMany({
       where,
-      include: {
-        customer: true,
+      select: {
+        id: true,
+        brand: true,
+        model: true,
+        color: true,
+        storageCapacity: true,
+        imei1: true,
+        imei2: true,
+        serialNumber: true,
+        condition: true,
+        status: true,
+        purchasePrice: true,
+        sellingPrice: true,
+        warrantyDurationMonths: true,
+        warrantyExpiryDate: true,
+        createdAt: true,
+        customer: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            email: true,
+          },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });

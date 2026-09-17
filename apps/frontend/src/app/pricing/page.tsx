@@ -41,74 +41,18 @@ export default function DedicatedPricingPage() {
     api
       .getPlans()
       .then((res) => {
-        if (res?.success && Array.isArray(res.plans) && res.plans.length > 0) {
+        if (res?.success && Array.isArray(res.plans)) {
           setPlans(res.plans);
         } else {
-          setPlans(getFallbackPlans());
+          setPlans([]);
         }
       })
       .catch((err) => {
-        console.warn('Failed to load database plans, using fallback:', err);
-        setPlans(getFallbackPlans());
+        console.error('Failed to load database plans:', err);
+        setPlans([]);
       })
       .finally(() => setLoading(false));
   }, []);
-
-  const getFallbackPlans = () => [
-    {
-      code: 'STARTER',
-      name: 'Starter Store',
-      description: 'Ideal for independent phone retailers & repair shops',
-      monthlyPriceNgn: 15000,
-      annualPriceNgn: 144000,
-      maxDevices: 250,
-      popular: false,
-      features: [
-        'Up to 250 Phone Registrations',
-        '1 Store Branch Workspace',
-        'IMEI & Serial Number Ledger',
-        'Thermal Receipt Customization',
-        'Basic Inventory Tracking',
-        'Standard Email Support',
-      ],
-    },
-    {
-      code: 'BUSINESS',
-      name: 'Business Scale',
-      description: 'Built for multi-branch phone stores & active retailers',
-      monthlyPriceNgn: 45000,
-      annualPriceNgn: 432000,
-      maxDevices: 2000,
-      popular: true,
-      features: [
-        'Up to 2,000 Phone Registrations',
-        'Up to 3 Branch Workspaces',
-        'POS Checkout & Commercial Invoices',
-        'Customer Directory & History',
-        'Repairs Management Center',
-        'Advanced Revenue Analytics',
-        'Priority Phone & WhatsApp Support',
-      ],
-    },
-    {
-      code: 'ENTERPRISE',
-      name: 'Enterprise OS',
-      description: 'For high-volume distributors & phone chains',
-      monthlyPriceNgn: 95000,
-      annualPriceNgn: 912000,
-      maxDevices: 999999,
-      popular: false,
-      features: [
-        'Unlimited Phone Registrations',
-        'Unlimited Branch Workspaces',
-        'Custom QR Thermal Receipts & Branding',
-        'Multi-Staff Role Permissions (Owner, Manager, Tech)',
-        'Full REST API & Database Sync',
-        'Dedicated Account Manager',
-        'SLA 99.9% Uptime Guarantee',
-      ],
-    },
-  ];
 
   const handlePlanAction = (plan: any) => {
     if (isLoggedIn) {
@@ -200,19 +144,26 @@ export default function DedicatedPricingPage() {
             <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto" />
             <p className="text-xs font-bold text-slate-500">Loading live subscription packages...</p>
           </div>
+        ) : plans.length === 0 ? (
+          <div className="py-16 text-center space-y-3 bg-white rounded-3xl border border-slate-200 p-8 shadow-xs">
+            <Layers className="w-10 h-10 text-slate-400 mx-auto" />
+            <h3 className="text-base font-extrabold text-slate-800">No active subscription packages available</h3>
+            <p className="text-xs text-slate-500 font-medium">Please check back shortly or reach out to support.</p>
+          </div>
         ) : (
-          /* Pricing Cards Grid */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch pt-2">
+          /* Pricing Cards Grid (4 Responsive Columns) */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch pt-2">
             {plans.map((plan) => {
+              const isFree = plan.code === 'FREE' || (!plan.monthlyPriceNgn && !plan.annualPriceNgn);
               const monthlyPrice = plan.monthlyPriceNgn || 0;
               const annualPrice = plan.annualPriceNgn && plan.annualPriceNgn > 0 ? plan.annualPriceNgn : monthlyPrice * 10;
-              const displayMonthlyEquivalent = billingCycle === 'annual' ? Math.round(annualPrice / 12) : monthlyPrice;
+              const displayMonthlyEquivalent = isFree ? 0 : billingCycle === 'annual' ? Math.round(annualPrice / 12) : monthlyPrice;
               const isPopular = plan.popular || plan.code === 'BUSINESS';
 
               return (
                 <div
                   key={plan.code || plan.id}
-                  className={`rounded-3xl bg-white border p-6 sm:p-8 flex flex-col justify-between relative transition-all duration-200 ${
+                  className={`rounded-3xl bg-white border p-6 flex flex-col justify-between relative transition-all duration-200 ${
                     isPopular
                       ? 'border-2 border-teal-600 shadow-2xl ring-4 ring-teal-500/10'
                       : 'border-slate-200/90 shadow-sm hover:shadow-md'
@@ -220,59 +171,68 @@ export default function DedicatedPricingPage() {
                 >
                   {isPopular && (
                     <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full bg-teal-600 text-white text-[10px] font-extrabold uppercase tracking-widest shadow-md">
-                      MOST POPULAR RETAIL PLAN
+                      MOST POPULAR
                     </div>
                   )}
 
-                  <div className="space-y-6">
+                  <div className="space-y-5">
                     {/* Plan Name & Price */}
                     <div>
-                      <h3 className="text-xl font-extrabold text-slate-900">{plan.name}</h3>
-                      <p className="text-xs text-slate-500 font-medium mt-1">
-                        {plan.description || 'Designed for retail gadget stores seeking verified device tracking, POS, and thermal receipts.'}
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-extrabold text-slate-900">{plan.name}</h3>
+                        {isFree && (
+                          <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                            FREE
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-slate-500 font-medium mt-1 leading-snug min-h-[36px]">
+                        {plan.description || 'Verified device tracking, POS checkout, and thermal receipts.'}
                       </p>
                     </div>
 
                     <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
                       <div className="flex items-baseline gap-1">
-                        <span className="text-3xl sm:text-4xl font-extrabold text-slate-900 font-mono">
+                        <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-mono">
                           ₦{displayMonthlyEquivalent.toLocaleString()}
                         </span>
-                        <span className="text-xs text-slate-500 font-semibold">/ month</span>
+                        <span className="text-xs text-slate-500 font-semibold">{isFree ? '/ forever' : '/ month'}</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-1 font-medium">
-                        {billingCycle === 'annual'
-                          ? `Billed annually (₦${annualPrice.toLocaleString()} / year — save 20%)`
+                      <p className="text-[10px] text-slate-500 mt-1 font-medium">
+                        {isFree
+                          ? 'Zero credit card required'
+                          : billingCycle === 'annual'
+                          ? `₦${annualPrice.toLocaleString()} / year (Save 20%)`
                           : 'Billed monthly'}
                       </p>
                     </div>
 
                     {/* Feature Checklist */}
-                    <div className="space-y-3 pt-2">
-                      <div className="text-xs font-bold text-slate-900 uppercase tracking-wider text-[10px]">
+                    <div className="space-y-2.5 pt-1">
+                      <div className="text-slate-900 font-bold uppercase tracking-wider text-[10px]">
                         Included Features
                       </div>
-                      <ul className="space-y-2.5 text-xs text-slate-700 font-medium">
+                      <ul className="space-y-2 text-xs text-slate-700 font-medium">
                         {Array.isArray(plan.features) && plan.features.length > 0 ? (
                           plan.features.map((feat: string, idx: number) => (
-                            <li key={idx} className="flex items-start gap-2.5">
-                              <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                              <span>{feat}</span>
+                            <li key={idx} className="flex items-start gap-2">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                              <span className="leading-snug">{feat}</span>
                             </li>
                           ))
                         ) : (
                           <>
-                            <li className="flex items-start gap-2.5">
-                              <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                            <li className="flex items-start gap-2">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                               <span>Up to {plan.maxDevices?.toLocaleString() || 500} Phone Registrations</span>
                             </li>
-                            <li className="flex items-start gap-2.5">
-                              <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                              <span>IMEI & Barcode Verification Ledger</span>
+                            <li className="flex items-start gap-2">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                              <span>IMEI & Barcode Ledger</span>
                             </li>
-                            <li className="flex items-start gap-2.5">
-                              <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                              <span>POS Checkout & Thermal Receipts</span>
+                            <li className="flex items-start gap-2">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                              <span>POS Receipts</span>
                             </li>
                           </>
                         )}
@@ -281,35 +241,49 @@ export default function DedicatedPricingPage() {
                   </div>
 
                   {/* Call to Action Button */}
-                  <div className="pt-8">
+                  <div className="pt-6">
                     {isLoggedIn ? (
-                      <Button
-                        variant="primary"
-                        size="md"
-                        fullWidth
-                        onClick={() => handlePlanAction(plan)}
-                        className={`font-bold text-xs py-3 ${
-                          isPopular
-                            ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-600/20'
-                            : 'bg-slate-900 hover:bg-slate-800 text-white'
-                        }`}
-                      >
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        <span>Subscribe with Paystack →</span>
-                      </Button>
-                    ) : (
-                      <Link href={`/onboarding?plan=${(plan.code || plan.id || 'BUSINESS').toUpperCase()}`}>
+                      isFree ? (
+                        <Button
+                          variant="secondary"
+                          size="md"
+                          fullWidth
+                          disabled
+                          className="font-bold text-xs py-2.5 bg-slate-100 text-slate-600"
+                        >
+                          <span>Standard Tier</span>
+                        </Button>
+                      ) : (
                         <Button
                           variant="primary"
                           size="md"
                           fullWidth
-                          className={`font-bold text-xs py-3 ${
+                          onClick={() => handlePlanAction(plan)}
+                          className={`font-bold text-xs py-2.5 ${
                             isPopular
-                              ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-lg shadow-teal-600/20'
+                              ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20'
                               : 'bg-slate-900 hover:bg-slate-800 text-white'
                           }`}
                         >
-                          Start 14-Day Free Trial →
+                          <CreditCard className="w-3.5 h-3.5 mr-1.5" />
+                          <span>Subscribe →</span>
+                        </Button>
+                      )
+                    ) : (
+                      <Link href={`/onboarding?plan=${(plan.code || plan.id || 'FREE').toUpperCase()}`}>
+                        <Button
+                          variant="primary"
+                          size="md"
+                          fullWidth
+                          className={`font-bold text-xs py-2.5 ${
+                            isFree
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md shadow-emerald-600/20'
+                              : isPopular
+                              ? 'bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/20'
+                              : 'bg-slate-900 hover:bg-slate-800 text-white'
+                          }`}
+                        >
+                          {isFree ? 'Start Free Forever →' : 'Start 14-Day Free Trial →'}
                         </Button>
                       </Link>
                     )}

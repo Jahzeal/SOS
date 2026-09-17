@@ -3,6 +3,7 @@ import { Reflector } from '@nestjs/core';
 import { PLAN_KEY } from '../decorators/roles.decorator';
 
 const PLAN_HIERARCHY: Record<string, number> = {
+  FREE: 0,
   STARTER: 1,
   BUSINESS: 2,
   ENTERPRISE: 3,

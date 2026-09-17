@@ -266,7 +266,9 @@ export default function ReceiptsArchivePage() {
                     </div>
                     {/* Status & Method Badges */}
                     <div className="flex flex-col items-end gap-1">
-                      <Badge variant="verified" size="sm">{rcp.paymentStatus || 'PAID'}</Badge>
+                      <Badge variant={rcp.paymentStatus === 'PAID' ? 'verified' : rcp.paymentStatus === 'PENDING' ? 'business' : 'error'} size="sm">
+                        {rcp.paymentStatus || 'PAID'}
+                      </Badge>
                       <span className="text-[9px] text-slate-400 font-bold uppercase">{rcp.paymentMethod || 'CASH'}</span>
                     </div>
                   </div>
@@ -378,7 +380,9 @@ export default function ReceiptsArchivePage() {
                       </td>
                       <td className="py-3.5 px-4 text-slate-500 font-medium">{dateStr}</td>
                       <td className="py-3.5 px-4 text-center">
-                        <Badge variant="verified" size="sm">{rcp.paymentStatus || 'PAID'}</Badge>
+                        <Badge variant={rcp.paymentStatus === 'PAID' ? 'verified' : rcp.paymentStatus === 'PENDING' ? 'business' : 'error'} size="sm">
+                          {rcp.paymentStatus || 'PAID'}
+                        </Badge>
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1 text-slate-400 opacity-80 group-hover:opacity-100">
@@ -423,49 +427,70 @@ export default function ReceiptsArchivePage() {
 
       </div>
 
-      {/* Slide-Over Receipt Details Modal */}
+      {/* Slide-over Receipt Details Drawer */}
       {selectedReceipt && (
-        <div className="fixed inset-0 bg-slate-950/50 backdrop-blur-xs z-50 flex justify-end">
-          <div className="bg-white w-full max-w-md h-full shadow-2xl p-6 flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 border-l border-slate-200">
-            <div>
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-4">
-                <h3 className="text-lg font-extrabold text-slate-900">Receipt Details</h3>
+        <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/40 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white h-full shadow-2xl p-6 overflow-y-auto flex flex-col justify-between">
+            <div className="space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
+                    <Receipt className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="font-extrabold text-slate-900 text-sm">Receipt Details</h3>
+                    <p className="text-[10px] text-slate-400 font-mono font-bold text-blue-600">
+                      {selectedReceipt.receiptNumber || selectedReceipt.invoiceNumber || selectedReceipt.id}
+                    </p>
+                  </div>
+                </div>
                 <button
                   onClick={() => setSelectedReceipt(null)}
-                  className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-4 h-4" />
                 </button>
               </div>
 
-              {/* Thermal Receipt Preview Card */}
-              <div className="p-5 rounded-2xl bg-slate-50 border border-dashed border-slate-300 font-mono text-xs text-slate-800 space-y-3">
-                <div className="text-center space-y-1">
-                  <p className="font-extrabold text-sm text-slate-900">
-                    {selectedReceipt.business?.name || summaryData?.business?.name || 'VERIFIED STORE'}
+              {/* Receipt Preview Box */}
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 font-mono text-xs space-y-3">
+                <div className="text-center border-b border-slate-200 pb-3">
+                  <h4 className="font-extrabold text-sm text-slate-900">
+                    {selectedReceipt.business?.name || summaryData?.business?.name || 'VERIFYFLOW STORE'}
+                  </h4>
+                  <p className="text-[10px] text-slate-500">
+                    {selectedReceipt.business?.address || 'Ikeja Digital Village, Lagos'}
                   </p>
-                  {selectedReceipt.business?.address && (
-                    <p className="text-[10px] text-slate-500 font-sans">
-                      {selectedReceipt.business.address}
-                    </p>
-                  )}
-                  {(selectedReceipt.business?.phone || selectedReceipt.business?.email) && (
-                    <p className="text-[10px] text-slate-500 font-sans">
-                      {selectedReceipt.business?.phone ? `Tel: ${selectedReceipt.business.phone}` : ''}
-                      {selectedReceipt.business?.phone && selectedReceipt.business?.email ? ' • ' : ''}
-                      {selectedReceipt.business?.email ? `Email: ${selectedReceipt.business.email}` : ''}
-                    </p>
-                  )}
+                  <p className="text-[10px] text-slate-500">
+                    {selectedReceipt.business?.phone || '+234 800 000 0000'}
+                  </p>
                 </div>
 
-                <div className="border-y border-slate-200 py-2 flex justify-between text-[11px]">
-                  <span>{selectedReceipt.receiptNumber || selectedReceipt.invoiceNumber || selectedReceipt.id}</span>
-                  <span>{new Date(selectedReceipt.createdAt).toLocaleDateString('en-US')}</span>
+                <div className="space-y-1 text-[11px]">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Date:</span>
+                    <span className="font-bold text-slate-800">{new Date(selectedReceipt.createdAt).toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Customer:</span>
+                    <span className="font-bold text-slate-800">{selectedReceipt.customer?.name || 'Retail Buyer'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Payment Method:</span>
+                    <span className="font-bold text-slate-800 uppercase">{selectedReceipt.paymentMethod || 'CASH'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Status:</span>
+                    <span className={`font-bold ${selectedReceipt.paymentStatus === 'PAID' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                      {selectedReceipt.paymentStatus || 'PAID'}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="space-y-2 py-1">
-                  {selectedReceipt.items?.map((item: any) => (
-                    <div key={item.id} className="flex justify-between">
+                {/* Items */}
+                <div className="border-t border-b border-slate-200 py-2 space-y-2">
+                  {(selectedReceipt.items || []).map((item: any, idx: number) => (
+                    <div key={idx} className="flex justify-between items-start text-[11px]">
                       <div>
                         <p className="font-bold text-slate-900">{item.description || (item.phoneRecord ? `${item.phoneRecord.brand} ${item.phoneRecord.model}` : 'Item')}</p>
                         {item.phoneRecord?.imei1 && (
@@ -501,14 +526,7 @@ export default function ReceiptsArchivePage() {
       <EmailReceiptModal
         isOpen={Boolean(receiptForEmailModal)}
         onClose={() => setReceiptForEmailModal(null)}
-        receipt={receiptForEmailModal ? {
-          ...receiptForEmailModal,
-          customerName: receiptForEmailModal.customer?.name,
-          customerEmail: receiptForEmailModal.customer?.email,
-          customerPhone: receiptForEmailModal.customer?.phone,
-          storeName: summaryData?.business?.name,
-          total: receiptForEmailModal.totalAmount,
-        } : null}
+        receipt={receiptForEmailModal}
       />
 
     </div>
