@@ -225,6 +225,19 @@ class ApiClient {
     return this.request<any>(`/phones/${id}`);
   }
 
+  async updatePhone(id: string, data: any) {
+    return this.request<any>(`/phones/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deletePhone(id: string) {
+    return this.request<any>(`/phones/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   // --- Express POS Checkout & Invoices / Receipts Endpoints ---
   async checkoutSale(payload: {
     customerName?: string;

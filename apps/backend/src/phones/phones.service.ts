@@ -197,4 +197,106 @@ export class PhonesService {
 
     return record;
   }
+
+  async update(businessId: string, id: string, dto: any) {
+    const record = await this.prisma.phoneRecord.findFirst({
+      where: { id, businessId },
+    });
+
+    if (!record) {
+      throw new NotFoundException(`Phone record with ID ${id} not found.`);
+    }
+
+    // Customer assignment / update if customer details provided
+    let customerId = record.customerId;
+    if (dto.customerName && dto.customerPhone) {
+      let customer = await this.prisma.customer.findFirst({
+        where: {
+          businessId,
+          phone: dto.customerPhone.trim(),
+        },
+      });
+
+      if (!customer) {
+        customer = await this.prisma.customer.create({
+          data: {
+            businessId,
+            name: dto.customerName.trim(),
+            phone: dto.customerPhone.trim(),
+            email: dto.customerEmail?.trim(),
+          },
+        });
+      } else {
+        customer = await this.prisma.customer.update({
+          where: { id: customer.id },
+          data: {
+            name: dto.customerName.trim(),
+            email: dto.customerEmail?.trim() || customer.email,
+          },
+        });
+      }
+      customerId = customer.id;
+    }
+
+    const updateData: any = {};
+    if (dto.brand !== undefined) updateData.brand = dto.brand.trim();
+    if (dto.model !== undefined) updateData.model = dto.model.trim();
+    if (dto.color !== undefined) updateData.color = dto.color?.trim();
+    if (dto.storageCapacity !== undefined) updateData.storageCapacity = dto.storageCapacity?.trim();
+    if (dto.condition !== undefined) updateData.condition = dto.condition;
+    if (dto.status !== undefined) updateData.status = dto.status;
+    if (dto.purchasePrice !== undefined) updateData.purchasePrice = Number(dto.purchasePrice) || 0;
+    if (dto.sellingPrice !== undefined) updateData.sellingPrice = Number(dto.sellingPrice) || 0;
+    if (dto.serialNumber !== undefined) updateData.serialNumber = dto.serialNumber?.trim();
+    if (dto.imei2 !== undefined) updateData.imei2 = dto.imei2?.trim();
+
+    if (dto.warrantyDurationMonths !== undefined) {
+      const warrantyMonths = Number(dto.warrantyDurationMonths) || 0;
+      updateData.warrantyDurationMonths = warrantyMonths;
+      if (warrantyMonths > 0) {
+        const baseDate = record.createdAt ? new Date(record.createdAt) : new Date();
+        updateData.warrantyExpiryDate = new Date(new Date(baseDate).setMonth(baseDate.getMonth() + warrantyMonths));
+      } else {
+        updateData.warrantyExpiryDate = null;
+      }
+    }
+
+    if (customerId) {
+      updateData.customerId = customerId;
+    }
+
+    return this.prisma.phoneRecord.update({
+      where: { id },
+      data: updateData,
+      include: {
+        customer: true,
+        business: true,
+        repairs: true,
+        saleItems: {
+          include: {
+            sale: true,
+          },
+        },
+      },
+    });
+  }
+
+  async delete(businessId: string, id: string) {
+    const record = await this.prisma.phoneRecord.findFirst({
+      where: { id, businessId },
+    });
+
+    if (!record) {
+      throw new NotFoundException(`Phone record with ID ${id} not found.`);
+    }
+
+    await this.prisma.phoneRecord.delete({
+      where: { id },
+    });
+
+    return {
+      success: true,
+      message: `Phone record ${record.brand} ${record.model} (${record.imei1}) deleted successfully.`,
+    };
+  }
 }

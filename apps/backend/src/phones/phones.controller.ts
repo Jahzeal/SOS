@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { PhonesService } from './phones.service';
 import { RegisterPhoneDto } from './dto/register-phone.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -37,5 +37,17 @@ export class PhonesController {
   async findOne(@Request() req, @Param('id') id: string) {
     const businessId = req.user.businessId;
     return this.phonesService.findOne(businessId, id);
+  }
+
+  @Patch(':id')
+  async update(@Request() req, @Param('id') id: string, @Body() dto: any) {
+    const businessId = req.user.businessId;
+    return this.phonesService.update(businessId, id, dto);
+  }
+
+  @Delete(':id')
+  async delete(@Request() req, @Param('id') id: string) {
+    const businessId = req.user.businessId;
+    return this.phonesService.delete(businessId, id);
   }
 }
