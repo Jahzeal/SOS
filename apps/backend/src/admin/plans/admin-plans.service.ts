@@ -83,7 +83,7 @@ export class AdminPlansService {
         description: dto.description || '',
         monthlyPriceNgn: Number(dto.monthlyPriceNgn) || 0,
         annualPriceNgn: Number(dto.annualPriceNgn) || (Number(dto.monthlyPriceNgn) || 0) * 10,
-        maxDevices: Number(dto.maxDevices) || 100,
+        maxDevices: dto.maxDevices !== undefined ? Number(dto.maxDevices) : 100,
         customBranding: Boolean(dto.customBranding),
         prioritySupport: Boolean(dto.prioritySupport),
         features: dto.features || [],

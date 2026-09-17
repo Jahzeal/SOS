@@ -24,42 +24,31 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
 import { api } from '@/lib/api';
+import { useReceipts, useInventorySummary } from '@/hooks/useDashboardQueries';
 
 export default function ReceiptsArchivePage() {
-  const [receipts, setReceipts] = useState<any[]>([]);
-  const [summaryData, setSummaryData] = useState<any>(null);
-
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('ALL');
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
   const [receiptForEmailModal, setReceiptForEmailModal] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [receiptsData, summary] = await Promise.all([
-        api.getReceipts(search.trim() || undefined),
-        api.getDashboardSummary(),
-      ]);
-      setReceipts(receiptsData || []);
-      setSummaryData(summary || null);
-    } catch (err: any) {
-      console.error('Failed to load receipts archive:', err);
-      setError(err.message || 'Failed to load receipts archive.');
-      setReceipts([]);
-    } finally {
-      setLoading(false);
-    }
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
+    return () => clearTimeout(t);
   }, [search]);
 
-  // Debounced search trigger
-  useEffect(() => {
-    const t = setTimeout(() => fetchData(), 300);
-    return () => clearTimeout(t);
-  }, [fetchData]);
+  // Cached receipts query (instant 0ms switch)
+  const {
+    data: receipts = [],
+    isLoading: loading,
+    error: queryError,
+  } = useReceipts(debouncedSearch || undefined);
+
+  // Cached summary query
+  const { data: summaryData } = useInventorySummary();
+  const error = queryError ? (queryError as any).message || 'Failed to load receipts archive.' : null;
 
   // Filtered receipts
   const filteredReceipts = useMemo(() => {
@@ -504,7 +493,12 @@ export default function ReceiptsArchivePage() {
 
                 <div className="flex justify-between font-extrabold text-sm border-t border-slate-200 pt-2 text-slate-900">
                   <span>TOTAL PAID</span>
-                  <span className="text-blue-600">₦{selectedReceipt.totalAmount?.toLocaleString() || '0'}</span>
+                  <span className="text-teal-700">₦{selectedReceipt.totalAmount?.toLocaleString() || '0'}</span>
+                </div>
+
+
+                <div className="pt-2 text-center text-[10px] text-slate-500 font-sans border-t border-slate-200 leading-snug">
+                  {selectedReceipt.business?.receiptFooter || 'Thank you for your purchase! Devices verified with VerifyFlow.'}
                 </div>
               </div>
             </div>

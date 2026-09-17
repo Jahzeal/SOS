@@ -26,6 +26,8 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 
+import { usePhoneRecords, useInventorySummary } from '@/hooks/useDashboardQueries';
+
 const STATUS_LABELS: Record<string, string> = {
   IN_STOCK: 'IN STOCK',
   SOLD: 'SOLD',
@@ -36,49 +38,34 @@ const STATUS_LABELS: Record<string, string> = {
 };
 
 export default function PhoneRecordsPage() {
-  const [records, setRecords] = useState<any[]>([]);
-  const [stats, setStats] = useState<{
-    totalRegistered: number;
-    inStockCount: number;
-    soldCount: number;
-    inRepairCount: number;
-    activeWarrantiesCount: number;
-  } | null>(null);
-
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [brandFilter, setBrandFilter] = useState('ALL');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [copiedImei, setCopiedImei] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [phoneData, summaryData] = await Promise.all([
-        api.getInventory({
-          search: search || undefined,
-          status: statusFilter !== 'ALL' ? statusFilter : undefined,
-          brand: brandFilter !== 'ALL' ? brandFilter : undefined,
-        }),
-        api.getDashboardSummary(),
-      ]);
-      setRecords(phoneData);
-      setStats(summaryData.kpis);
-    } catch (err: any) {
-      setError(err.message || 'Failed to load records.');
-    } finally {
-      setLoading(false);
-    }
-  }, [search, statusFilter, brandFilter]);
 
   // Debounce search
   useEffect(() => {
-    const t = setTimeout(() => fetchData(), 300);
+    const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
     return () => clearTimeout(t);
-  }, [fetchData]);
+  }, [search]);
+
+  // Cached records query (instant 0ms switch)
+  const {
+    data: records = [],
+    isLoading: loading,
+    error: queryError,
+  } = usePhoneRecords({
+    search: debouncedSearch || undefined,
+    status: statusFilter !== 'ALL' ? statusFilter : undefined,
+    brand: brandFilter !== 'ALL' ? brandFilter : undefined,
+  });
+
+  // Cached summary query
+  const { data: summaryData } = useInventorySummary();
+  const stats = summaryData?.kpis || null;
+  const error = queryError ? (queryError as any).message || 'Failed to load records.' : null;
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedIds(e.target.checked ? records.map((r) => r.id) : []);

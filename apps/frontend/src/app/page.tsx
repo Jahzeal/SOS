@@ -117,6 +117,7 @@ export default function PublicLandingPageV2() {
 
   // Auth State Detection
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [dashboardUrl, setDashboardUrl] = useState('/dashboard');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -124,6 +125,17 @@ export default function PublicLandingPageV2() {
       if (token) {
         setIsLoggedIn(true);
       }
+      try {
+        const storedUser = localStorage.getItem('vf_user');
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.role === 'ADMIN') {
+            setDashboardUrl('/admin/dashboard');
+          } else {
+            setDashboardUrl('/dashboard');
+          }
+        }
+      } catch {}
     }
   }, []);
 
@@ -846,7 +858,7 @@ export default function PublicLandingPageV2() {
           <div className="hidden md:flex items-center gap-3">
             <PwaInstallButton variant="header" />
             {isLoggedIn ? (
-              <Link href="/dashboard">
+              <Link href={dashboardUrl}>
                 <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
                   Dashboard
                 </Button>
@@ -921,7 +933,7 @@ export default function PublicLandingPageV2() {
             </nav>
             <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
               {isLoggedIn ? (
-                <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                <Link href={dashboardUrl} onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="primary" fullWidth size="md">
                     Dashboard
                   </Button>

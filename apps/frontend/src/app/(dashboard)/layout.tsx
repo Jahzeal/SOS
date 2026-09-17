@@ -120,9 +120,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         logout();
         setIsAuthorized(false);
         router.replace('/login?expired=true');
-      } else {
-        setIsAuthorized(true);
+        return;
       }
+
+      // If user is a System Administrator, redirect them to the Admin HQ Dashboard
+      const storedUser = localStorage.getItem('vf_user');
+      if (storedUser) {
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.role === 'ADMIN') {
+            router.replace('/admin/dashboard');
+            return;
+          }
+        } catch {}
+      }
+
+      setIsAuthorized(true);
     };
 
     verifySession();

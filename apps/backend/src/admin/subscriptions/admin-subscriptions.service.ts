@@ -8,14 +8,21 @@ export class AdminSubscriptionsService {
   async getSubscriptionAnalytics() {
     const [businesses, dbPlans] = await Promise.all([
       this.prisma.business.findMany({
-        include: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          plan: true,
+          subscriptionStatus: true,
+          trialEndsAt: true,
+          publicVerificationEnabled: true,
+          createdAt: true,
+          updatedAt: true,
           subscriptionPlan: true,
           _count: {
             select: {
               users: true,
               phoneRecords: true,
-              sales: true,
-              repairs: true,
             },
           },
         },
@@ -74,8 +81,6 @@ export class AdminSubscriptionsService {
         usage: {
           registeredDevices: b._count.phoneRecords,
           staffCount: b._count.users,
-          salesCount: b._count.sales,
-          repairsCount: b._count.repairs,
         },
       };
     });

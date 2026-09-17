@@ -45,7 +45,50 @@ const CONDITION_OPTIONS = [
   { value: 'NEW', label: 'Brand New (Sealed)' },
   { value: 'LIKE_NEW', label: 'Like New / Open Box' },
   { value: 'REFURBISHED', label: 'Certified Refurbished' },
-  { value: 'USED', label: 'Pre-Owned / Fair Condition' },
+  { value: 'USED', label: 'Pre-Owned / Used' },
+];
+
+const STORAGE_OPTIONS = [
+  '16 GB',
+  '32 GB',
+  '64 GB',
+  '128 GB',
+  '256 GB',
+  '512 GB',
+  '1 TB',
+  '2 TB',
+];
+
+const POPULAR_BRANDS = [
+  'Apple',
+  'Samsung',
+  'Google',
+  'OnePlus',
+  'Xiaomi',
+  'Tecno',
+  'Infinix',
+  'Oppo',
+  'Vivo',
+  'Realme',
+  'Huawei',
+  'Itel',
+  'Nokia',
+  'Motorola',
+  'Sony',
+  'LG',
+  'HTC',
+  'Other',
+];
+
+const WARRANTY_OPTIONS = [
+  { value: 0, label: 'No Warranty' },
+  { value: 1, label: '1 Month' },
+  { value: 3, label: '3 Months' },
+  { value: 6, label: '6 Months' },
+  { value: 12, label: '12 Months (1 Year)' },
+  { value: 18, label: '18 Months' },
+  { value: 24, label: '24 Months (2 Years)' },
+  { value: 36, label: '36 Months (3 Years)' },
 ];
 
 export default function PhoneRecordDetailPage() {
@@ -66,7 +109,7 @@ export default function PhoneRecordDetailPage() {
     brand: '',
     model: '',
     color: '',
-    storageCapacity: '',
+    storageCapacity: '128 GB',
     condition: 'NEW',
     status: 'IN_STOCK',
     purchasePrice: 0,
@@ -329,13 +372,18 @@ export default function PhoneRecordDetailPage() {
                   Brand Name
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    required
+                  <select
                     value={formData.brand}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 text-slate-900"
-                  />
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:border-teal-600 text-slate-900 cursor-pointer"
+                  >
+                    {!POPULAR_BRANDS.includes(formData.brand) && formData.brand && (
+                      <option value={formData.brand}>{formData.brand}</option>
+                    )}
+                    {POPULAR_BRANDS.map((b) => (
+                      <option key={b} value={b}>{b}</option>
+                    ))}
+                  </select>
                 ) : (
                   <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-900 text-sm">
                     {record?.brand}
@@ -371,7 +419,7 @@ export default function PhoneRecordDetailPage() {
                 {isEditing ? (
                   <input
                     type="text"
-                    placeholder="e.g. Space Gray, Titanium"
+                    placeholder="e.g. Space Gray, Titanium, Black"
                     value={formData.color}
                     onChange={(e) => setFormData({ ...formData, color: e.target.value })}
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-teal-600 text-slate-900"
@@ -383,19 +431,24 @@ export default function PhoneRecordDetailPage() {
                 )}
               </div>
 
-              {/* Storage Capacity */}
+              {/* Storage Capacity (Dropdown matching upload) */}
               <div>
                 <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
                   Storage Capacity
                 </label>
                 {isEditing ? (
-                  <input
-                    type="text"
-                    placeholder="e.g. 128GB, 256GB, 1TB"
+                  <select
                     value={formData.storageCapacity}
                     onChange={(e) => setFormData({ ...formData, storageCapacity: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-teal-600 text-slate-900"
-                  />
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:border-teal-600 text-slate-900 cursor-pointer"
+                  >
+                    {!STORAGE_OPTIONS.includes(formData.storageCapacity) && formData.storageCapacity && (
+                      <option value={formData.storageCapacity}>{formData.storageCapacity}</option>
+                    )}
+                    {STORAGE_OPTIONS.map((opt) => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
                 ) : (
                   <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-semibold text-slate-800">
                     {record?.storageCapacity || 'N/A'}
@@ -593,17 +646,18 @@ export default function PhoneRecordDetailPage() {
                 {/* Warranty Duration */}
                 <div>
                   <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
-                    Warranty Duration (Months)
+                    Warranty Duration
                   </label>
                   {isEditing ? (
-                    <input
-                      type="number"
-                      min="0"
-                      max="36"
+                    <select
                       value={formData.warrantyDurationMonths}
                       onChange={(e) => setFormData({ ...formData, warrantyDurationMonths: Number(e.target.value) || 0 })}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold outline-none focus:border-teal-600 text-slate-900"
-                    />
+                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:border-teal-600 text-slate-900 cursor-pointer"
+                    >
+                      {WARRANTY_OPTIONS.map((w) => (
+                        <option key={w.value} value={w.value}>{w.label}</option>
+                      ))}
+                    </select>
                   ) : (
                     <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-800 text-sm flex items-center justify-between">
                       <span>{record?.warrantyDurationMonths || 0} Months</span>

@@ -31,16 +31,13 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 
+import { useInventory, useInventorySummary } from '@/hooks/useDashboardQueries';
+
 export default function InventoryPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [brandFilter, setBrandFilter] = useState('ALL');
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [liveInventory, setLiveInventory] = useState<any[]>([]);
-  const [recentActivity, setRecentActivity] = useState<any[]>([]);
-  const [kpis, setKpis] = useState<any>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   // Debounce search query by 300ms to avoid unnecessary network spam
   useEffect(() => {
@@ -50,65 +47,48 @@ export default function InventoryPage() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  // 1. Fetch Dashboard Summary (KPIs, Activity Feed) once on mount
-  const fetchSummary = async () => {
-    try {
-      const summary = await api.getDashboardSummary();
-      setKpis(summary.kpis);
-      const registrations = (summary.recentPhones || []).slice(0, 4).map((p: any) => ({
-        type: 'registration',
-        label: 'New Registration',
-        detail: `${p.brand} ${p.model} added to inventory`,
-        time: p.createdAt,
-        icon: '+',
-        color: 'bg-blue-100 text-blue-700',
-      }));
-      const sales = (summary.recentSales || []).slice(0, 4).map((s: any) => {
-        const first = s.items?.[0]?.phoneRecord;
-        return {
-          type: 'sale',
-          label: 'Sale Confirmed',
-          detail: first ? `${first.brand} ${first.model} sold` : 'Device sold',
-          time: s.createdAt,
-          icon: '',
-          color: 'bg-emerald-100 text-emerald-700',
-        };
-      });
-      const combined = [...registrations, ...sales]
-        .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
-        .slice(0, 4);
-      setRecentActivity(combined);
-    } catch (err: any) {
-      console.warn('Failed to load dashboard summary for inventory:', err);
-    }
-  };
+  // Cached Inventory Query (renders in 0ms on tab revisit)
+  const {
+    data: liveInventory = [],
+    isLoading,
+    error: queryError,
+  } = useInventory({
+    search: debouncedSearch || undefined,
+    brand: brandFilter !== 'ALL' ? brandFilter : undefined,
+  });
 
-  // 2. Fetch Inventory Records when debounced search or brand filter changes
-  const fetchInventory = async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const data = await api.getInventory({
-        search: debouncedSearch || undefined,
-        brand: brandFilter !== 'ALL' ? brandFilter : undefined,
-      });
-      setLiveInventory(Array.isArray(data) ? data : []);
-    } catch (err: any) {
-      console.error('Failed to fetch inventory:', err);
-      setError(err.message || 'Failed to load inventory.');
-      setLiveInventory([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // Cached Summary Query
+  const { data: summaryData } = useInventorySummary();
 
-  useEffect(() => {
-    fetchSummary();
-  }, []);
+  const kpis = summaryData?.kpis || null;
 
-  useEffect(() => {
-    fetchInventory();
-  }, [debouncedSearch, brandFilter]);
+  const recentActivity = useMemo(() => {
+    if (!summaryData) return [];
+    const registrations = (summaryData.recentPhones || []).slice(0, 4).map((p: any) => ({
+      type: 'registration',
+      label: 'New Registration',
+      detail: `${p.brand} ${p.model} added to inventory`,
+      time: p.createdAt,
+      icon: '+',
+      color: 'bg-blue-100 text-blue-700',
+    }));
+    const sales = (summaryData.recentSales || []).slice(0, 4).map((s: any) => {
+      const first = s.items?.[0]?.phoneRecord;
+      return {
+        type: 'sale',
+        label: 'Sale Confirmed',
+        detail: first ? `${first.brand} ${first.model} sold` : 'Device sold',
+        time: s.createdAt,
+        icon: '',
+        color: 'bg-emerald-100 text-emerald-700',
+      };
+    });
+    return [...registrations, ...sales]
+      .sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime())
+      .slice(0, 4);
+  }, [summaryData]);
+
+  const error = queryError ? (queryError as any).message || 'Failed to load inventory.' : null;
 
   const items = useMemo(() => {
     return liveInventory.map((item) => ({

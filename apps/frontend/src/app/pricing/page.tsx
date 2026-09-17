@@ -22,12 +22,16 @@ import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModa
 import { PwaInstallButton } from '@/components/PwaInstallButton';
 import { Logo } from '@/components/ui/Logo';
 
+import { usePublicPlans } from '@/hooks/useDashboardQueries';
+
 export default function DedicatedPricingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
-  const [plans, setPlans] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [dashboardUrl, setDashboardUrl] = useState('/dashboard');
   const [selectedCheckoutPlan, setSelectedCheckoutPlan] = useState<any | null>(null);
+
+  // Cached public plans query (instant 0ms)
+  const { data: plans = [], isLoading: loading } = usePublicPlans();
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -35,23 +39,18 @@ export default function DedicatedPricingPage() {
       if (token) {
         setIsLoggedIn(true);
       }
-    }
-
-    // Fetch dynamic database plans
-    api
-      .getPlans()
-      .then((res) => {
-        if (res?.success && Array.isArray(res.plans)) {
-          setPlans(res.plans);
-        } else {
-          setPlans([]);
+      try {
+        const storedUser = localStorage.getItem('vf_user');
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.role === 'ADMIN') {
+            setDashboardUrl('/admin/dashboard');
+          } else {
+            setDashboardUrl('/dashboard');
+          }
         }
-      })
-      .catch((err) => {
-        console.error('Failed to load database plans:', err);
-        setPlans([]);
-      })
-      .finally(() => setLoading(false));
+      } catch {}
+    }
   }, []);
 
   const handlePlanAction = (plan: any) => {
@@ -70,7 +69,7 @@ export default function DedicatedPricingPage() {
         <div className="flex items-center gap-2 sm:gap-3">
           <PwaInstallButton variant="header" />
           {isLoggedIn ? (
-            <Link href="/dashboard">
+            <Link href={dashboardUrl}>
               <Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-700 text-white font-bold">
                 Dashboard →
               </Button>
@@ -224,7 +223,11 @@ export default function DedicatedPricingPage() {
                           <>
                             <li className="flex items-start gap-2">
                               <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                              <span>Up to {plan.maxDevices?.toLocaleString() || 500} Phone Registrations</span>
+                              <span>
+                                {plan.maxDevices && plan.maxDevices > 0
+                                  ? `Up to ${plan.maxDevices.toLocaleString()} Phone Registrations`
+                                  : 'Unlimited Phone Registrations'}
+                              </span>
                             </li>
                             <li className="flex items-start gap-2">
                               <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />

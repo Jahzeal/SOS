@@ -26,32 +26,126 @@ import {
   QrCode,
   Tag,
   Headphones,
+  Smartphone,
+  ShoppingCart,
+  FileText,
+  Users,
+  BarChart3,
+  Sparkles,
 } from 'lucide-react';
 
-const AVAILABLE_APP_FEATURES = [
-  'Digital & 58mm/80mm Thermal Receipts',
-  'QR Origin IMEI Verification on Receipts',
-  'Device Inventory Management & IMEI Tracking',
-  'Point of Sale (POS) & Automated Sales Ledger',
-  'Repair Ticketing & Diagnostics Tracking',
-  'Customer Directory & Warranty Tracking',
-  'Box Barcode & Multi-Identifier Scanner',
-  'Custom Store Logo & Receipt Branding',
-  'Priority Helpdesk Support Queue',
+interface FeatureCategory {
+  category: string;
+  icon: string;
+  items: string[];
+}
+
+const PLATFORM_FEATURE_CATALOG: FeatureCategory[] = [
+  {
+    category: 'Device & Inventory Management',
+    icon: '📱',
+    items: [
+      'Single Device Registration & Dual IMEI Ledger',
+      'Bulk Excel & CSV Device Import',
+      'Physical Condition Grading (New, Refurbished, Parts)',
+      'Device Specs & Storage Capacity (GB) Ledger',
+      'Device Passport & Warranty Management',
+      'Camera & Barcode Multi-Identifier Scanner',
+      'High-Speed Debounced Inventory Search & Filters',
+    ],
+  },
+  {
+    category: 'Point of Sale (POS) & Checkout',
+    icon: '💳',
+    items: [
+      'Point of Sale (POS) Counter & Fast Checkout',
+      'Multi-Payment Settlement (Cash, Card, Transfer, Split)',
+      'Instant Automated Inventory Stock Deduction',
+      'Complete Sales Transaction Archive & Lookups',
+      'Daily Revenue & Cashier Shift Tracking',
+    ],
+  },
+  {
+    category: 'Receipts, Invoices & Branding',
+    icon: '🧾',
+    items: [
+      'Standard POS Thermal Receipts (58mm/80mm)',
+      'Commercial PDF Invoices with Bank Details',
+      'Direct Email Receipts & Invoices to Customers',
+      'Store Logo & Header Branding Customization',
+      'Custom Warranty Terms & Receipt Footer Disclaimers',
+    ],
+  },
+  {
+    category: 'Public Verification & Anti-Theft Ledger',
+    icon: '🛡️',
+    items: [
+      'Public Anti-Theft & Proof-of-Origin Portal (/verify)',
+      'Instant Flagged-Stolen Device Warning Badges',
+      'Verified Store Origin Authenticity Seals',
+      'Public Verification Audit History Logs',
+    ],
+  },
+  {
+    category: 'Repair Counter & Diagnostics',
+    icon: '🔧',
+    items: [
+      'Repair Ticketing & Diagnostics Lifecycle Tracking',
+      'Customer Fault Notes & Cost Estimation Quotations',
+      'Linked IMEI Diagnostic & Repair History',
+      'Ready-for-Pickup Status Notifications',
+    ],
+  },
+  {
+    category: 'Customer CRM & Warranty Engine',
+    icon: '👥',
+    items: [
+      'Customer Directory & Lifetime Purchase History',
+      'Automated Warranty Expiration Clock & Claim Alerts',
+      'Customer Phone & Contact Ledger',
+    ],
+  },
+  {
+    category: 'Financial Analytics & Reports',
+    icon: '📊',
+    items: [
+      'Live Revenue, Gross Margin & Profit Analytics',
+      'Payment Channel Distribution Breakdown',
+      'Top-Selling Brands & Inventory Velocity Reports',
+      'CSV Export for Accounting & Tax Records',
+    ],
+  },
+  {
+    category: 'Multi-Branch & Enterprise',
+    icon: '🏢',
+    items: [
+      'Multi-Branch Store Workspaces',
+      'Wholesaler Stock Allocation & Inter-Branch Transfers',
+      'Role-Based Staff Access & Permissions',
+      'Priority Helpdesk & Dedicated Account Support',
+    ],
+  },
 ];
 
+const ALL_CATALOG_FEATURES = PLATFORM_FEATURE_CATALOG.flatMap((cat) => cat.items);
+
+import { useAdminSubscriptions, useDashboardCacheUtils } from '@/hooks/useDashboardQueries';
+
 export default function AdminSubscriptionsPage() {
-  const [loading, setLoading] = useState(true);
-  const [subscribers, setSubscribers] = useState<any[]>([]);
-  const [dbPlans, setDbPlans] = useState<any[]>([]);
-  const [summary, setSummary] = useState({
+  const { invalidateAdminSubscriptions } = useDashboardCacheUtils();
+  const { data: subsRes, isLoading: loading, refetch: fetchSubscriptionsAndPlans } = useAdminSubscriptions();
+
+  const subscribers = subsRes?.data || [];
+  const dbPlans = subsRes?.plans || [];
+  const summary = subsRes?.summary || {
     totalSubscribers: 0,
     activeMRR: 0,
     projectedARR: 0,
     averageRevenuePerUser: 0,
     tierCounts: {} as Record<string, number>,
     tierPricing: {} as Record<string, number>,
-  });
+  };
+
   const [searchTerm, setSearchTerm] = useState('');
   const [planFilter, setPlanFilter] = useState('ALL');
 
@@ -72,35 +166,6 @@ export default function AdminSubscriptionsPage() {
     features: [] as string[],
   });
   const [savingPlan, setSavingPlan] = useState(false);
-
-  const fetchSubscriptionsAndPlans = async () => {
-    setLoading(true);
-    try {
-      const [subsRes, plansRes] = await Promise.all([
-        api.adminGetSubscriptions(),
-        api.adminGetPlans(),
-      ]);
-
-      if (subsRes?.success) {
-        setSubscribers(subsRes.data || []);
-        if (subsRes.summary) {
-          setSummary(subsRes.summary);
-        }
-      }
-
-      if (plansRes?.success && Array.isArray(plansRes.plans)) {
-        setDbPlans(plansRes.plans);
-      }
-    } catch (err) {
-      console.error('Failed to load subscriptions & plans:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchSubscriptionsAndPlans();
-  }, []);
 
   const handleOpenCreateModal = () => {
     setEditingPlan(null);
@@ -128,7 +193,7 @@ export default function AdminSubscriptionsPage() {
       description: plan.description || '',
       monthlyPriceNgn: plan.monthlyPriceNgn,
       annualPriceNgn: plan.annualPriceNgn || plan.monthlyPriceNgn * 10,
-      maxDevices: plan.maxDevices || 100,
+      maxDevices: plan.maxDevices !== undefined && plan.maxDevices !== null ? plan.maxDevices : 100,
       customBranding: plan.customBranding,
       prioritySupport: plan.prioritySupport,
       isActive: plan.isActive,
@@ -160,7 +225,7 @@ export default function AdminSubscriptionsPage() {
         await api.adminCreatePlan(planForm);
       }
       setShowPlanModal(false);
-      fetchSubscriptionsAndPlans();
+      invalidateAdminSubscriptions();
     } catch (err: any) {
       alert(err.message || 'Failed to save plan');
     } finally {
@@ -172,7 +237,7 @@ export default function AdminSubscriptionsPage() {
     if (!confirm(`Are you sure you want to delete the plan "${name}"?`)) return;
     try {
       await api.adminDeletePlan(id);
-      fetchSubscriptionsAndPlans();
+      invalidateAdminSubscriptions();
     } catch (err: any) {
       alert(err.message || 'Failed to delete plan');
     }
@@ -181,7 +246,7 @@ export default function AdminSubscriptionsPage() {
   const handleAssignPlan = async (businessId: string, newPlanCode: string) => {
     try {
       await api.adminUpdateSubscriberPlan(businessId, newPlanCode);
-      fetchSubscriptionsAndPlans();
+      invalidateAdminSubscriptions();
     } catch (err: any) {
       alert(err.message || 'Failed to update subscriber plan');
     }
@@ -193,7 +258,7 @@ export default function AdminSubscriptionsPage() {
     }
     try {
       await api.adminCancelSubscriberPlan(businessId);
-      fetchSubscriptionsAndPlans();
+      invalidateAdminSubscriptions();
     } catch (err: any) {
       alert(err.message || 'Failed to cancel subscriber plan');
     }
@@ -234,7 +299,7 @@ export default function AdminSubscriptionsPage() {
           </button>
 
           <button
-            onClick={fetchSubscriptionsAndPlans}
+            onClick={() => fetchSubscriptionsAndPlans()}
             title="Refresh Metrics"
             className="w-9 h-9 rounded-xl bg-white border border-slate-200 hover:border-blue-400 text-slate-600 flex items-center justify-center transition shadow-xs cursor-pointer"
           >
@@ -668,49 +733,148 @@ export default function AdminSubscriptionsPage() {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider mb-1">
-                  Max Registered Inventory / Devices Capacity
-                </label>
-                <input
-                  type="number"
-                  min="1"
-                  placeholder="e.g. 500"
-                  value={planForm.maxDevices === 0 ? '' : planForm.maxDevices}
-                  onChange={(e) => setPlanForm({ ...planForm, maxDevices: Number(e.target.value) || 0 })}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-blue-600"
-                />
+                <div className="flex items-center justify-between mb-1.5">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
+                    Max Registered Inventory / Devices Capacity
+                  </label>
+                  <label className="inline-flex items-center gap-1.5 text-xs font-bold text-blue-600 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={planForm.maxDevices === 0 || planForm.maxDevices === -1}
+                      onChange={(e) => {
+                        setPlanForm({
+                          ...planForm,
+                          maxDevices: e.target.checked ? 0 : 100,
+                        });
+                      }}
+                      className="rounded text-blue-600 focus:ring-blue-500 w-3.5 h-3.5"
+                    />
+                    <span>Unlimited (∞)</span>
+                  </label>
+                </div>
+
+                {planForm.maxDevices === 0 || planForm.maxDevices === -1 ? (
+                  <div className="w-full px-3.5 py-2.5 bg-emerald-50 border border-emerald-200 rounded-xl font-bold text-emerald-800 text-xs flex items-center justify-between shadow-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Unlimited Devices Enabled (No inventory cap)</span>
+                    </div>
+                    <span className="font-mono text-base font-extrabold">∞</span>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="e.g. 500"
+                      value={planForm.maxDevices}
+                      onChange={(e) =>
+                        setPlanForm({ ...planForm, maxDevices: Math.max(1, Number(e.target.value) || 1) })
+                      }
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-blue-600 text-xs pr-16"
+                    />
+                    <span className="absolute right-3 top-2 text-xs text-slate-400 font-medium pointer-events-none">
+                      devices
+                    </span>
+                  </div>
+                )}
               </div>
 
-              {/* Real App Features Selector */}
-              <div className="pt-2 border-t border-slate-100 space-y-2">
-                <label className="block font-bold text-slate-700 uppercase tracking-wider">
-                  Select Included Features
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                  {AVAILABLE_APP_FEATURES.map((feat) => {
-                    const isSelected = planForm.features.includes(feat);
+              {/* Categorized Platform Feature Selector */}
+              <div className="pt-3 border-t border-slate-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block font-bold text-slate-800 uppercase tracking-wider text-xs">
+                      Included Platform Features ({planForm.features.length}/{ALL_CATALOG_FEATURES.length} Selected)
+                    </label>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Check every capability included in this subscription tier.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setPlanForm({ ...planForm, features: [...ALL_CATALOG_FEATURES] })}
+                      className="text-[11px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200 cursor-pointer"
+                    >
+                      Select All ({ALL_CATALOG_FEATURES.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPlanForm({ ...planForm, features: [] })}
+                      className="text-[11px] font-bold text-slate-500 hover:text-slate-700 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 cursor-pointer"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-1 border border-slate-200/80 rounded-xl p-3 bg-slate-50/50">
+                  {PLATFORM_FEATURE_CATALOG.map((cat) => {
+                    const selectedInCat = cat.items.filter((item) => planForm.features.includes(item)).length;
+                    const allCatSelected = selectedInCat === cat.items.length;
+
+                    const toggleCat = () => {
+                      if (allCatSelected) {
+                        setPlanForm({
+                          ...planForm,
+                          features: planForm.features.filter((f) => !cat.items.includes(f)),
+                        });
+                      } else {
+                        const newFeatures = Array.from(new Set([...planForm.features, ...cat.items]));
+                        setPlanForm({ ...planForm, features: newFeatures });
+                      }
+                    };
+
                     return (
-                      <button
-                        key={feat}
-                        type="button"
-                        onClick={() => toggleFeature(feat)}
-                        className={`text-left p-2 rounded-xl text-xs font-semibold flex items-center gap-2 transition border cursor-pointer ${
-                          isSelected
-                            ? 'bg-blue-50 border-blue-200 text-blue-800 shadow-xs'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
-                      >
-                        <div
-                          className={`w-4 h-4 rounded-md flex items-center justify-center border shrink-0 ${
-                            isSelected
-                              ? 'bg-blue-600 border-blue-600 text-white'
-                              : 'border-slate-300 bg-white'
-                          }`}
-                        >
-                          {isSelected && <Check className="w-3 h-3" />}
+                      <div key={cat.category} className="bg-white border border-slate-200 rounded-xl p-2.5 shadow-2xs space-y-2">
+                        <div className="flex items-center justify-between pb-1.5 border-b border-slate-100">
+                          <span className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
+                            <span>{cat.icon}</span>
+                            <span>{cat.category}</span>
+                            <span className="text-[10px] text-slate-500 font-normal">
+                              ({selectedInCat}/{cat.items.length})
+                            </span>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={toggleCat}
+                            className="text-[10px] font-bold text-blue-600 hover:underline cursor-pointer"
+                          >
+                            {allCatSelected ? 'Deselect Category' : 'Select All in Category'}
+                          </button>
                         </div>
-                        <span className="truncate">{feat}</span>
-                      </button>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                          {cat.items.map((feat) => {
+                            const isSelected = planForm.features.includes(feat);
+                            return (
+                              <button
+                                key={feat}
+                                type="button"
+                                onClick={() => toggleFeature(feat)}
+                                className={`text-left p-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-2 transition border cursor-pointer ${
+                                  isSelected
+                                    ? 'bg-blue-50 border-blue-200 text-blue-800 shadow-2xs'
+                                    : 'bg-slate-50/60 border-slate-200/70 text-slate-600 hover:bg-slate-100'
+                                }`}
+                              >
+                                <div
+                                  className={`w-3.5 h-3.5 rounded flex items-center justify-center border shrink-0 ${
+                                    isSelected
+                                      ? 'bg-blue-600 border-blue-600 text-white'
+                                      : 'border-slate-300 bg-white'
+                                  }`}
+                                >
+                                  {isSelected && <Check className="w-2.5 h-2.5" />}
+                                </div>
+                                <span className="leading-tight truncate">{feat}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
                     );
                   })}
                 </div>
