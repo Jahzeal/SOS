@@ -17,7 +17,6 @@ import {
   Upload,
   Image as ImageIcon,
   Trash2,
-  Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -37,35 +36,48 @@ export default function ReceiptInvoiceTemplatesPage() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Receipt Customization Settings
-  const [storeName, setStoreName] = useState('VerifyFlow Retail POS');
+  const [storeName, setStoreName] = useState('');
   const [storeBranch, setStoreBranch] = useState('Main Store Branch');
-  const [storeAddress, setStoreAddress] = useState('Computer Village, Ikeja, Lagos');
-  const [storePhone, setStorePhone] = useState('+234 801 234 5678');
+  const [storeAddress, setStoreAddress] = useState('');
+  const [storePhone, setStorePhone] = useState('');
+  const [businessEmail, setBusinessEmail] = useState('');
   const [receiptFooter, setReceiptFooter] = useState('Thank you for shopping! 30-Day Store Warranty included. No refunds without receipt.');
   const [showQrCode, setShowQrCode] = useState(true);
   const [showImei, setShowImei] = useState(true);
 
   // Invoice Customization Settings
-  const [companyName, setCompanyName] = useState('VerifyFlow Wireless Systems Ltd');
-  const [taxId, setTaxId] = useState('TIN-84920194-NG');
-  const [invoiceHeaderNote, setInvoiceHeaderNote] = useState('Official Commercial Invoice & Device Ownership Guarantee Statement.');
-  const [bankWireInfo, setBankWireInfo] = useState('Zenith Bank • Account: 1012345678 • VerifyFlow Systems');
-  const [invoiceTerms, setInvoiceTerms] = useState('Payment is due within the selected term days. Late payments subject to a 1.5% monthly fee.');
+  const [companyName, setCompanyName] = useState('');
+  const [taxId, setTaxId] = useState('');
+  const [invoiceHeaderNote, setInvoiceHeaderNote] = useState('');
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [invoiceTerms, setInvoiceTerms] = useState('Payment is due within the selected term days. 12-Month Store Warranty Included.');
 
   useEffect(() => {
     async function loadTemplates() {
       setLoading(true);
       setError(null);
       try {
-        const profile = await api.getBusinessTemplates();
-        if (profile) {
-          if (profile.name) setStoreName(profile.name);
-          if (profile.address) setStoreAddress(profile.address);
-          if (profile.phone) setStorePhone(profile.phone);
-          if (profile.logoUrl) setLogoUrl(profile.logoUrl);
-          if (profile.receiptFooter) setReceiptFooter(profile.receiptFooter);
-          if (profile.receiptTerms) setInvoiceTerms(profile.receiptTerms);
-          if (profile.name) setCompanyName(profile.name);
+        const [profile, businessProf] = await Promise.all([
+          api.getBusinessTemplates().catch(() => null),
+          api.getBusinessProfile().catch(() => null),
+        ]);
+        const data = profile || businessProf;
+        if (data) {
+          if (data.name) {
+            setStoreName(data.name);
+            setCompanyName(data.name);
+          }
+          if (data.address) setStoreAddress(data.address);
+          if (data.phone) setStorePhone(data.phone);
+          if (data.email) setBusinessEmail(data.email);
+          if (data.logoUrl) setLogoUrl(data.logoUrl);
+          if (data.bankName) setBankName(data.bankName);
+          if (data.accountNumber) setAccountNumber(data.accountNumber);
+          if (data.accountName) setAccountName(data.accountName);
+          if (data.receiptFooter) setReceiptFooter(data.receiptFooter);
+          if (data.receiptTerms) setInvoiceTerms(data.receiptTerms);
         }
       } catch (err: any) {
         console.error('Failed to load business templates:', err);
@@ -113,10 +125,14 @@ export default function ReceiptInvoiceTemplatesPage() {
     setError(null);
     try {
       await api.updateBusinessTemplates({
-        name: storeName.trim(),
+        name: (activeTab === 'invoice' ? companyName : storeName).trim(),
         logoUrl: logoUrl.trim(),
         address: storeAddress.trim(),
         phone: storePhone.trim(),
+        email: businessEmail.trim(),
+        bankName: bankName.trim(),
+        accountNumber: accountNumber.trim(),
+        accountName: accountName.trim(),
         receiptFooter: receiptFooter.trim(),
         receiptTerms: invoiceTerms.trim(),
       });
@@ -185,7 +201,7 @@ export default function ReceiptInvoiceTemplatesPage() {
         <div className="flex items-center justify-between border-b border-slate-100 pb-3">
           <div>
             <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-blue-600" /> Business Logo & Visual Identity
+              <ImageIcon className="w-4 h-4 text-blue-600" /> Business Logo & Visual Identity
             </h2>
             <p className="text-xs text-slate-500">
               Upload your company or store logo. It will be printed on thermal sales receipts and embedded in commercial PDF invoices.
@@ -328,6 +344,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                     type="text"
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
+                    placeholder="e.g. VerifyFlow Retail POS"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -338,6 +355,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                     type="text"
                     value={storeBranch}
                     onChange={(e) => setStoreBranch(e.target.value)}
+                    placeholder="e.g. Main Branch"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -348,6 +366,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                     type="text"
                     value={storeAddress}
                     onChange={(e) => setStoreAddress(e.target.value)}
+                    placeholder="e.g. Computer Village, Ikeja, Lagos"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -358,6 +377,18 @@ export default function ReceiptInvoiceTemplatesPage() {
                     type="text"
                     value={storePhone}
                     onChange={(e) => setStorePhone(e.target.value)}
+                    placeholder="e.g. +234 801 234 5678"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div className="space-y-1 sm:col-span-2">
+                  <label className="font-bold text-slate-700">Support Email Address</label>
+                  <input
+                    type="email"
+                    value={businessEmail}
+                    onChange={(e) => setBusinessEmail(e.target.value)}
+                    placeholder="e.g. support@store.ng"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -410,7 +441,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                 <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                   <Building className="w-4 h-4 text-blue-600" /> Commercial Invoice & Corporate Layout Settings
                 </h2>
-                <p className="text-xs text-slate-500">Configure corporate information, payment history rules, and footer clauses for formal PDF invoices.</p>
+                <p className="text-xs text-slate-500">Configure corporate information, bank remittance details, and footer clauses for formal PDF invoices.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -425,11 +456,12 @@ export default function ReceiptInvoiceTemplatesPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700">Tax ID / VAT Registration #</label>
+                  <label className="font-bold text-slate-700">Company Support Email *</label>
                   <input
-                    type="text"
-                    value={taxId}
-                    onChange={(e) => setTaxId(e.target.value)}
+                    type="email"
+                    value={businessEmail}
+                    onChange={(e) => setBusinessEmail(e.target.value)}
+                    placeholder="e.g. billing@yourstore.ng"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -437,44 +469,69 @@ export default function ReceiptInvoiceTemplatesPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700">Company Support Email</label>
+                  <label className="font-bold text-slate-700">Company Support Phone</label>
                   <input
-                    type="email"
-                    value={storeAddress ? 'billing@' + storeName.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com' : 'info@yourcompany.example.com'}
-                    readOnly
-                    className="w-full px-3.5 py-2.5 bg-slate-100/80 border border-slate-200 rounded-xl font-medium text-slate-600 cursor-not-allowed"
+                    type="text"
+                    value={storePhone}
+                    onChange={(e) => setStorePhone(e.target.value)}
+                    placeholder="+234 801 234 5678"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700">Company Website / Portal</label>
+                  <label className="font-bold text-slate-700">Business / Store Address</label>
                   <input
                     type="text"
-                    value="https://verifyflow.app/verify"
-                    readOnly
-                    className="w-full px-3.5 py-2.5 bg-slate-100/80 border border-slate-200 rounded-xl font-medium text-slate-600 cursor-not-allowed"
+                    value={storeAddress}
+                    onChange={(e) => setStoreAddress(e.target.value)}
+                    placeholder="e.g. Computer Village, Ikeja, Lagos"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Invoice Header Note / Description</label>
-                <input
-                  type="text"
-                  value={invoiceHeaderNote}
-                  onChange={(e) => setInvoiceHeaderNote(e.target.value)}
-                  className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                />
-              </div>
+              {/* Bank Remittance Details Box */}
+              <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 space-y-3 text-xs">
+                <div className="font-extrabold text-blue-900 flex items-center justify-between">
+                  <span>Direct Bank Wire & Remittance Information</span>
+                  <span className="text-[10px] text-blue-600 font-bold uppercase">Printed on Invoice Statement</span>
+                </div>
 
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Bank Wire & Transfer Instructions</label>
-                <textarea
-                  rows={2}
-                  value={bankWireInfo}
-                  onChange={(e) => setBankWireInfo(e.target.value)}
-                  className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-blue-600"
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 text-[11px]">Bank Name</label>
+                    <input
+                      type="text"
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      placeholder="e.g. Zenith Bank"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 text-[11px]">Account Number</label>
+                    <input
+                      type="text"
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value)}
+                      placeholder="e.g. 1012345678"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-700 text-[11px]">Account Name</label>
+                    <input
+                      type="text"
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      placeholder="e.g. TechWorld Ltd"
+                      className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                </div>
               </div>
 
               <div className="space-y-1.5">
@@ -516,9 +573,10 @@ export default function ReceiptInvoiceTemplatesPage() {
                     </div>
                   )}
                   <p className="font-extrabold text-sm text-slate-900">{storeName || 'Store Name'}</p>
-                  <p className="text-[10px] text-slate-500 font-sans">{storeBranch}</p>
-                  <p className="text-[10px] text-slate-500 font-sans">{storeAddress}</p>
-                  <p className="text-[10px] text-slate-500 font-sans">Tel: {storePhone}</p>
+                  {storeBranch && <p className="text-[10px] text-slate-500 font-sans">{storeBranch}</p>}
+                  {storeAddress && <p className="text-[10px] text-slate-500 font-sans">{storeAddress}</p>}
+                  {storePhone && <p className="text-[10px] text-slate-500 font-sans">Tel: {storePhone}</p>}
+                  {businessEmail && <p className="text-[10px] text-slate-500 font-sans">Email: {businessEmail}</p>}
                 </div>
 
                 <div className="flex justify-between text-[10px] text-slate-500 pt-1">
@@ -575,9 +633,8 @@ export default function ReceiptInvoiceTemplatesPage() {
               <div className="flex justify-between items-start gap-4">
                 <div className="space-y-0.5">
                   <h3 className="font-black text-sm sm:text-base text-slate-950">{companyName || 'Your Company'}</h3>
-                  <p className="text-slate-600">{storeAddress || '1725 Slough Ave., demo'}</p>
-                  <p className="text-slate-600">Scranton, PA 18540 • Tel: {storePhone || '89065 222'}</p>
-                  <p className="text-slate-600">Email: info@{companyName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'company'}.com</p>
+                  <p className="text-slate-600">{storeAddress || 'Computer Village, Ikeja, Lagos'}</p>
+                  <p className="text-slate-600">Tel: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'billing@store.ng'}</p>
                 </div>
 
                 {logoUrl && showLogoOnInvoice ? (
@@ -586,10 +643,12 @@ export default function ReceiptInvoiceTemplatesPage() {
                   </div>
                 ) : (
                   <div className="text-right flex items-center gap-1.5 justify-end">
-                    <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">
-                      VF
+                    <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-xs">
+                      {(companyName || 'VF').slice(0, 2).toUpperCase()}
                     </div>
-                    <span className="text-lg font-black text-slate-900 tracking-tight">Verify<span className="text-blue-600">Flow</span></span>
+                    <span className="text-lg font-black text-slate-900 tracking-tight">
+                      {companyName || 'VerifyFlow'}
+                    </span>
                   </div>
                 )}
               </div>
@@ -601,11 +660,10 @@ export default function ReceiptInvoiceTemplatesPage() {
                 {/* Left Card: Invoice To */}
                 <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
                   <p className="font-black text-blue-700 text-xs tracking-tight">Invoice To:</p>
-                  <p className="font-extrabold text-slate-900 text-xs">Camptocamp, Ayaan Agarwal</p>
-                  <p className="text-slate-600 text-[10px]">93, Press Avenue, demo</p>
-                  <p className="text-slate-600 text-[10px]">Le Bourget du Lac, 73377, France</p>
+                  <p className="font-extrabold text-slate-900 text-xs">Corporate Client Ltd, Adeola Johnson</p>
+                  <p className="text-slate-600 text-[10px]">14 Marina Street, Victoria Island, Lagos</p>
                   <p className="text-slate-600 text-[10px] font-medium pt-0.5">
-                    <strong>Email:</strong> ayaan.agarwal@bestdesigners.example.com
+                    <strong>Email:</strong> procurement@client.example.ng
                   </p>
                 </div>
 
@@ -613,7 +671,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                 <div className="rounded-xl border border-blue-900/20 overflow-hidden shadow-xs">
                   <div className="bg-[#3b5998] text-white px-3 py-2 flex justify-between items-center font-extrabold text-xs">
                     <span>Invoice No:</span>
-                    <span className="font-mono tracking-wide">INV/2026/0013</span>
+                    <span className="font-mono tracking-wide">VF-INV-0013</span>
                   </div>
                   <div className="bg-white p-2 space-y-1 text-[10px] border-t border-blue-900/10">
                     <div className="flex justify-between border-b border-slate-100 pb-1">
@@ -621,16 +679,12 @@ export default function ReceiptInvoiceTemplatesPage() {
                       <span className="font-mono text-slate-900">2026-09-17</span>
                     </div>
                     <div className="flex justify-between border-b border-slate-100 pb-1">
-                      <span className="font-bold text-slate-600">SO:</span>
-                      <span className="font-mono text-slate-900">SO013</span>
-                    </div>
-                    <div className="flex justify-between border-b border-slate-100 pb-1">
-                      <span className="font-bold text-slate-600">Order Date:</span>
-                      <span className="font-mono text-slate-900">2026-09-17</span>
+                      <span className="font-bold text-slate-600">Payment Status:</span>
+                      <span className="font-bold text-amber-600">PENDING</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-bold text-slate-600">Due Date:</span>
-                      <span className="font-mono text-slate-900">2026-10-17</span>
+                      <span className="font-mono text-slate-900">2026-10-02</span>
                     </div>
                   </div>
                 </div>
@@ -641,101 +695,81 @@ export default function ReceiptInvoiceTemplatesPage() {
                 <table className="w-full text-left text-[10px]">
                   <thead className="bg-[#3b5998] text-white font-black">
                     <tr>
-                      <th className="py-2 px-2.5 w-8">Sr.</th>
-                      <th className="py-2 px-2.5">Description</th>
-                      <th className="py-2 px-2.5 text-center w-14">Quantity</th>
-                      <th className="py-2 px-2.5 text-right w-20">Unit Price</th>
-                      <th className="py-2 px-2.5 text-right w-14">Taxes</th>
-                      <th className="py-2 px-2.5 text-right w-20">Price</th>
+                      <th className="py-2 px-2.5 w-8">#</th>
+                      <th className="py-2 px-2.5">Item Description & Specs</th>
+                      <th className="py-2 px-2.5 text-center w-14">Qty</th>
+                      <th className="py-2 px-2.5 text-right w-24">Unit Price</th>
+                      <th className="py-2 px-2.5 text-right w-24">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-150">
                     <tr className="bg-white">
                       <td className="py-2 px-2.5 text-slate-400 font-bold">1</td>
                       <td className="py-2 px-2.5">
-                        <p className="font-bold text-slate-900">[A2325] iPad Retina Display</p>
+                        <p className="font-bold text-slate-900">Apple iPhone 15 Pro Max (256GB - Natural Titanium)</p>
                         <p className="text-[9px] text-slate-500 leading-tight">
-                          7.9-Inch LED-Backlit, 128GB • Dual-Core A5 • FaceTime HD Camera (IMEI: 354892019482)
+                          IMEI: 354892019482910 • 12-Month Store Warranty
                         </p>
                       </td>
-                      <td className="py-2 px-2.5 text-center font-bold">1.000</td>
-                      <td className="py-2 px-2.5 text-right font-mono">$ 800.40</td>
-                      <td className="py-2 px-2.5 text-right text-slate-400">$ 0.00</td>
-                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">$ 800.40</td>
+                      <td className="py-2 px-2.5 text-center font-bold">1</td>
+                      <td className="py-2 px-2.5 text-right font-mono">₦1,450,000</td>
+                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦1,450,000</td>
                     </tr>
                     <tr className="bg-slate-50/70">
                       <td className="py-2 px-2.5 text-slate-400 font-bold">2</td>
                       <td className="py-2 px-2.5">
-                        <p className="font-bold text-slate-900">[CARD] Graphics Card</p>
+                        <p className="font-bold text-slate-900">Samsung Galaxy S24 Ultra (512GB - Titanium Black)</p>
+                        <p className="text-[9px] text-slate-500 leading-tight">
+                          IMEI: 358902194829014 • Screen Guard & Case Installed
+                        </p>
                       </td>
-                      <td className="py-2 px-2.5 text-center font-bold">1.000</td>
-                      <td className="py-2 px-2.5 text-right font-mono">$ 885.00</td>
-                      <td className="py-2 px-2.5 text-right text-slate-400">$ 0.00</td>
-                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">$ 885.00</td>
-                    </tr>
-                    <tr className="bg-white">
-                      <td className="py-2 px-2.5 text-slate-400 font-bold">3</td>
-                      <td className="py-2 px-2.5">
-                        <p className="font-bold text-slate-900">[PRINT] Printer, All-In-One</p>
-                      </td>
-                      <td className="py-2 px-2.5 text-center font-bold">1.000</td>
-                      <td className="py-2 px-2.5 text-right font-mono">$ 4,410.00</td>
-                      <td className="py-2 px-2.5 text-right text-slate-400">$ 0.00</td>
-                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">$ 4,410.00</td>
+                      <td className="py-2 px-2.5 text-center font-bold">1</td>
+                      <td className="py-2 px-2.5 text-right font-mono">₦1,680,000</td>
+                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦1,680,000</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
-              {/* Subtotal & Total Right Aligned */}
-              <div className="flex justify-end pt-1">
-                <div className="w-56 space-y-1 text-[11px]">
+              {/* Subtotal, Total & Bank Remittance Box */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start pt-1">
+                {/* Bank Wire Details on Left */}
+                {bankName && accountNumber ? (
+                  <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-[10px] space-y-1">
+                    <p className="font-black text-blue-900 uppercase tracking-wide">
+                      Direct Bank Remittance Instructions:
+                    </p>
+                    <p className="text-blue-950 font-bold">
+                      Bank: <span className="font-normal">{bankName}</span>
+                    </p>
+                    <p className="text-blue-950 font-bold">
+                      Account #: <span className="font-mono">{accountNumber}</span>
+                    </p>
+                    <p className="text-blue-950 font-bold">
+                      Account Name: <span className="font-normal">{accountName || companyName}</span>
+                    </p>
+                    <p className="text-blue-700 text-[9px]">
+                      Payment Ref: <span className="font-mono font-bold">VF-INV-0013</span>
+                    </p>
+                  </div>
+                ) : (
+                  <div />
+                )}
+
+                {/* Subtotal & Total Right Aligned */}
+                <div className="space-y-1 text-[11px] sm:ml-auto w-full sm:w-56">
                   <div className="flex justify-between text-slate-600 font-medium">
                     <span>SubTotal</span>
-                    <span className="font-mono text-slate-900">$ 6,095.40</span>
+                    <span className="font-mono text-slate-900">₦3,130,000</span>
                   </div>
                   <div className="flex justify-between text-slate-600 font-medium">
-                    <span>Taxes</span>
-                    <span className="font-mono text-slate-900">$ 0.00</span>
+                    <span>VAT (0%)</span>
+                    <span className="font-mono text-slate-900">₦0.00</span>
                   </div>
                   <div className="border-t-2 border-slate-900 pt-1.5 flex justify-between text-slate-900 font-black text-xs">
-                    <span>TOTAL</span>
-                    <span className="font-mono text-slate-950 text-sm">$ 6,095.40</span>
+                    <span>TOTAL DUE</span>
+                    <span className="font-mono text-slate-950 text-sm">₦3,130,000</span>
                   </div>
-                </div>
-              </div>
-
-              {/* Payment History Table (Odoo Signature Feature) */}
-              <div className="space-y-1.5 pt-2">
-                <h4 className="font-black text-xs text-slate-900">Payment History</h4>
-                <div className="rounded-xl border border-slate-200 overflow-hidden">
-                  <table className="w-full text-left text-[10px]">
-                    <thead className="bg-[#3b5998] text-white font-black">
-                      <tr>
-                        <th className="py-1.5 px-2.5 w-8">Sr.</th>
-                        <th className="py-1.5 px-2.5">Date</th>
-                        <th className="py-1.5 px-2.5">Method</th>
-                        <th className="py-1.5 px-2.5">Ref.</th>
-                        <th className="py-1.5 px-2.5 text-right">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-150">
-                      <tr className="bg-white">
-                        <td className="py-1.5 px-2.5 text-slate-400 font-bold">1</td>
-                        <td className="py-1.5 px-2.5 font-mono">2026-09-17</td>
-                        <td className="py-1.5 px-2.5 font-bold text-slate-800">Cash</td>
-                        <td className="py-1.5 px-2.5 font-mono text-slate-600">CSH1/2026/0005</td>
-                        <td className="py-1.5 px-2.5 text-right font-mono font-bold text-slate-900">$ 2,000.00</td>
-                      </tr>
-                      <tr className="bg-slate-50/70">
-                        <td className="py-1.5 px-2.5 text-slate-400 font-bold">2</td>
-                        <td className="py-1.5 px-2.5 font-mono">2026-09-17</td>
-                        <td className="py-1.5 px-2.5 font-bold text-slate-800">Bank / POS</td>
-                        <td className="py-1.5 px-2.5 font-mono text-slate-600">BNK1/2026/0006</td>
-                        <td className="py-1.5 px-2.5 text-right font-mono font-bold text-slate-900">$ 4,095.40</td>
-                      </tr>
-                    </tbody>
-                  </table>
                 </div>
               </div>
 
@@ -743,22 +777,18 @@ export default function ReceiptInvoiceTemplatesPage() {
               <div className="pt-2 text-[10px] text-slate-600 space-y-1">
                 <p className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
-                  <strong>Payment Term:</strong> End Of Following Month (Net 30)
+                  <strong>Payment Term:</strong> {invoiceTerms}
                 </p>
                 <p className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
-                  <strong>Comment:</strong> 12-Month Official Store Guarantee Included • No refunds without statement
-                </p>
-                <p className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
-                  <strong>Fiscal Position Remark:</strong> FY 2026 • VerifyFlow Authenticated Hardware
+                  <strong>Policy Remarks:</strong> All serial & IMEI numbers are permanently verified in store ledger.
                 </p>
               </div>
 
               {/* Bottom Footer Bar */}
               <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[9px] text-slate-500 font-medium">
                 <div>
-                  Phone: {storePhone || '+1 555 123 8069'} • Email: info@{companyName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'example'}.com • Web: https://verifyflow.app
+                  {companyName} • Phone: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'billing@store.ng'}
                 </div>
                 <div className="font-bold text-slate-600">Page: 1 / 1</div>
               </div>

@@ -568,7 +568,7 @@ class ApiClient {
         title: string;
         description: string;
         createdAt: string;
-        icon: 'phone' | 'shield' | 'receipt' | 'sparkle';
+        icon: 'phone' | 'shield' | 'receipt' | 'bell';
         href: string;
       }>;
     }>('/dashboard/notifications');

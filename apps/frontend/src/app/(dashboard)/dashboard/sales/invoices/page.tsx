@@ -695,18 +695,35 @@ export default function InvoicesRegistryPage() {
               {/* Header Top: Store Details on Left, Logo on Right */}
               <div className="flex justify-between items-start gap-4">
                 <div className="space-y-0.5 text-slate-600 text-xs">
-                  <h2 className="font-black text-base text-slate-950">TechWorld Mobile Store Ltd</h2>
-                  <p>1725 Slough Ave., Computer Village</p>
-                  <p>Ikeja, Lagos, Nigeria • Mobile: +234 801 234 5678</p>
-                  <p>Email: billing@techworldmobile.com</p>
+                  <h2 className="font-black text-base text-slate-950">
+                    {viewModalInvoice.business?.name || 'Verified Retail Store'}
+                  </h2>
+                  {viewModalInvoice.business?.address && <p>{viewModalInvoice.business.address}</p>}
+                  <p>
+                    {viewModalInvoice.business?.phone ? `Mobile: ${viewModalInvoice.business.phone}` : ''}
+                    {viewModalInvoice.business?.phone && viewModalInvoice.business?.email ? ' • ' : ''}
+                    {viewModalInvoice.business?.email ? `Email: ${viewModalInvoice.business.email}` : ''}
+                  </p>
                 </div>
 
-                <div className="text-right flex items-center gap-1.5 justify-end">
-                  <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">
-                    VF
+                {viewModalInvoice.business?.logoUrl ? (
+                  <div className="h-12 max-w-[140px] flex items-center justify-end">
+                    <img
+                      src={viewModalInvoice.business.logoUrl}
+                      alt="Store Logo"
+                      className="max-h-12 max-w-full object-contain"
+                    />
                   </div>
-                  <span className="text-lg font-black text-slate-900 tracking-tight">Verify<span className="text-blue-600">Flow</span></span>
-                </div>
+                ) : (
+                  <div className="text-right flex items-center gap-1.5 justify-end">
+                    <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-xs">
+                      {(viewModalInvoice.business?.name || 'VF').slice(0, 2).toUpperCase()}
+                    </div>
+                    <span className="text-base font-black text-slate-900 tracking-tight">
+                      {viewModalInvoice.business?.name || 'VerifyFlow'}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="border-t border-slate-200" />
@@ -746,19 +763,15 @@ export default function InvoicesRegistryPage() {
                       </span>
                     </div>
                     <div className="flex justify-between border-b border-slate-100 pb-1">
-                      <span className="font-bold text-slate-600">SO:</span>
-                      <span className="font-mono text-slate-900">SO013</span>
-                    </div>
-                    <div className="flex justify-between border-b border-slate-100 pb-1">
-                      <span className="font-bold text-slate-600">Order Date:</span>
-                      <span className="font-mono text-slate-900">
-                        {new Date(viewModalInvoice.createdAt).toLocaleDateString()}
+                      <span className="font-bold text-slate-600">Payment Status:</span>
+                      <span className={`font-extrabold ${viewModalInvoice.paymentStatus === 'PAID' ? 'text-emerald-600' : 'text-amber-600'}`}>
+                        {viewModalInvoice.paymentStatus || 'PENDING'}
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="font-bold text-slate-600">Due Date:</span>
                       <span className="font-mono text-slate-900">
-                        {new Date(new Date(viewModalInvoice.createdAt).getTime() + 15 * 86400000).toLocaleDateString()}
+                        {viewModalInvoice.dueDate || new Date(new Date(viewModalInvoice.createdAt).getTime() + 15 * 86400000).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
@@ -810,7 +823,7 @@ export default function InvoicesRegistryPage() {
                       <tr className="bg-white">
                         <td className="py-2.5 px-3 text-slate-400 font-bold">1</td>
                         <td className="py-2.5 px-3">
-                          <p className="font-bold text-slate-900">[VF-8902] Electronics & Hardware Package</p>
+                          <p className="font-bold text-slate-900">Electronics & Hardware Package</p>
                         </td>
                         <td className="py-2.5 px-3 text-center font-bold">1.000</td>
                         <td className="py-2.5 px-3 text-right font-mono">
@@ -826,9 +839,33 @@ export default function InvoicesRegistryPage() {
                 </table>
               </div>
 
-              {/* Subtotal & Total Right Aligned */}
-              <div className="flex justify-end pt-1">
-                <div className="w-64 space-y-1 text-xs">
+              {/* Subtotal, Total & Bank Remittance Box */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start pt-1">
+                {/* Bank Remittance Instructions on Left */}
+                {viewModalInvoice.business?.bankName && viewModalInvoice.business?.accountNumber ? (
+                  <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs space-y-1">
+                    <p className="font-extrabold text-blue-900 text-xs uppercase tracking-wide">
+                      Direct Bank Remittance / Payment Details:
+                    </p>
+                    <p className="text-blue-950 font-bold">
+                      Bank: <span className="font-normal">{viewModalInvoice.business.bankName}</span>
+                    </p>
+                    <p className="text-blue-950 font-bold">
+                      Account #: <span className="font-mono">{viewModalInvoice.business.accountNumber}</span>
+                    </p>
+                    <p className="text-blue-950 font-bold">
+                      Account Name: <span className="font-normal">{viewModalInvoice.business.accountName || viewModalInvoice.business.name}</span>
+                    </p>
+                    <p className="text-blue-700 text-[11px] pt-1">
+                      Payment Ref: <span className="font-mono font-bold">{viewModalInvoice.invoiceNumber || viewModalInvoice.id}</span>
+                    </p>
+                  </div>
+                ) : (
+                  <div />
+                )}
+
+                {/* Subtotal & Total Right Aligned */}
+                <div className="space-y-1 text-xs sm:ml-auto w-full sm:w-64">
                   <div className="flex justify-between text-slate-600 font-medium">
                     <span>SubTotal</span>
                     <span className="font-mono text-slate-900">
@@ -840,7 +877,7 @@ export default function InvoicesRegistryPage() {
                     <span className="font-mono text-slate-900">₦0.00</span>
                   </div>
                   <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-slate-900 font-black text-sm">
-                    <span>TOTAL</span>
+                    <span>TOTAL DUE</span>
                     <span className="font-mono text-slate-950 text-base">
                       ₦{Number(viewModalInvoice.totalAmount || 0).toLocaleString()}
                     </span>
@@ -848,61 +885,24 @@ export default function InvoicesRegistryPage() {
                 </div>
               </div>
 
-              {/* Payment History Section */}
-              <div className="space-y-2 pt-2">
-                <h4 className="font-black text-xs text-slate-900">Payment History</h4>
-                <div className="rounded-xl border border-slate-200 overflow-hidden">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-[#3b5998] text-white font-black">
-                      <tr>
-                        <th className="py-2 px-3 w-10">Sr.</th>
-                        <th className="py-2 px-3">Date</th>
-                        <th className="py-2 px-3">Method</th>
-                        <th className="py-2 px-3">Ref.</th>
-                        <th className="py-2 px-3 text-right">Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-150">
-                      <tr className="bg-white">
-                        <td className="py-2 px-3 text-slate-400 font-bold">1</td>
-                        <td className="py-2 px-3 font-mono">
-                          {new Date(viewModalInvoice.createdAt).toLocaleDateString()}
-                        </td>
-                        <td className="py-2 px-3 font-bold text-slate-800">
-                          {viewModalInvoice.paymentMethod || 'POS / Card'}
-                        </td>
-                        <td className="py-2 px-3 font-mono text-slate-600">
-                          CSH1/{new Date(viewModalInvoice.createdAt).getFullYear()}/0005
-                        </td>
-                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
-                          ₦{Number(viewModalInvoice.totalAmount || 0).toLocaleString()}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
               {/* Policy & Remark Bullets */}
               <div className="pt-2 text-xs text-slate-600 space-y-1">
                 <p className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
-                  <strong>Payment Term:</strong> End Of Following Month (Net 15 / 30)
+                  <strong>Payment Term:</strong> {viewModalInvoice.paymentTerms || 'Due on invoice receipt'}
                 </p>
                 <p className="flex items-center gap-2">
                   <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
-                  <strong>Comment:</strong> 12-Month Official Store Guarantee Included • No refunds without statement
-                </p>
-                <p className="flex items-center gap-2">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
-                  <strong>Fiscal Position Remark:</strong> FY 2026 • VerifyFlow Authenticated Hardware
+                  <strong>Warranty:</strong> {viewModalInvoice.business?.warrantyTerms || '12-Month Official Store Guarantee Included • Serial verified in store ledger'}
                 </p>
               </div>
 
               {/* Bottom Footer Bar */}
               <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] text-slate-500 font-medium">
                 <div>
-                  Phone: +234 801 234 5678 • Email: billing@techworldmobile.com • Website: https://verifyflow.app
+                  {viewModalInvoice.business?.name || 'VerifyFlow Retail Store'}
+                  {viewModalInvoice.business?.phone ? ` • Phone: ${viewModalInvoice.business.phone}` : ''}
+                  {viewModalInvoice.business?.email ? ` • Email: ${viewModalInvoice.business.email}` : ''}
                 </div>
                 <div className="font-bold text-slate-600">Page: 1 / 1</div>
               </div>

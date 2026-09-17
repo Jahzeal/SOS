@@ -17,7 +17,6 @@ import {
   UserCircle,
   CheckCheck,
   Smartphone,
-  Sparkles,
   Receipt,
   Shield,
   Loader2,
@@ -33,7 +32,7 @@ interface NotificationItem {
   description: string;
   time: string;
   unread: boolean;
-  icon: 'phone' | 'shield' | 'receipt' | 'sparkle';
+  icon: 'phone' | 'shield' | 'receipt' | 'bell';
   href: string;
 }
 
@@ -310,7 +309,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                 {n.icon === 'phone' && <Smartphone className="w-3.5 h-3.5 text-teal-600 shrink-0" />}
                                 {n.icon === 'shield' && <Shield className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
                                 {n.icon === 'receipt' && <Receipt className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
-                                {n.icon === 'sparkle' && <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                                {n.icon === 'bell' && <Bell className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
                                 <span className="font-extrabold text-slate-900 text-xs">{n.title}</span>
                               </div>
                               <span className="text-[10px] font-medium text-slate-400 shrink-0">{n.time}</span>

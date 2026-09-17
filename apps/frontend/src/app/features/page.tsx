@@ -22,7 +22,6 @@ import {
   Building,
   DollarSign,
   Clock,
-  Sparkles,
   Users,
   Check,
   Laptop,
@@ -78,14 +77,13 @@ export default function FeaturesPage() {
       {/* ========================================================================= */}
       <section className="relative overflow-hidden pt-16 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-teal-50/20 to-slate-50 border-b border-slate-200">
         <div className="max-w-5xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 font-extrabold text-xs shadow-xs">
-            <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+          <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-800 font-extrabold text-xs shadow-xs">
             <span>The Complete OS Purpose-Built for Electronics Retailers</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
             Everything your phone store needs. <br className="hidden sm:inline" />
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-teal-600 to-emerald-600">
+            <span className="text-teal-600">
               Without the clutter.
             </span>
           </h1>

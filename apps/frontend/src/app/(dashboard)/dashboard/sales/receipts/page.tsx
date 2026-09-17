@@ -441,10 +441,21 @@ export default function ReceiptsArchivePage() {
               {/* Thermal Receipt Preview Card */}
               <div className="p-5 rounded-2xl bg-slate-50 border border-dashed border-slate-300 font-mono text-xs text-slate-800 space-y-3">
                 <div className="text-center space-y-1">
-                  <p className="font-extrabold text-sm text-slate-900">VERIFYFLOW POS RECEIPT</p>
-                  <p className="text-[10px] text-slate-500 font-sans">
-                    {summaryData?.business?.name || 'Main Branch'}
+                  <p className="font-extrabold text-sm text-slate-900">
+                    {selectedReceipt.business?.name || summaryData?.business?.name || 'VERIFIED STORE'}
                   </p>
+                  {selectedReceipt.business?.address && (
+                    <p className="text-[10px] text-slate-500 font-sans">
+                      {selectedReceipt.business.address}
+                    </p>
+                  )}
+                  {(selectedReceipt.business?.phone || selectedReceipt.business?.email) && (
+                    <p className="text-[10px] text-slate-500 font-sans">
+                      {selectedReceipt.business?.phone ? `Tel: ${selectedReceipt.business.phone}` : ''}
+                      {selectedReceipt.business?.phone && selectedReceipt.business?.email ? ' • ' : ''}
+                      {selectedReceipt.business?.email ? `Email: ${selectedReceipt.business.email}` : ''}
+                    </p>
+                  )}
                 </div>
 
                 <div className="border-y border-slate-200 py-2 flex justify-between text-[11px]">
