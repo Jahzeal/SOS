@@ -245,4 +245,184 @@ export class DashboardService {
       },
     };
   }
+
+  async getNotifications(businessId: string) {
+    const business = await this.prisma.business.findUnique({
+      where: { id: businessId },
+      select: {
+        id: true,
+        name: true,
+        plan: true,
+        subscriptionStatus: true,
+        trialEndsAt: true,
+        createdAt: true,
+      },
+    });
+
+    if (!business) {
+      throw new NotFoundException('Business store not found.');
+    }
+
+    // 1. Recent Phone Registrations (up to 5)
+    const recentPhones = await this.prisma.phoneRecord.findMany({
+      where: { businessId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        brand: true,
+        model: true,
+        imei1: true,
+        createdAt: true,
+        warrantyDurationMonths: true,
+      },
+    });
+
+    // 2. Recent Sales (up to 5)
+    const recentSales = await this.prisma.sale.findMany({
+      where: { businessId },
+      orderBy: { createdAt: 'desc' },
+      take: 5,
+      select: {
+        id: true,
+        receiptNumber: true,
+        invoiceNumber: true,
+        totalAmount: true,
+        paymentMethod: true,
+        createdAt: true,
+        customer: { select: { name: true } },
+      },
+    });
+
+    // 3. Recent Repairs (up to 3)
+    const recentRepairs = await this.prisma.repairTicket.findMany({
+      where: { businessId },
+      orderBy: { updatedAt: 'desc' },
+      take: 3,
+      select: {
+        id: true,
+        ticketNumber: true,
+        status: true,
+        issueDescription: true,
+        updatedAt: true,
+      },
+    });
+
+    // 4. Support Tickets (up to 3)
+    const recentTickets = await this.prisma.supportTicket.findMany({
+      where: { businessId },
+      orderBy: { updatedAt: 'desc' },
+      take: 3,
+      select: {
+        id: true,
+        ticketNumber: true,
+        subject: true,
+        status: true,
+        updatedAt: true,
+      },
+    });
+
+    const notifications: Array<{
+      id: string;
+      title: string;
+      description: string;
+      createdAt: Date;
+      icon: 'phone' | 'shield' | 'receipt' | 'sparkle';
+      href: string;
+    }> = [];
+
+    // Devices & Warranty
+    for (const phone of recentPhones) {
+      notifications.push({
+        id: `phone_${phone.id}`,
+        title: 'New Device Registered',
+        description: `${phone.brand} ${phone.model} (IMEI: ${phone.imei1.slice(0, 6)}...) added to store stock.`,
+        createdAt: phone.createdAt,
+        icon: 'phone',
+        href: '/dashboard/records',
+      });
+
+      if (phone.warrantyDurationMonths > 0) {
+        notifications.push({
+          id: `warranty_${phone.id}`,
+          title: 'Store Guarantee Active',
+          description: `${phone.warrantyDurationMonths}-Month warranty registered for ${phone.brand} ${phone.model}.`,
+          createdAt: phone.createdAt,
+          icon: 'shield',
+          href: '/dashboard/records',
+        });
+      }
+    }
+
+    // Sales
+    for (const sale of recentSales) {
+      const receiptRef = sale.receiptNumber || sale.invoiceNumber;
+      const customerStr = sale.customer?.name ? ` for ${sale.customer.name}` : '';
+      notifications.push({
+        id: `sale_${sale.id}`,
+        title: 'POS Checkout Completed',
+        description: `Receipt #${receiptRef}: ₦${Number(sale.totalAmount).toLocaleString()} registered${customerStr}.`,
+        createdAt: sale.createdAt,
+        icon: 'receipt',
+        href: '/dashboard/records',
+      });
+    }
+
+    // Repairs
+    for (const repair of recentRepairs) {
+      notifications.push({
+        id: `repair_${repair.id}`,
+        title: `Repair #${repair.ticketNumber}`,
+        description: `Status: ${repair.status.replace(/_/g, ' ')} — ${repair.issueDescription.slice(0, 50)}`,
+        createdAt: repair.updatedAt,
+        icon: 'phone',
+        href: '/dashboard/repairs',
+      });
+    }
+
+    // Support Tickets
+    for (const ticket of recentTickets) {
+      notifications.push({
+        id: `ticket_${ticket.id}`,
+        title: `Support Ticket #${ticket.ticketNumber}`,
+        description: `"${ticket.subject}" is marked as ${ticket.status.replace(/_/g, ' ')}.`,
+        createdAt: ticket.updatedAt,
+        icon: 'sparkle',
+        href: '/dashboard/support',
+      });
+    }
+
+    // Workspace / Trial Status notification
+    if (business.trialEndsAt) {
+      const diffDays = Math.ceil((new Date(business.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      notifications.push({
+        id: `biz_trial_${business.id}`,
+        title: 'Workspace Initialized',
+        description:
+          diffDays > 0
+            ? `Welcome to VerifyFlow! ${diffDays}-day free trial active.`
+            : 'Your free trial has ended. Upgrade to continue syncing store records.',
+        createdAt: business.createdAt,
+        icon: 'sparkle',
+        href: '/dashboard/settings',
+      });
+    } else {
+      notifications.push({
+        id: `biz_welcome_${business.id}`,
+        title: 'Workspace Active',
+        description: `Store ${business.name} is running with active inventory sync.`,
+        createdAt: business.createdAt,
+        icon: 'sparkle',
+        href: '/dashboard',
+      });
+    }
+
+    // Sort chronologically (newest first)
+    notifications.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
+    return {
+      success: true,
+      data: notifications.slice(0, 15),
+    };
+  }
 }

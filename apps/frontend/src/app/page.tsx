@@ -825,9 +825,9 @@ export default function PublicLandingPageV2() {
 
           {/* Center: Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
-            <a href="#features" className="hover:text-slate-900 transition-colors">
+            <Link href="/features" className="hover:text-slate-900 transition-colors font-bold text-slate-900">
               Features
-            </a>
+            </Link>
             <a href="#solutions" className="hover:text-slate-900 transition-colors">
               Solutions
             </a>
@@ -1433,7 +1433,7 @@ export default function PublicLandingPageV2() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
               Instantly verify any phone via manufacturer QR code, IMEI, or Serial Number. Eliminates fraud disputes.
             </p>
-            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/features#verification" className="inline-flex items-center gap-1 text-xs font-bold text-teal-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -1447,7 +1447,7 @@ export default function PublicLandingPageV2() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
               Track stock by unique hardware serial numbers across multiple store branches in real time.
             </p>
-            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/features#inventory" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -1457,11 +1457,11 @@ export default function PublicLandingPageV2() {
             <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
               <Receipt className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Sales Management</h3>
+            <h3 className="text-base font-bold text-slate-900">POS & Odoo Invoicing</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Fast retail POS checkout linking customer buyer profiles directly to device IMEI and warranty dates.
+              Fast counter checkout with 80mm thermal receipts or full A4 Odoo-style corporate commercial invoices.
             </p>
-            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/features#invoicing" className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -1475,7 +1475,7 @@ export default function PublicLandingPageV2() {
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
               Automated hardware guarantee countdowns and expiration alerts sent directly to store managers and customers.
             </p>
-            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/features#warranty" className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -1485,11 +1485,11 @@ export default function PublicLandingPageV2() {
             <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center">
               <QrCode className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Receipt Generation</h3>
+            <h3 className="text-base font-bold text-slate-900">Repair Desk & Tickets</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Generate digital receipts and 80mm thermal POS prints embedded with anti-tamper verification QR codes.
+              Intake diagnostics, technician work logs, parts cost estimation, and automated pickup notifications.
             </p>
-            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/features#repairs" className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -1499,14 +1499,21 @@ export default function PublicLandingPageV2() {
             <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
               <BarChart3 className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Business Analytics</h3>
+            <h3 className="text-base font-bold text-slate-900">Buyer QR Verification</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Deep insights into top-selling phone models, store branch revenue, stock valuation, and warranty claims.
+              Allow end buyers to scan receipt/box QR codes to verify store authenticity without downloading an app.
             </p>
-            <Link href="/pricing" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
+            <Link href="/features#public-portal" className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
+        </div>
+
+        <div className="text-center pt-4">
+          <Link href="/features" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 text-white font-extrabold text-xs sm:text-sm hover:bg-slate-800 transition shadow-md">
+            <span>Explore All VerifyFlow Features & Workflows</span>
+            <ArrowRight className="w-4 h-4 text-teal-400" />
+          </Link>
         </div>
       </section>
 

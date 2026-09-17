@@ -538,6 +538,21 @@ class ApiClient {
       body: JSON.stringify(payload),
     });
   }
+
+  // --- Dashboard Store Notifications ---
+  async getDashboardNotifications() {
+    return this.request<{
+      success: boolean;
+      data: Array<{
+        id: string;
+        title: string;
+        description: string;
+        createdAt: string;
+        icon: 'phone' | 'shield' | 'receipt' | 'sparkle';
+        href: string;
+      }>;
+    }>('/dashboard/notifications');
+  }
 }
 
 export const api = new ApiClient();

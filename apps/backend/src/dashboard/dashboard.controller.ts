@@ -18,4 +18,10 @@ export class DashboardController {
     const businessId = req.user.businessId;
     return this.dashboardService.getReports(businessId, range);
   }
+
+  @Get('notifications')
+  async getNotifications(@Request() req) {
+    const businessId = req.user.businessId;
+    return this.dashboardService.getNotifications(businessId);
+  }
 }

@@ -39,8 +39,9 @@ export default function InvoicesRegistryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Email Modal State
+  // Email & View Modal State
   const [emailModalInvoice, setEmailModalInvoice] = useState<any | null>(null);
+  const [viewModalInvoice, setViewModalInvoice] = useState<any | null>(null);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [copiedLink, setCopiedLink] = useState(false);
   const [emailStatusMsg, setEmailStatusMsg] = useState<string | null>(null);
@@ -453,11 +454,26 @@ export default function InvoicesRegistryPage() {
                         {status === 'DRAFT' && <Badge variant="starter" size="sm">DRAFT</Badge>}
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <div className="flex items-center justify-center gap-1 text-slate-400">
-                          <button onClick={handlePrint} className="p-1 hover:text-blue-600 rounded" title="Print PDF">
+                        <div className="flex items-center justify-center gap-1.5 text-slate-400">
+                          <button
+                            onClick={() => setViewModalInvoice(inv)}
+                            className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded transition"
+                            title="View Odoo Invoice"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setViewModalInvoice(inv)}
+                            className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded transition"
+                            title="Print Statement"
+                          >
                             <Printer className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => handleOpenEmailModal(inv)} className="p-1 hover:text-blue-600 rounded transition-colors" title="Send Invoice by Email">
+                          <button
+                            onClick={() => handleOpenEmailModal(inv)}
+                            className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded transition"
+                            title="Send Invoice by Email"
+                          >
                             <Mail className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -592,6 +608,257 @@ export default function InvoicesRegistryPage() {
                   <Send className="w-3.5 h-3.5" />
                   <span>Send via Email Client</span>
                 </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Odoo-Style Invoice View & Print Modal */}
+      {viewModalInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/70 backdrop-blur-sm overflow-y-auto animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-3xl w-full my-auto overflow-hidden animate-scale-up">
+            {/* Modal Controls Bar */}
+            <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50/90 print:hidden">
+              <div className="flex items-center gap-2">
+                <span className="font-extrabold text-sm text-slate-900">
+                  Odoo Invoice Statement Preview
+                </span>
+                <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-mono font-bold text-xs">
+                  {viewModalInvoice.invoiceNumber || viewModalInvoice.receiptNumber || viewModalInvoice.id}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Print A4 Invoice</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewModalInvoice(null)}
+                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200/60"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Printable Odoo Document Body */}
+            <div id="odoo-printable-invoice" className="p-6 sm:p-10 bg-white text-slate-900 font-sans space-y-6 text-xs">
+              {/* Header Top: Store Details on Left, Logo on Right */}
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-0.5 text-slate-600 text-xs">
+                  <h2 className="font-black text-base text-slate-950">TechWorld Mobile Store Ltd</h2>
+                  <p>1725 Slough Ave., Computer Village</p>
+                  <p>Ikeja, Lagos, Nigeria • Mobile: +234 801 234 5678</p>
+                  <p>Email: billing@techworldmobile.com</p>
+                </div>
+
+                <div className="text-right">
+                  <span className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight font-mono">odoo</span>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200" />
+
+              {/* Dual Box Layout */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+                {/* Left: Invoice To */}
+                <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
+                  <p className="font-black text-blue-700 text-xs">Invoice To:</p>
+                  <p className="font-extrabold text-slate-900 text-sm">
+                    {viewModalInvoice.customer?.name || 'Valued Store Customer'}
+                  </p>
+                  <p className="text-slate-600 text-xs">
+                    {viewModalInvoice.customer?.address || 'Retail Customer Address'}
+                  </p>
+                  <p className="text-slate-600 text-xs">
+                    Email: {viewModalInvoice.customer?.email || 'customer@example.com'}
+                  </p>
+                  <p className="text-slate-600 text-xs">
+                    Phone: {viewModalInvoice.customer?.phone || 'N/A'}
+                  </p>
+                </div>
+
+                {/* Right: Solid Blue Banner Metadata Table */}
+                <div className="rounded-xl border border-blue-900/20 overflow-hidden shadow-xs">
+                  <div className="bg-[#3b5998] text-white px-3.5 py-2.5 flex justify-between items-center font-extrabold text-xs">
+                    <span>Invoice No:</span>
+                    <span className="font-mono tracking-wide">
+                      {viewModalInvoice.invoiceNumber || viewModalInvoice.receiptNumber || 'INV/2026/0013'}
+                    </span>
+                  </div>
+                  <div className="bg-white p-2.5 space-y-1.5 text-xs border-t border-blue-900/10">
+                    <div className="flex justify-between border-b border-slate-100 pb-1">
+                      <span className="font-bold text-slate-600">Invoice Date:</span>
+                      <span className="font-mono text-slate-900">
+                        {new Date(viewModalInvoice.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-100 pb-1">
+                      <span className="font-bold text-slate-600">SO:</span>
+                      <span className="font-mono text-slate-900">SO013</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-100 pb-1">
+                      <span className="font-bold text-slate-600">Order Date:</span>
+                      <span className="font-mono text-slate-900">
+                        {new Date(viewModalInvoice.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-bold text-slate-600">Due Date:</span>
+                      <span className="font-mono text-slate-900">
+                        {new Date(new Date(viewModalInvoice.createdAt).getTime() + 15 * 86400000).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Items Table with Solid Blue Banner Header */}
+              <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-[#3b5998] text-white font-black">
+                    <tr>
+                      <th className="py-2.5 px-3 w-10">Sr.</th>
+                      <th className="py-2.5 px-3">Description</th>
+                      <th className="py-2.5 px-3 text-center w-16">Quantity</th>
+                      <th className="py-2.5 px-3 text-right w-24">Unit Price</th>
+                      <th className="py-2.5 px-3 text-right w-16">Taxes</th>
+                      <th className="py-2.5 px-3 text-right w-24">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-150">
+                    {viewModalInvoice.items && viewModalInvoice.items.length > 0 ? (
+                      viewModalInvoice.items.map((it: any, idx: number) => {
+                        const dev = it.phoneRecord;
+                        return (
+                          <tr key={it.id || idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/70'}>
+                            <td className="py-2.5 px-3 text-slate-400 font-bold">{idx + 1}</td>
+                            <td className="py-2.5 px-3">
+                              <p className="font-bold text-slate-900">
+                                {it.description || (dev ? `${dev.brand} ${dev.model}` : 'Hardware Item')}
+                              </p>
+                              {dev?.imei1 && (
+                                <p className="text-[11px] text-slate-500 font-mono">
+                                  IMEI: {dev.imei1} {dev.color ? `• ${dev.color}` : ''} {dev.storageCapacity ? `• ${dev.storageCapacity}` : ''}
+                                </p>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3 text-center font-bold">{it.quantity || 1}.000</td>
+                            <td className="py-2.5 px-3 text-right font-mono">
+                              ₦{Number(it.unitPrice || it.price || 0).toLocaleString()}
+                            </td>
+                            <td className="py-2.5 px-3 text-right text-slate-400">₦0.00</td>
+                            <td className="py-2.5 px-3 text-right font-bold text-slate-900 font-mono">
+                              ₦{Number(it.totalPrice || it.unitPrice || it.price || 0).toLocaleString()}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr className="bg-white">
+                        <td className="py-2.5 px-3 text-slate-400 font-bold">1</td>
+                        <td className="py-2.5 px-3">
+                          <p className="font-bold text-slate-900">[VF-8902] Electronics & Hardware Package</p>
+                        </td>
+                        <td className="py-2.5 px-3 text-center font-bold">1.000</td>
+                        <td className="py-2.5 px-3 text-right font-mono">
+                          ₦{Number(viewModalInvoice.totalAmount || 0).toLocaleString()}
+                        </td>
+                        <td className="py-2.5 px-3 text-right text-slate-400">₦0.00</td>
+                        <td className="py-2.5 px-3 text-right font-bold text-slate-900 font-mono">
+                          ₦{Number(viewModalInvoice.totalAmount || 0).toLocaleString()}
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Subtotal & Total Right Aligned */}
+              <div className="flex justify-end pt-1">
+                <div className="w-64 space-y-1 text-xs">
+                  <div className="flex justify-between text-slate-600 font-medium">
+                    <span>SubTotal</span>
+                    <span className="font-mono text-slate-900">
+                      ₦{Number(viewModalInvoice.totalAmount || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-slate-600 font-medium">
+                    <span>Taxes</span>
+                    <span className="font-mono text-slate-900">₦0.00</span>
+                  </div>
+                  <div className="border-t-2 border-slate-900 pt-2 flex justify-between text-slate-900 font-black text-sm">
+                    <span>TOTAL</span>
+                    <span className="font-mono text-slate-950 text-base">
+                      ₦{Number(viewModalInvoice.totalAmount || 0).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment History Section */}
+              <div className="space-y-2 pt-2">
+                <h4 className="font-black text-xs text-slate-900">Payment History</h4>
+                <div className="rounded-xl border border-slate-200 overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-[#3b5998] text-white font-black">
+                      <tr>
+                        <th className="py-2 px-3 w-10">Sr.</th>
+                        <th className="py-2 px-3">Date</th>
+                        <th className="py-2 px-3">Method</th>
+                        <th className="py-2 px-3">Ref.</th>
+                        <th className="py-2 px-3 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-150">
+                      <tr className="bg-white">
+                        <td className="py-2 px-3 text-slate-400 font-bold">1</td>
+                        <td className="py-2 px-3 font-mono">
+                          {new Date(viewModalInvoice.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="py-2 px-3 font-bold text-slate-800">
+                          {viewModalInvoice.paymentMethod || 'POS / Card'}
+                        </td>
+                        <td className="py-2 px-3 font-mono text-slate-600">
+                          CSH1/{new Date(viewModalInvoice.createdAt).getFullYear()}/0005
+                        </td>
+                        <td className="py-2 px-3 text-right font-mono font-bold text-slate-900">
+                          ₦{Number(viewModalInvoice.totalAmount || 0).toLocaleString()}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Policy & Remark Bullets */}
+              <div className="pt-2 text-xs text-slate-600 space-y-1">
+                <p className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
+                  <strong>Payment Term:</strong> End Of Following Month (Net 15 / 30)
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
+                  <strong>Comment:</strong> 12-Month Official Store Guarantee Included • No refunds without statement
+                </p>
+                <p className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
+                  <strong>Fiscal Position Remark:</strong> FY 2026 • VerifyFlow Authenticated Hardware
+                </p>
+              </div>
+
+              {/* Bottom Footer Bar */}
+              <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] text-slate-500 font-medium">
+                <div>
+                  Phone: +234 801 234 5678 • Email: billing@techworldmobile.com • Website: https://verifyflow.app
+                </div>
+                <div className="font-bold text-slate-600">Page: 1 / 1</div>
               </div>
             </div>
           </div>

@@ -408,14 +408,14 @@ export default function ReceiptInvoiceTemplatesPage() {
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
               <div className="border-b border-slate-100 pb-3">
                 <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                  <Building className="w-4 h-4 text-blue-600" /> Commercial Invoice Company Details
+                  <Building className="w-4 h-4 text-blue-600" /> Commercial Invoice & Odoo Layout Settings
                 </h2>
-                <p className="text-xs text-slate-500">Configure legal information printed on formal invoice PDFs.</p>
+                <p className="text-xs text-slate-500">Configure corporate information, payment history rules, and footer clauses for formal PDF invoices.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700">Legal Company Name *</label>
+                  <label className="font-bold text-slate-700">Legal Company / Store Name *</label>
                   <input
                     type="text"
                     value={companyName}
@@ -435,8 +435,30 @@ export default function ReceiptInvoiceTemplatesPage() {
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Company Support Email</label>
+                  <input
+                    type="email"
+                    value={storeAddress ? 'billing@' + storeName.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com' : 'info@yourcompany.example.com'}
+                    readOnly
+                    className="w-full px-3.5 py-2.5 bg-slate-100/80 border border-slate-200 rounded-xl font-medium text-slate-600 cursor-not-allowed"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Company Website / Portal</label>
+                  <input
+                    type="text"
+                    value="https://verifyflow.app/verify"
+                    readOnly
+                    className="w-full px-3.5 py-2.5 bg-slate-100/80 border border-slate-200 rounded-xl font-medium text-slate-600 cursor-not-allowed"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Invoice Header Statement</label>
+                <label className="text-xs font-bold text-slate-700">Invoice Header Note / Description</label>
                 <input
                   type="text"
                   value={invoiceHeaderNote}
@@ -456,7 +478,7 @@ export default function ReceiptInvoiceTemplatesPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Payment Terms & Legal Notes</label>
+                <label className="text-xs font-bold text-slate-700">Payment Terms & Legal Warranty Bullets</label>
                 <textarea
                   rows={2}
                   value={invoiceTerms}
@@ -548,36 +570,194 @@ export default function ReceiptInvoiceTemplatesPage() {
           )}
 
           {activeTab === 'invoice' && (
-            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xl space-y-4 text-xs font-sans text-slate-800">
-              <div className="border-b border-slate-200 pb-3 flex justify-between items-start gap-4">
-                <div className="flex items-start gap-3">
-                  {logoUrl && showLogoOnInvoice && (
-                    <div className="w-12 h-12 rounded-xl border border-slate-200 overflow-hidden bg-white shrink-0 p-1 flex items-center justify-center shadow-xs">
-                      <img
-                        src={logoUrl}
-                        alt="Company Logo"
-                        className="w-full h-full object-contain"
-                      />
+            <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden">
+              {/* Top Company Header (Left: Details, Right: Logo) */}
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-0.5">
+                  <h3 className="font-black text-sm sm:text-base text-slate-950">{companyName || 'Your Company'}</h3>
+                  <p className="text-slate-600">{storeAddress || '1725 Slough Ave., demo'}</p>
+                  <p className="text-slate-600">Scranton, PA 18540 • Tel: {storePhone || '89065 222'}</p>
+                  <p className="text-slate-600">Email: info@{companyName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'company'}.com</p>
+                </div>
+
+                {logoUrl && showLogoOnInvoice ? (
+                  <div className="h-12 w-28 flex items-center justify-end">
+                    <img src={logoUrl} alt="Logo" className="max-h-12 max-w-full object-contain" />
+                  </div>
+                ) : (
+                  <div className="text-right">
+                    <span className="text-2xl font-black text-slate-800 tracking-tight font-mono">odoo</span>
+                  </div>
+                )}
+              </div>
+
+              <div className="border-t border-slate-200" />
+
+              {/* Dual Box (Left: Invoice To, Right: Invoice No Solid Block) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                {/* Left Card: Invoice To */}
+                <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
+                  <p className="font-black text-blue-700 text-xs tracking-tight">Invoice To:</p>
+                  <p className="font-extrabold text-slate-900 text-xs">Camptocamp, Ayaan Agarwal</p>
+                  <p className="text-slate-600 text-[10px]">93, Press Avenue, demo</p>
+                  <p className="text-slate-600 text-[10px]">Le Bourget du Lac, 73377, France</p>
+                  <p className="text-slate-600 text-[10px] font-medium pt-0.5">
+                    <strong>Email:</strong> ayaan.agarwal@bestdesigners.example.com
+                  </p>
+                </div>
+
+                {/* Right Card: Solid Blue Header Metadata Table */}
+                <div className="rounded-xl border border-blue-900/20 overflow-hidden shadow-xs">
+                  <div className="bg-[#3b5998] text-white px-3 py-2 flex justify-between items-center font-extrabold text-xs">
+                    <span>Invoice No:</span>
+                    <span className="font-mono tracking-wide">INV/2026/0013</span>
+                  </div>
+                  <div className="bg-white p-2 space-y-1 text-[10px] border-t border-blue-900/10">
+                    <div className="flex justify-between border-b border-slate-100 pb-1">
+                      <span className="font-bold text-slate-600">Invoice Date:</span>
+                      <span className="font-mono text-slate-900">2026-09-17</span>
                     </div>
-                  )}
-                  <div>
-                    <h4 className="font-extrabold text-sm text-slate-900">{companyName}</h4>
-                    <p className="text-[10px] text-slate-500">Tax ID: {taxId}</p>
+                    <div className="flex justify-between border-b border-slate-100 pb-1">
+                      <span className="font-bold text-slate-600">SO:</span>
+                      <span className="font-mono text-slate-900">SO013</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-100 pb-1">
+                      <span className="font-bold text-slate-600">Order Date:</span>
+                      <span className="font-mono text-slate-900">2026-09-17</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-bold text-slate-600">Due Date:</span>
+                      <span className="font-mono text-slate-900">2026-10-17</span>
+                    </div>
                   </div>
                 </div>
-                <Badge variant="verified" size="sm">COMMERCIAL INVOICE</Badge>
               </div>
 
-              <p className="text-[11px] text-slate-600 font-medium italic">{invoiceHeaderNote}</p>
-
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1 text-[11px]">
-                <p className="font-bold text-slate-900">Bank Wire Transfer Instructions:</p>
-                <p className="text-slate-600 font-mono text-[10px]">{bankWireInfo}</p>
+              {/* Items Table with Solid Blue Header */}
+              <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <table className="w-full text-left text-[10px]">
+                  <thead className="bg-[#3b5998] text-white font-black">
+                    <tr>
+                      <th className="py-2 px-2.5 w-8">Sr.</th>
+                      <th className="py-2 px-2.5">Description</th>
+                      <th className="py-2 px-2.5 text-center w-14">Quantity</th>
+                      <th className="py-2 px-2.5 text-right w-20">Unit Price</th>
+                      <th className="py-2 px-2.5 text-right w-14">Taxes</th>
+                      <th className="py-2 px-2.5 text-right w-20">Price</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-150">
+                    <tr className="bg-white">
+                      <td className="py-2 px-2.5 text-slate-400 font-bold">1</td>
+                      <td className="py-2 px-2.5">
+                        <p className="font-bold text-slate-900">[A2325] iPad Retina Display</p>
+                        <p className="text-[9px] text-slate-500 leading-tight">
+                          7.9-Inch LED-Backlit, 128GB • Dual-Core A5 • FaceTime HD Camera (IMEI: 354892019482)
+                        </p>
+                      </td>
+                      <td className="py-2 px-2.5 text-center font-bold">1.000</td>
+                      <td className="py-2 px-2.5 text-right font-mono">$ 800.40</td>
+                      <td className="py-2 px-2.5 text-right text-slate-400">$ 0.00</td>
+                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">$ 800.40</td>
+                    </tr>
+                    <tr className="bg-slate-50/70">
+                      <td className="py-2 px-2.5 text-slate-400 font-bold">2</td>
+                      <td className="py-2 px-2.5">
+                        <p className="font-bold text-slate-900">[CARD] Graphics Card</p>
+                      </td>
+                      <td className="py-2 px-2.5 text-center font-bold">1.000</td>
+                      <td className="py-2 px-2.5 text-right font-mono">$ 885.00</td>
+                      <td className="py-2 px-2.5 text-right text-slate-400">$ 0.00</td>
+                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">$ 885.00</td>
+                    </tr>
+                    <tr className="bg-white">
+                      <td className="py-2 px-2.5 text-slate-400 font-bold">3</td>
+                      <td className="py-2 px-2.5">
+                        <p className="font-bold text-slate-900">[PRINT] Printer, All-In-One</p>
+                      </td>
+                      <td className="py-2 px-2.5 text-center font-bold">1.000</td>
+                      <td className="py-2 px-2.5 text-right font-mono">$ 4,410.00</td>
+                      <td className="py-2 px-2.5 text-right text-slate-400">$ 0.00</td>
+                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">$ 4,410.00</td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
 
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 space-y-1 text-[11px]">
-                <p className="font-bold text-slate-900">Payment & Warranty Terms:</p>
-                <p className="text-slate-600 text-[10px]">{invoiceTerms}</p>
+              {/* Subtotal & Total Right Aligned */}
+              <div className="flex justify-end pt-1">
+                <div className="w-56 space-y-1 text-[11px]">
+                  <div className="flex justify-between text-slate-600 font-medium">
+                    <span>SubTotal</span>
+                    <span className="font-mono text-slate-900">$ 6,095.40</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600 font-medium">
+                    <span>Taxes</span>
+                    <span className="font-mono text-slate-900">$ 0.00</span>
+                  </div>
+                  <div className="border-t-2 border-slate-900 pt-1.5 flex justify-between text-slate-900 font-black text-xs">
+                    <span>TOTAL</span>
+                    <span className="font-mono text-slate-950 text-sm">$ 6,095.40</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment History Table (Odoo Signature Feature) */}
+              <div className="space-y-1.5 pt-2">
+                <h4 className="font-black text-xs text-slate-900">Payment History</h4>
+                <div className="rounded-xl border border-slate-200 overflow-hidden">
+                  <table className="w-full text-left text-[10px]">
+                    <thead className="bg-[#3b5998] text-white font-black">
+                      <tr>
+                        <th className="py-1.5 px-2.5 w-8">Sr.</th>
+                        <th className="py-1.5 px-2.5">Date</th>
+                        <th className="py-1.5 px-2.5">Method</th>
+                        <th className="py-1.5 px-2.5">Ref.</th>
+                        <th className="py-1.5 px-2.5 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-150">
+                      <tr className="bg-white">
+                        <td className="py-1.5 px-2.5 text-slate-400 font-bold">1</td>
+                        <td className="py-1.5 px-2.5 font-mono">2026-09-17</td>
+                        <td className="py-1.5 px-2.5 font-bold text-slate-800">Cash</td>
+                        <td className="py-1.5 px-2.5 font-mono text-slate-600">CSH1/2026/0005</td>
+                        <td className="py-1.5 px-2.5 text-right font-mono font-bold text-slate-900">$ 2,000.00</td>
+                      </tr>
+                      <tr className="bg-slate-50/70">
+                        <td className="py-1.5 px-2.5 text-slate-400 font-bold">2</td>
+                        <td className="py-1.5 px-2.5 font-mono">2026-09-17</td>
+                        <td className="py-1.5 px-2.5 font-bold text-slate-800">Bank / POS</td>
+                        <td className="py-1.5 px-2.5 font-mono text-slate-600">BNK1/2026/0006</td>
+                        <td className="py-1.5 px-2.5 text-right font-mono font-bold text-slate-900">$ 4,095.40</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Policy & Remark Bullets */}
+              <div className="pt-2 text-[10px] text-slate-600 space-y-1">
+                <p className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
+                  <strong>Payment Term:</strong> End Of Following Month (Net 30)
+                </p>
+                <p className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
+                  <strong>Comment:</strong> 12-Month Official Store Guarantee Included • No refunds without statement
+                </p>
+                <p className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
+                  <strong>Fiscal Position Remark:</strong> FY 2026 • VerifyFlow Authenticated Hardware
+                </p>
+              </div>
+
+              {/* Bottom Footer Bar */}
+              <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[9px] text-slate-500 font-medium">
+                <div>
+                  Phone: {storePhone || '+1 555 123 8069'} • Email: info@{companyName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'example'}.com • Web: https://verifyflow.app
+                </div>
+                <div className="font-bold text-slate-600">Page: 1 / 1</div>
               </div>
             </div>
           )}

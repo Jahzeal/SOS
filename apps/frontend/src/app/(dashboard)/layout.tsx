@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useAuthStore } from '@/store/useAuthStore';
 import { isTokenExpired } from '@/lib/jwt-utils';
+import { api } from '@/lib/api';
 import {
   Bell,
   Search,
@@ -19,11 +20,45 @@ import {
   Sparkles,
   Receipt,
   Shield,
+  Loader2,
   X,
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/search/GlobalSearchModal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+
+interface NotificationItem {
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+  unread: boolean;
+  icon: 'phone' | 'shield' | 'receipt' | 'sparkle';
+  href: string;
+}
+
+function formatRelativeTime(dateString: string | Date): string {
+  try {
+    const now = new Date();
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Recently';
+
+    const diffMs = now.getTime() - date.getTime();
+    const diffSecs = Math.max(0, Math.floor(diffMs / 1000));
+    const diffMins = Math.floor(diffSecs / 60);
+    const diffHours = Math.floor(diffMins / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSecs < 60) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    if (diffDays === 1) return 'Yesterday';
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+  } catch {
+    return 'Recently';
+  }
+}
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -38,53 +73,73 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
-  // Store Notifications State
-  const [notifications, setNotifications] = useState([
-    {
-      id: '1',
-      title: 'New Device Registered',
-      description: 'iPhone 15 Pro Max (IMEI: 354892...) added to store stock.',
-      time: '10m ago',
-      unread: true,
-      icon: 'phone',
-      href: '/dashboard/records',
-    },
-    {
-      id: '2',
-      title: 'Store Guarantee Active',
-      description: '12-Month warranty registered for POS checkout #VF-8902.',
-      time: '1h ago',
-      unread: true,
-      icon: 'shield',
-      href: '/dashboard/records',
-    },
-    {
-      id: '3',
-      title: 'Thermal QR Receipt Synced',
-      description: '80mm POS receipt layout synced to Ikeja Main Branch.',
-      time: '3h ago',
-      unread: false,
-      icon: 'receipt',
-      href: '/dashboard/settings',
-    },
-    {
-      id: '4',
-      title: 'Workspace Initialized',
-      description: 'Welcome to VerifyFlow Enterprise! 14-day free trial active.',
-      time: 'Yesterday',
-      unread: false,
-      icon: 'sparkle',
-      href: '/dashboard',
-    },
-  ]);
+  // Store Notifications Real Data State
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(false);
+
+  const readStorageKey = user?.id ? `vf_read_notifications_${user.id}` : 'vf_read_notifications';
+
+  const fetchNotifications = useCallback(async () => {
+    if (typeof window === 'undefined') return;
+    const token = localStorage.getItem('vf_access_token');
+    if (!token || isTokenExpired(token)) return;
+
+    try {
+      setIsLoadingNotifications(true);
+      const res = await api.getDashboardNotifications();
+      if (res?.success && Array.isArray(res.data)) {
+        let readIds: string[] = [];
+        try {
+          readIds = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
+        } catch {
+          readIds = [];
+        }
+
+        const formatted: NotificationItem[] = res.data.map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          time: formatRelativeTime(item.createdAt),
+          unread: !readIds.includes(item.id),
+          icon: item.icon,
+          href: item.href,
+        }));
+        setNotifications(formatted);
+      }
+    } catch (err) {
+      // Backend request error
+    } finally {
+      setIsLoadingNotifications(false);
+    }
+  }, [readStorageKey]);
+
+  useEffect(() => {
+    if (isAuthorized) {
+      fetchNotifications();
+      // Poll every 30s for real-time activity updates
+      const notifInterval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(notifInterval);
+    }
+  }, [isAuthorized, fetchNotifications]);
 
   const unreadCount = notifications.filter((n) => n.unread).length;
 
   const markAllAsRead = () => {
+    const allIds = notifications.map((n) => n.id);
+    try {
+      localStorage.setItem(readStorageKey, JSON.stringify(allIds));
+    } catch {}
     setNotifications((prev) => prev.map((n) => ({ ...n, unread: false })));
   };
 
   const markItemAsRead = (id: string) => {
+    try {
+      let readIds: string[] = JSON.parse(localStorage.getItem(readStorageKey) || '[]');
+      if (!readIds.includes(id)) {
+        readIds.push(id);
+        localStorage.setItem(readStorageKey, JSON.stringify(readIds));
+      }
+    } catch {}
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, unread: false } : n))
     );
@@ -222,33 +277,50 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                     </div>
 
                     <div className="space-y-1.5 max-h-72 overflow-y-auto custom-scrollbar">
-                      {notifications.map((n) => (
-                        <Link
-                          key={n.id}
-                          href={n.href}
-                          onClick={() => {
-                            markItemAsRead(n.id);
-                            setIsNotificationsOpen(false);
-                          }}
-                          className={`block p-2.5 rounded-xl transition border ${
-                            n.unread
-                              ? 'bg-teal-50/40 border-teal-100 hover:bg-teal-50/80'
-                              : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex items-center gap-1.5">
-                              {n.icon === 'phone' && <Smartphone className="w-3.5 h-3.5 text-teal-600 shrink-0" />}
-                              {n.icon === 'shield' && <Shield className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
-                              {n.icon === 'receipt' && <Receipt className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
-                              {n.icon === 'sparkle' && <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
-                              <span className="font-extrabold text-slate-900 text-xs">{n.title}</span>
-                            </div>
-                            <span className="text-[10px] font-medium text-slate-400 shrink-0">{n.time}</span>
+                      {isLoadingNotifications && notifications.length === 0 ? (
+                        <div className="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
+                          <Loader2 className="w-5 h-5 animate-spin text-teal-600" />
+                          <span className="text-[11px] font-medium">Loading store activity...</span>
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="py-7 px-4 text-center space-y-1.5">
+                          <div className="w-9 h-9 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
+                            <Bell className="w-4 h-4" />
                           </div>
-                          <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug pl-5">{n.description}</p>
-                        </Link>
-                      ))}
+                          <p className="text-xs font-bold text-slate-800">No New Notifications</p>
+                          <p className="text-[11px] text-slate-400 max-w-[210px] mx-auto leading-relaxed">
+                            New inventory additions, sales receipts, and repair updates will appear here in real time.
+                          </p>
+                        </div>
+                      ) : (
+                        notifications.map((n) => (
+                          <Link
+                            key={n.id}
+                            href={n.href}
+                            onClick={() => {
+                              markItemAsRead(n.id);
+                              setIsNotificationsOpen(false);
+                            }}
+                            className={`block p-2.5 rounded-xl transition border ${
+                              n.unread
+                                ? 'bg-teal-50/40 border-teal-100 hover:bg-teal-50/80'
+                                : 'bg-slate-50/60 border-slate-100 hover:bg-slate-100'
+                            }`}
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div className="flex items-center gap-1.5">
+                                {n.icon === 'phone' && <Smartphone className="w-3.5 h-3.5 text-teal-600 shrink-0" />}
+                                {n.icon === 'shield' && <Shield className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
+                                {n.icon === 'receipt' && <Receipt className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
+                                {n.icon === 'sparkle' && <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" />}
+                                <span className="font-extrabold text-slate-900 text-xs">{n.title}</span>
+                              </div>
+                              <span className="text-[10px] font-medium text-slate-400 shrink-0">{n.time}</span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug pl-5">{n.description}</p>
+                          </Link>
+                        ))
+                      )}
                     </div>
 
                     <div className="pt-2 border-t border-slate-100 flex items-center justify-between px-1">
