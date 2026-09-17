@@ -13,13 +13,18 @@ import {
   AlertTriangle,
   ChevronRight,
   ChevronLeft,
-  DollarSign,
   Eye,
   Mail,
   SlidersHorizontal,
   BellRing,
   Loader2,
   Printer,
+  X,
+  Copy,
+  Check,
+  Send,
+  Share2,
+  DollarSign,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -33,6 +38,12 @@ export default function InvoicesRegistryPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Email Modal State
+  const [emailModalInvoice, setEmailModalInvoice] = useState<any | null>(null);
+  const [recipientEmail, setRecipientEmail] = useState('');
+  const [copiedLink, setCopiedLink] = useState(false);
+  const [emailStatusMsg, setEmailStatusMsg] = useState<string | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -114,15 +125,35 @@ export default function InvoicesRegistryPage() {
     window.print();
   };
 
-  const handleEmail = (inv: any) => {
-    const email = inv.customer?.email || '';
-    const name = inv.customer?.name || 'Customer';
-    const invNum = inv.invoiceNumber || inv.receiptNumber || inv.id;
+  const handleOpenEmailModal = (inv: any) => {
+    setEmailModalInvoice(inv);
+    setRecipientEmail(inv.customer?.email || '');
+    setCopiedLink(false);
+    setEmailStatusMsg(null);
+  };
+
+  const handleSendEmailClient = () => {
+    if (!emailModalInvoice) return;
+    const email = recipientEmail.trim() || emailModalInvoice.customer?.email || '';
+    const name = emailModalInvoice.customer?.name || 'Valued Customer';
+    const invNum = emailModalInvoice.invoiceNumber || emailModalInvoice.receiptNumber || emailModalInvoice.id;
+    const amount = Number(emailModalInvoice.totalAmount || 0).toLocaleString();
     const subject = encodeURIComponent(`Invoice Statement #${invNum}`);
     const body = encodeURIComponent(
-      `Hello ${name},\n\nPlease find your invoice statement #${invNum} for ₦${inv.totalAmount?.toLocaleString() || '0'}.\n\nThank you for your business!`
+      `Hello ${name},\n\nPlease find your invoice statement #${invNum} for ₦${amount}.\n\nThank you for your business!`
     );
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
+    setEmailStatusMsg('Dispatched to your mail client.');
+  };
+
+  const handleCopyLink = () => {
+    if (!emailModalInvoice) return;
+    const link = `${window.location.origin}/dashboard/sales/receipt/${emailModalInvoice.id}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link);
+    }
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
   };
 
   return (
@@ -335,7 +366,7 @@ export default function InvoicesRegistryPage() {
                     <button onClick={handlePrint} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1">
                       <Printer className="w-3.5 h-3.5" /> Print
                     </button>
-                    <button onClick={() => handleEmail(inv)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1">
+                    <button onClick={() => handleOpenEmailModal(inv)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1">
                       <Mail className="w-3.5 h-3.5" /> Send
                     </button>
                   </div>
@@ -426,7 +457,7 @@ export default function InvoicesRegistryPage() {
                           <button onClick={handlePrint} className="p-1 hover:text-blue-600 rounded" title="Print PDF">
                             <Printer className="w-3.5 h-3.5" />
                           </button>
-                          <button onClick={() => handleEmail(inv)} className="p-1 hover:text-blue-600 rounded" title="Send Mail">
+                          <button onClick={() => handleOpenEmailModal(inv)} className="p-1 hover:text-blue-600 rounded transition-colors" title="Send Invoice by Email">
                             <Mail className="w-3.5 h-3.5" />
                           </button>
                         </div>
@@ -455,6 +486,117 @@ export default function InvoicesRegistryPage() {
         </div>
 
       </div>
+
+      {/* Send Invoice by Email Modal */}
+      {emailModalInvoice && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-scale-up">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 bg-slate-50/80">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                  <Mail className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base text-slate-900">Send Invoice Statement</h3>
+                  <p className="text-xs text-slate-500 font-medium font-mono">
+                    #{emailModalInvoice.invoiceNumber || emailModalInvoice.receiptNumber || emailModalInvoice.id}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEmailModalInvoice(null)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-4">
+              {/* Summary Pill */}
+              <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+                <div>
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Recipient</p>
+                  <p className="font-extrabold text-sm text-slate-900">{emailModalInvoice.customer?.name || 'Customer'}</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Amount</p>
+                  <p className="font-extrabold text-sm text-blue-600">
+                    ₦{Number(emailModalInvoice.totalAmount || 0).toLocaleString()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Recipient Email Input */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700">Customer Email Address</label>
+                <input
+                  type="email"
+                  value={recipientEmail}
+                  onChange={(e) => setRecipientEmail(e.target.value)}
+                  placeholder="e.g. customer@example.com"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
+                />
+              </div>
+
+              {/* Email Preview Details */}
+              <div className="p-3 rounded-xl bg-blue-50/50 border border-blue-100 text-xs text-slate-600 space-y-1">
+                <p className="font-bold text-blue-900">Message Preview:</p>
+                <p className="text-slate-600 leading-relaxed font-sans">
+                  "Hello {emailModalInvoice.customer?.name || 'Customer'}, please find your invoice statement #{emailModalInvoice.invoiceNumber || emailModalInvoice.receiptNumber || emailModalInvoice.id} for ₦{Number(emailModalInvoice.totalAmount || 0).toLocaleString()}."
+                </p>
+              </div>
+
+              {emailStatusMsg && (
+                <div className="p-2.5 rounded-lg bg-emerald-50 text-emerald-800 text-xs font-bold flex items-center gap-2 border border-emerald-200">
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                  {emailStatusMsg}
+                </div>
+              )}
+            </div>
+
+            {/* Modal Actions */}
+            <div className="p-4 bg-slate-50/80 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50 transition-colors flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                {copiedLink ? (
+                  <>
+                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>Link Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-3.5 h-3.5 text-slate-500" />
+                    <span>Copy Statement Link</span>
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  onClick={() => setEmailModalInvoice(null)}
+                  className="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-200/50 text-xs font-bold transition-colors w-full sm:w-auto"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSendEmailClient}
+                  className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors shadow-sm shadow-blue-500/20 flex items-center justify-center gap-1.5 w-full sm:w-auto"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  <span>Send via Email Client</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

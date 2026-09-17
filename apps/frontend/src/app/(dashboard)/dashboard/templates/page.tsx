@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   FileText,
@@ -14,6 +14,10 @@ import {
   CheckCircle2,
   Loader2,
   AlertTriangle,
+  Upload,
+  Image as ImageIcon,
+  Trash2,
+  Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -25,6 +29,12 @@ export default function ReceiptInvoiceTemplatesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Logo & Branding State
+  const [logoUrl, setLogoUrl] = useState<string>('');
+  const [showLogoOnReceipt, setShowLogoOnReceipt] = useState(true);
+  const [showLogoOnInvoice, setShowLogoOnInvoice] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Receipt Customization Settings
   const [storeName, setStoreName] = useState('VerifyFlow Retail POS');
@@ -52,6 +62,7 @@ export default function ReceiptInvoiceTemplatesPage() {
           if (profile.name) setStoreName(profile.name);
           if (profile.address) setStoreAddress(profile.address);
           if (profile.phone) setStorePhone(profile.phone);
+          if (profile.logoUrl) setLogoUrl(profile.logoUrl);
           if (profile.receiptFooter) setReceiptFooter(profile.receiptFooter);
           if (profile.receiptTerms) setInvoiceTerms(profile.receiptTerms);
           if (profile.name) setCompanyName(profile.name);
@@ -65,12 +76,45 @@ export default function ReceiptInvoiceTemplatesPage() {
     loadTemplates();
   }, []);
 
+  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select a valid image file (PNG, JPG, WEBP, or SVG).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image file exceeds the 5MB size limit. Please choose a smaller image.');
+      return;
+    }
+
+    setError(null);
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const result = event.target?.result as string;
+      if (result) {
+        setLogoUrl(result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveLogo = () => {
+    setLogoUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
   const handleSave = async () => {
     setIsSaving(true);
     setError(null);
     try {
       await api.updateBusinessTemplates({
         name: storeName.trim(),
+        logoUrl: logoUrl.trim(),
         address: storeAddress.trim(),
         phone: storePhone.trim(),
         receiptFooter: receiptFooter.trim(),
@@ -103,7 +147,7 @@ export default function ReceiptInvoiceTemplatesPage() {
             Receipt & Invoice Templates Studio
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
-            Customize your store branding, return policies, tax IDs, and warranty disclaimers printed on receipts and invoices.
+            Customize your store logo, branding, return policies, tax IDs, and warranty disclaimers printed on receipts and invoices.
           </p>
         </div>
 
@@ -135,6 +179,107 @@ export default function ReceiptInvoiceTemplatesPage() {
           {error}
         </div>
       )}
+
+      {/* Shared Brand Identity & Logo Card */}
+      <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div>
+            <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-blue-600" /> Business Logo & Visual Identity
+            </h2>
+            <p className="text-xs text-slate-500">
+              Upload your company or store logo. It will be printed on thermal sales receipts and embedded in commercial PDF invoices.
+            </p>
+          </div>
+          {logoUrl && (
+            <Badge variant="verified" size="sm">Logo Active</Badge>
+          )}
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+          {/* Logo Preview Container */}
+          <div className="w-28 h-28 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50 overflow-hidden flex items-center justify-center relative group shrink-0 shadow-inner">
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="Business Logo"
+                className="w-full h-full object-contain p-2"
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center text-slate-400 gap-1.5 p-2 text-center">
+                <ImageIcon className="w-7 h-7 text-slate-300" />
+                <span className="text-[10px] font-bold">No Logo Uploaded</span>
+              </div>
+            )}
+          </div>
+
+          {/* Upload Controls & Guidelines */}
+          <div className="space-y-3 flex-1">
+            <div>
+              <p className="text-xs font-bold text-slate-800">Upload Brand Logo</p>
+              <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                Supported formats: PNG, JPG, WEBP, or SVG. Maximum file size: 5MB. Transparent PNG recommended for best thermal print clarity.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2.5">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLogoUpload}
+                className="hidden"
+              />
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                leftIcon={<Upload className="w-3.5 h-3.5 text-blue-600" />}
+                onClick={() => fileInputRef.current?.click()}
+                className="font-bold border-blue-200 text-blue-700 hover:bg-blue-50"
+              >
+                {logoUrl ? 'Change Logo' : 'Upload Logo'}
+              </Button>
+
+              {logoUrl && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  leftIcon={<Trash2 className="w-3.5 h-3.5 text-rose-500" />}
+                  onClick={handleRemoveLogo}
+                  className="text-rose-600 hover:bg-rose-50 font-bold"
+                >
+                  Remove Logo
+                </Button>
+              )}
+            </div>
+
+            {/* Display Toggles */}
+            <div className="flex flex-wrap items-center gap-4 pt-1">
+              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showLogoOnReceipt}
+                  onChange={(e) => setShowLogoOnReceipt(e.target.checked)}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                />
+                <span>Show on Thermal Receipts</span>
+              </label>
+
+              <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={showLogoOnInvoice}
+                  onChange={(e) => setShowLogoOnInvoice(e.target.checked)}
+                  className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
+                />
+                <span>Show on PDF Invoices</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Mode Switcher Tabs */}
       <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
@@ -234,7 +379,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-1 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs">
                   <label className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-800 cursor-pointer">
                     <input
                       type="checkbox"
@@ -337,7 +482,17 @@ export default function ReceiptInvoiceTemplatesPage() {
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xl space-y-4 max-w-sm mx-auto">
               {/* Thermal Paper Preview Container */}
               <div className="p-5 rounded-xl bg-slate-50 border border-dashed border-slate-300 font-mono text-xs text-slate-800 space-y-3 text-left">
-                <div className="text-center space-y-0.5 border-b border-slate-200 pb-3">
+                {/* Logo & Store Header */}
+                <div className="text-center space-y-1 border-b border-slate-200 pb-3">
+                  {logoUrl && showLogoOnReceipt && (
+                    <div className="mb-2 flex justify-center">
+                      <img
+                        src={logoUrl}
+                        alt="Store Logo"
+                        className="h-10 max-w-[130px] object-contain filter grayscale contrast-125"
+                      />
+                    </div>
+                  )}
                   <p className="font-extrabold text-sm text-slate-900">{storeName || 'Store Name'}</p>
                   <p className="text-[10px] text-slate-500 font-sans">{storeBranch}</p>
                   <p className="text-[10px] text-slate-500 font-sans">{storeAddress}</p>
@@ -394,10 +549,21 @@ export default function ReceiptInvoiceTemplatesPage() {
 
           {activeTab === 'invoice' && (
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xl space-y-4 text-xs font-sans text-slate-800">
-              <div className="border-b border-slate-200 pb-3 flex justify-between items-start">
-                <div>
-                  <h4 className="font-extrabold text-sm text-slate-900">{companyName}</h4>
-                  <p className="text-[10px] text-slate-500">Tax ID: {taxId}</p>
+              <div className="border-b border-slate-200 pb-3 flex justify-between items-start gap-4">
+                <div className="flex items-start gap-3">
+                  {logoUrl && showLogoOnInvoice && (
+                    <div className="w-12 h-12 rounded-xl border border-slate-200 overflow-hidden bg-white shrink-0 p-1 flex items-center justify-center shadow-xs">
+                      <img
+                        src={logoUrl}
+                        alt="Company Logo"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-900">{companyName}</h4>
+                    <p className="text-[10px] text-slate-500">Tax ID: {taxId}</p>
+                  </div>
                 </div>
                 <Badge variant="verified" size="sm">COMMERCIAL INVOICE</Badge>
               </div>

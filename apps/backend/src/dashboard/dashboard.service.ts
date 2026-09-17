@@ -13,6 +13,7 @@ export class DashboardService {
         id: true,
         name: true,
         slug: true,
+        logoUrl: true,
         plan: true,
         publicVerificationEnabled: true,
       },

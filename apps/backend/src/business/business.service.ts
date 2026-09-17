@@ -63,6 +63,7 @@ export class BusinessService {
       select: {
         id: true,
         name: true,
+        logoUrl: true,
         address: true,
         phone: true,
         email: true,
@@ -83,6 +84,7 @@ export class BusinessService {
   async updateTemplateSettings(businessId: string, data: any) {
     const updateData: any = {};
     if (data.name) updateData.name = data.name;
+    if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl;
     if (data.address !== undefined) updateData.address = data.address;
     if (data.phone !== undefined) updateData.phone = data.phone;
     if (data.email !== undefined) updateData.email = data.email;

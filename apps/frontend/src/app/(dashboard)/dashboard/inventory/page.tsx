@@ -107,19 +107,20 @@ export default function InventoryPage() {
     }));
   }, [liveInventory]);
 
-  // Brand breakdown & unique count from live data
+  // Brand breakdown & unique count from live data (strictly IN_STOCK items)
   const { brandBreakdown, totalUniqueBrands } = useMemo(() => {
+    const inStockItems = liveInventory.filter((item) => (item.status || 'IN_STOCK') === 'IN_STOCK');
     const counts: Record<string, number> = {};
-    liveInventory.forEach((item) => {
+    inStockItems.forEach((item) => {
       const b = item.brand || 'Other';
       counts[b] = (counts[b] || 0) + 1;
     });
-    const total = liveInventory.length || 1;
+    const total = inStockItems.length || 1;
     const sorted = Object.entries(counts)
       .sort((a, b) => b[1] - a[1]);
     
     return {
-      totalUniqueBrands: Object.keys(counts).length,
+      totalUniqueBrands: inStockItems.length === 0 ? 0 : Object.keys(counts).length,
       brandBreakdown: sorted.slice(0, 3).map(([brand, count]) => ({
         brand,
         count,
