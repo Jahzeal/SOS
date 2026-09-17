@@ -218,9 +218,10 @@ export class SalesService {
     const where: any = {
       businessId,
       receiptNumber: { not: null },
-      NOT: {
-        notes: { contains: '[TYPE:INVOICE]' },
-      },
+      OR: [
+        { notes: null },
+        { NOT: { notes: { contains: '[TYPE:INVOICE]' } } },
+      ],
     };
 
     if (search) {

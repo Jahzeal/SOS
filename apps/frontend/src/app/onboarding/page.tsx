@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -277,17 +278,25 @@ export default function OnboardingPage() {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 min-h-screen">
         
-        {/* LEFT PANEL — BRAND EXPERIENCE (Option 2: Matte Obsidian Hardware Glass Background Image) */}
-        <div
-          className="hidden lg:flex lg:col-span-5 text-white p-6 lg:p-10 xl:p-14 2xl:p-16 flex-col justify-between relative overflow-hidden border-r border-slate-800/80 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/images/onboarding_bg.png')" }}
-        >
+        {/* LEFT PANEL — BRAND EXPERIENCE (Hardware Glass Image with Instant Priority Preload) */}
+        <div className="hidden lg:flex lg:col-span-5 text-white p-6 lg:p-10 xl:p-14 2xl:p-16 flex-col justify-between relative overflow-hidden border-r border-slate-800/80 bg-slate-950">
+          {/* Next.js Optimized & Preloaded High-Performance Background Image */}
+          <Image
+            src="/images/onboarding_bg.png"
+            alt="VerifyFlow Electronics Retail OS"
+            fill
+            priority
+            quality={85}
+            sizes="(max-width: 1024px) 100vw, 42vw"
+            className="object-cover object-center pointer-events-none select-none z-0"
+          />
+
           {/* Light Overlay Tint for Maximum Background Image Visibility */}
-          <div className="absolute inset-0 bg-slate-950/20 pointer-events-none" />
+          <div className="absolute inset-0 bg-slate-950/40 z-1 pointer-events-none" />
           
           {/* Background Ambient Hardware Lighting Accents */}
-          <div className="absolute -top-40 -left-40 w-[450px] xl:w-[600px] h-[450px] xl:h-[600px] bg-teal-500/15 rounded-full blur-[120px] pointer-events-none" />
-          <div className="absolute -bottom-40 -right-40 w-[400px] xl:w-[550px] h-[400px] xl:h-[550px] bg-teal-600/15 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute -top-40 -left-40 w-[450px] xl:w-[600px] h-[450px] xl:h-[600px] bg-teal-500/20 rounded-full blur-[120px] pointer-events-none z-1" />
+          <div className="absolute -bottom-40 -right-40 w-[400px] xl:w-[550px] h-[400px] xl:h-[550px] bg-teal-600/20 rounded-full blur-[100px] pointer-events-none z-1" />
 
           {/* Top Logo Bar */}
           <div className="relative z-10 flex items-center justify-between">
