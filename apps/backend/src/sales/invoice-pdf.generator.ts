@@ -18,6 +18,7 @@ export interface InvoicePdfData {
   storeAddress?: string | null;
   storePhone?: string | null;
   storeEmail?: string | null;
+  logoUrl?: string | null;
   bankName?: string | null;
   accountNumber?: string | null;
   accountName?: string | null;
@@ -48,33 +49,57 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
   });
   const dueDateStr = data.dueDate || issueDateStr;
 
-  // 1. Header Bar
+  // 1. Header Bar (Dark Slate Banner)
   doc.setFillColor(15, 23, 42); // slate-900
-  doc.rect(0, 0, pageWidth, 24, 'F');
+  doc.rect(0, 0, pageWidth, 26, 'F');
 
-  // VerifyFlow Badge & Title
+  // Render Custom Logo or Branded Initials Badge
+  let textLeft = 14;
+  if (data.logoUrl && data.logoUrl.startsWith('data:image/')) {
+    try {
+      const format = data.logoUrl.includes('image/png') ? 'PNG' : 'JPEG';
+      doc.addImage(data.logoUrl, format, 14, 4, 18, 18, undefined, 'FAST');
+      textLeft = 36;
+    } catch {
+      textLeft = 14;
+    }
+  }
+
+  if (textLeft === 14) {
+    // Elegant Store Monogram Box
+    doc.setFillColor(37, 99, 235); // blue-600
+    doc.roundedRect(14, 5, 16, 16, 2, 2, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    const initials = data.storeName.slice(0, 2).toUpperCase() || 'VF';
+    doc.text(initials, 22, 15, { align: 'center' });
+    textLeft = 34;
+  }
+
+  // Store Name & Subtitle
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(16);
-  doc.text(data.storeName.toUpperCase(), 14, 12);
+  doc.setFontSize(13);
+  doc.text(data.storeName.toUpperCase(), textLeft, 13);
 
   doc.setFont('helvetica', 'normal');
-  doc.setFontSize(9);
+  doc.setFontSize(7.5);
   doc.setTextColor(148, 163, 184); // slate-400
-  doc.text('VERIFIED DEVICE & ELECTRONICS RETAIL LEDGER', 14, 18);
+  doc.text('VERIFIED DEVICE & ELECTRONICS RETAIL LEDGER', textLeft, 19);
 
   // Document Type Header on Right
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(14);
-  doc.text(docTitle, pageWidth - 14, 12, { align: 'right' });
+  doc.setFontSize(13);
+  doc.text(docTitle, pageWidth - 14, 13, { align: 'right' });
 
   doc.setFontSize(9);
   doc.setTextColor(56, 189, 248); // sky-400
-  doc.text(docNum, pageWidth - 14, 18, { align: 'right' });
+  doc.text(docNum, pageWidth - 14, 19, { align: 'right' });
 
   // 2. Dual Info Boxes (Store Info Left, Invoice & Customer Meta Right)
-  const boxTop = 30;
+  const boxTop = 32;
   const boxWidth = (pageWidth - 36) / 2;
   const boxHeight = 44;
 

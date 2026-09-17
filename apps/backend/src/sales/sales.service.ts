@@ -331,6 +331,7 @@ export class SalesService {
       storeName,
       storeAddress: sale.business?.address,
       storePhone: sale.business?.phone,
+      logoUrl: sale.business?.logoUrl,
       bankName: sale.business?.bankName,
       accountNumber: sale.business?.accountNumber,
       accountName: sale.business?.accountName,
@@ -346,132 +347,42 @@ export class SalesService {
 
     const pdfFilename = `${isInvoice ? 'Invoice' : 'Receipt'}-${docNum}.pdf`;
 
-    const itemsRows = sale.items
-      .map(
-        (it: any) => `
-      <tr style="border-bottom: 1px solid #e2e8f0;">
-        <td style="padding: 12px 10px; font-size: 13px; color: #0f172a; font-weight: 600;">
-          ${it.description}
-          ${it.phoneRecord?.imei1 ? `<div style="font-size: 11px; color: #64748b; font-family: monospace; margin-top: 2px;">IMEI / SN: ${it.phoneRecord.imei1}</div>` : ''}
-        </td>
-        <td style="padding: 12px 10px; font-size: 13px; color: #475569; text-align: center; font-weight: 600;">${it.quantity || 1}</td>
-        <td style="padding: 12px 10px; font-size: 13px; color: #0f172a; text-align: right; font-weight: 600;">₦${Number(it.unitPrice || 0).toLocaleString()}</td>
-        <td style="padding: 12px 10px; font-size: 13px; color: #0f172a; text-align: right; font-weight: 700;">₦${Number(it.totalPrice || (it.unitPrice * (it.quantity || 1))).toLocaleString()}</td>
-      </tr>
-    `,
-      )
-      .join('');
-
     const html = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; background-color: #f8fafc; border-radius: 18px; border: 1px solid #e2e8f0;">
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 540px; margin: 0 auto; padding: 24px 20px; background-color: #ffffff; color: #1e293b; line-height: 1.6; font-size: 14px;">
+        <p style="margin-top: 0; font-size: 15px;">Hello <strong>${customerName}</strong>,</p>
         
-        <!-- Top Store Branding & Statement Title -->
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #2563eb; padding-bottom: 18px; margin-bottom: 20px;">
-          <div>
-            <h1 style="font-size: 22px; font-weight: 900; color: #0f172a; margin: 0; letter-spacing: -0.5px;">${storeName}</h1>
-            <p style="font-size: 12px; color: #64748b; margin: 4px 0 0 0;">${sale.business?.address || 'Verified Electronics & Retail HQ'}</p>
-            ${sale.business?.phone ? `<p style="font-size: 11px; color: #64748b; margin: 2px 0 0 0;">Tel: ${sale.business.phone}</p>` : ''}
-          </div>
-          <div style="text-align: right;">
-            <div style="font-size: 11px; font-weight: 800; color: #2563eb; text-transform: uppercase; letter-spacing: 1px;">${docTitle}</div>
-            <div style="font-size: 16px; font-weight: 800; color: #0f172a; font-family: monospace; margin: 2px 0;">${docNum}</div>
-            <div style="font-size: 11px; color: #64748b;">Issued: ${dateFormatted}</div>
-          </div>
+        <p>Please find attached your official ${isInvoice ? 'invoice statement' : 'sales receipt'} (<strong>${docNum}</strong>) from <strong>${storeName}</strong>.</p>
+        
+        <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 18px; margin: 20px 0; font-size: 13px;">
+          <div style="margin-bottom: 8px;"><strong>Statement #:</strong> <span style="font-family: monospace; font-weight: 700;">${docNum}</span></div>
+          <div style="margin-bottom: 8px;"><strong>Total Amount:</strong> <span style="font-weight: 800; color: #2563eb; font-size: 15px;">${totalFormatted}</span></div>
+          ${isInvoice ? `<div style="margin-bottom: 8px;"><strong>Due Date:</strong> ${dueDate}</div>` : ''}
+          <div><strong>Payment Status:</strong> <span style="font-weight: 800; color: ${sale.paymentStatus === 'PAID' ? '#16a34a' : '#d97706'}; text-transform: uppercase;">${sale.paymentStatus}</span></div>
         </div>
 
-        <!-- Attached PDF Banner -->
-        <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 12px; padding: 12px 16px; margin-bottom: 20px; font-size: 12px; color: #1e40af; display: flex; align-items: center; justify-content: space-between;">
-          <div>
-            <strong>📎 Official PDF Attached:</strong> <span style="font-family: monospace; font-weight: 700;">${pdfFilename}</span>
-          </div>
-          <span style="font-size: 11px; background-color: #dbeafe; padding: 2px 8px; border-radius: 6px; font-weight: 700;">PDF Document</span>
-        </div>
+        <p style="font-size: 13px; color: #475569;">
+          Your detailed breakdown with device specs and warranty info is attached as a PDF document (<strong>${pdfFilename}</strong>).
+        </p>
 
-        <!-- Dual Information Cards (Solid Blue Top Banner) -->
-        <div style="display: table; width: 100%; margin-bottom: 20px;">
-          <!-- Left: Store / Remittance Info -->
-          <div style="display: table-cell; width: 48%; vertical-align: top; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-            <div style="background-color: #2563eb; color: #ffffff; font-size: 10px; font-weight: 800; padding: 6px 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-              Issued By / Store Details
-            </div>
-            <div style="padding: 12px; font-size: 12px; color: #475569; line-height: 1.5;">
-              <strong style="color: #0f172a; font-size: 13px;">${storeName}</strong><br/>
-              ${sale.business?.address || 'Store Address'}<br/>
-              ${sale.business?.phone ? `Phone: ${sale.business.phone}<br/>` : ''}
-              ${sale.business?.bankName && sale.business?.accountNumber ? `<div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; font-size: 11px; color: #1e3a8a;"><strong>Wire Bank:</strong> ${sale.business.bankName}<br/><strong>Account:</strong> ${sale.business.accountNumber}</div>` : ''}
-            </div>
-          </div>
+        <p style="margin-top: 20px; margin-bottom: 0;">Thank you for your business!</p>
 
-          <div style="display: table-cell; width: 4%;"></div>
-
-          <!-- Right: Billed Customer Details -->
-          <div style="display: table-cell; width: 48%; vertical-align: top; background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
-            <div style="background-color: #2563eb; color: #ffffff; font-size: 10px; font-weight: 800; padding: 6px 12px; text-transform: uppercase; letter-spacing: 0.5px;">
-              Billed To / Statement Details
-            </div>
-            <div style="padding: 12px; font-size: 12px; color: #475569; line-height: 1.5;">
-              <strong style="color: #0f172a; font-size: 13px;">${customerName}</strong><br/>
-              ${customerAddress}<br/>
-              ${sale.customer?.phone ? `Phone: ${sale.customer.phone}<br/>` : ''}
-              ${sale.customer?.email ? `Email: ${sale.customer.email}<br/>` : ''}
-              <div style="margin-top: 6px; padding-top: 6px; border-top: 1px dashed #e2e8f0; font-size: 11px;">
-                <strong>Due Date:</strong> <span style="color: #0f172a; font-weight: 700;">${dueDate}</span> | 
-                <strong>Status:</strong> <span style="color: ${sale.paymentStatus === 'PAID' ? '#10b981' : '#f59e0b'}; font-weight: 800;">${sale.paymentStatus.toUpperCase()}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Line Items Table -->
-        <div style="background-color: #ffffff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 20px;">
-          <table style="width: 100%; border-collapse: collapse; text-align: left;">
-            <thead>
-              <tr style="background-color: #2563eb; color: #ffffff; font-size: 11px; text-transform: uppercase; font-weight: 800;">
-                <th style="padding: 10px 12px;">Item Description & Hardware Specs</th>
-                <th style="padding: 10px 12px; text-align: center;">Qty</th>
-                <th style="padding: 10px 12px; text-align: right;">Unit Price</th>
-                <th style="padding: 10px 12px; text-align: right;">Total Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsRows}
-            </tbody>
-          </table>
-
-          <!-- Financial Breakdown Card -->
-          <div style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 16px; display: flex; justify-content: space-between; align-items: center;">
-            <div style="font-size: 12px; color: #64748b;">
-              Total Items: <strong style="color: #0f172a;">${sale.items.length}</strong> • Currency: <strong>NGN (₦)</strong>
-            </div>
-            <div style="text-align: right;">
-              <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase;">Total Balance Due</div>
-              <div style="font-size: 22px; font-weight: 900; color: #2563eb; letter-spacing: -0.5px;">${totalFormatted}</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Terms & Warranty Disclaimers -->
-        <div style="background-color: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 14px 16px; margin-bottom: 20px; font-size: 11px; color: #64748b; line-height: 1.6;">
-          <strong style="color: #0f172a; font-size: 12px;">Store Policy & Remittance Remarks:</strong><br/>
-          • All serial & IMEI numbers are permanently verified in store database.<br/>
-          • 12-Month hardware warranty applies from original issue date.<br/>
-          • For wire transfers, please quote reference <strong>${docNum}</strong> on deposit slips.
-        </div>
-
-        <!-- Footer -->
-        <div style="text-align: center; color: #94a3b8; font-size: 11px; line-height: 1.5; border-top: 1px solid #e2e8f0; padding-top: 16px;">
-          Thank you for your business with ${storeName}.<br/>
-          Secured & verified by VerifyFlow Electronics Ledger.
+        <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; line-height: 1.5;">
+          <strong>${storeName}</strong><br/>
+          ${sale.business?.address ? `${sale.business.address}<br/>` : ''}
+          ${sale.business?.phone ? `Tel: ${sale.business.phone}<br/>` : ''}
+          <span style="font-size: 11px; color: #94a3b8;">Secured by VerifyFlow Electronics Ledger</span>
         </div>
       </div>
     `;
 
     const subject = `[${storeName}] ${docTitle} #${docNum}`;
+    const plainText = `Hello ${customerName},\n\nPlease find attached your ${isInvoice ? 'invoice statement' : 'sales receipt'} #${docNum} from ${storeName}.\n\nTotal Amount: ${totalFormatted}\nDue Date: ${dueDate}\nStatus: ${sale.paymentStatus}\n\nAttached: ${pdfFilename}\n\nThank you for your business!\n${storeName}`;
+
     const result = await this.mailService.dispatchEmail({
       to: toEmail,
       subject,
       html,
-      text: `${docTitle} #${docNum}\nStore: ${storeName}\nTotal: ${totalFormatted}\nCustomer: ${customerName}\n(Official PDF attached: ${pdfFilename})`,
+      text: plainText,
       attachments: [
         {
           filename: pdfFilename,
