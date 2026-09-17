@@ -13,6 +13,7 @@ import {
   HelpCircle,
   Smartphone,
   ChevronDown,
+  ChevronUp,
   Loader2,
   CreditCard,
   Layers,
@@ -29,6 +30,14 @@ export default function DedicatedPricingPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [dashboardUrl, setDashboardUrl] = useState('/dashboard');
   const [selectedCheckoutPlan, setSelectedCheckoutPlan] = useState<any | null>(null);
+  const [expandedPlanIds, setExpandedPlanIds] = useState<Record<string, boolean>>({});
+
+  const togglePlanExpand = (planKey: string) => {
+    setExpandedPlanIds((prev) => ({
+      ...prev,
+      [planKey]: !prev[planKey],
+    }));
+  };
 
   // Cached public plans query (instant 0ms)
   const { data: plans = [], isLoading: loading } = usePublicPlans();
@@ -152,7 +161,7 @@ export default function DedicatedPricingPage() {
         ) : (
           /* Pricing Cards Grid (4 Responsive Columns) */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch pt-2">
-            {plans.map((plan) => {
+            {plans.map((plan, idx) => {
               const isFree = plan.code === 'FREE' || (!plan.monthlyPriceNgn && !plan.annualPriceNgn);
               const monthlyPrice = plan.monthlyPriceNgn || 0;
               const annualPrice = plan.annualPriceNgn && plan.annualPriceNgn > 0 ? plan.annualPriceNgn : monthlyPrice * 10;
@@ -206,41 +215,79 @@ export default function DedicatedPricingPage() {
                       </p>
                     </div>
 
-                    {/* Feature Checklist */}
-                    <div className="space-y-2.5 pt-1">
-                      <div className="text-slate-900 font-bold uppercase tracking-wider text-[10px]">
-                        Included Features
-                      </div>
-                      <ul className="space-y-2 text-xs text-slate-700 font-medium">
-                        {Array.isArray(plan.features) && plan.features.length > 0 ? (
-                          plan.features.map((feat: string, idx: number) => (
-                            <li key={idx} className="flex items-start gap-2">
-                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                              <span className="leading-snug">{feat}</span>
-                            </li>
-                          ))
-                        ) : (
-                          <>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                              <span>
-                                {plan.maxDevices && plan.maxDevices > 0
-                                  ? `Up to ${plan.maxDevices.toLocaleString()} Phone Registrations`
-                                  : 'Unlimited Phone Registrations'}
+                    {/* Feature Checklist with Collapsible See More */}
+                    {(() => {
+                      const allFeatures = Array.isArray(plan.features) && plan.features.length > 0 ? plan.features : [];
+                      const planKey = plan.id || plan.code || idx.toString();
+                      const isExpanded = Boolean(expandedPlanIds[planKey]);
+                      const PREVIEW_LIMIT = 5;
+                      const hasMore = allFeatures.length > PREVIEW_LIMIT;
+                      const displayedFeatures = hasMore && !isExpanded ? allFeatures.slice(0, PREVIEW_LIMIT) : allFeatures;
+
+                      return (
+                        <div className="space-y-2.5 pt-1">
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-900 font-bold uppercase tracking-wider text-[10px]">
+                              Included Features ({allFeatures.length > 0 ? allFeatures.length : 3})
+                            </span>
+                            {hasMore && (
+                              <span className="text-[10px] text-slate-400 font-medium">
+                                {isExpanded ? 'All features shown' : `+${allFeatures.length - PREVIEW_LIMIT} more`}
                               </span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                              <span>IMEI & Barcode Ledger</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                              <span>POS Receipts</span>
-                            </li>
-                          </>
-                        )}
-                      </ul>
-                    </div>
+                            )}
+                          </div>
+
+                          <ul className="space-y-2 text-xs text-slate-700 font-medium transition-all duration-200">
+                            {allFeatures.length > 0 ? (
+                              displayedFeatures.map((feat: string, fIdx: number) => (
+                                <li key={fIdx} className="flex items-start gap-2 animate-in fade-in duration-150">
+                                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                  <span className="leading-snug">{feat}</span>
+                                </li>
+                              ))
+                            ) : (
+                              <>
+                                <li className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                  <span>
+                                    {plan.maxDevices && plan.maxDevices > 0
+                                      ? `Up to ${plan.maxDevices.toLocaleString()} Phone Registrations`
+                                      : 'Unlimited Phone Registrations'}
+                                  </span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                  <span>IMEI & Barcode Ledger</span>
+                                </li>
+                                <li className="flex items-start gap-2">
+                                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                  <span>POS Receipts</span>
+                                </li>
+                              </>
+                            )}
+                          </ul>
+
+                          {hasMore && (
+                            <button
+                              type="button"
+                              onClick={() => togglePlanExpand(planKey)}
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-teal-600 hover:text-teal-700 hover:underline pt-1 cursor-pointer transition select-none"
+                            >
+                              <span>
+                                {isExpanded
+                                  ? 'Show less'
+                                  : `+ Show ${allFeatures.length - PREVIEW_LIMIT} more features`}
+                              </span>
+                              {isExpanded ? (
+                                <ChevronUp className="w-3.5 h-3.5" />
+                              ) : (
+                                <ChevronDown className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Call to Action Button */}
