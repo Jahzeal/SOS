@@ -542,31 +542,31 @@ export default function ReportStolenPage() {
                   {/* 2-Column Instructions: iPhone vs Android */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
                     
-                    {/* iPhone / Apple ID Guide */}
+                    {/* iPhone / Apple iCloud Guide */}
                     <div className="p-4 rounded-2xl bg-white border border-blue-100 shadow-2xs space-y-3">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Smartphone className="w-4 h-4 text-slate-900" />
                           <span className="font-extrabold text-xs text-slate-900">iPhone / iOS Users</span>
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Apple ID</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">iCloud Find My</span>
                       </div>
                       
                       <ol className="text-[11px] text-slate-600 space-y-1.5 font-medium list-decimal list-inside">
-                        <li>Tap the button below to open your Apple account.</li>
-                        <li>Sign in and scroll down to the <strong>Devices</strong> section.</li>
-                        <li>Click your iPhone to view and copy the <strong>15-digit IMEI</strong>.</li>
+                        <li>Tap below to open Apple iCloud Find My in a new tab.</li>
+                        <li>Sign in with your Apple Account / Apple ID.</li>
+                        <li>Select your iPhone from <strong>All Devices</strong> to view device info / IMEI.</li>
                         <li>Return to this page and tap <strong>Paste</strong>.</li>
                       </ol>
 
                       <a
-                        href="https://appleid.apple.com"
+                        href="https://www.icloud.com/find"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-sm transition"
                       >
                         <Smartphone className="w-3.5 h-3.5" />
-                        <span>Open Apple ID Devices</span>
+                        <span>Open Apple iCloud Find My</span>
                         <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                       </a>
                     </div>
