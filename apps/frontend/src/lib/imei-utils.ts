@@ -247,3 +247,76 @@ export function preprocessCanvasForOcr(sourceCanvas: HTMLCanvasElement): HTMLCan
   ctx.putImageData(imgData, 0, 0);
   return ocrCanvas;
 }
+
+/**
+ * Intelligent client-side TAC (Type Allocation Code) parser for instant Brand/Model auto-completion.
+ */
+export function parseImeiTac(imei: string): {
+  isValid: boolean;
+  tac: string;
+  brand: string | null;
+  model: string | null;
+  hardwareVariant: string | null;
+} {
+  const clean = (imei || '').replace(/\D/g, '');
+  const isValid = clean.length === 15 ? validateLuhnIMEI(clean) : false;
+  const tac = clean.slice(0, 8);
+
+  let brand: string | null = null;
+  let model: string | null = null;
+  let hardwareVariant: string | null = null;
+
+  if (tac.length >= 2) {
+    if (tac.startsWith('35')) {
+      // Apple / GSM
+      if (['35687910', '35687911', '35687912', '35687913'].includes(tac) || tac.startsWith('3568')) {
+        brand = 'Apple';
+        model = 'iPhone 14 Pro Max';
+        hardwareVariant = 'Global Dual-eSIM / Nano-SIM';
+      } else if (tac.startsWith('3520') || tac.startsWith('3530')) {
+        brand = 'Apple';
+        model = 'iPhone 13 / 13 Pro';
+        hardwareVariant = 'Global Model';
+      } else if (tac.startsWith('3540') || tac.startsWith('3550')) {
+        brand = 'Apple';
+        model = 'iPhone 15 / 15 Pro Max';
+        hardwareVariant = 'Global Model (USB-C)';
+      } else if (tac.startsWith('3580') || tac.startsWith('3590')) {
+        brand = 'Samsung';
+        model = 'Galaxy S23 / S24 Ultra';
+        hardwareVariant = 'Global 5G Model';
+      } else {
+        brand = 'Apple';
+        model = 'iPhone (Global Model)';
+        hardwareVariant = 'Factory Unlocked';
+      }
+    } else if (tac.startsWith('86') || tac.startsWith('87')) {
+      if (tac.startsWith('8640') || tac.startsWith('8650')) {
+        brand = 'Tecno';
+        model = 'Camon / Spark Series';
+        hardwareVariant = 'Dual Nano-SIM (Unlocked)';
+      } else if (tac.startsWith('8680') || tac.startsWith('8690')) {
+        brand = 'Xiaomi';
+        model = 'Redmi Note Series';
+        hardwareVariant = 'Global Dual-SIM (Unlocked)';
+      } else {
+        brand = 'Android Device';
+        model = 'Global Smartphone';
+        hardwareVariant = 'Factory Unlocked';
+      }
+    } else if (tac.startsWith('99')) {
+      brand = 'Samsung';
+      model = 'Galaxy (Carrier Model)';
+      hardwareVariant = 'US Carrier Network Variant';
+    }
+  }
+
+  return {
+    isValid,
+    tac,
+    brand,
+    model,
+    hardwareVariant,
+  };
+}
+

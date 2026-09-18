@@ -5,30 +5,38 @@ import Link from 'next/link';
 import {
   ShieldAlert,
   Smartphone,
-  Search,
   ExternalLink,
   CheckCircle2,
   AlertTriangle,
-  HelpCircle,
   Lock,
   ArrowRight,
-  ArrowLeft,
   X,
-  Copy,
   Mail,
   User,
   Phone,
-  DollarSign,
   FileText,
   Loader2,
   RefreshCw,
   LogOut,
   Info,
+  Menu,
+  Sparkles,
+  Copy,
+  Search,
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Logo } from '@/components/ui/Logo';
+import { PwaInstallButton } from '@/components/PwaInstallButton';
 import { api } from '@/lib/api';
+import { parseImeiTac, validateLuhnIMEI } from '@/lib/imei-utils';
 
 export default function ReportStolenPage() {
+  // Navigation & Mobile Drawer
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [dashboardUrl, setDashboardUrl] = useState('/dashboard');
+
   // Google Auth Simulation / Real Session State
   const [googleUser, setGoogleUser] = useState<{ email: string; name: string; avatarUrl?: string } | null>(null);
   const [authEmailInput, setAuthEmailInput] = useState('');
@@ -47,6 +55,15 @@ export default function ReportStolenPage() {
   const [bountyAmount, setBountyAmount] = useState('');
   const [policeCaseNo, setPoliceCaseNo] = useState('');
 
+  // TAC Auto-detection State
+  const [tacProfile, setTacProfile] = useState<{
+    isValid: boolean;
+    tac: string;
+    brand: string | null;
+    model: string | null;
+    hardwareVariant: string | null;
+  } | null>(null);
+
   // UI Flow States
   const [activeTab, setActiveTab] = useState<'REPORT' | 'MY_REPORTS'>('REPORT');
   const [myReports, setMyReports] = useState<any[]>([]);
@@ -55,13 +72,29 @@ export default function ReportStolenPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successReport, setSuccessReport] = useState<any | null>(null);
 
-  // Load saved Google session from localStorage
+  // Load auth & session
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const savedUser = localStorage.getItem('vf_google_reporter');
-      if (savedUser) {
+      const token = localStorage.getItem('vf_access_token');
+      if (token) {
+        setIsLoggedIn(true);
+      }
+      try {
+        const storedUser = localStorage.getItem('vf_user');
+        if (storedUser) {
+          const parsed = JSON.parse(storedUser);
+          if (parsed.role === 'ADMIN') {
+            setDashboardUrl('/admin/dashboard');
+          } else {
+            setDashboardUrl('/dashboard');
+          }
+        }
+      } catch {}
+
+      const savedReporter = localStorage.getItem('vf_google_reporter');
+      if (savedReporter) {
         try {
-          setGoogleUser(JSON.parse(savedUser));
+          setGoogleUser(JSON.parse(savedReporter));
         } catch {}
       }
     }
@@ -73,6 +106,25 @@ export default function ReportStolenPage() {
       fetchMyReports(googleUser.email);
     }
   }, [googleUser, activeTab]);
+
+  // Handle IMEI Change and Automatic TAC Auto-Completion
+  const handleImeiChange = (value: string) => {
+    const clean = value.replace(/\s+/g, '');
+    setImei1(clean);
+
+    if (clean.length >= 8) {
+      const profile = parseImeiTac(clean);
+      setTacProfile(profile);
+      if (profile.brand) {
+        setBrand(profile.brand);
+      }
+      if (profile.model) {
+        setModel(profile.model);
+      }
+    } else {
+      setTacProfile(null);
+    }
+  };
 
   const fetchMyReports = async (email: string) => {
     setLoadingReports(true);
@@ -153,6 +205,7 @@ export default function ReportStolenPage() {
       setLostNote('');
       setBountyAmount('');
       setPoliceCaseNo('');
+      setTacProfile(null);
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to submit theft report. Please try again.');
     } finally {
@@ -176,56 +229,151 @@ export default function ReportStolenPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 font-sans selection:bg-rose-500 selection:text-white pb-20">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased selection:bg-teal-600 selection:text-white">
       
-      {/* Top Navbar */}
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-rose-600 to-amber-500 flex items-center justify-center text-white font-extrabold shadow-lg shadow-rose-600/20">
-              <ShieldAlert className="w-4 h-4" />
-            </div>
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-extrabold text-base tracking-tight text-white">VerifyFlow</span>
-              <span className="text-[10px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                Anti-Theft Registry
-              </span>
-            </div>
-          </Link>
+      {/* Sticky Header Navigation */}
+      <header className="h-16 sm:h-20 bg-white/95 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-40 shadow-subtle">
+        <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 flex items-center justify-between">
+          
+          {/* Left: Responsive Logo */}
+          <div className="shrink-0">
+            <Logo size="md" className="hidden sm:flex" />
+            <Logo size="sm" showSubtitle={false} className="flex sm:hidden" />
+          </div>
 
-          <div className="flex items-center gap-3">
-            <Link href="/" className="text-xs font-bold text-slate-400 hover:text-white transition">
-              Public Search & Scanner
+          {/* Center: Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-600">
+            <Link href="/" className="hover:text-slate-900 transition-colors">
+              Verify Device
             </Link>
-            <Link href="/login">
-              <Button variant="secondary" size="sm" className="border-slate-700 text-slate-300 hover:bg-slate-800">
-                Business Login
-              </Button>
+            <Link href="/features" className="hover:text-slate-900 transition-colors">
+              Features
             </Link>
+            <Link href="/pricing" className="hover:text-teal-600 transition-colors font-bold text-slate-600">
+              Pricing & Plans
+            </Link>
+            <Link
+              href="/report-stolen"
+              className="text-rose-600 font-extrabold flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 border border-rose-200/80 shadow-2xs"
+            >
+              <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+              Report Stolen
+            </Link>
+          </nav>
+
+          {/* Right: Desktop Actions */}
+          <div className="hidden md:flex items-center gap-3">
+            <PwaInstallButton variant="header" />
+            {isLoggedIn ? (
+              <Link href={dashboardUrl}>
+                <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-xs font-bold text-slate-700 hover:text-slate-900 px-3.5 py-2 rounded-xl hover:bg-slate-100 transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link href="/onboarding">
+                  <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
+                    Start Free Trial
+                  </Button>
+                </Link>
+              </>
+            )}
+          </div>
+
+          {/* Mobile Right Controls: Clean spacing & Hamburger */}
+          <div className="flex md:hidden items-center gap-1.5">
+            <Link
+              href="/"
+              className="text-[11px] font-bold text-slate-700 hover:text-slate-900 px-2.5 py-1.5 rounded-lg hover:bg-slate-100 transition"
+            >
+              Verify
+            </Link>
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 text-slate-700 hover:text-slate-900 focus:outline-none rounded-xl hover:bg-slate-100 transition"
+              aria-label="Toggle navigation menu"
+            >
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Animated Drawer Menu */}
+        {mobileMenuOpen && (
+          <div className="md:hidden bg-white border-b border-slate-200 px-5 py-5 space-y-4 shadow-dropdown animate-in slide-in-from-top-2 duration-200">
+            <nav className="flex flex-col space-y-3 text-sm font-semibold text-slate-700">
+              <Link href="/" onClick={() => setMobileMenuOpen(false)} className="hover:text-teal-600 py-1 font-medium">
+                Verify Device
+              </Link>
+              <Link href="/features" onClick={() => setMobileMenuOpen(false)} className="hover:text-teal-600 py-1 font-medium">
+                Features
+              </Link>
+              <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="hover:text-teal-600 py-1 font-medium">
+                Pricing & Plans
+              </Link>
+              <Link
+                href="/report-stolen"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-rose-600 font-bold py-1 flex items-center gap-1.5"
+              >
+                <ShieldAlert className="w-4 h-4" />
+                Report Stolen Phone
+              </Link>
+            </nav>
+            <div className="pt-3 border-t border-slate-100 flex flex-col gap-2.5">
+              {isLoggedIn ? (
+                <Link href={dashboardUrl} onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="primary" fullWidth size="md">
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="secondary" fullWidth size="md">
+                      Sign In
+                    </Button>
+                  </Link>
+                  <Link href="/onboarding" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="primary" fullWidth size="md">
+                      Register Business
+                    </Button>
+                  </Link>
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 pt-8 space-y-8">
+      {/* Main Container */}
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 py-6 sm:py-10 space-y-6 sm:space-y-8">
         
         {/* Page Hero Header */}
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-bold animate-pulse">
-            <ShieldAlert className="w-3.5 h-3.5" />
-            <span>Global Device Blacklist & Lost Mode Network</span>
+        <div className="text-center space-y-2.5 max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-50 border border-rose-200/80 text-rose-700 text-xs font-extrabold shadow-2xs">
+            <ShieldAlert className="w-3.5 h-3.5 text-rose-600" />
+            <span>Anti-Theft Blacklist Registry</span>
           </div>
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
             Report a Stolen or Lost Phone
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-medium">
-            Lock your stolen device's IMEI across thousands of verified retail shops, buyback stores, technicians, and public search engines.
+          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium max-w-xl mx-auto">
+            Blacklist your stolen phone across verified stores, repair technicians, and public search verification portals.
           </p>
         </div>
 
-        {/* GOOGLE AUTH GATEWAY */}
+        {/* STEP 1: GOOGLE AUTH GATEWAY */}
         {!googleUser ? (
-          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-10 shadow-2xl space-y-6 text-center max-w-lg mx-auto">
-            <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center mx-auto shadow-lg">
+          <div className="vf-card border-2 border-slate-200 shadow-card-hover rounded-3xl p-6 sm:p-10 bg-white space-y-6 text-center max-w-md mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto shadow-sm">
               <svg className="w-7 h-7" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                 <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -235,74 +383,97 @@ export default function ReportStolenPage() {
             </div>
 
             <div className="space-y-1.5">
-              <h2 className="text-lg sm:text-xl font-extrabold text-white">Owner Identity Verification</h2>
-              <p className="text-xs text-slate-400 font-medium max-w-sm mx-auto">
-                Sign in with your Google account to ensure accountability, prevent anonymous spam, and manage your reported devices.
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Owner Identity Verification</h2>
+              <p className="text-xs text-slate-500 font-medium max-w-sm mx-auto leading-relaxed">
+                Signing in with your Google identity verifies that you own the report, prevents fraudulent submissions, and lets you remove the blacklist when your phone is recovered.
               </p>
             </div>
 
-            <form onSubmit={handleGoogleSignIn} className="space-y-3.5 text-left max-w-sm mx-auto">
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Your Full Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. David Adeleke"
-                  value={authNameInput}
-                  onChange={(e) => setAuthNameInput(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-xs font-medium text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition"
-                />
+            <form onSubmit={handleGoogleSignIn} className="space-y-4 text-left">
+              <div className="space-y-1.5">
+                <label className="block text-xs font-extrabold text-slate-900">
+                  Your Full Name <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. David Adeleke"
+                    value={authNameInput}
+                    onChange={(e) => setAuthNameInput(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
+                  />
+                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-300 mb-1">Your Google Email</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="e.g. david@gmail.com"
-                  value={authEmailInput}
-                  onChange={(e) => setAuthEmailInput(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-xs font-medium text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition"
-                />
+              <div className="space-y-1.5">
+                <label className="block text-xs font-extrabold text-slate-900">
+                  Google Email Address <span className="text-rose-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    required
+                    placeholder="e.g. david@gmail.com"
+                    value={authEmailInput}
+                    onChange={(e) => setAuthEmailInput(e.target.value)}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
+                  />
+                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                </div>
               </div>
 
-              <button
-                type="submit"
-                disabled={isSigningIn}
-                className="w-full py-3 rounded-xl bg-white hover:bg-slate-100 text-slate-900 font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg transition disabled:opacity-50"
-              >
-                {isSigningIn ? <Loader2 className="w-4 h-4 animate-spin text-slate-900" /> : <Lock className="w-4 h-4 text-slate-900" />}
-                Continue with Google Identity
-              </button>
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  fullWidth
+                  size="md"
+                  disabled={isSigningIn}
+                  leftIcon={isSigningIn ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-extrabold shadow-sm py-3"
+                >
+                  {isSigningIn ? 'Authenticating...' : 'Continue with Google Identity'}
+                </Button>
+              </div>
+
+              <p className="text-[11px] text-slate-400 text-center font-medium">
+                Free public registry. No credit card required.
+              </p>
             </form>
           </div>
         ) : (
-          /* AUTHENTICATED USER PORTAL */
+          /* STEP 2: AUTHENTICATED USER PORTAL */
           <div className="space-y-6">
 
             {/* User Session Bar & Navigation Tabs */}
-            <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="vf-card border-2 border-slate-200 shadow-sm p-4 rounded-2xl bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-500/20 border border-rose-500/30 text-rose-400 flex items-center justify-center font-bold text-sm">
+                <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center font-extrabold text-sm shadow-2xs">
                   {googleUser.name.charAt(0)}
                 </div>
                 <div>
-                  <p className="text-xs font-extrabold text-white">{googleUser.name}</p>
-                  <p className="text-[11px] text-slate-400 font-mono">{googleUser.email}</p>
+                  <p className="text-xs font-extrabold text-slate-900">{googleUser.name}</p>
+                  <p className="text-[11px] text-slate-500 font-medium">{googleUser.email}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                <div className="flex p-1 bg-slate-800/80 rounded-xl border border-slate-700 text-xs font-bold">
+                <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-600">
                   <button
                     onClick={() => setActiveTab('REPORT')}
-                    className={`px-3 py-1.5 rounded-lg transition ${activeTab === 'REPORT' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                    className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                      activeTab === 'REPORT' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
+                    }`}
                   >
                     Report Device
                   </button>
                   <button
                     onClick={() => setActiveTab('MY_REPORTS')}
-                    className={`px-3 py-1.5 rounded-lg transition ${activeTab === 'MY_REPORTS' ? 'bg-rose-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'}`}
+                    className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                      activeTab === 'MY_REPORTS' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
+                    }`}
                   >
                     My Reports
                   </button>
@@ -311,7 +482,7 @@ export default function ReportStolenPage() {
                 <button
                   onClick={handleSignOut}
                   title="Sign out"
-                  className="p-2 rounded-xl border border-slate-700 text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition text-xs"
+                  className="p-2 rounded-xl border border-slate-200 text-slate-500 hover:text-rose-600 hover:bg-slate-50 transition text-xs"
                 >
                   <LogOut className="w-4 h-4" />
                 </button>
@@ -324,25 +495,27 @@ export default function ReportStolenPage() {
 
                 {/* SUCCESS NOTIFICATION */}
                 {successReport && (
-                  <div className="p-6 rounded-3xl bg-emerald-950/60 border border-emerald-500/30 text-emerald-200 space-y-3 animate-in fade-in">
+                  <div className="p-5 sm:p-6 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-950 space-y-3 animate-in fade-in shadow-sm">
                     <div className="flex items-center gap-3">
-                      <CheckCircle2 className="w-6 h-6 text-emerald-400 shrink-0" />
+                      <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-5 h-5" />
+                      </div>
                       <div>
-                        <h3 className="font-extrabold text-white text-base">Device Successfully Blacklisted</h3>
-                        <p className="text-xs text-emerald-300">
-                          IMEI <strong>{successReport.imei1}</strong> ({successReport.brand} {successReport.model}) is now flagged as STOLEN across all partner search portals.
+                        <h3 className="font-extrabold text-emerald-900 text-base">Device Successfully Blacklisted</h3>
+                        <p className="text-xs text-emerald-700 font-medium">
+                          IMEI <strong className="font-mono">{successReport.imei1}</strong> ({successReport.brand} {successReport.model}) is now flagged as STOLEN across all partner search portals.
                         </p>
                       </div>
                     </div>
-                    <div className="pt-3 border-t border-emerald-500/20 flex items-center justify-between text-xs">
-                      <Link href={`/verify?imei=${successReport.imei1}`}>
-                        <span className="text-emerald-300 hover:underline font-bold flex items-center gap-1">
-                          View Live Verification Status <ExternalLink className="w-3 h-3" />
+                    <div className="pt-3 border-t border-emerald-200 flex items-center justify-between text-xs">
+                      <Link href={`/dashboard/verify?imei=${successReport.imei1}`}>
+                        <span className="text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1">
+                          View Verification Status <ExternalLink className="w-3.5 h-3.5" />
                         </span>
                       </Link>
                       <button
                         onClick={() => setSuccessReport(null)}
-                        className="px-3 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-200 font-bold"
+                        className="px-3 py-1 rounded-lg bg-emerald-200/60 hover:bg-emerald-200 text-emerald-800 font-bold transition"
                       >
                         Dismiss
                       </button>
@@ -350,81 +523,148 @@ export default function ReportStolenPage() {
                   </div>
                 )}
 
-                {/* HELPER BOX: GOOGLE FIND MY DEVICE & APPLE ID */}
-                <div className="p-5 rounded-2xl bg-gradient-to-r from-blue-950/40 via-indigo-950/30 to-purple-950/40 border border-blue-500/30 space-y-3">
+                {/* CLOUD IMEI RETRIEVAL GUIDE & HELPER */}
+                <div className="p-5 sm:p-6 rounded-3xl bg-blue-50/70 border border-blue-200 text-slate-900 space-y-4 shadow-2xs">
                   <div className="flex items-start gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-sm">
                       <Info className="w-5 h-5" />
                     </div>
                     <div className="space-y-1">
-                      <h4 className="font-extrabold text-white text-xs sm:text-sm">Don't have your phone box or paper receipt?</h4>
-                      <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed font-medium">
-                        Your IMEI is saved in the cloud. Click below to open your device manager in a new tab, copy the IMEI, and paste it here:
+                      <h4 className="font-extrabold text-slate-900 text-sm sm:text-base tracking-tight">
+                        Do not have your phone, box, or paper receipt?
+                      </h4>
+                      <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                        Your 15-digit IMEI is stored in your Apple or Google cloud account. Follow the quick guide below to retrieve it in under 60 seconds:
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2.5 pt-1 pl-0 sm:pl-12">
-                    <a
-                      href="https://google.com/android/find"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs shadow-md shadow-blue-600/20 transition"
-                    >
-                      <span>🔍 Open Google Find My Device (Android)</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                    <a
-                      href="https://appleid.apple.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition"
-                    >
-                      <span>🍏 Open Apple ID Devices (iPhone)</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                  {/* 2-Column Instructions: iPhone vs Android */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 pt-1">
+                    
+                    {/* iPhone / Apple ID Guide */}
+                    <div className="p-4 rounded-2xl bg-white border border-blue-100 shadow-2xs space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Smartphone className="w-4 h-4 text-slate-900" />
+                          <span className="font-extrabold text-xs text-slate-900">iPhone / iOS Users</span>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Apple ID</span>
+                      </div>
+                      
+                      <ol className="text-[11px] text-slate-600 space-y-1.5 font-medium list-decimal list-inside">
+                        <li>Tap the button below to open your Apple account.</li>
+                        <li>Sign in and scroll down to the <strong>Devices</strong> section.</li>
+                        <li>Click your iPhone to view and copy the <strong>15-digit IMEI</strong>.</li>
+                        <li>Return to this page and tap <strong>Paste</strong>.</li>
+                      </ol>
+
+                      <a
+                        href="https://appleid.apple.com"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-sm transition"
+                      >
+                        <Smartphone className="w-3.5 h-3.5" />
+                        <span>Open Apple ID Devices</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+                      </a>
+                    </div>
+
+                    {/* Android / Google Guide */}
+                    <div className="p-4 rounded-2xl bg-white border border-blue-100 shadow-2xs space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Search className="w-4 h-4 text-blue-600" />
+                          <span className="font-extrabold text-xs text-slate-900">Android Users</span>
+                        </div>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded">Google Cloud</span>
+                      </div>
+                      
+                      <ol className="text-[11px] text-slate-600 space-y-1.5 font-medium list-decimal list-inside">
+                        <li>Tap the button below to open Google Find My Device.</li>
+                        <li>Select your phone model from the top device bar.</li>
+                        <li>Tap the <strong>Info (i) icon</strong> next to the phone to view the <strong>IMEI</strong>.</li>
+                        <li>Return to this page and tap <strong>Paste</strong>.</li>
+                      </ol>
+
+                      <a
+                        href="https://google.com/android/find"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-sm transition"
+                      >
+                        <Search className="w-3.5 h-3.5" />
+                        <span>Open Google Find My Device</span>
+                        <ExternalLink className="w-3.5 h-3.5 text-blue-200" />
+                      </a>
+                    </div>
+
                   </div>
                 </div>
 
                 {/* REPORT FORM */}
-                <form onSubmit={handleSubmitReport} className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-5 shadow-2xl">
+                <form onSubmit={handleSubmitReport} className="vf-card border-2 border-slate-200 shadow-card-hover rounded-3xl p-5 sm:p-8 space-y-6 bg-white">
                   {errorMessage && (
-                    <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 shrink-0" />
+                    <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
                       <span>{errorMessage}</span>
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Primary IMEI Number *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="15-digit IMEI (dial *#06# or copy from cloud)"
-                        value={imei1}
-                        onChange={(e) => setImei1(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl font-mono text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 font-bold"
-                      />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5 text-xs">
+                    
+                    {/* Primary IMEI with Instant TAC Auto-complete */}
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <div className="flex items-center justify-between">
+                        <label className="block text-xs font-extrabold text-slate-900">
+                          Primary IMEI Number <span className="text-rose-500">*</span>
+                        </label>
+                        {tacProfile?.brand && (
+                          <span className="text-[11px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-lg flex items-center gap-1 animate-in fade-in">
+                            <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+                            Auto-filled: {tacProfile.brand} {tacProfile.model}
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          required
+                          maxLength={18}
+                          placeholder="Paste or enter 15-digit IMEI"
+                          value={imei1}
+                          onChange={(e) => handleImeiChange(e.target.value)}
+                          className="w-full pl-4 pr-24 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-mono text-sm font-bold focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
+                        />
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            try {
+                              const text = await navigator.clipboard.readText();
+                              if (text) handleImeiChange(text.trim());
+                            } catch {}
+                          }}
+                          className="absolute right-2 top-2 px-2.5 py-1.5 rounded-lg bg-slate-200/80 hover:bg-slate-300 text-slate-700 text-xs font-bold transition flex items-center gap-1"
+                          title="Paste from clipboard"
+                        >
+                          <Copy className="w-3 h-3" /> Paste
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-slate-500 font-medium">
+                        TAC (first 8 digits) will instantly auto-populate the Brand and Model fields below.
+                      </p>
                     </div>
 
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Secondary IMEI (eSIM / SIM 2)</label>
-                      <input
-                        type="text"
-                        placeholder="Optional secondary IMEI"
-                        value={imei2}
-                        onChange={(e) => setImei2(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl font-mono text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Device Brand</label>
+                    {/* Device Brand */}
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-extrabold text-slate-900">
+                        Device Brand <span className="text-rose-500">*</span>
+                      </label>
                       <select
                         value={brand}
                         onChange={(e) => setBrand(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white font-bold focus:outline-none focus:border-rose-500"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-bold focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
                       >
                         <option value="Apple">Apple</option>
                         <option value="Samsung">Samsung</option>
@@ -437,68 +677,99 @@ export default function ReportStolenPage() {
                       </select>
                     </div>
 
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Model Name</label>
+                    {/* Model Name */}
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-extrabold text-slate-900">
+                        Model Name <span className="text-rose-500">*</span>
+                      </label>
                       <input
                         type="text"
                         required
-                        placeholder="e.g. iPhone 14 Pro Max / Galaxy S23"
+                        placeholder="e.g. iPhone 14 Pro Max"
                         value={model}
                         onChange={(e) => setModel(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white font-bold placeholder-slate-500 focus:outline-none focus:border-rose-500"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
                       />
                     </div>
 
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Your Contact Phone / WhatsApp # *</label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="e.g. +234 801 234 5678"
-                        value={ownerPhone}
-                        onChange={(e) => setOwnerPhone(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white font-bold placeholder-slate-500 focus:outline-none focus:border-rose-500"
-                      />
-                      <p className="text-[10px] text-slate-400 mt-1">Shops who scan your phone will be able to call/WhatsApp this number.</p>
-                    </div>
-
-                    <div>
-                      <label className="block font-bold text-slate-300 mb-1">Police Case Number (Optional)</label>
+                    {/* Secondary IMEI */}
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-extrabold text-slate-900">
+                        Secondary IMEI <span className="text-slate-400 font-normal">(eSIM / SIM 2)</span>
+                      </label>
                       <input
                         type="text"
-                        placeholder="e.g. CR-10948/2026"
-                        value={policeCaseNo}
-                        onChange={(e) => setPoliceCaseNo(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-rose-500"
+                        placeholder="Optional secondary IMEI"
+                        value={imei2}
+                        onChange={(e) => setImei2(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-mono text-sm font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
                       />
                     </div>
 
-                    <div className="md:col-span-2">
-                      <label className="block font-bold text-slate-300 mb-1">
-                        Lost Mode Note / Recovery Reward Message
+                    {/* Contact Phone Number */}
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-extrabold text-slate-900">
+                        Your Contact Phone / WhatsApp # <span className="text-rose-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="tel"
+                          required
+                          placeholder="+234 801 234 5678"
+                          value={ownerPhone}
+                          onChange={(e) => setOwnerPhone(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-bold focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
+                        />
+                        <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      </div>
+                    </div>
+
+                    {/* Police Case Number */}
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="block text-xs font-extrabold text-slate-900">
+                        Police Case Number <span className="text-slate-400 font-normal">(Optional)</span>
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          placeholder="e.g. CR-10948/2026"
+                          value={policeCaseNo}
+                          onChange={(e) => setPoliceCaseNo(e.target.value)}
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
+                        />
+                        <FileText className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+                      </div>
+                    </div>
+
+                    {/* Lost Mode Note */}
+                    <div className="space-y-1.5 sm:col-span-2">
+                      <label className="block text-xs font-extrabold text-slate-900">
+                        Lost Mode Note / Recovery Reward Message <span className="text-slate-400 font-normal">(Optional)</span>
                       </label>
                       <textarea
                         rows={3}
-                        placeholder="e.g. This phone was stolen in Ikeja on Friday. A reward of $100/₦150,000 will be paid to any technician or shop that facilitates its safe return. Please do not service or buy."
+                        placeholder="e.g. This phone was stolen near Ikeja. A reward of ₦50,000 will be paid for safe recovery. Please contact the owner directly."
                         value={lostNote}
                         onChange={(e) => setLostNote(e.target.value)}
-                        className="w-full px-4 py-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-rose-500 resize-none font-medium"
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all resize-none shadow-2xs"
                       />
                     </div>
                   </div>
 
-                  <div className="pt-4 border-t border-slate-800 flex items-center justify-between">
-                    <p className="text-[11px] text-slate-400">
-                      Logged in as: <strong>{googleUser.email}</strong>
+                  <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <p className="text-xs text-slate-500 font-medium">
+                      Reporting as: <strong className="text-slate-900">{googleUser.email}</strong>
                     </p>
-                    <button
+                    <Button
                       type="submit"
+                      variant="destructive"
+                      size="md"
                       disabled={isSubmitting}
-                      className="px-6 py-3 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs shadow-lg shadow-rose-600/30 flex items-center gap-2 transition disabled:opacity-50"
+                      leftIcon={isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldAlert className="w-4 h-4" />}
+                      className="w-full sm:w-auto bg-rose-600 hover:bg-rose-700 text-white font-extrabold shadow-sm py-3"
                     >
-                      {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <ShieldAlert className="w-4 h-4" />}
-                      Publish Stolen Alert & Blacklist
-                    </button>
+                      {isSubmitting ? 'Publishing Blacklist...' : 'Publish Stolen Alert'}
+                    </Button>
                   </div>
                 </form>
               </div>
@@ -506,15 +777,15 @@ export default function ReportStolenPage() {
 
             {/* TAB 2: MY REPORTED DEVICES */}
             {activeTab === 'MY_REPORTS' && (
-              <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 space-y-4 shadow-2xl">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+              <div className="vf-card border-2 border-slate-200 shadow-card-hover rounded-3xl p-5 sm:p-8 space-y-4 bg-white">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                   <div>
-                    <h3 className="text-base sm:text-lg font-extrabold text-white">Your Reported Devices</h3>
-                    <p className="text-xs text-slate-400 font-medium">Manage and resolve active theft alerts associated with {googleUser.email}</p>
+                    <h3 className="text-base sm:text-lg font-extrabold text-slate-900">Your Reported Devices</h3>
+                    <p className="text-xs text-slate-500 font-medium">Manage and resolve active theft alerts associated with {googleUser.email}</p>
                   </div>
                   <button
                     onClick={() => fetchMyReports(googleUser.email)}
-                    className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white transition"
+                    className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition"
                     title="Refresh list"
                   >
                     <RefreshCw className="w-4 h-4" />
@@ -522,42 +793,47 @@ export default function ReportStolenPage() {
                 </div>
 
                 {loadingReports ? (
-                  <div className="py-12 text-center text-slate-400 text-xs flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin" /> Loading your reports...
+                  <div className="py-12 text-center text-slate-500 text-xs flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-teal-600" /> Loading your reports...
                   </div>
                 ) : myReports.length === 0 ? (
-                  <div className="py-12 text-center text-slate-400 text-xs space-y-2">
-                    <Smartphone className="w-8 h-8 mx-auto text-slate-600" />
-                    <p className="font-bold text-white">No reported devices found</p>
+                  <div className="py-12 text-center text-slate-500 text-xs space-y-2">
+                    <Smartphone className="w-8 h-8 mx-auto text-slate-400" />
+                    <p className="font-extrabold text-slate-800 text-sm">No reported devices found</p>
                     <p>You haven't reported any devices as stolen under this account yet.</p>
                   </div>
                 ) : (
-                  <div className="divide-y divide-slate-800">
+                  <div className="divide-y divide-slate-100">
                     {myReports.map((item) => (
                       <div key={item.id} className="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="font-extrabold text-white text-sm">{item.brand} {item.model}</span>
-                            <span className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider ${item.status === 'ACTIVE' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'}`}>
+                            <span className="font-extrabold text-slate-900 text-sm">{item.brand} {item.model}</span>
+                            <Badge variant={item.status === 'ACTIVE' ? 'error' : 'success'}>
                               {item.status === 'ACTIVE' ? 'ACTIVE BLACKLIST' : 'RECOVERED'}
-                            </span>
+                            </Badge>
                           </div>
-                          <p className="text-xs font-mono text-slate-400">IMEI: <strong>{item.imei1}</strong></p>
+                          <p className="text-xs font-mono text-slate-600">IMEI: <strong>{item.imei1}</strong></p>
                           {item.lostNote && (
-                            <p className="text-[11px] text-slate-300 italic">"{item.lostNote}"</p>
+                            <p className="text-[11px] text-slate-500 italic">"{item.lostNote}"</p>
                           )}
                         </div>
 
                         <div className="flex items-center gap-2 shrink-0">
                           {item.status === 'ACTIVE' ? (
-                            <button
+                            <Button
+                              variant="primary"
+                              size="sm"
                               onClick={() => handleResolveReport(item.id)}
-                              className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center gap-1.5"
+                              leftIcon={<CheckCircle2 className="w-3.5 h-3.5" />}
+                              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs"
                             >
-                              <CheckCircle2 className="w-3.5 h-3.5" /> Mark as Found / Clear Blacklist
-                            </button>
+                              Mark as Found / Clear
+                            </Button>
                           ) : (
-                            <span className="text-xs text-emerald-400 font-bold">Resolved</span>
+                            <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> Resolved
+                            </span>
                           )}
                         </div>
                       </div>
@@ -571,6 +847,58 @@ export default function ReportStolenPage() {
         )}
 
       </main>
+
+      {/* Footer */}
+      <footer className="bg-slate-50 text-slate-700 text-sm py-14 px-6 border-t border-slate-200 mt-auto">
+        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
+          {/* Col 1 */}
+          <div className="space-y-3">
+            <div className="font-extrabold text-slate-900 text-base">Product</div>
+            <ul className="space-y-2.5 font-medium text-slate-700 text-xs">
+              <li><Link href="/pricing" className="hover:text-teal-600 transition">Pricing & Plans</Link></li>
+              <li><Link href="/report-stolen" className="text-rose-600 hover:text-rose-700 font-bold transition flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-rose-600" /> Report Stolen Phone</Link></li>
+              <li><Link href="/features" className="hover:text-teal-600 transition">Features</Link></li>
+              <li><Link href="/" className="hover:text-teal-600 transition">Verification Ledger</Link></li>
+            </ul>
+          </div>
+
+          {/* Col 2 */}
+          <div className="space-y-3">
+            <div className="font-extrabold text-slate-900 text-base">Resources</div>
+            <ul className="space-y-2.5 font-medium text-slate-700 text-xs">
+              <li><Link href="/report-stolen" className="hover:text-teal-600 transition">Anti-Theft Registry</Link></li>
+              <li><Link href="/" className="hover:text-teal-600 transition">Device Lookup</Link></li>
+              <li><span className="text-slate-400">Developer API (Soon)</span></li>
+            </ul>
+          </div>
+
+          {/* Col 3 */}
+          <div className="space-y-3">
+            <div className="font-extrabold text-slate-900 text-base">Company</div>
+            <ul className="space-y-2.5 font-medium text-slate-700 text-xs">
+              <li><Link href="/" className="hover:text-teal-600 transition">About VerifyFlow</Link></li>
+              <li><Link href="/login" className="hover:text-teal-600 transition">Business Portal</Link></li>
+            </ul>
+          </div>
+
+          {/* Col 4 */}
+          <div className="space-y-3">
+            <div className="font-extrabold text-slate-900 text-base">Legal & Security</div>
+            <ul className="space-y-2.5 font-medium text-slate-700 text-xs">
+              <li><span className="text-slate-500">Privacy Policy</span></li>
+              <li><span className="text-slate-500">Terms of Service</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="max-w-7xl mx-auto pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-600">
+          <div>VerifyFlow Retail Operating System © 2026. All rights reserved.</div>
+          <div className="flex items-center gap-6">
+            <span>English (US)</span>
+            <span>Security Compliant</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

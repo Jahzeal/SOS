@@ -2131,7 +2131,7 @@ export default function PublicLandingPageV2() {
             <div className="font-extrabold text-slate-900 text-base">Product</div>
             <ul className="space-y-2.5 font-medium text-slate-700">
               <li><Link href="/pricing" className="hover:text-teal-600 transition">Pricing & Plans</Link></li>
-              <li><Link href="/report-stolen" className="text-rose-600 hover:text-rose-700 font-bold transition flex items-center gap-1.5">🚨 Report Stolen Phone</Link></li>
+              <li><Link href="/report-stolen" className="text-rose-600 hover:text-rose-700 font-bold transition flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-rose-600" /> Report Stolen Phone</Link></li>
               <li><a href="#features" className="hover:text-teal-600 transition">Features</a></li>
               <li><a href="#solutions" className="hover:text-teal-600 transition">Verification Ledger</a></li>
             </ul>
