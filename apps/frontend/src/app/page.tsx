@@ -836,7 +836,7 @@ export default function PublicLandingPageV2() {
           <Logo size="md" />
 
           {/* Center: Desktop Nav Links */}
-          <nav className="hidden md:flex items-center gap-8 text-xs font-semibold text-slate-600">
+          <nav className="hidden md:flex items-center gap-7 text-xs font-semibold text-slate-600">
             <Link href="/features" className="hover:text-slate-900 transition-colors font-bold text-slate-900">
               Features
             </Link>
@@ -848,6 +848,13 @@ export default function PublicLandingPageV2() {
             </a>
             <Link href="/pricing" className="hover:text-zinc-900 transition-colors font-bold text-teal-600">
               Pricing & Plans
+            </Link>
+            <Link
+              href="/report-stolen"
+              className="text-rose-600 hover:text-rose-700 font-extrabold flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200/80 hover:bg-rose-100 transition-colors shadow-2xs"
+            >
+              <ShieldAlert className="w-3.5 h-3.5" />
+              Report Stolen
             </Link>
             <a href="#faq" className="hover:text-slate-900 transition-colors">
               Help Center
@@ -901,6 +908,14 @@ export default function PublicLandingPageV2() {
             <nav className="flex flex-col space-y-3 text-sm font-semibold text-slate-700">
               <Link href="/pricing" onClick={() => setMobileMenuOpen(false)} className="text-teal-600 font-bold py-1">
                 Pricing & Plans
+              </Link>
+              <Link
+                href="/report-stolen"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-rose-600 font-bold py-1 flex items-center gap-1.5"
+              >
+                <ShieldAlert className="w-4 h-4" />
+                Report Stolen Phone
               </Link>
               <a
                 href="#features"
@@ -994,9 +1009,18 @@ export default function PublicLandingPageV2() {
         {/* Right Side: Live Customer Verification Scanner Widget Card */}
         <div id="verify-widget" className="lg:w-1/2 w-full max-w-xl">
           <div className="vf-card border-2 border-slate-200 shadow-card-hover p-5 sm:p-6 rounded-2xl bg-white space-y-4">
-            <div className="border-b border-slate-100 pb-3">
-              <h3 className="text-base font-extrabold text-slate-900">Verify Phone Record</h3>
-              <p className="text-xs text-slate-500 font-medium">Instant IMEI, Serial & QR origin lookup</p>
+            <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900">Verify Phone Record</h3>
+                <p className="text-xs text-slate-500 font-medium">Instant IMEI, Serial & QR origin lookup</p>
+              </div>
+              <Link
+                href="/report-stolen"
+                className="text-[11px] font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200/80 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1 shadow-2xs"
+              >
+                <ShieldAlert className="w-3.5 h-3.5" />
+                Report Stolen
+              </Link>
             </div>
 
             {/* Input Tabs: IMEI / QR / Serial */}
@@ -2107,9 +2131,9 @@ export default function PublicLandingPageV2() {
             <div className="font-extrabold text-slate-900 text-base">Product</div>
             <ul className="space-y-2.5 font-medium text-slate-700">
               <li><Link href="/pricing" className="hover:text-teal-600 transition">Pricing & Plans</Link></li>
+              <li><Link href="/report-stolen" className="text-rose-600 hover:text-rose-700 font-bold transition flex items-center gap-1.5">🚨 Report Stolen Phone</Link></li>
               <li><a href="#features" className="hover:text-teal-600 transition">Features</a></li>
               <li><a href="#solutions" className="hover:text-teal-600 transition">Verification Ledger</a></li>
-              <li><Link href="/pricing" className="hover:text-teal-600 transition">Pricing Plans</Link></li>
             </ul>
           </div>
 
@@ -2117,6 +2141,7 @@ export default function PublicLandingPageV2() {
           <div className="space-y-3">
             <div className="font-extrabold text-slate-900 text-base">Resources</div>
             <ul className="space-y-2.5 font-medium text-slate-700">
+              <li><Link href="/report-stolen" className="hover:text-teal-600 transition">Anti-Theft Registry</Link></li>
               <li><a href="#faq" className="hover:text-teal-600 transition">Help Center</a></li>
               <li><a href="#faq" className="hover:text-teal-600 transition">Documentation</a></li>
               <li><span className="text-slate-400">Developer API (Soon)</span></li>
