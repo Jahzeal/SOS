@@ -43,43 +43,42 @@ import {
   X,
 } from 'lucide-react';
 
+import { useInventory, useInventorySummary } from '@/hooks/useDashboardQueries';
+
 export default function BusinessDashboardPage() {
   const router = useRouter();
-  const { user, isLoading } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
 
   const [salesTimeframe, setSalesTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
-  const [livePhones, setLivePhones] = useState<any[]>([]);
-  const [isFetching, setIsFetching] = useState(true);
+
+  // Cached Queries (instant 0ms render from memory cache)
+  const { data: livePhones = [], isLoading: isInventoryLoading } = useInventory();
+  const { data: summaryData, isLoading: isSummaryLoading } = useInventorySummary();
+
+  const isDataLoading = isInventoryLoading && isSummaryLoading && livePhones.length === 0;
 
   // Protected Route Guard
   useEffect(() => {
-    if (!isLoading && !user) {
+    if (!isAuthLoading && !user) {
       const hasToken = typeof window !== 'undefined' && localStorage.getItem('vf_access_token');
       if (!hasToken) {
         router.push('/login');
       }
     }
-  }, [user, isLoading, router]);
+  }, [user, isAuthLoading, router]);
 
-  // Fetch Live Backend Data
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const inventory = await api.getInventory();
-        setLivePhones(inventory);
-      } catch (err) {
-        console.warn('Dashboard fetch skipped/offline:', err);
-        setLivePhones([]);
-      } finally {
-        setIsFetching(false);
-      }
-    }
-    if (user) {
-      loadData();
-    }
-  }, [user]);
+  const metrics = useMemo(() => {
+    const kpis = summaryData?.kpis;
+    const totalRegistered = kpis?.totalRegistered ?? livePhones.length;
+    const inStock = kpis?.inStockCount ?? livePhones.filter((p: any) => p.status === 'IN_STOCK').length;
+    const sold = kpis?.soldCount ?? livePhones.filter((p: any) => p.status === 'SOLD').length;
+    const warranties = kpis?.activeWarrantiesCount ?? livePhones.filter((p: any) => p.warrantyExpiryDate && new Date(p.warrantyExpiryDate) > new Date()).length;
+    const repairs = kpis?.inRepairCount ?? livePhones.filter((p: any) => p.status === 'IN_REPAIR').length;
+    const valuation = kpis?.stockValuation ?? livePhones.reduce((sum: number, p: any) => sum + (p.sellingPrice || 0), 0);
+    return { totalRegistered, inStock, sold, warranties, repairs, valuation };
+  }, [livePhones, summaryData]);
 
   const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Store Owner';
   const businessName = user?.business?.name || 'My Store Workspace';
@@ -156,7 +155,11 @@ export default function BusinessDashboardPage() {
               <Smartphone className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">{livePhones.length.toLocaleString()}</div>
+          {isDataLoading ? (
+            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+          ) : (
+            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">{metrics.totalRegistered.toLocaleString()}</div>
+          )}
           <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
             <ArrowUpRight className="w-3.5 h-3.5" /> Real-time database ledger
           </div>
@@ -170,9 +173,13 @@ export default function BusinessDashboardPage() {
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            {livePhones.filter((p) => p.status === 'SOLD').length.toLocaleString()}
-          </div>
+          {isDataLoading ? (
+            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+          ) : (
+            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              {metrics.sold.toLocaleString()}
+            </div>
+          )}
           <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
             <ArrowUpRight className="w-3.5 h-3.5" /> Completed transactions
           </div>
@@ -186,9 +193,13 @@ export default function BusinessDashboardPage() {
               <Package className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            {livePhones.filter((p) => p.status === 'IN_STOCK').length.toLocaleString()}
-          </div>
+          {isDataLoading ? (
+            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+          ) : (
+            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              {metrics.inStock.toLocaleString()}
+            </div>
+          )}
           <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600">
             <TrendingUp className="w-3.5 h-3.5" /> Ready for POS checkout
           </div>
@@ -202,9 +213,13 @@ export default function BusinessDashboardPage() {
               <Lock className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            {livePhones.filter((p) => p.warrantyExpiryDate && new Date(p.warrantyExpiryDate) > new Date()).length.toLocaleString()}
-          </div>
+          {isDataLoading ? (
+            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+          ) : (
+            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              {metrics.warranties.toLocaleString()}
+            </div>
+          )}
           <div className="text-[11px] font-bold text-amber-700">Active store guarantees</div>
         </div>
 
@@ -216,9 +231,13 @@ export default function BusinessDashboardPage() {
               <Wrench className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
-            {livePhones.filter((p) => p.status === 'IN_REPAIR').length.toLocaleString()}
-          </div>
+          {isDataLoading ? (
+            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+          ) : (
+            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+              {metrics.repairs.toLocaleString()}
+            </div>
+          )}
           <div className="text-[11px] font-bold text-purple-700">In technician queue</div>
         </div>
 
@@ -230,9 +249,13 @@ export default function BusinessDashboardPage() {
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl font-extrabold text-slate-900 tracking-tight">
-            ₦{livePhones.reduce((sum, p) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
-          </div>
+          {isDataLoading ? (
+            <div className="h-8 w-24 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+          ) : (
+            <div className="text-xl font-extrabold text-slate-900 tracking-tight">
+              ₦{metrics.valuation.toLocaleString()}
+            </div>
+          )}
           <div className="text-[11px] font-bold text-slate-500">Live inventory value</div>
         </div>
       </div>
@@ -344,15 +367,23 @@ export default function BusinessDashboardPage() {
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
               <div className="text-slate-500 font-semibold">In Stock</div>
-              <div className="text-xl font-extrabold text-slate-900 mt-1">
-                {livePhones.filter((p) => p.status === 'IN_STOCK').length.toLocaleString()} Units
-              </div>
+              {isDataLoading ? (
+                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse mt-1" />
+              ) : (
+                <div className="text-xl font-extrabold text-slate-900 mt-1">
+                  {metrics.inStock.toLocaleString()} Units
+                </div>
+              )}
             </div>
             <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
               <div className="text-emerald-800 font-semibold">Sold Devices</div>
-              <div className="text-xl font-extrabold text-emerald-950 mt-1">
-                {livePhones.filter((p) => p.status === 'SOLD').length.toLocaleString()} Units
-              </div>
+              {isDataLoading ? (
+                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse mt-1" />
+              ) : (
+                <div className="text-xl font-extrabold text-emerald-950 mt-1">
+                  {metrics.sold.toLocaleString()} Units
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -381,9 +412,13 @@ export default function BusinessDashboardPage() {
 
           <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 text-xs space-y-1">
             <div className="font-bold text-slate-900">Total Revenue ({salesTimeframe.toUpperCase()})</div>
-            <div className="text-2xl font-extrabold text-emerald-950">
-              ₦{livePhones.filter((p) => p.status === 'SOLD').reduce((sum, p) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
-            </div>
+            {isDataLoading ? (
+              <div className="h-7 w-24 bg-slate-200/60 rounded animate-pulse my-0.5" />
+            ) : (
+              <div className="text-2xl font-extrabold text-emerald-950">
+                ₦{livePhones.filter((p: any) => p.status === 'SOLD').reduce((sum: number, p: any) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
+              </div>
+            )}
             <div className="text-[11px] text-emerald-700 font-semibold">Live POS Sales Revenue</div>
           </div>
         </div>
@@ -402,9 +437,13 @@ export default function BusinessDashboardPage() {
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
               <div className="text-amber-800 font-semibold">Active Guarantees</div>
-              <div className="text-xl font-extrabold text-amber-950 mt-1">
-                {livePhones.filter((p) => p.warrantyExpiryDate && new Date(p.warrantyExpiryDate) > new Date()).length.toLocaleString()} Units
-              </div>
+              {isDataLoading ? (
+                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse mt-1" />
+              ) : (
+                <div className="text-xl font-extrabold text-amber-950 mt-1">
+                  {metrics.warranties.toLocaleString()} Units
+                </div>
+              )}
             </div>
             <div className="p-3 rounded-xl bg-rose-50 border border-rose-200">
               <div className="text-rose-800 font-semibold">Expiring Soon</div>
