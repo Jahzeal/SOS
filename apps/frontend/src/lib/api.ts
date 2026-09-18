@@ -14,6 +14,9 @@ export interface RegisterPhonePayload {
   color?: string;
   storageCapacity?: string;
   condition?: string;
+  carrierStatus?: string;
+  lockedCarrier?: string;
+  activationStatus?: string;
   purchasePrice?: number;
   sellingPrice?: number;
   warrantyDurationMonths?: number;
@@ -636,7 +639,58 @@ class ApiClient {
       }>;
     }>('/dashboard/notifications');
   }
+
+  // --- Theft & Blacklist Reporting ---
+  async flagPhoneStolen(id: string, payload: { theftReason?: string; lostNote?: string; contactPhone?: string; policeCaseNo?: string }) {
+    return this.request<any>(`/phones/${id}/flag-stolen`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async clearPhoneStolen(id: string) {
+    return this.request<any>(`/phones/${id}/clear-stolen`, {
+      method: 'PATCH',
+    });
+  }
+
+  async submitPublicTheftReport(payload: {
+    imei1: string;
+    imei2?: string;
+    serialNumber?: string;
+    brand: string;
+    model: string;
+    color?: string;
+    ownerEmail: string;
+    ownerName: string;
+    ownerPhone: string;
+    lostNote?: string;
+    bountyAmount?: number;
+    verificationSource?: string;
+    policeCaseNo?: string;
+  }) {
+    return this.request<any>('/theft-reports/public-report', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async resolveTheftReport(id: string, payload: { ownerEmail: string; resolvedNote?: string }) {
+    return this.request<any>(`/theft-reports/resolve/${id}`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getUserTheftReports(email: string) {
+    return this.request<any[]>(`/theft-reports/user-reports?email=${encodeURIComponent(email)}`);
+  }
+
+  async publicVerifyDevice(identifier: string) {
+    return this.request<any>(`/verification/verify/${encodeURIComponent(identifier)}`);
+  }
 }
 
 export const api = new ApiClient();
+
 

@@ -37,8 +37,11 @@ export default function RegisterPhonePage() {
   const [serialNumber, setSerialNumber] = useState('');
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
-  const [storage, setStorage] = useState('');
+  const [storage, setStorage] = useState('128 GB');
   const [condition, setCondition] = useState<'New' | 'Used' | 'Refurb'>('New');
+  const [carrierStatus, setCarrierStatus] = useState<'UNLOCKED' | 'CARRIER_LOCKED'>('UNLOCKED');
+  const [lockedCarrier, setLockedCarrier] = useState('');
+  const [activationStatus, setActivationStatus] = useState<'READY_FOR_SETUP' | 'ACTIVATED' | 'NOT_ACTIVATED'>('READY_FOR_SETUP');
   const [warrantyMonths, setWarrantyMonths] = useState<number>(0);
   const [purchasePrice, setPurchasePrice] = useState<string>('');
   const [sellingPrice, setSellingPrice] = useState<string>('');
@@ -117,6 +120,9 @@ export default function RegisterPhonePage() {
         model: model.trim(),
         storageCapacity: storage,
         condition: conditionMap[condition] || 'NEW',
+        carrierStatus: carrierStatus as any,
+        lockedCarrier: carrierStatus === 'CARRIER_LOCKED' ? lockedCarrier.trim() : undefined,
+        activationStatus: activationStatus as any,
         warrantyDurationMonths: warrantyMonths,
         purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
         sellingPrice: sellingPrice ? parseFloat(sellingPrice) : undefined,
@@ -129,6 +135,8 @@ export default function RegisterPhonePage() {
         brand: registered.brand,
         storage: registered.storageCapacity || storage,
         condition: registered.condition || condition,
+        carrierStatus: registered.carrierStatus || carrierStatus,
+        activationStatus: registered.activationStatus || activationStatus,
         qrCodeUrl: registered.qrCodeUrl,
         date: new Date(registered.createdAt || Date.now()).toISOString().split('T')[0],
       });
@@ -419,6 +427,58 @@ export default function RegisterPhonePage() {
                       </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Carrier Compatibility */}
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider">Carrier Lock Status</label>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCarrierStatus('UNLOCKED')}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition ${
+                        carrierStatus === 'UNLOCKED'
+                          ? 'bg-emerald-50 text-emerald-800 border-2 border-emerald-600 shadow-xs'
+                          : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      Factory Unlocked
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCarrierStatus('CARRIER_LOCKED')}
+                      className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition ${
+                        carrierStatus === 'CARRIER_LOCKED'
+                          ? 'bg-amber-50 text-amber-800 border-2 border-amber-600 shadow-xs'
+                          : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      Carrier Locked
+                    </button>
+                  </div>
+                  {carrierStatus === 'CARRIER_LOCKED' && (
+                    <input
+                      type="text"
+                      value={lockedCarrier}
+                      onChange={(e) => setLockedCarrier(e.target.value)}
+                      placeholder="e.g. AT&T, Verizon, T-Mobile"
+                      className="w-full mt-1.5 px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50/50 font-bold text-slate-900 focus:outline-none text-xs"
+                    />
+                  )}
+                </div>
+
+                {/* Activation Status */}
+                <div className="space-y-1.5">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider">Activation / Cloud State</label>
+                  <select
+                    value={activationStatus}
+                    onChange={(e) => setActivationStatus(e.target.value as any)}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  >
+                    <option value="READY_FOR_SETUP">Ready for Setup (iCloud/Google FRP Removed)</option>
+                    <option value="ACTIVATED">Activated (Account Linked / In-Use)</option>
+                    <option value="NOT_ACTIVATED">Not Activated (Brand New Sealed)</option>
+                  </select>
                 </div>
 
                 {/* Warranty Duration */}

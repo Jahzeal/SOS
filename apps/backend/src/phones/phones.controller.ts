@@ -45,9 +45,22 @@ export class PhonesController {
     return this.phonesService.update(businessId, id, dto);
   }
 
+  @Patch(':id/flag-stolen')
+  async flagStolen(@Request() req, @Param('id') id: string, @Body() dto: any) {
+    const businessId = req.user.businessId;
+    return this.phonesService.flagAsStolen(businessId, id, dto);
+  }
+
+  @Patch(':id/clear-stolen')
+  async clearStolen(@Request() req, @Param('id') id: string) {
+    const businessId = req.user.businessId;
+    return this.phonesService.clearStolenFlag(businessId, id);
+  }
+
   @Delete(':id')
   async delete(@Request() req, @Param('id') id: string) {
     const businessId = req.user.businessId;
     return this.phonesService.delete(businessId, id);
   }
 }
+

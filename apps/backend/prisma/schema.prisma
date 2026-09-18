@@ -56,6 +56,29 @@ enum PaymentMethod {
   SPLIT
 }
 
+enum CarrierLockStatus {
+  UNLOCKED
+  CARRIER_LOCKED
+}
+
+enum DeviceActivationStatus {
+  ACTIVATED
+  NOT_ACTIVATED
+  READY_FOR_SETUP
+}
+
+enum TheftStatus {
+  CLEAN
+  STOLEN
+}
+
+enum TheftReportStatus {
+  ACTIVE
+  RESOLVED
+}
+
+
+
 model Business {
   id                        String         @id @default(uuid())
   name                      String
@@ -183,6 +206,18 @@ model PhoneRecord {
   warrantyExpiryDate     DateTime?
   qrCodeUrl              String?
 
+  carrierStatus          CarrierLockStatus?
+  lockedCarrier          String?
+  activationStatus       DeviceActivationStatus?
+
+  isStolen               Boolean                @default(false)
+  theftStatus            TheftStatus            @default(CLEAN)
+  stolenAt               DateTime?
+  theftReason            String?
+  theftReportedBy        String?
+  lostNote               String?
+  contactPhone           String?
+
   registeredById         String?
   registeredBy           User?          @relation(fields: [registeredById], references: [id], onDelete: SetNull)
 
@@ -198,6 +233,8 @@ model PhoneRecord {
   @@index([businessId, status])
   @@index([businessId, createdAt])
   @@index([businessId, brand])
+  @@index([isStolen])
+  @@index([theftStatus])
   @@index([imei1])
   @@index([imei2])
   @@index([serialNumber])
@@ -378,5 +415,56 @@ model VerificationLog {
   @@index([status])
   @@index([businessId])
 }
+
+model TheftReport {
+  id                 String            @id @default(uuid())
+  imei1              String
+  imei2              String?
+  serialNumber       String?
+  brand              String
+  model              String
+  color              String?
+
+  ownerEmail         String
+  ownerName          String
+  ownerPhone         String
+  lostNote           String?
+  bountyAmount       Float?            @default(0)
+
+  status             TheftReportStatus @default(ACTIVE)
+  verificationSource String            @default("GOOGLE_AUTH") // "GOOGLE_AUTH", "PROOF_SCREENSHOT", "POLICE_REPORT"
+  proofUrl           String?
+  policeCaseNo       String?
+
+  resolvedAt         DateTime?
+  resolvedNote       String?
+
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+
+  @@index([imei1])
+  @@index([imei2])
+  @@index([serialNumber])
+  @@index([ownerEmail])
+  @@index([status])
+}
+
+model DeviceCheckCache {
+  id               String                 @id @default(uuid())
+  imei             String                 @unique
+  brand            String?
+  model            String?
+  carrierStatus    CarrierLockStatus?
+  lockedCarrier    String?
+  activationStatus DeviceActivationStatus?
+  source           String                 @default("TAC_PARSER") // "TAC_PARSER", "LIVE_API", "SHOP_VERIFIED"
+  rawData          Json?
+  expiresAt        DateTime?
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  @@index([imei])
+}
+
 
 

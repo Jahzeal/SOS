@@ -60,4 +60,33 @@ export class RegisterPhoneDto {
   @IsString()
   @IsOptional()
   customerEmail?: string;
+
+  @IsOptional()
+  carrierStatus?: any;
+
+  @IsString()
+  @IsOptional()
+  lockedCarrier?: string;
+
+  @IsOptional()
+  activationStatus?: any;
 }
+
+export class FlagStolenPhoneDto {
+  @IsString()
+  @IsOptional()
+  theftReason?: string;
+
+  @IsString()
+  @IsOptional()
+  lostNote?: string;
+
+  @IsString()
+  @IsOptional()
+  contactPhone?: string;
+
+  @IsString()
+  @IsOptional()
+  policeCaseNo?: string;
+}
+

@@ -2,7 +2,22 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Search, ShieldCheck, QrCode, CheckCircle2, AlertTriangle, ShieldAlert, X, RotateCcw, Plus } from 'lucide-react';
+import {
+  Search,
+  ShieldCheck,
+  CheckCircle2,
+  AlertTriangle,
+  ShieldAlert,
+  X,
+  RotateCcw,
+  Plus,
+  Phone,
+  MessageSquare,
+  Lock,
+  Unlock,
+  Building2,
+  Calendar,
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { ApiErrorState } from '@/components/ui/ApiErrorState';
 import { api } from '@/lib/api';
@@ -12,7 +27,6 @@ export default function VerifyPhonePage() {
   const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [errorState, setErrorState] = useState<string | null>(null);
-  const [showNotFoundModal, setShowNotFoundModal] = useState(false);
 
   const handleSearch = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -20,29 +34,10 @@ export default function VerifyPhonePage() {
     setLoading(true);
     setErrorState(null);
     setResult(null);
-    setShowNotFoundModal(false);
 
     try {
-      const data = await api.verifyPublicImei(query.trim());
-      if (data && (data.verified || data.found || data.imei1 || data.brand)) {
-        const device = data.deviceInfo || data;
-        setResult({
-          found: true,
-          brand: device.brand || 'Apple',
-          model: device.model || 'Registered Device',
-          color: device.color || 'Standard',
-          storage: device.storageCapacity || '256GB',
-          condition: device.condition || 'VERIFIED',
-          status: device.status || 'IN_STOCK',
-          serialNumber: device.serialNumber || 'SN-VERIFIED',
-          imei: device.imei1 || query.trim(),
-          registeredDate: device.createdAt ? new Date(device.createdAt).toLocaleDateString() : '2026-07-28',
-          warrantyMonths: device.warrantyDurationMonths || 12,
-        });
-      } else {
-        setResult({ found: false });
-        setShowNotFoundModal(true);
-      }
+      const data = await api.publicVerifyDevice(query.trim());
+      setResult(data);
     } catch (err: any) {
       setErrorState(err.message || 'Unable to connect to verification ledger.');
     } finally {
@@ -51,30 +46,37 @@ export default function VerifyPhonePage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-4 font-sans pb-16">
+    <div className="max-w-4xl mx-auto space-y-6 font-sans pb-16">
       
       {/* Top Header */}
-      <div className="border-b border-slate-200 pb-3">
-        <h1 className="text-base sm:text-lg font-extrabold text-slate-900">IMEI & QR Authenticity Scanner</h1>
-        <p className="hidden sm:block text-xs text-slate-500 font-medium mt-0.5">
-          Perform immediate hardware authentication, status check, and warranty validation against global & store ledgers.
-        </p>
+      <div className="border-b border-slate-200 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900">IMEI Verification & Anti-Theft Scanner</h1>
+          <p className="text-xs text-slate-500 font-medium mt-0.5">
+            Authenticate device ownership, carrier lock status, activation state, and theft registry records in real time.
+          </p>
+        </div>
+        <Link href="/report-stolen">
+          <Button variant="secondary" size="sm" className="border-rose-200 text-rose-600 hover:bg-rose-50 font-bold" leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}>
+            Report Stolen Phone
+          </Button>
+        </Link>
       </div>
 
       {/* Search Input Card */}
-      <form onSubmit={handleSearch} className="p-3 sm:p-4 rounded-xl bg-white border border-slate-200 shadow-sm flex flex-col sm:flex-row gap-2.5">
+      <form onSubmit={handleSearch} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row gap-2.5">
         <div className="relative flex-1">
           <input
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Scan QR or enter IMEI / Serial No..."
-            className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-mono font-medium text-slate-900 focus:outline-none focus:border-teal-600 placeholder:text-[11px] placeholder:font-sans placeholder:text-slate-400"
+            placeholder="Enter 15-digit IMEI or Serial Number..."
+            className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder:text-slate-400"
           />
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
         </div>
-        <Button variant="primary" size="sm" isLoading={loading} leftIcon={<ShieldCheck className="w-3.5 h-3.5" />}>
-          {loading ? 'Scanning...' : 'Verify IMEI'}
+        <Button variant="primary" size="md" isLoading={loading} leftIcon={<ShieldCheck className="w-4 h-4" />}>
+          {loading ? 'Verifying...' : 'Verify Device'}
         </Button>
       </form>
 
@@ -89,113 +91,169 @@ export default function VerifyPhonePage() {
         />
       )}
 
-      {/* Result Display */}
+      {/* Unified Verification Result Card */}
       {result && (
-        <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
-          {result.found ? (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-emerald-700 font-extrabold text-sm pb-3 border-b border-slate-100">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
-                <span>Verified Authentic & Clear Store Inventory Record</span>
+        <div className="space-y-4 animate-in fade-in duration-200">
+          
+          {/* 1. THEFT / BLACKLIST BANNER */}
+          {result.isStolen ? (
+            <div className="p-6 rounded-3xl bg-rose-50 border-2 border-rose-300 text-rose-950 space-y-4 shadow-md">
+              <div className="flex items-start gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-rose-600/30 animate-pulse">
+                  <ShieldAlert className="w-6 h-6" />
+                </div>
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-rose-600 text-white font-extrabold text-[10px] tracking-wider uppercase">
+                      STOLEN / LOST MODE ACTIVE
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-rose-900">
+                    WARNING: This device has been reported as STOLEN
+                  </h3>
+                  <p className="text-xs text-rose-800 font-medium">
+                    Do not purchase, unlock, or service this device without contacting the verified owner.
+                  </p>
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs font-medium">
-                <div>
-                  <span className="text-slate-500 block text-[10px] uppercase font-bold">Device</span>
-                  <span className="font-extrabold text-slate-900 text-sm">{result.brand} {result.model}</span>
+              {/* Owner Note Box */}
+              {result.ownerMessage && (
+                <div className="p-4 rounded-2xl bg-white border border-rose-200 space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-rose-900">
+                    <MessageSquare className="w-4 h-4 text-rose-600" />
+                    <span>Owner's Recovery Note & Message:</span>
+                  </div>
+                  <p className="text-xs text-slate-700 italic font-medium leading-relaxed">
+                    "{result.ownerMessage}"
+                  </p>
+                  {result.contactPhone && (
+                    <div className="pt-2 flex items-center gap-3">
+                      <a
+                        href={`tel:${result.contactPhone}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-xs transition"
+                      >
+                        <Phone className="w-3.5 h-3.5" /> Call Owner ({result.contactPhone})
+                      </a>
+                      <a
+                        href={`https://wa.me/${result.contactPhone.replace(/\D/g, '')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs transition"
+                      >
+                        WhatsApp Owner
+                      </a>
+                    </div>
+                  )}
                 </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px] uppercase font-bold">Specifications</span>
-                  <span className="text-slate-700 font-bold">{result.color} • {result.storage}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px] uppercase font-bold">IMEI</span>
-                  <span className="font-mono font-bold text-teal-700">{result.imei}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px] uppercase font-bold">Serial Number</span>
-                  <span className="font-mono text-slate-700 font-bold">{result.serialNumber}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px] uppercase font-bold">Condition</span>
-                  <span className="text-slate-900 font-bold">{result.condition}</span>
-                </div>
-                <div>
-                  <span className="text-slate-500 block text-[10px] uppercase font-bold">Warranty Guarantee</span>
-                  <span className="text-emerald-700 font-extrabold">{result.warrantyMonths} Months Active</span>
-                </div>
-              </div>
+              )}
             </div>
           ) : (
-            <div className="text-center py-8 text-slate-500 space-y-2">
-              <AlertTriangle className="w-10 h-10 text-amber-500 mx-auto" />
-              <div className="font-extrabold text-slate-900 text-base">No Matching Record Found</div>
-              <p className="text-xs text-slate-500 max-w-sm mx-auto font-medium">
-                No registered device matches this IMEI or Serial number. Ensure the number is correct or register it under your store.
-              </p>
+            <div className="p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                  <CheckCircle2 className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-extrabold text-emerald-950">Clean Title Verified</h3>
+                  <p className="text-xs text-emerald-800 font-medium">No theft reports or active blacklists found for this device.</p>
+                </div>
+              </div>
+              <span className="px-3 py-1 rounded-full bg-emerald-600 text-white font-extrabold text-[10px] uppercase tracking-wider">
+                CLEAN
+              </span>
             </div>
           )}
-        </div>
-      )}
-      {/* IMEI NOT FOUND POPUP MODAL */}
-      {showNotFoundModal && (
-        <div
-          className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200"
-          onClick={() => setShowNotFoundModal(false)}
-        >
-          <div
-            className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 text-slate-900 text-center animate-in zoom-in-95 duration-200 space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setShowNotFoundModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
 
-            <div className="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center mx-auto shadow-sm">
-              <ShieldAlert className="w-6 h-6" />
+          {/* 2. SPECIFICATIONS & STATUS GRID */}
+          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6 space-y-6">
+            
+            {/* Header Device Title */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h2 className="text-lg font-black text-slate-900">
+                  {result.deviceInfo?.brand || 'Smartphone'} {result.deviceInfo?.model || 'Device'}
+                </h2>
+                <p className="text-xs text-slate-500 font-mono mt-0.5">
+                  IMEI: <strong>{query.trim()}</strong> {result.deviceInfo?.serialNumber ? `• SN: ${result.deviceInfo.serialNumber}` : ''}
+                </p>
+              </div>
+
+              {result.retailer ? (
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold">
+                  <Building2 className="w-4 h-4 text-blue-600" />
+                  <span>Certified by {result.retailer.name}</span>
+                </div>
+              ) : (
+                <div className="text-xs font-bold text-slate-500">
+                  Hardware Profile Verified
+                </div>
+              )}
             </div>
 
-            <div className="space-y-1">
-              <h3 className="text-lg font-extrabold text-slate-900">IMEI / Serial Not Found</h3>
-              <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                No registered device matches{' '}
-                <code className="font-mono bg-slate-100 px-1.5 py-0.5 rounded text-rose-900 font-bold border border-slate-200">
-                  {query}
-                </code>{' '}
-                on the store inventory ledger.
-              </p>
+            {/* 3 Core Pillars: Theft, Carrier, Activation */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              
+              {/* Pillar 1: Theft Status */}
+              <div className={`p-4 rounded-2xl border ${result.isStolen ? 'bg-rose-50/60 border-rose-200' : 'bg-slate-50 border-slate-200'} space-y-1`}>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Theft & Blacklist</span>
+                <p className={`text-sm font-extrabold flex items-center gap-1.5 ${result.isStolen ? 'text-rose-700' : 'text-emerald-700'}`}>
+                  {result.isStolen ? <ShieldAlert className="w-4 h-4 text-rose-600" /> : <ShieldCheck className="w-4 h-4 text-emerald-600" />}
+                  {result.isStolen ? 'Blacklisted / Stolen' : 'Clean & Verified'}
+                </p>
+              </div>
+
+              {/* Pillar 2: Carrier Status */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Carrier Lock</span>
+                <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+                  {result.carrierStatus === 'CARRIER_LOCKED' ? (
+                    <>
+                      <Lock className="w-4 h-4 text-amber-600" />
+                      <span className="text-amber-700">Locked ({result.lockedCarrier || 'Carrier'})</span>
+                    </>
+                  ) : (
+                    <>
+                      <Unlock className="w-4 h-4 text-emerald-600" />
+                      <span className="text-emerald-700">Factory Unlocked (All SIMs)</span>
+                    </>
+                  )}
+                </p>
+              </div>
+
+              {/* Pillar 3: Activation State */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Activation State</span>
+                <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
+                  <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                  <span className="text-slate-800">
+                    {result.activationStatus ? result.activationStatus.replace(/_/g, ' ') : 'Ready for Setup'}
+                  </span>
+                </p>
+              </div>
             </div>
 
-            <div className="pt-2 flex flex-col gap-2">
-              <Button
-                variant="primary"
-                fullWidth
-                size="md"
-                onClick={() => {
-                  setShowNotFoundModal(false);
-                  setQuery('');
-                }}
-                leftIcon={<RotateCcw className="w-3.5 h-3.5" />}
-              >
-                Try Another IMEI
-              </Button>
-              <Link href="/dashboard/register" onClick={() => setShowNotFoundModal(false)}>
-                <Button
-                  variant="secondary"
-                  fullWidth
-                  size="md"
-                  leftIcon={<Plus className="w-3.5 h-3.5" />}
-                >
-                  Register New Phone Stock
-                </Button>
-              </Link>
-            </div>
+            {/* Additional Hardware & Warranty Details */}
+            {result.warranty && (
+              <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 flex items-center justify-between text-xs">
+                <div className="space-y-0.5">
+                  <span className="font-bold text-blue-900">Warranty Coverage:</span>
+                  <p className="text-blue-700 font-medium">
+                    {result.warranty.warrantyDurationMonths} Months Store Guarantee • {result.warranty.isWarrantyActive ? 'Active' : 'Expired'}
+                  </p>
+                </div>
+                <Link href="/dashboard/register">
+                  <Button variant="secondary" size="sm" className="text-xs font-bold">
+                    Log Intake
+                  </Button>
+                </Link>
+              </div>
+            )}
+
           </div>
         </div>
       )}
+
     </div>
   );
 }

@@ -93,6 +93,9 @@ export class PhonesService {
         status: PhoneStatus.IN_STOCK,
         purchasePrice: dto.purchasePrice,
         sellingPrice: dto.sellingPrice,
+        carrierStatus: dto.carrierStatus || undefined,
+        lockedCarrier: dto.lockedCarrier?.trim() || null,
+        activationStatus: dto.activationStatus || undefined,
         warrantyDurationMonths: warrantyMonths,
         warrantyExpiryDate,
         registeredById: userId,
@@ -160,6 +163,15 @@ export class PhonesService {
         status: true,
         purchasePrice: true,
         sellingPrice: true,
+        carrierStatus: true,
+        lockedCarrier: true,
+        activationStatus: true,
+        isStolen: true,
+        theftStatus: true,
+        stolenAt: true,
+        theftReason: true,
+        lostNote: true,
+        contactPhone: true,
         warrantyDurationMonths: true,
         warrantyExpiryDate: true,
         createdAt: true,
@@ -175,6 +187,94 @@ export class PhonesService {
       orderBy: { createdAt: 'desc' },
     });
   }
+
+  async flagAsStolen(businessId: string, id: string, dto: any) {
+    const phone = await this.prisma.phoneRecord.findFirst({
+      where: { id, businessId },
+      include: { business: true },
+    });
+
+    if (!phone) {
+      throw new NotFoundException('Phone record not found');
+    }
+
+    const updated = await this.prisma.phoneRecord.update({
+      where: { id },
+      data: {
+        isStolen: true,
+        theftStatus: 'STOLEN',
+        stolenAt: new Date(),
+        theftReason: dto.theftReason?.trim() || 'Reported stolen from business inventory',
+        theftReportedBy: phone.business.name,
+        lostNote: dto.lostNote?.trim() || null,
+        contactPhone: dto.contactPhone?.trim() || phone.business.phone || null,
+      },
+    });
+
+    // Create an active TheftReport in the global registry
+    await this.prisma.theftReport.create({
+      data: {
+        imei1: phone.imei1,
+        imei2: phone.imei2,
+        serialNumber: phone.serialNumber,
+        brand: phone.brand,
+        model: phone.model,
+        color: phone.color,
+        ownerEmail: phone.business.email || 'business@verifyflow.com',
+        ownerName: phone.business.name,
+        ownerPhone: dto.contactPhone?.trim() || phone.business.phone || 'N/A',
+        lostNote: dto.lostNote?.trim() || dto.theftReason?.trim() || `Reported stolen by retailer ${phone.business.name}`,
+        verificationSource: 'BUSINESS_VERIFIED',
+        policeCaseNo: dto.policeCaseNo?.trim() || null,
+        status: 'ACTIVE',
+      },
+    }).catch(() => {});
+
+    return updated;
+  }
+
+  async clearStolenFlag(businessId: string, id: string) {
+    const phone = await this.prisma.phoneRecord.findFirst({
+      where: { id, businessId },
+    });
+
+    if (!phone) {
+      throw new NotFoundException('Phone record not found');
+    }
+
+    const updated = await this.prisma.phoneRecord.update({
+      where: { id },
+      data: {
+        isStolen: false,
+        theftStatus: 'CLEAN',
+        stolenAt: null,
+        theftReason: null,
+        theftReportedBy: null,
+        lostNote: null,
+        contactPhone: null,
+      },
+    });
+
+    // Resolve any active theft reports for this IMEI
+    await this.prisma.theftReport.updateMany({
+      where: {
+        status: 'ACTIVE',
+        OR: [
+          { imei1: phone.imei1 },
+          ...(phone.imei2 ? [{ imei2: phone.imei2 }] : []),
+          ...(phone.serialNumber ? [{ serialNumber: phone.serialNumber }] : []),
+        ],
+      },
+      data: {
+        status: 'RESOLVED',
+        resolvedAt: new Date(),
+        resolvedNote: 'Cleared by verified retailer',
+      },
+    }).catch(() => {});
+
+    return updated;
+  }
+
 
   async findOne(businessId: string, id: string) {
     const record = await this.prisma.phoneRecord.findFirst({

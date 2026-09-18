@@ -1,11 +1,15 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterPhoneDto } from './dto/phone-record.dto';
+import { DeviceIntelligenceService } from './device-intelligence.service';
 import * as QRCode from 'qrcode';
 
 @Injectable()
 export class VerificationService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private deviceIntel: DeviceIntelligenceService,
+  ) {}
 
   async registerPhone(businessId: string, userId: string, dto: RegisterPhoneDto) {
     // Check if IMEI1 already registered under this business
@@ -134,14 +138,29 @@ export class VerificationService {
 
   // Public Verification Portal (No authentication required)
   async publicVerify(identifier: string) {
-    // identifier can be record ID, IMEI, or Serial Number
+    const cleanId = identifier.trim();
+
+    // 1. Check for Active Theft / Lost Mode Reports
+    const activeTheftReport = await this.prisma.theftReport.findFirst({
+      where: {
+        status: 'ACTIVE',
+        OR: [
+          { imei1: cleanId },
+          { imei2: cleanId },
+          { serialNumber: { equals: cleanId, mode: 'insensitive' } },
+        ],
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // 2. Check for matching Phone Record in Business Inventories
     const phone = await this.prisma.phoneRecord.findFirst({
       where: {
         OR: [
-          { id: identifier },
-          { imei1: identifier },
-          { imei2: identifier },
-          { serialNumber: { equals: identifier, mode: 'insensitive' } },
+          { id: cleanId },
+          { imei1: cleanId },
+          { imei2: cleanId },
+          { serialNumber: { equals: cleanId, mode: 'insensitive' } },
         ],
       },
       include: {
@@ -158,61 +177,96 @@ export class VerificationService {
       },
     });
 
-    if (!phone) {
-      // Log lookup miss
-      this.prisma.verificationLog.create({
-        data: { identifier: identifier.slice(0, 50), status: 'NOT_FOUND' },
-      }).catch(() => {});
+    // 3. Fallback TAC / Hardware Profile
+    const tacProfile = this.deviceIntel.parseTac(cleanId);
 
-      return {
-        verified: false,
-        message: 'No registered device found matching this identifier.',
-        guidance: 'If your device has Dual-SIM or eSIM, please try searching with your IMEI 2 or Serial Number (dial *#06# on your device).',
-      };
-    }
+    const isStolen = !!activeTheftReport || phone?.isStolen || phone?.theftStatus === 'STOLEN';
+    const theftStatus = isStolen ? 'STOLEN' : 'CLEAN';
 
-    // Log verified check
+    const ownerMessage = activeTheftReport?.lostNote || phone?.lostNote || (isStolen ? 'This device has been flagged as stolen in the registry.' : null);
+    const contactPhone = activeTheftReport?.ownerPhone || phone?.contactPhone || null;
+    const ownerName = activeTheftReport?.ownerName || (phone?.theftReportedBy ? 'Verified Business Reporter' : null);
+    const reportedAt = activeTheftReport?.createdAt || phone?.stolenAt || null;
+
+    const carrierStatus = phone?.carrierStatus || tacProfile.defaultCarrierStatus;
+    const lockedCarrier = phone?.lockedCarrier || tacProfile.likelyCarrier;
+    const activationStatus = phone?.activationStatus || (isStolen ? 'ACTIVATED' : (phone ? 'READY_FOR_SETUP' : tacProfile.defaultActivationStatus));
+
+    // Log the verification attempt
     this.prisma.verificationLog.create({
       data: {
-        identifier: identifier.slice(0, 50),
-        status: 'VERIFIED',
-        businessId: phone.businessId,
+        identifier: cleanId.slice(0, 50),
+        status: isStolen ? 'FLAGGED_STOLEN' : (phone ? 'VERIFIED' : 'NOT_FOUND'),
+        businessId: phone?.businessId || null,
       },
     }).catch(() => {});
 
-    if (!phone.business.publicVerificationEnabled) {
+    if (phone) {
+      const isWarrantyActive = phone.warrantyExpiryDate ? new Date() <= new Date(phone.warrantyExpiryDate) : false;
+
       return {
-        verified: false,
-        message: 'Public verification is disabled for this retailer.',
+        verified: true,
+        isRegisteredInNetwork: true,
+        theftStatus,
+        isStolen,
+        ownerMessage,
+        contactPhone,
+        ownerName,
+        reportedAt,
+        carrierStatus,
+        lockedCarrier,
+        activationStatus,
+        deviceInfo: {
+          brand: phone.brand,
+          model: phone.model,
+          color: phone.color,
+          storageCapacity: phone.storageCapacity,
+          condition: phone.condition,
+          serialNumber: phone.serialNumber ? `${phone.serialNumber.slice(0, 3)}****` : null,
+          registeredAt: phone.createdAt,
+        },
+        warranty: {
+          isWarrantyActive,
+          warrantyDurationMonths: phone.warrantyDurationMonths,
+          expiryDate: phone.warrantyExpiryDate,
+          terms: phone.business.warrantyTerms,
+        },
+        retailer: {
+          name: phone.business.name,
+          slug: phone.business.slug,
+          logoUrl: phone.business.logoUrl,
+        },
       };
     }
 
-    const isWarrantyActive = phone.warrantyExpiryDate ? new Date() <= new Date(phone.warrantyExpiryDate) : false;
-
+    // If not registered by a merchant, return TAC profile + theft status
     return {
-      verified: true,
-      status: phone.status,
-      message: phone.business.customSuccessMessage || 'This device is verified authentic by retailer.',
+      verified: !isStolen,
+      isRegisteredInNetwork: false,
+      theftStatus,
+      isStolen,
+      ownerMessage,
+      contactPhone,
+      ownerName,
+      reportedAt,
+      carrierStatus,
+      lockedCarrier,
+      activationStatus,
       deviceInfo: {
-        brand: phone.brand,
-        model: phone.model,
-        color: phone.color,
-        storageCapacity: phone.storageCapacity,
-        condition: phone.condition,
-        serialNumber: phone.serialNumber ? `${phone.serialNumber.slice(0, 3)}****` : null,
-        registeredAt: phone.createdAt,
+        brand: activeTheftReport?.brand || tacProfile.brand || 'Smartphone Device',
+        model: activeTheftReport?.model || tacProfile.model || 'Mobile Device',
+        color: activeTheftReport?.color || null,
+        storageCapacity: null,
+        condition: null,
+        serialNumber: activeTheftReport?.serialNumber ? `${activeTheftReport.serialNumber.slice(0, 3)}****` : null,
+        registeredAt: activeTheftReport?.createdAt || null,
       },
-      warranty: {
-        isWarrantyActive,
-        warrantyDurationMonths: phone.warrantyDurationMonths,
-        expiryDate: phone.warrantyExpiryDate,
-        terms: phone.business.warrantyTerms,
-      },
-      retailer: {
-        name: phone.business.name,
-        slug: phone.business.slug,
-        logoUrl: phone.business.logoUrl,
-      },
+      warranty: null,
+      retailer: null,
+      message: isStolen
+        ? '🚨 WARNING: This device has been reported as STOLEN in the registry.'
+        : 'Device verified clean in global theft registry.',
     };
   }
 }
+

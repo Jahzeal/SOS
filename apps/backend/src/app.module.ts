@@ -13,6 +13,7 @@ import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
 import { PlansModule } from './plans/plans.module';
 import { PaymentsModule } from './payments/payments.module';
+import { TheftReportsModule } from './theft-reports/theft-reports.module';
 
 import { AppController } from './app.controller';
 
@@ -25,6 +26,7 @@ import { AppController } from './app.controller';
     PaymentsModule,
     AuthModule,
     VerificationModule,
+    TheftReportsModule,
     BusinessModule,
     PhonesModule,
     DashboardModule,
