@@ -35,7 +35,7 @@ export function EmailReceiptModal({ isOpen, onClose, receipt }: EmailReceiptModa
   if (!isOpen || !receipt) return null;
 
   const receiptNum = receipt.receiptNumber || receipt.invoiceNumber || receipt.id || 'Receipt';
-  const storeName = receipt.business?.name || receipt.storeName || 'VerifyFlow Retail Store';
+  const storeName = receipt.business?.name || receipt.storeName || 'NoxGuarda Retail Store';
   const totalAmount = Number(receipt.totalAmount ?? receipt.total ?? 0);
   const customerName = receipt.customer?.name || receipt.customerName || 'Valued Customer';
   const customerPhone = receipt.customer?.phone || receipt.customerPhone || 'N/A';

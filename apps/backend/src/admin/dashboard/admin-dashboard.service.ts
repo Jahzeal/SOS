@@ -276,7 +276,7 @@ export class AdminDashboardService {
         code: 'SYS_HEARTBEAT_OK',
         status: 'Success',
         type: 'success',
-        details: 'VerifyFlow Core Cluster healthy & synchronized',
+        details: 'NoxGuarda Core Cluster healthy & synchronized',
       });
     }
 

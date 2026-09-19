@@ -72,14 +72,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
       senderRole: 'Sales Staff',
       senderType: 'requester',
       content:
-        'The customer scanned the QR code on the receipt, but VerifyFlow says the device cannot be found. They are standing right here at our Ikeja branch counter and need proof of clearance for customs.',
+        'The customer scanned the QR code on the receipt, but NoxGuarda says the device cannot be found. They are standing right here at our Ikeja branch counter and need proof of clearance for customs.',
       timestamp: '25 Aug 2026 · 10:42 AM',
       attachments: [{ name: 'receipt_scan_error.png', size: '342 KB' }],
     },
     {
       id: 'm2',
       senderName: 'David',
-      senderRole: 'VerifyFlow Support',
+      senderRole: 'NoxGuarda Support',
       senderType: 'admin',
       content:
         "Hello Amaka, we're checking the device record against the GSMA national gateway now. Looking into whether there was a momentary delay in receipt QR generation during POS sync.",
@@ -130,7 +130,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
       const newMessage: Message = {
         id: `m_${Date.now()}`,
         senderName: 'David',
-        senderRole: composerMode === 'internal' ? 'Internal Staff Note' : 'VerifyFlow Support',
+        senderRole: composerMode === 'internal' ? 'Internal Staff Note' : 'NoxGuarda Support',
         senderType: composerMode === 'internal' ? 'internal_note' : 'admin',
         content: messageText.trim(),
         timestamp: 'Just now',
@@ -424,7 +424,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   onChange={(e) => setMessageText(e.target.value)}
                   placeholder={
                     composerMode === 'internal'
-                      ? 'Type an internal note (only visible to VerifyFlow staff)...'
+                      ? 'Type an internal note (only visible to NoxGuarda staff)...'
                       : 'Write a response to Amaka Okafor and Dave Phones...'
                   }
                   className="w-full bg-transparent text-xs font-medium text-slate-900 outline-none resize-none placeholder:text-slate-400"
@@ -537,12 +537,12 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             </div>
           </div>
 
-          {/* VerifyFlow System Context (Device & Verification Data) */}
+          {/* NoxGuarda System Context (Device & Verification Data) */}
           <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-subtle space-y-4">
             <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
               <Smartphone className="w-4 h-4 text-blue-600" />
               <h3 className="font-extrabold text-slate-900 text-xs uppercase tracking-wider">
-                VerifyFlow Context
+                NoxGuarda Context
               </h3>
             </div>
 

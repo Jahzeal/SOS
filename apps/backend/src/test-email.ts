@@ -19,10 +19,10 @@ async function test() {
     console.log(' SMTP Connection verified successfully!');
 
     const info = await transporter.sendMail({
-      from: `VerifyFlow <${user}>`,
+      from: `NoxGuarda <${user}>`,
       to: user,
-      subject: 'VerifyFlow Test - Real Email Delivery Works!',
-      html: '<h1>VerifyFlow SMTP Test</h1><p>Gmail SMTP is working 100%! OTP and transaction receipts can now be sent to any email address.</p>',
+      subject: 'NoxGuarda Test - Real Email Delivery Works!',
+      html: '<h1>NoxGuarda SMTP Test</h1><p>Gmail SMTP is working 100%! OTP and transaction receipts can now be sent to any email address.</p>',
     });
 
     console.log(' Test email delivered! Message ID:', info.messageId);

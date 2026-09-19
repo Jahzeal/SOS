@@ -269,7 +269,7 @@ export default function OnboardingPage() {
     },
     3: {
       headline: 'Tell Us About Your Store',
-      description: 'Customize VerifyFlow modules according to your retail scale and inventory workflow.',
+      description: 'Customize NoxGuarda modules according to your retail scale and inventory workflow.',
       highlight: 'Multi-Branch Inventory Tracking',
     },
     4: {
@@ -278,7 +278,7 @@ export default function OnboardingPage() {
       highlight: '14-Day Free Trial • Cancel Anytime',
     },
     5: {
-      headline: 'Welcome to VerifyFlow!',
+      headline: 'Welcome to NoxGuarda!',
       description: 'Your workspace is ready. You can now register phones, issue QR receipts, and track warranties.',
       highlight: '100% Operational Ready',
     },
@@ -295,7 +295,7 @@ export default function OnboardingPage() {
           {/* Next.js Optimized & Preloaded High-Performance Background Image */}
           <Image
             src="/images/onboarding_bg.png"
-            alt="VerifyFlow Electronics Retail OS"
+            alt="NoxGuarda Electronics Retail OS"
             fill
             priority
             quality={85}
@@ -334,7 +334,7 @@ export default function OnboardingPage() {
                 <span className="text-[10px] xl:text-xs text-slate-400 font-extrabold uppercase tracking-wider">Store Owner Review</span>
               </div>
               <p className="text-slate-200 font-medium italic leading-relaxed text-[11px] xl:text-xs 2xl:text-sm">
-                "Setting up our 3 store locations on VerifyFlow took less than 5 minutes. The IMEI receipt verification stopped warranty disputes instantly."
+                "Setting up our 3 store locations on NoxGuarda took less than 5 minutes. The IMEI receipt verification stopped warranty disputes instantly."
               </p>
               <div className="flex items-center gap-3 pt-2 border-t border-slate-800">
                 <div className="w-8 h-8 xl:w-9 xl:h-9 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-xs xl:text-sm shadow-md shadow-teal-600/30">
@@ -350,7 +350,7 @@ export default function OnboardingPage() {
 
           {/* Left Footer Info */}
           <div className="relative z-10 text-xs xl:text-sm text-slate-400 font-semibold flex items-center justify-between border-t border-slate-800/80 pt-4">
-            <span>© 2026 VerifyFlow Inc.</span>
+            <span>© 2026 NoxGuarda Inc.</span>
           </div>
         </div>
 

@@ -64,7 +64,7 @@ export default function AdminOverviewDashboard() {
         <div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Overview</h2>
           <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-            High-level system metrics and live device verification activity across the VerifyFlow network.
+            High-level system metrics and live device verification activity across the NoxGuarda network.
           </p>
         </div>
 

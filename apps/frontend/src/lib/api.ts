@@ -1,4 +1,4 @@
-// Unified API Client Service Layer for VerifyFlow NestJS API Backend
+// Unified API Client Service Layer for NoxGuarda NestJS API Backend
 
 const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 const API_BASE_URL = rawUrl.startsWith('http://') || rawUrl.startsWith('https://')
@@ -52,7 +52,7 @@ class ApiClient {
       const isOffline = typeof navigator !== 'undefined' && !navigator.onLine;
       const customMessage = isOffline
         ? 'Network connection lost. Please check your internet connection and try again.'
-        : 'Unable to connect to VerifyFlow servers. Please check your connection or server status.';
+        : 'Unable to connect to NoxGuarda servers. Please check your connection or server status.';
 
       const err: any = new Error(customMessage);
       err.isNetworkError = true;

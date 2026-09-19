@@ -47,7 +47,7 @@ export function usePwaInstall() {
     const handleAppInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
-      console.log('[PWA] VerifyFlow App installed successfully');
+      console.log('[PWA] NoxGuarda App installed successfully');
     };
 
     window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);

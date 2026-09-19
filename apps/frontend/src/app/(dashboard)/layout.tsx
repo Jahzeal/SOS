@@ -23,6 +23,7 @@ import {
   X,
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/search/GlobalSearchModal';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -219,10 +220,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Menu className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
-              <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
-              <span className="truncate">NoxGuarda</span>
-            </div>
+            <Link href="/dashboard" className="flex items-center">
+              <BrandLogo size="sm" showText={true} textClassName="text-slate-900 text-xs font-black tracking-[0.18em]" />
+            </Link>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">

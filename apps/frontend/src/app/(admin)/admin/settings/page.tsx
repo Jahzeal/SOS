@@ -31,20 +31,20 @@ export default function AdminSettingsPage() {
 
   // Profile Form State
   const [adminName, setAdminName] = useState(user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Admin User');
-  const [adminEmail, setAdminEmail] = useState(user?.email || 'admin@verifyflow.ng');
+  const [adminEmail, setAdminEmail] = useState(user?.email || 'admin@noxguarda.com');
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
 
   // Contact & Support Form State
-  const [supportEmail, setSupportEmail] = useState('support@verifyflow.ng');
+  const [supportEmail, setSupportEmail] = useState('support@noxguarda.com');
   const [supportPhone, setSupportPhone] = useState('+234 802 000 1122');
   const [supportWhatsApp, setSupportWhatsApp] = useState('+234 802 000 1122');
 
   // Email Templates State
   const [welcomeEmailEnabled, setWelcomeEmailEnabled] = useState(true);
-  const [welcomeEmailSubject, setWelcomeEmailSubject] = useState('Welcome to VerifyFlow - Your {{businessName}} Store is Ready!');
-  const [welcomeEmailHeading, setWelcomeEmailHeading] = useState('Welcome to VerifyFlow!');
+  const [welcomeEmailSubject, setWelcomeEmailSubject] = useState('Welcome to NoxGuarda - Your {{businessName}} Store is Ready!');
+  const [welcomeEmailHeading, setWelcomeEmailHeading] = useState('Welcome to NoxGuarda!');
   const [welcomeEmailSubheading, setWelcomeEmailSubheading] = useState('Your Verified Phone Inventory & Retail OS is Live');
   const [welcomeEmailBody, setWelcomeEmailBody] = useState(
     'Congratulations! Your store workspace "{{businessName}}" has been successfully created. You now have full access to our high-speed IMEI ledger, express POS checkout, and fraud prevention suite.'
@@ -150,7 +150,7 @@ export default function AdminSettingsPage() {
   const previewSubject = welcomeEmailSubject
     .replace(/{{recipientName}}/g, 'Alex Vance')
     .replace(/{{businessName}}/g, 'GadgetHub Lagos')
-    .replace(/{{platformName}}/g, 'VerifyFlow');
+    .replace(/{{platformName}}/g, 'NoxGuarda');
 
   const previewHeading = welcomeEmailHeading
     .replace(/{{recipientName}}/g, 'Alex Vance')
@@ -409,7 +409,7 @@ export default function AdminSettingsPage() {
                     type="text"
                     value={welcomeEmailSubject}
                     onChange={(e) => setWelcomeEmailSubject(e.target.value)}
-                    placeholder="Welcome to VerifyFlow - Your {{businessName}} Store is Ready!"
+                    placeholder="Welcome to NoxGuarda - Your {{businessName}} Store is Ready!"
                     className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -422,7 +422,7 @@ export default function AdminSettingsPage() {
                       type="text"
                       value={welcomeEmailHeading}
                       onChange={(e) => setWelcomeEmailHeading(e.target.value)}
-                      placeholder="Welcome to VerifyFlow!"
+                      placeholder="Welcome to NoxGuarda!"
                       className="w-full text-xs px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -575,7 +575,7 @@ export default function AdminSettingsPage() {
 
                   {/* Email Footer */}
                   <div className="text-center text-[10px] text-slate-500 pt-2 border-t border-slate-800/80">
-                    © {new Date().getFullYear()} VerifyFlow Enterprise Inc. All rights reserved.
+                    © {new Date().getFullYear()} NoxGuarda Enterprise Inc. All rights reserved.
                   </div>
 
                 </div>

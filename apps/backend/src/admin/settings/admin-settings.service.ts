@@ -34,19 +34,19 @@ export class AdminSettingsService implements OnModuleInit {
 
   private async ensureInitialSettings() {
     const defaultSettings: Record<string, string> = {
-      platformName: process.env.PLATFORM_NAME || 'VerifyFlow Network HQ',
+      platformName: process.env.PLATFORM_NAME || 'NoxGuarda Network HQ',
       maintenanceMode: 'false',
       allowPublicRegistrations: 'true',
       defaultTrialDays: '14',
       rateLimitPerMinute: '120',
       maxLookupsPerDayFree: '50',
-      alertEmail: process.env.ALERT_EMAIL || 'security@verifyflow.ng',
-      webhookSecret: process.env.WEBHOOK_SECRET || 'whsec_verifyflow_live_89410384',
+      alertEmail: process.env.ALERT_EMAIL || 'security@noxguarda.com',
+      webhookSecret: process.env.WEBHOOK_SECRET || 'whsec_noxguarda_live_89410384',
       paystackLiveEnabled: process.env.PAYSTACK_LIVE_ENABLED || 'true',
       // Email defaults
       welcomeEmailEnabled: 'true',
-      welcomeEmailSubject: 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready!',
-      welcomeEmailHeading: 'Welcome to VerifyFlow!',
+      welcomeEmailSubject: 'Welcome to NoxGuarda - Your {{businessName}} Store is Ready!',
+      welcomeEmailHeading: 'Welcome to NoxGuarda!',
       welcomeEmailSubheading: 'Your Verified Phone Inventory & Retail OS is Live',
       welcomeEmailBody:
         'Congratulations! Your store workspace "{{businessName}}" has been successfully created. You now have full access to our high-speed IMEI ledger, express POS checkout, and fraud prevention suite.',
@@ -68,20 +68,20 @@ export class AdminSettingsService implements OnModuleInit {
     const map = new Map(allSettings.map((s) => [s.key, s.value]));
 
     const data: AdminPlatformSettingsDto = {
-      platformName: map.get('platformName') || 'VerifyFlow Network HQ',
+      platformName: map.get('platformName') || 'NoxGuarda Network HQ',
       maintenanceMode: map.get('maintenanceMode') === 'true',
       allowPublicRegistrations: map.get('allowPublicRegistrations') === 'true',
       defaultTrialDays: parseInt(map.get('defaultTrialDays') || '14', 10),
       rateLimitPerMinute: parseInt(map.get('rateLimitPerMinute') || '120', 10),
       maxLookupsPerDayFree: parseInt(map.get('maxLookupsPerDayFree') || '50', 10),
-      alertEmail: map.get('alertEmail') || 'security@verifyflow.ng',
-      webhookSecret: map.get('webhookSecret') || 'whsec_verifyflow_live_89410384',
+      alertEmail: map.get('alertEmail') || 'security@noxguarda.com',
+      webhookSecret: map.get('webhookSecret') || 'whsec_noxguarda_live_89410384',
       paystackLiveEnabled: map.get('paystackLiveEnabled') === 'true',
       // Email fields
       welcomeEmailEnabled: map.get('welcomeEmailEnabled') !== 'false',
       welcomeEmailSubject:
-        map.get('welcomeEmailSubject') || 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready!',
-      welcomeEmailHeading: map.get('welcomeEmailHeading') || 'Welcome to VerifyFlow!',
+        map.get('welcomeEmailSubject') || 'Welcome to NoxGuarda - Your {{businessName}} Store is Ready!',
+      welcomeEmailHeading: map.get('welcomeEmailHeading') || 'Welcome to NoxGuarda!',
       welcomeEmailSubheading:
         map.get('welcomeEmailSubheading') || 'Your Verified Phone Inventory & Retail OS is Live',
       welcomeEmailBody:

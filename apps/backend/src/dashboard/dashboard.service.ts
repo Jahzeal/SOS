@@ -400,7 +400,7 @@ export class DashboardService {
         title: 'Workspace Initialized',
         description:
             diffDays > 0
-            ? `Welcome to VerifyFlow! ${diffDays}-day free trial active.`
+            ? `Welcome to NoxGuarda! ${diffDays}-day free trial active.`
             : 'Your free trial has ended. Upgrade to continue syncing store records.',
         createdAt: business.createdAt,
         icon: 'bell',

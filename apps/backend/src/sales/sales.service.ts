@@ -394,7 +394,7 @@ export class SalesService {
 
     const docTitle = isInvoice ? 'Commercial Invoice Statement' : 'POS Sales Receipt';
     const docNum = isInvoice ? sale.invoiceNumber : sale.receiptNumber || sale.invoiceNumber;
-    const storeName = sale.business?.name || 'VerifyFlow Verified Retailer';
+    const storeName = sale.business?.name || 'NoxGuarda Verified Retailer';
     const storeEmail =
       sale.business?.email?.trim() ||
       (sale.business as any)?.users?.[0]?.email?.trim() ||
@@ -491,7 +491,7 @@ export class SalesService {
           ${sale.business?.address ? `${sale.business.address}<br/>` : ''}
           ${sale.business?.phone ? `Tel: ${sale.business.phone}<br/>` : ''}
           ${storeEmail ? `Email: ${storeEmail}<br/>` : ''}
-          <span style="font-size: 11px; color: #94a3b8;">Secured by VerifyFlow Electronics Ledger</span>
+          <span style="font-size: 11px; color: #94a3b8;">Secured by NoxGuarda Electronics Ledger</span>
         </div>
       </div>
     `;

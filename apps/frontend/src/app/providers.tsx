@@ -41,7 +41,7 @@ function NetworkStatusListener() {
     return (
       <div className="fixed top-0 left-0 right-0 z-[200] bg-slate-900 text-white text-xs font-semibold py-2 px-4 flex items-center justify-center gap-2 border-b border-slate-800 shadow-md animate-in slide-in-from-top duration-200">
         <WifiOff className="w-4 h-4 text-amber-400 shrink-0" />
-        <span>Network Disconnected — VerifyFlow is operating in offline mode. Changes will sync when reconnected.</span>
+        <span>Network Disconnected — NoxGuarda is operating in offline mode. Changes will sync when reconnected.</span>
       </div>
     );
   }
@@ -50,7 +50,7 @@ function NetworkStatusListener() {
     return (
       <div className="fixed top-0 left-0 right-0 z-[200] bg-emerald-700 text-white text-xs font-semibold py-2 px-4 flex items-center justify-center gap-2 shadow-md animate-in slide-in-from-top duration-200">
         <CheckCircle2 className="w-4 h-4 text-emerald-200 shrink-0" />
-        <span>Connection Restored — Reconnected to VerifyFlow services.</span>
+        <span>Connection Restored — Reconnected to NoxGuarda services.</span>
       </div>
     );
   }

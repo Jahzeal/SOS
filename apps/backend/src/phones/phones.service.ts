@@ -109,8 +109,8 @@ export class PhonesService {
       },
     });
 
-    // 5. Generate Verification QR Data URL
-    const verificationUrl = `https://verifyflow.com/verify?imei=${phoneRecord.imei1}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'https://sos-frontend-indol.vercel.app';
+    const verificationUrl = `${frontendUrl}/verify?imei=${phoneRecord.imei1}`;
     const qrCodeUrl = await QRCode.toDataURL(verificationUrl);
 
     // Save QR Code URL back to record
@@ -220,7 +220,7 @@ export class PhonesService {
         brand: phone.brand,
         model: phone.model,
         color: phone.color,
-        ownerEmail: phone.business.email || 'business@verifyflow.com',
+        ownerEmail: phone.business.email || 'business@noxguarda.com',
         ownerName: phone.business.name,
         ownerPhone: dto.contactPhone?.trim() || phone.business.phone || 'N/A',
         lostNote: dto.lostNote?.trim() || dto.theftReason?.trim() || `Reported stolen by retailer ${phone.business.name}`,

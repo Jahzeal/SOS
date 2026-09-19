@@ -26,17 +26,17 @@ export class MailService {
           pass: smtpPass.replace(/\s+/g, ''), // Strip spaces in 16-char app passwords
         },
       });
-      this.fromEmail = process.env.MAIL_FROM || `VerifyFlow <${smtpUser}>`;
+      this.fromEmail = process.env.MAIL_FROM || `NoxGuarda <${smtpUser}>`;
       this.logger.log(`Gmail/SMTP Email Transport initialized with user: ${smtpUser}`);
     } else {
       const apiKey = process.env.RESEND_API_KEY;
       if (apiKey) {
         this.resend = new Resend(apiKey);
-        this.fromEmail = process.env.MAIL_FROM || 'VerifyFlow <onboarding@resend.dev>';
+        this.fromEmail = process.env.MAIL_FROM || 'NoxGuarda <onboarding@resend.dev>';
         this.logger.log('Resend Email Transport initialized.');
       } else {
         this.logger.warn('Neither SMTP_USER/SMTP_PASS nor RESEND_API_KEY configured in .env! Real email sending is disabled.');
-        this.fromEmail = 'VerifyFlow <noreply@verifyflow.com>';
+        this.fromEmail = 'NoxGuarda <noreply@noxguarda.com>';
       }
     }
   }
@@ -111,8 +111,8 @@ export class MailService {
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 540px; margin: 0 auto; padding: 32px 20px; background-color: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; width: 44px; height: 44px; line-height: 44px; background-color: #0f172a; color: #ffffff; border-radius: 12px; font-weight: 800; font-size: 18px;">VF</div>
-          <h2 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 12px 0 4px 0; letter-spacing: -0.5px;">VerifyFlow Enterprise OS</h2>
+          <div style="display: inline-block; width: 44px; height: 44px; line-height: 44px; background-color: #121417; color: #ffffff; border-radius: 12px; font-weight: 800; font-size: 16px; letter-spacing: 1px;">NG</div>
+          <h2 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 12px 0 4px 0; letter-spacing: -0.5px;">NOXGUARDA Enterprise OS</h2>
           <p style="color: #64748b; font-size: 13px; margin: 0;">Verified Device & IMEI Intelligence Ledger</p>
         </div>
 
@@ -122,7 +122,7 @@ export class MailService {
             Hello <strong>${recipientName}</strong>, enter the 6-digit code below to verify your email and activate your business workspace.
           </p>
 
-          <div style="background-color: #f1f5f9; padding: 18px; border-radius: 12px; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #0d9488; font-family: monospace; margin: 16px 0; border: 1px dashed #cbd5e1;">
+          <div style="background-color: #f1f5f9; padding: 18px; border-radius: 12px; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #2E6F5E; font-family: monospace; margin: 16px 0; border: 1px dashed #cbd5e1;">
             ${otpCode}
           </div>
 
@@ -132,16 +132,16 @@ export class MailService {
         </div>
 
         <div style="text-align: center; margin-top: 24px; color: #94a3b8; font-size: 11px;">
-          © ${new Date().getFullYear()} VerifyFlow Enterprise Inc. All rights reserved.
+          © ${new Date().getFullYear()} NoxGuarda Enterprise Inc. All rights reserved.
         </div>
       </div>
     `;
 
     return this.dispatchEmail({
       to,
-      subject: `[VerifyFlow] Your Verification Code: ${otpCode}`,
+      subject: `[NoxGuarda] Your Verification Code: ${otpCode}`,
       html,
-      text: `Your VerifyFlow verification code is ${otpCode}. It will expire in 10 minutes.`,
+      text: `Your NoxGuarda verification code is ${otpCode}. It will expire in 10 minutes.`,
     });
   }
 
@@ -151,8 +151,8 @@ export class MailService {
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 540px; margin: 0 auto; padding: 32px 20px; background-color: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; width: 44px; height: 44px; line-height: 44px; background-color: #0f172a; color: #ffffff; border-radius: 12px; font-weight: 800; font-size: 18px;">VF</div>
-          <h2 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 12px 0 4px 0;">VerifyFlow</h2>
+          <div style="display: inline-block; width: 44px; height: 44px; line-height: 44px; background-color: #121417; color: #ffffff; border-radius: 12px; font-weight: 800; font-size: 16px; letter-spacing: 1px;">NG</div>
+          <h2 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 12px 0 4px 0;">NoxGuarda</h2>
         </div>
 
         <div style="background-color: #ffffff; padding: 28px; border-radius: 16px; border: 1px solid #e2e8f0; text-align: center;">
@@ -161,13 +161,13 @@ export class MailService {
             Hello <strong>${recipientName}</strong>, we received a request to reset your password. Click the button below to choose a new password:
           </p>
 
-          <a href="${resetUrl}" style="display: inline-block; padding: 12px 28px; background-color: #0d9488; color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(13,148,136,0.2);">
+          <a href="${resetUrl}" style="display: inline-block; padding: 12px 28px; background-color: #2E6F5E; color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(46,111,94,0.2);">
             Reset Password →
           </a>
 
           <p style="color: #94a3b8; font-size: 11px; margin-top: 24px; word-break: break-all;">
             Or copy and paste this URL into your browser:<br/>
-            <a href="${resetUrl}" style="color: #0d9488;">${resetUrl}</a>
+            <a href="${resetUrl}" style="color: #2E6F5E;">${resetUrl}</a>
           </p>
         </div>
       </div>
@@ -175,7 +175,7 @@ export class MailService {
 
     return this.dispatchEmail({
       to,
-      subject: `[VerifyFlow] Reset Your Password`,
+      subject: `[NoxGuarda] Reset Your Password`,
       html,
       text: `Click the link below to reset your password:\n${resetUrl}`,
     });
@@ -197,8 +197,8 @@ export class MailService {
     this.logger.log(`Preparing welcome email for ${to} (${recipientName}, ${businessName})...`);
 
     let enabled = true;
-    let subject = 'Welcome to VerifyFlow - Your {{businessName}} Store is Ready! ';
-    let heading = 'Welcome to VerifyFlow!';
+    let subject = 'Welcome to NoxGuarda - Your {{businessName}} Store is Ready! ';
+    let heading = 'Welcome to NoxGuarda!';
     let subheading = 'Your Verified Phone Inventory & Retail OS is Live';
     let bodyText =
       'Congratulations! Your store workspace "{{businessName}}" has been successfully created. You now have full access to our high-speed IMEI ledger, express POS checkout, and fraud prevention suite.';
@@ -259,7 +259,7 @@ export class MailService {
         .replace(/{{email}}/g, to)
         .replace(/{{planName}}/g, planName || 'Starter')
         .replace(/{{dashboardUrl}}/g, dashboardUrl)
-        .replace(/{{platformName}}/g, 'VerifyFlow');
+        .replace(/{{platformName}}/g, 'NoxGuarda');
     };
 
     const finalSubject = interpolate(subject);
@@ -269,14 +269,14 @@ export class MailService {
     const finalCta = interpolate(ctaText);
 
     const html = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 20px; background-color: #0f172a; border-radius: 20px; color: #ffffff;">
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 20px; background-color: #121417; border-radius: 20px; color: #ffffff;">
         <div style="text-align: center; margin-bottom: 28px;">
-          <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%); color: #ffffff; border-radius: 14px; font-weight: 800; font-size: 20px; box-shadow: 0 4px 12px rgba(13,148,136,0.4);">VF</div>
+          <div style="display: inline-block; width: 48px; height: 48px; line-height: 48px; background: linear-gradient(135deg, #2E6F5E 0%, #1e293b 100%); color: #ffffff; border-radius: 14px; font-weight: 800; font-size: 18px; box-shadow: 0 4px 12px rgba(46,111,94,0.4); letter-spacing: 1px;">NG</div>
           <h1 style="color: #ffffff; font-size: 24px; font-weight: 800; margin: 16px 0 4px 0; letter-spacing: -0.5px;">${finalHeading}</h1>
           <p style="color: #94a3b8; font-size: 13px; margin: 0;">${finalSubheading}</p>
         </div>
 
-        <div style="background-color: #1e293b; padding: 32px 24px; border-radius: 18px; border: 1px solid #334155; box-shadow: 0 8px 16px rgba(0,0,0,0.2);">
+        <div style="background-color: #1a1d24; padding: 32px 24px; border-radius: 18px; border: 1px solid #2a2f3a; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
           <h2 style="color: #f8fafc; font-size: 18px; font-weight: 700; margin-top: 0;">
             Hello ${recipientName || 'Store Owner'} 
           </h2>
@@ -285,8 +285,8 @@ export class MailService {
           </p>
 
           <!-- Store Summary Card -->
-          <div style="background-color: #0f172a; padding: 18px; border-radius: 14px; border: 1px solid #334155; margin-bottom: 24px;">
-            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #0d9488; letter-spacing: 1px; margin-bottom: 8px;">Workspace Overview</div>
+          <div style="background-color: #121417; padding: 18px; border-radius: 14px; border: 1px solid #2a2f3a; margin-bottom: 24px;">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #52a38c; letter-spacing: 1px; margin-bottom: 8px;">Workspace Overview</div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 6px;">
               <span>Store Name:</span> <strong style="color: #f1f5f9;">${businessName}</strong>
             </div>
@@ -324,7 +324,7 @@ export class MailService {
 
           <!-- CTA Button -->
           <div style="text-align: center; margin: 30px 0 10px 0;">
-            <a href="${dashboardUrl}" style="display: inline-block; background: linear-gradient(135deg, #0d9488 0%, #2563eb 100%); color: #ffffff; padding: 14px 36px; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(13,148,136,0.4); text-transform: uppercase; letter-spacing: 0.5px;">
+            <a href="${dashboardUrl}" style="display: inline-block; background: linear-gradient(135deg, #2E6F5E 0%, #1e293b 100%); color: #ffffff; padding: 14px 36px; font-size: 14px; font-weight: 800; text-decoration: none; border-radius: 12px; box-shadow: 0 4px 14px rgba(46,111,94,0.4); text-transform: uppercase; letter-spacing: 0.5px;">
               ${finalCta}
             </a>
           </div>
@@ -332,7 +332,7 @@ export class MailService {
 
         <div style="text-align: center; margin-top: 24px; color: #64748b; font-size: 11px; line-height: 1.5;">
           Have questions or need help setting up? Reply directly to this email.<br/>
-          © ${new Date().getFullYear()} VerifyFlow Enterprise Inc. All rights reserved.
+          © ${new Date().getFullYear()} NoxGuarda Enterprise Inc. All rights reserved.
         </div>
       </div>
     `;

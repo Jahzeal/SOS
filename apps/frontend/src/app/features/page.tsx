@@ -484,7 +484,7 @@ export default function FeaturesPage() {
               Customers scan the QR code on your printed receipt or phone box with their standard camera app to verify legitimacy instantly.
             </p>
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs font-mono text-slate-700">
-              verifyflow.app/verify/354892019482019
+              noxguarda.com/verify/354892019482019
             </div>
           </div>
 

@@ -206,7 +206,7 @@ export default function AdminBusinessesManagementPage() {
                       <div className="flex items-center justify-center gap-1.5">
                         {b.email && (
                           <a
-                            href={`mailto:${b.email}?subject=VerifyFlow Store Support`}
+                            href={`mailto:${b.email}?subject=NoxGuarda Store Support`}
                             title={`Email ${b.email}`}
                             className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition"
                           >

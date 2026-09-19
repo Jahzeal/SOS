@@ -344,7 +344,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                     type="text"
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
-                    placeholder="e.g. VerifyFlow Retail POS"
+                    placeholder="e.g. NoxGuarda Retail POS"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -643,11 +643,11 @@ export default function ReceiptInvoiceTemplatesPage() {
                   </div>
                 ) : (
                   <div className="text-right flex items-center gap-1.5 justify-end">
-                    <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-xs">
-                      {(companyName || 'VF').slice(0, 2).toUpperCase()}
+                    <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                      {(companyName || 'NG').slice(0, 2).toUpperCase()}
                     </div>
                     <span className="text-lg font-black text-slate-900 tracking-tight">
-                      {companyName || 'VerifyFlow'}
+                      {companyName || 'NoxGuarda'}
                     </span>
                   </div>
                 )}

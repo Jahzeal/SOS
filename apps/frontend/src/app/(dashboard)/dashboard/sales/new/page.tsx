@@ -327,7 +327,7 @@ function CheckoutPOSContent() {
 
   const handleCopyReceiptText = () => {
     if (!finalReceipt) return;
-    const storeName = storeSettings?.name || 'VerifyFlow Retail Store';
+    const storeName = storeSettings?.name || 'NoxGuarda Retail Store';
     const lines = [
       `========================================`,
       `*${storeName.toUpperCase()}*`,
@@ -348,8 +348,8 @@ function CheckoutPOSContent() {
       `----------------------------------------`,
       `*TOTAL PAID: ₦${finalReceipt.total.toLocaleString()}*`,
       `========================================`,
-      `${storeSettings?.receiptFooter || 'Thank you for your purchase! 30-Day Store Warranty included. Official IMEI verified on VerifyFlow Registry.'}`,
-      `Official Registry: https://verifyflow.ng`,
+      `${storeSettings?.receiptFooter || 'Thank you for your purchase! 30-Day Store Warranty included. Official IMEI verified on NoxGuarda Registry.'}`,
+      `Official Registry: https://noxguarda.com`,
     ].filter(Boolean).join('\n');
 
     if (navigator.clipboard) {
@@ -977,7 +977,7 @@ function CheckoutPOSContent() {
                 </div>
               )}
               <h3 className="font-black text-base text-slate-950 tracking-tight uppercase">
-                {storeSettings?.name || storeBankDetails?.accountName || 'VERIFYFLOW RETAIL POS'}
+                {storeSettings?.name || storeBankDetails?.accountName || 'NOXGUARDA RETAIL POS'}
               </h3>
               <p className="text-[11px] font-sans font-bold text-slate-600">
                 {storeSettings?.storeBranch || 'Official Sales & Anti-Theft Verification'}
@@ -1100,7 +1100,7 @@ function CheckoutPOSContent() {
                 </div>
                 <div>
                   <p className="text-[10px] font-bold text-slate-800 font-sans">
-                    VerifyFlow Anti-Theft Protection
+                    NoxGuarda Anti-Theft Protection
                   </p>
                   <p className="text-[9px] text-slate-500 font-sans">
                     Scan QR to verify proof of purchase & ownership registry
@@ -1112,9 +1112,9 @@ function CheckoutPOSContent() {
             {/* Warranty & Store Disclaimer Footer */}
             <div className="pt-3 text-center text-[10px] text-slate-500 font-sans border-t border-dashed border-slate-300 leading-snug">
               <p className="font-bold text-slate-700 pb-0.5">
-                {storeSettings?.receiptFooter || 'Thank you for your purchase! 30-Day Store Warranty included. Official IMEI verified on VerifyFlow Registry.'}
+                {storeSettings?.receiptFooter || 'Thank you for your purchase! 30-Day Store Warranty included. Official IMEI verified on NoxGuarda Registry.'}
               </p>
-              <p className="text-[9px] text-slate-400">Powered by VerifyFlow POS Security Cloud</p>
+              <p className="text-[9px] text-slate-400">Powered by NoxGuarda POS Security Cloud</p>
             </div>
           </div>
 

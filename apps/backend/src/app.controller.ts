@@ -6,7 +6,7 @@ export class AppController {
   getHealth() {
     return {
       status: 'ok',
-      message: 'VerifyFlow NestJS API is running successfully',
+      message: 'NoxGuarda NestJS API is running successfully',
       timestamp: new Date().toISOString(),
     };
   }

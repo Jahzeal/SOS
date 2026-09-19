@@ -15,7 +15,7 @@ export interface ApiErrorStateProps {
 
 export function ApiErrorState({
   title = 'Connection Interrupted',
-  message = 'Unable to communicate with VerifyFlow servers. Please check your network connection and try again.',
+  message = 'Unable to communicate with NoxGuarda servers. Please check your network connection and try again.',
   onRetry,
   isRetrying = false,
   compact = false,

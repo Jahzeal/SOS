@@ -112,7 +112,7 @@ export default function BusinessDashboardPage() {
             {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening'}, {userName} 
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-xl leading-relaxed">
-            Welcome back to VerifyFlow. Here's a real-time summary of your store's inventory, phone registrations, sales, and warranty activity today.
+            Welcome back to NoxGuarda. Here's a real-time summary of your store's inventory, phone registrations, sales, and warranty activity today.
           </p>
         </div>
 
@@ -466,7 +466,7 @@ export default function BusinessDashboardPage() {
         {showSupportModal && (
           <div className="absolute bottom-16 right-0 w-72 bg-white rounded-2xl border border-slate-200 shadow-2xl p-4 space-y-3 text-xs animate-in fade-in duration-150">
             <div className="font-extrabold text-slate-900 flex items-center justify-between border-b border-slate-100 pb-2">
-              <span>VerifyFlow Support</span>
+              <span>NoxGuarda Support</span>
               <span className="text-[10px] text-emerald-600 font-bold">ONLINE</span>
             </div>
             <p className="text-slate-600 font-medium">Need help configuring box QR printers or multi-branch stock transfers?</p>

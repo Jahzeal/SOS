@@ -25,6 +25,6 @@ async function bootstrap() {
 
   const port = process.env.PORT || 4000;
   await app.listen(port);
-  console.log(`VerifyFlow API server running on http://localhost:${port}`);
+  console.log(`NoxGuarda API server running on http://localhost:${port}`);
 }
 bootstrap();

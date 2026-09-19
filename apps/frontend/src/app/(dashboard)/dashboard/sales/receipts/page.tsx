@@ -445,7 +445,7 @@ export default function ReceiptsArchivePage() {
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 font-mono text-xs space-y-3">
                 <div className="text-center border-b border-slate-200 pb-3">
                   <h4 className="font-extrabold text-sm text-slate-900">
-                    {selectedReceipt.business?.name || summaryData?.business?.name || 'VERIFYFLOW STORE'}
+                    {selectedReceipt.business?.name || summaryData?.business?.name || 'NOXGUARDA STORE'}
                   </h4>
                   <p className="text-[10px] text-slate-500">
                     {selectedReceipt.business?.address || 'Ikeja Digital Village, Lagos'}
@@ -498,7 +498,7 @@ export default function ReceiptsArchivePage() {
 
 
                 <div className="pt-2 text-center text-[10px] text-slate-500 font-sans border-t border-slate-200 leading-snug">
-                  {selectedReceipt.business?.receiptFooter || 'Thank you for your purchase! Devices verified with VerifyFlow.'}
+                  {selectedReceipt.business?.receiptFooter || 'Thank you for your purchase! Devices verified with NoxGuarda.'}
                 </div>
               </div>
             </div>

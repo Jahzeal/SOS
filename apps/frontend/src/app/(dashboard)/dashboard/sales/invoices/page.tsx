@@ -716,11 +716,11 @@ export default function InvoicesRegistryPage() {
                   </div>
                 ) : (
                   <div className="text-right flex items-center gap-1.5 justify-end">
-                    <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-xs">
-                      {(viewModalInvoice.business?.name || 'VF').slice(0, 2).toUpperCase()}
+                    <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                      {(viewModalInvoice.business?.name || 'NG').slice(0, 2).toUpperCase()}
                     </div>
                     <span className="text-base font-black text-slate-900 tracking-tight">
-                      {viewModalInvoice.business?.name || 'VerifyFlow'}
+                      {viewModalInvoice.business?.name || 'NoxGuarda'}
                     </span>
                   </div>
                 )}
@@ -900,7 +900,7 @@ export default function InvoicesRegistryPage() {
               {/* Bottom Footer Bar */}
               <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] text-slate-500 font-medium">
                 <div>
-                  {viewModalInvoice.business?.name || 'VerifyFlow Retail Store'}
+                  {viewModalInvoice.business?.name || 'NoxGuarda Retail Store'}
                   {viewModalInvoice.business?.phone ? ` • Phone: ${viewModalInvoice.business.phone}` : ''}
                   {viewModalInvoice.business?.email ? ` • Email: ${viewModalInvoice.business.email}` : ''}
                 </div>
