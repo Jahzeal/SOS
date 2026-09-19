@@ -29,6 +29,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { Logo } from '@/components/ui/Logo';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 export default function FeaturesPage() {
   return (
@@ -38,16 +40,8 @@ export default function FeaturesPage() {
       {/* ========================================================================= */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-slate-900 text-teal-400 flex items-center justify-center font-black text-lg shadow-sm border border-slate-800">
-              VF
-            </div>
-            <div className="flex flex-col">
-              <span className="font-black text-lg text-slate-900 tracking-tight leading-none">
-                Verify<span className="text-teal-600">Flow</span>
-              </span>
-              <span className="text-[9px] font-bold text-slate-400 tracking-wider uppercase">Phone OS</span>
-            </div>
+          <Link href="/" className="flex items-center">
+            <BrandLogo size="sm" variant="light" />
           </Link>
 
           <div className="hidden md:flex items-center gap-7 text-xs font-bold text-slate-600">
@@ -145,7 +139,7 @@ export default function FeaturesPage() {
               Instant IMEI & Hardware Authenticity Verification
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-medium">
-              Eliminate counterfeit devices, stolen phone claims, and duplicate serial swaps. VerifyFlow validates hardware serials and IMEI pairs instantly when checking in store inventory or processing trade-ins.
+              Eliminate counterfeit devices, stolen phone claims, and duplicate serial swaps. NoxGuarda validates hardware serials and IMEI pairs instantly when checking in store inventory or processing trade-ins.
             </p>
             <ul className="space-y-3 text-xs font-semibold text-slate-700">
               <li className="flex items-start gap-2.5">
@@ -254,7 +248,7 @@ export default function FeaturesPage() {
               Never Lose Track of a Single Phone or IMEI
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-medium">
-              Generic POS systems track quantities ("iPhone 15 x 5"). VerifyFlow tracks exact physical devices with individual battery health, purchase cost, selling price, and warranty durations across all branch stores.
+              Generic POS systems track quantities ("iPhone 15 x 5"). NoxGuarda tracks exact physical devices with individual battery health, purchase cost, selling price, and warranty durations across all branch stores.
             </p>
             <ul className="space-y-3 text-xs font-semibold text-slate-700">
               <li className="flex items-start gap-2.5">
@@ -320,7 +314,7 @@ export default function FeaturesPage() {
             <div className="border border-slate-300 rounded-2xl p-4 bg-white space-y-3 text-xs">
               <div className="flex justify-between items-start border-b border-slate-200 pb-3">
                 <div>
-                  <p className="font-extrabold text-sm text-slate-900">VerifyFlow Wireless Systems</p>
+                  <p className="font-extrabold text-sm text-slate-900">NoxGuarda Wireless Systems</p>
                   <p className="text-[10px] text-slate-500">Computer Village, Ikeja, Lagos</p>
                 </div>
                 <Badge variant="verified">COMMERCIAL INVOICE</Badge>

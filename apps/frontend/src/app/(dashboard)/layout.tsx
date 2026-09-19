@@ -221,7 +221,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
               <ShieldCheck className="w-4 h-4 text-teal-600 shrink-0" />
-              <span className="truncate">VerifyFlow</span>
+              <span className="truncate">NoxGuarda</span>
             </div>
           </div>
 
