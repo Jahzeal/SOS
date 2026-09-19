@@ -846,15 +846,8 @@ export default function PublicLandingPageV2() {
             <a href="#how-it-works" className="hover:text-slate-900 transition-colors">
               How it Works
             </a>
-            <Link href="/pricing" className="hover:text-zinc-900 transition-colors font-bold text-teal-600">
+            <Link href="/pricing" className="hover:text-zinc-900 transition-colors font-bold text-emerald-600">
               Pricing & Plans
-            </Link>
-            <Link
-              href="/report-stolen"
-              className="text-rose-600 hover:text-rose-700 font-extrabold flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-50 border border-rose-200/80 hover:bg-rose-100 transition-colors shadow-2xs"
-            >
-              <ShieldAlert className="w-3.5 h-3.5" />
-              Report Stolen
             </Link>
             <a href="#faq" className="hover:text-slate-900 transition-colors">
               Help Center
@@ -984,7 +977,7 @@ export default function PublicLandingPageV2() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-xl">
-            VerifyFlow empowers phone retailers, distributors, and electronics stores to register devices via QR code, IMEI, or Serial Number. Protect your business from fake warranty claims while providing buyers instant proof of origin.
+            NoxGuarda empowers phone retailers, distributors, and electronics stores to register devices via QR code, IMEI, or Serial Number. Protect your business from fake warranty claims while providing buyers instant proof of origin.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -1416,7 +1409,7 @@ export default function PublicLandingPageV2() {
         <div className="max-w-7xl mx-auto text-center space-y-10">
           <div className="max-w-3xl mx-auto space-y-4">
             <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              Meet VerifyFlow: The Complete Phone Retail OS
+              Meet NoxGuarda: The Complete Phone Retail OS
             </h2>
             <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed">
               One unified workspace to register IMEI stock, process express POS checkouts, issue digital thermal receipts, track warranties, and handle repairs.
@@ -1427,7 +1420,7 @@ export default function PublicLandingPageV2() {
           <div className="relative rounded-3xl overflow-hidden border border-slate-200/80 shadow-2xl max-w-5xl mx-auto group">
             <img
               src="/images/verifyflow_store_hero.png"
-              alt="Professional phone retailer operating VerifyFlow retail software at store counter"
+              alt="Professional phone retailer operating NoxGuarda retail software at store counter"
               className="w-full h-auto max-h-[480px] object-cover object-center transform group-hover:scale-[1.01] transition-transform duration-500"
             />
             
@@ -1547,18 +1540,18 @@ export default function PublicLandingPageV2() {
 
         <div className="text-center pt-4">
           <Link href="/features" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 text-white font-extrabold text-xs sm:text-sm hover:bg-slate-800 transition shadow-md">
-            <span>Explore All VerifyFlow Features & Workflows</span>
+            <span>Explore All NoxGuarda Features & Workflows</span>
             <ArrowRight className="w-4 h-4 text-teal-400" />
           </Link>
         </div>
       </section>
 
-      {/* SECTION 7 — HOW VERIFYFLOW WORKS (Dual Workflows) */}
+      {/* SECTION 7 — HOW NOXGUARDA WORKS (Dual Workflows) */}
       <section id="how-it-works" className="py-20 bg-white border-y border-slate-200/80 px-6">
         <div className="max-w-7xl mx-auto space-y-16">
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-              How VerifyFlow Operates
+              How NoxGuarda Operates
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
               Clear pathways built for both store staff and end-user phone buyers.
@@ -1612,7 +1605,7 @@ export default function PublicLandingPageV2() {
               <div className="vf-card p-5 space-y-2 bg-emerald-50/30 border-emerald-200/80">
                 <div className="text-xs font-bold text-emerald-700">STEP 02</div>
                 <h4 className="text-sm font-bold text-slate-900">Instant Verification</h4>
-                <p className="text-xs text-slate-600">VerifyFlow queries the retailer's official cloud ledger in 1 second.</p>
+                <p className="text-xs text-slate-600">NoxGuarda queries the retailer's official cloud ledger in 1 second.</p>
               </div>
 
               <div className="vf-card p-5 space-y-2 bg-emerald-50/30 border-emerald-200/80">
@@ -1629,7 +1622,7 @@ export default function PublicLandingPageV2() {
       <section className="py-20 px-6 max-w-7xl mx-auto w-full space-y-8">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Explore the VerifyFlow Interface
+            Explore the NoxGuarda Interface
           </h2>
           <p className="text-xs sm:text-sm text-slate-500">
             Click through active screens to preview actual store workflows.
@@ -1818,7 +1811,7 @@ export default function PublicLandingPageV2() {
                       SCAN QR TO VERIFY DEVICE ORIGIN
                     </p>
                     <p className="text-[9px] text-slate-500 font-sans mt-0.5">
-                      VerifyFlow Public Warranty & IMEI Ledger
+                      NoxGuarda Public Warranty & IMEI Ledger
                     </p>
                   </div>
                   <div className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-300">
@@ -1935,7 +1928,7 @@ export default function PublicLandingPageV2() {
       <section className="py-20 bg-slate-100/70 border-y border-slate-200 px-6">
         <div className="max-w-5xl mx-auto space-y-10">
           <div className="text-center space-y-2">
-            <h2 className="text-3xl font-extrabold text-slate-900">Why Phone Retailers Choose VerifyFlow</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900">Why Phone Retailers Choose NoxGuarda</h2>
             <p className="text-xs sm:text-sm text-slate-500">Direct comparison with legacy spreadsheets & generic POS software.</p>
           </div>
 
@@ -1959,10 +1952,10 @@ export default function PublicLandingPageV2() {
               </ul>
             </div>
 
-            {/* VerifyFlow */}
+            {/* NoxGuarda */}
             <div className="vf-card p-6 border-emerald-300 bg-emerald-50/40 space-y-4 shadow-card">
               <div className="font-bold text-emerald-950 text-base flex items-center justify-between">
-                <span>VerifyFlow Platform</span>
+                <span>NoxGuarda Platform</span>
                 <Badge variant="verified" size="sm">RECOMMENDED</Badge>
               </div>
               <ul className="space-y-3 text-slate-800 font-medium">
@@ -1996,7 +1989,7 @@ export default function PublicLandingPageV2() {
           <div className="vf-card p-6 space-y-4">
             <div className="flex text-amber-400 gap-1 text-sm"></div>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-              "VerifyFlow stopped customer warranty swaps completely. Now every phone we sell has a scanned QR receipt linked to its IMEI."
+              "NoxGuarda stopped customer warranty swaps completely. Now every phone we sell has a scanned QR receipt linked to its IMEI."
             </p>
             <div className="pt-2 border-t border-slate-100 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs">
@@ -2012,7 +2005,7 @@ export default function PublicLandingPageV2() {
           <div className="vf-card p-6 space-y-4">
             <div className="flex text-amber-400 gap-1 text-sm"></div>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-              "Managing 4 store branches used to require constant phone calls. With VerifyFlow, serial stock transfers take 10 seconds."
+              "Managing 4 store branches used to require constant phone calls. With NoxGuarda, serial stock transfers take 10 seconds."
             </p>
             <div className="pt-2 border-t border-slate-100 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs">
@@ -2053,7 +2046,7 @@ export default function PublicLandingPageV2() {
           {[
             {
               q: 'How does phone verification work?',
-              a: 'Retailers register devices by scanning manufacturer QR codes, IMEI, or Serial Numbers. VerifyFlow links the device to your store ledger. Buyers can scan receipt QR codes or enter IMEI on your store link to instantly verify authenticity.',
+              a: 'Retailers register devices by scanning manufacturer QR codes, IMEI, or Serial Numbers. NoxGuarda links the device to your store ledger. Buyers can scan receipt QR codes or enter IMEI on your store link to instantly verify authenticity.',
             },
             {
               q: 'Can customers verify purchases without an account?',
@@ -2061,15 +2054,15 @@ export default function PublicLandingPageV2() {
             },
             {
               q: 'Can I manage multiple store branches?',
-              a: 'Yes, VerifyFlow supports multi-branch management. You can track inventory transfers between stores and monitor branch revenue.',
+              a: 'Yes, NoxGuarda supports multi-branch management. You can track inventory transfers between stores and monitor branch revenue.',
             },
             {
-              q: 'Do I need special hardware to run VerifyFlow?',
-              a: 'No. VerifyFlow is cloud-based and runs on any modern browser (laptop, tablet, smartphone). Standard USB/Bluetooth barcode scanners are supported.',
+              q: 'Do I need special hardware to run NoxGuarda?',
+              a: 'No. NoxGuarda is cloud-based and runs on any modern browser (laptop, tablet, smartphone). Standard USB/Bluetooth barcode scanners are supported.',
             },
             {
               q: 'Can I print receipts directly to thermal printers?',
-              a: 'Yes! VerifyFlow includes a custom receipt builder supporting 80mm thermal POS rolls, 58mm rolls, and standard A4 sheets.',
+              a: 'Yes! NoxGuarda includes a custom receipt builder supporting 80mm thermal POS rolls, 58mm rolls, and standard A4 sheets.',
             },
             {
               q: 'Can I scan manufacturer QR codes on phone boxes?',
@@ -2105,7 +2098,7 @@ export default function PublicLandingPageV2() {
             Ready to Modernize Your Phone Business?
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-medium max-w-xl mx-auto leading-relaxed">
-            Join hundreds of phone retailers, distributors, and electronics businesses using VerifyFlow to simplify verification, inventory, sales, and warranty management.
+            Join hundreds of phone retailers, distributors, and electronics businesses using NoxGuarda to simplify verification, inventory, sales, and warranty management.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -2153,7 +2146,7 @@ export default function PublicLandingPageV2() {
           <div className="space-y-3">
             <div className="font-extrabold text-slate-900 text-base">Company</div>
             <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><a href="#" className="hover:text-teal-600 transition">About VerifyFlow</a></li>
+              <li><a href="#" className="hover:text-teal-600 transition">About NoxGuarda</a></li>
               <li><a href="#" className="hover:text-teal-600 transition">Contact Sales</a></li>
               <li><span className="text-slate-400">Careers (Hiring)</span></li>
             </ul>
@@ -2171,7 +2164,7 @@ export default function PublicLandingPageV2() {
         </div>
 
         <div className="max-w-7xl mx-auto pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-600">
-          <div>VerifyFlow Retail Operating System © 2026. All rights reserved.</div>
+          <div>NoxGuarda Anti-Theft Operating System © 2026. All rights reserved.</div>
           <div className="flex items-center gap-6">
             <span>English (US)</span>
             <span>Security Compliant</span>

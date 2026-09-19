@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { PwaInstallButton } from '@/components/PwaInstallButton';
 import { Logo } from '@/components/ui/Logo';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
+import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
 
 function SessionExpiredAlert() {
   const searchParams = useSearchParams();
@@ -107,7 +108,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-teal-600 selection:text-white relative font-sans">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-teal-600 selection:text-white relative font-sans overflow-hidden">
+      <WatermarkBackground size="hero" opacity="opacity-[0.035]" />
 
 
       {/* Header Navigation */}
@@ -262,7 +264,7 @@ export default function LoginPage() {
 
       {/* Page Footer */}
       <footer className="py-4 xl:py-6 text-center text-[11px] xl:text-xs text-slate-500 border-t border-slate-200 bg-white">
-        © {new Date().getFullYear()} VerifyFlow Enterprise Inc. All rights reserved.
+        © {new Date().getFullYear()} NoxGuarda Technologies Inc. All rights reserved.
       </footer>
     </div>
   );

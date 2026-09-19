@@ -89,7 +89,7 @@ export default function FeaturesPage() {
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
-            VerifyFlow replaces disconnected spreadsheets and generic tools with a single hardware-aware operating system: IMEI-level verification, POS receipts, corporate commercial invoices, live repair tickets, and digital warranty passports.
+            NoxGuarda replaces disconnected spreadsheets and generic tools with a single hardware-aware operating system: IMEI-level verification, POS receipts, corporate commercial invoices, live repair tickets, and digital warranty passports.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
@@ -540,11 +540,11 @@ export default function FeaturesPage() {
             Ready to upgrade your phone store operations?
           </h2>
           <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto font-medium">
-            Join hundreds of phone retailers, wholesalers, and technicians using VerifyFlow. Full access free for 14 days.
+            Join hundreds of phone retailers, wholesalers, and technicians using NoxGuarda. Full access free for 14 days.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
             <Link href="/onboarding" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black px-8 py-3.5">
+              <Button size="lg" className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-3.5">
                 Start 14-Day Free Trial
               </Button>
             </Link>
@@ -560,19 +560,14 @@ export default function FeaturesPage() {
       {/* FOOTER */}
       <footer className="bg-white border-t border-slate-200 py-10 px-4 sm:px-6 lg:px-8 text-xs text-slate-500">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-lg bg-slate-900 text-teal-400 flex items-center justify-center font-bold text-xs">
-              VF
-            </div>
-            <span className="font-extrabold text-slate-900">VerifyFlow Technologies</span>
-          </div>
+          <Logo size="sm" />
           <div className="flex items-center gap-6 font-bold">
             <Link href="/features" className="hover:text-slate-900">Features</Link>
             <Link href="/pricing" className="hover:text-slate-900">Pricing</Link>
             <Link href="/dashboard/verify" className="hover:text-slate-900">Verification</Link>
             <Link href="/login" className="hover:text-slate-900">Sign In</Link>
           </div>
-          <p>© {new Date().getFullYear()} VerifyFlow. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} NoxGuarda. All rights reserved.</p>
         </div>
       </footer>
     </div>

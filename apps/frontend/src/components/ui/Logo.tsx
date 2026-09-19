@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 export interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
@@ -15,21 +16,21 @@ export interface LogoProps {
 export function Logo({
   size = 'md',
   variant = 'teal',
-  showSubtitle = true,
-  subtitle = 'Enterprise OS',
+  showSubtitle = false,
+  subtitle = 'Security Registry',
   href = '/',
   className = '',
 }: LogoProps) {
-  const badgeSizes = {
-    sm: 'w-7 h-7 rounded-lg text-xs font-black',
-    md: 'w-9 h-9 rounded-xl text-sm sm:text-base font-black',
-    lg: 'w-11 h-11 rounded-2xl text-base sm:text-lg font-black',
+  const sizeMap = {
+    sm: 'w-7 h-7',
+    md: 'w-9 h-9',
+    lg: 'w-11 h-11',
   };
 
   const titleSizes = {
-    sm: 'text-sm font-extrabold tracking-tight',
-    md: 'text-base font-extrabold tracking-tight',
-    lg: 'text-lg sm:text-xl font-extrabold tracking-tight',
+    sm: 'text-sm font-extrabold tracking-[0.18em]',
+    md: 'text-base font-extrabold tracking-[0.2em]',
+    lg: 'text-lg sm:text-xl font-extrabold tracking-[0.22em]',
   };
 
   const subtitleSizes = {
@@ -38,26 +39,23 @@ export function Logo({
     lg: 'text-[11px] font-bold uppercase tracking-wider',
   };
 
-  const badgeTheme =
-    variant === 'dark'
-      ? 'bg-slate-900 text-white shadow-md border border-slate-700/50'
-      : variant === 'white'
-      ? 'bg-white text-slate-950 shadow-md'
-      : 'bg-teal-600 text-white shadow-md shadow-teal-600/20';
-
   const textColor = variant === 'white' ? 'text-white' : 'text-slate-900';
-  const subtitleColor = variant === 'white' ? 'text-teal-300' : 'text-teal-600';
+  const subtitleColor = variant === 'white' ? 'text-emerald-400' : 'text-[#2E6F5E]';
 
   const content = (
-    <div className={`flex items-center gap-2.5 sm:gap-3 shrink-0 ${className}`}>
-      <div
-        className={`${badgeSizes[size]} ${badgeTheme} flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 select-none`}
-      >
-        VF
+    <div className={`flex items-center gap-2.5 sm:gap-3 shrink-0 select-none ${className}`}>
+      {/* Brand Monogram Icon Container */}
+      <div className="flex items-center justify-center transition-transform group-hover:scale-105">
+        <BrandLogo
+          variant={variant === 'white' ? 'white' : 'full'}
+          size={size}
+          className={sizeMap[size]}
+        />
       </div>
+
       <div className="min-w-0">
-        <span className={`${textColor} leading-none block font-sans ${titleSizes[size]}`}>
-          VerifyFlow
+        <span className={`${textColor} leading-none block font-space font-extrabold uppercase ${titleSizes[size]}`}>
+          NOXGUARDA
         </span>
         {showSubtitle && (
           <span className={`${subtitleColor} leading-tight block mt-0.5 ${subtitleSizes[size]}`}>
@@ -78,3 +76,4 @@ export function Logo({
 
   return content;
 }
+

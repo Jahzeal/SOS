@@ -36,6 +36,7 @@ import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
 import { Logo } from '@/components/ui/Logo';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
+import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -354,7 +355,8 @@ export default function OnboardingPage() {
         </div>
 
         {/* RIGHT PANEL — CONTENT CONTAINER */}
-        <div className="w-full lg:col-span-7 p-4 sm:p-6 lg:p-8 xl:p-12 2xl:p-16 flex flex-col justify-between bg-slate-50 min-h-screen">
+        <div className="w-full lg:col-span-7 p-4 sm:p-6 lg:p-8 xl:p-12 2xl:p-16 flex flex-col justify-between bg-slate-50 min-h-screen relative overflow-hidden">
+          <WatermarkBackground size="hero" opacity="opacity-[0.03]" />
           
           {/* Header & Stepper Bar */}
           <div className={`${currentStep === 4 ? 'max-w-5xl 2xl:max-w-6xl' : 'max-w-2xl xl:max-w-3xl 2xl:max-w-4xl'} mx-auto w-full space-y-5 xl:space-y-7 transition-all duration-300`}>

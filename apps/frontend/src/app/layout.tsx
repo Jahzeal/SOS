@@ -6,13 +6,13 @@ import { NetworkStatusBanner } from '@/components/NetworkStatusBanner';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'VerifyFlow Retail OS — Complete Operating System for Phone Retailers',
+  title: 'NOXGUARDA — Institutional Phone Retail OS & Anti-Theft Registry',
   description: 'Manage phone inventory, IMEI verification, POS receipts, customer warranties, and repairs from one secure platform.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'VerifyFlow',
+    title: 'NoxGuarda',
   },
   other: {
     'mobile-web-app-capable': 'yes',

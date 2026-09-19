@@ -363,7 +363,7 @@ export default function DedicatedPricingPage() {
 
       {/* Footer */}
       <footer className="py-6 border-t border-slate-200 bg-white text-center text-xs text-slate-500 font-medium">
-        © {new Date().getFullYear()} VerifyFlow Enterprise Inc. All rights reserved.
+        © {new Date().getFullYear()} NoxGuarda Technologies Inc. All rights reserved.
       </footer>
 
     </div>

@@ -876,8 +876,8 @@ export default function ReportStolenPage() {
           <div className="space-y-3">
             <div className="font-extrabold text-slate-900 text-base">Company</div>
             <ul className="space-y-2.5 font-medium text-slate-700 text-xs">
-              <li><Link href="/" className="hover:text-teal-600 transition">About VerifyFlow</Link></li>
-              <li><Link href="/login" className="hover:text-teal-600 transition">Business Portal</Link></li>
+              <li><Link href="/" className="hover:text-emerald-600 transition">About NoxGuarda</Link></li>
+              <li><Link href="/login" className="hover:text-emerald-600 transition">Business Portal</Link></li>
             </ul>
           </div>
 
@@ -892,7 +892,7 @@ export default function ReportStolenPage() {
         </div>
 
         <div className="max-w-7xl mx-auto pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-600">
-          <div>VerifyFlow Retail Operating System © 2026. All rights reserved.</div>
+          <div>NoxGuarda Anti-Theft Operating System © 2026. All rights reserved.</div>
           <div className="flex items-center gap-6">
             <span>English (US)</span>
             <span>Security Compliant</span>

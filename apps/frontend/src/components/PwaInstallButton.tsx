@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Download, Smartphone, Check, Share, X, Monitor } from 'lucide-react';
+import { BrandLogo } from '@/components/brand/BrandLogo';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -110,12 +111,12 @@ export function PwaInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose:
         </button>
 
         <div className="flex items-center gap-3 pr-6">
-          <div className="w-11 h-11 rounded-2xl bg-teal-600 text-white flex items-center justify-center font-extrabold text-base shadow-md shadow-teal-600/20 shrink-0">
-            VF
+          <div className="w-11 h-11 rounded-2xl bg-[#121417] text-white flex items-center justify-center font-extrabold text-base shadow-md shrink-0 border border-[#2E6F5E]/40 p-1">
+            <BrandLogo size="sm" />
           </div>
           <div>
-            <h3 className="text-sm sm:text-base font-extrabold text-slate-900">Install VerifyFlow App</h3>
-            <p className="text-[10px] sm:text-xs text-teal-600 font-bold uppercase tracking-wider">Fast • Offline POS • Instant Barcode</p>
+            <h3 className="text-sm sm:text-base font-extrabold text-slate-900">Install NoxGuarda App</h3>
+            <p className="text-[10px] sm:text-xs text-emerald-600 font-bold uppercase tracking-wider">Fast • Offline POS • Instant Barcode</p>
           </div>
         </div>
 
@@ -141,7 +142,7 @@ export function PwaInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose:
             <span>Desktop (Chrome, Edge & Brave):</span>
           </div>
           <p className="text-slate-600 text-[11px] sm:text-xs leading-relaxed">
-            Click the <span className="font-bold text-slate-900">Install App</span> icon directly in your browser's address bar to run VerifyFlow in fullscreen POS kiosk mode.
+            Click the <span className="font-bold text-slate-900">Install App</span> icon directly in your browser's address bar to run NoxGuarda in fullscreen POS kiosk mode.
           </p>
         </div>
 
@@ -211,7 +212,7 @@ export function PwaInstallButton({
             </button>
           </div>
           <p className="text-[11px] text-slate-300 leading-snug">
-            Run VerifyFlow with offline thermal receipts and instant camera scanning.
+            Run NoxGuarda with offline thermal receipts and instant camera scanning.
           </p>
           <button
             onClick={handleClick}
@@ -239,7 +240,7 @@ export function PwaInstallButton({
             </div>
             <div className="text-left">
               <div className="font-extrabold text-slate-900">Install Native App</div>
-              <div className="text-[10px] text-teal-700 font-medium">Add VerifyFlow to your home screen</div>
+              <div className="text-[10px] text-teal-700 font-medium">Add NoxGuarda to your home screen</div>
             </div>
           </div>
           <span className="text-[10px] font-bold bg-teal-600 text-white px-2 py-1 rounded-lg">Install</span>
@@ -254,7 +255,7 @@ export function PwaInstallButton({
       <>
         <button
           onClick={handleClick}
-          title="Install VerifyFlow as Desktop/Mobile PWA"
+          title="Install NoxGuarda as Desktop/Mobile PWA"
           className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 font-bold text-xs transition shadow-xs shrink-0 ${className}`}
         >
           <Download className="w-3.5 h-3.5 text-teal-600 shrink-0" />

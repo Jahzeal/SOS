@@ -9,11 +9,21 @@ module.exports = {
     extend: {
       fontFamily: {
         sans: ['"Plus Jakarta Sans"', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        space: ['"Space Grotesk"', 'sans-serif'],
         editorial: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
-        display: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
+        display: ['"Space Grotesk"', '"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
         serif: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
       },
       colors: {
+        // NoxGuarda Core Brand Identity Colors
+        brand: {
+          forest: '#2E6F5E',
+          sage: '#3B8B77',
+          emerald: '#1A4339',
+          obsidian: '#121417',
+          surface: '#1A1D23',
+          border: '#242A33',
+        },
         // Deep trustworthy primary blue
         primary: {
           50: '#f0f6ff',

@@ -47,7 +47,7 @@ export function VerifiedPhoneCard({ data }: { data: VerifiedPhoneData }) {
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
               Official Retail Record Verified
             </h3>
-            <p className="text-xs text-emerald-700 font-medium">Verified by VerifyFlow Enterprise Network</p>
+            <p className="text-xs text-emerald-700 font-medium">Verified by NoxGuarda Enterprise Network</p>
           </div>
         </div>
         <Badge variant="verified" size="md">
@@ -127,7 +127,7 @@ export function PhoneNotFoundCard({ searchedTerm }: { searchedTerm: string }) {
       </Badge>
       <h3 className="text-base font-bold text-slate-900">Unverified Phone Identifier</h3>
       <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-md leading-relaxed">
-        No official retail registration found for <code className="px-1.5 py-0.5 bg-rose-100/70 rounded font-mono text-rose-900 font-bold">{searchedTerm}</code>. This device may not have been purchased through an authorized VerifyFlow partner.
+        No official retail registration found for <code className="px-1.5 py-0.5 bg-rose-100/70 rounded font-mono text-rose-900 font-bold">{searchedTerm}</code>. This device may not have been purchased through an authorized NoxGuarda partner.
       </p>
 
       <div className="mt-5 flex items-center gap-3">
