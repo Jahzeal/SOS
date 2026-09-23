@@ -43,10 +43,18 @@ export class PhonesService {
   }
 
   async registerPhone(businessId: string, userId: string, dto: RegisterPhoneDto) {
-    // 1. Check duplicate IMEI
-    const imeiCheck = await this.checkImei(businessId, dto.imei1);
-    if (imeiCheck.exists) {
-      throw new ConflictException(imeiCheck.message);
+    let finalImei = dto.imei1?.trim();
+
+    // 1. If IMEI provided, check duplicate
+    if (finalImei) {
+      const imeiCheck = await this.checkImei(businessId, finalImei);
+      if (imeiCheck.exists) {
+        throw new ConflictException(imeiCheck.message);
+      }
+    } else {
+      // Auto-assign SKU/Barcode if non-phone item without IMEI
+      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      finalImei = dto.serialNumber?.trim() || `SKU-${Date.now().toString().slice(-6)}-${randomSuffix}`;
     }
 
     // 2. Customer Assignment if provided
@@ -78,17 +86,17 @@ export class PhonesService {
       ? new Date(new Date().setMonth(new Date().getMonth() + warrantyMonths))
       : null;
 
-    // 4. Create Phone Record
+    // 4. Create Item Record
     const phoneRecord = await this.prisma.phoneRecord.create({
       data: {
         businessId,
-        imei1: dto.imei1.trim(),
-        imei2: dto.imei2?.trim(),
-        serialNumber: dto.serialNumber?.trim(),
+        imei1: finalImei,
+        imei2: dto.imei2?.trim() || null,
+        serialNumber: dto.serialNumber?.trim() || null,
         brand: dto.brand.trim(),
         model: dto.model.trim(),
-        color: dto.color?.trim(),
-        storageCapacity: dto.storageCapacity?.trim(),
+        color: dto.color?.trim() || null,
+        storageCapacity: dto.storageCapacity?.trim() || null,
         condition: dto.condition,
         status: PhoneStatus.IN_STOCK,
         purchasePrice: dto.purchasePrice,

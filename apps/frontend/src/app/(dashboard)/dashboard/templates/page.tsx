@@ -19,6 +19,10 @@ import {
   Trash2,
   FileSpreadsheet,
   Palette,
+  Mail,
+  Download,
+  Paperclip,
+  Check,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -26,6 +30,9 @@ import { api } from '@/lib/api';
 
 export default function ReceiptInvoiceTemplatesPage() {
   const [activeTab, setActiveTab] = useState<'receipt' | 'invoice' | 'quote'>('receipt');
+  const [receiptPreviewMode, setReceiptPreviewMode] = useState<'email' | 'thermal' | 'a4'>('email');
+  const [invoicePreviewMode, setInvoicePreviewMode] = useState<'email' | 'a4'>('email');
+  const [quotePreviewMode, setQuotePreviewMode] = useState<'email' | 'a4'>('email');
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -179,22 +186,20 @@ export default function ReceiptInvoiceTemplatesPage() {
       {/* Top Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
-          <nav className="flex items-center text-xs font-semibold text-slate-500 gap-1 mb-1">
-            <Link href="/dashboard" className="hover:text-slate-900 transition">Dashboard</Link>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-slate-900 font-bold">Settings & Brand</span>
-            <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Receipt & Invoice Templates</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            Receipt & Invoice Templates Studio
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
-            Customize your store logo, branding, return policies, tax IDs, and warranty disclaimers printed on receipts and invoices.
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+              Receipt, Invoice & Quotation Templates
+            </h1>
+            <Badge variant="new" size="sm">
+              Live Studio
+            </Badge>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-2xl mt-1 leading-relaxed">
+            Customize the exact brand identity, bank remittance instructions, customer email delivery, and print formats.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2">
           <Button
             variant="primary"
             size="md"
@@ -231,7 +236,7 @@ export default function ReceiptInvoiceTemplatesPage() {
               <ImageIcon className="w-4 h-4 text-blue-600" /> Business Logo & Visual Identity
             </h2>
             <p className="text-xs text-slate-500">
-              Upload your company or store logo. It will be printed on thermal sales receipts and embedded in commercial PDF invoices.
+              Upload your company or store logo. It is printed on receipts, commercial invoices, and customer email deliveries.
             </p>
           </div>
           {logoUrl && (
@@ -261,7 +266,7 @@ export default function ReceiptInvoiceTemplatesPage() {
             <div>
               <p className="text-xs font-bold text-slate-800">Upload Brand Logo</p>
               <p className="text-xs text-slate-500 font-medium leading-relaxed">
-                Supported formats: PNG, JPG, WEBP, or SVG. Maximum file size: 5MB. Transparent PNG recommended for best thermal print clarity.
+                Supported formats: PNG, JPG, WEBP, or SVG. Maximum file size: 5MB. Transparent PNG recommended.
               </p>
             </div>
 
@@ -307,7 +312,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                   onChange={(e) => setShowLogoOnReceipt(e.target.checked)}
                   className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
                 />
-                <span>Show on Thermal Receipts</span>
+                <span>Show on Receipts</span>
               </label>
 
               <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer">
@@ -317,7 +322,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                   onChange={(e) => setShowLogoOnInvoice(e.target.checked)}
                   className="w-4 h-4 rounded text-blue-600 focus:ring-blue-500"
                 />
-                <span>Show on PDF Invoices</span>
+                <span>Show on Invoices</span>
               </label>
             </div>
           </div>
@@ -334,7 +339,7 @@ export default function ReceiptInvoiceTemplatesPage() {
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
           }`}
         >
-          <Receipt className="w-4 h-4" /> Thermal Receipt Template
+          <Receipt className="w-4 h-4" /> Receipt & POS Template
         </button>
 
         <button
@@ -345,7 +350,7 @@ export default function ReceiptInvoiceTemplatesPage() {
               : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
           }`}
         >
-          <FileText className="w-4 h-4" /> PDF Invoice Statement Template
+          <FileText className="w-4 h-4" /> Commercial Invoice Template
         </button>
 
         <button
@@ -372,7 +377,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                 <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                   <Store className="w-4 h-4 text-blue-600" /> Receipt Header & Store Details
                 </h2>
-                <p className="text-xs text-slate-500">Configure information printed at the top of customer thermal receipts.</p>
+                <p className="text-xs text-slate-500">Configure information printed on sales receipts and included in customer email deliveries.</p>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
@@ -382,7 +387,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                     type="text"
                     value={storeName}
                     onChange={(e) => setStoreName(e.target.value)}
-                    placeholder="e.g. NoxGuarda Retail POS"
+                    placeholder="e.g. Trantouch International"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -393,7 +398,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                     type="text"
                     value={storeBranch}
                     onChange={(e) => setStoreBranch(e.target.value)}
-                    placeholder="e.g. Main Branch"
+                    placeholder="e.g. Main Store Branch"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -415,7 +420,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                     type="text"
                     value={storePhone}
                     onChange={(e) => setStorePhone(e.target.value)}
-                    placeholder="e.g. +234 801 234 5678"
+                    placeholder="e.g. 08028286644"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -426,7 +431,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                     type="email"
                     value={businessEmail}
                     onChange={(e) => setBusinessEmail(e.target.value)}
-                    placeholder="e.g. support@store.ng"
+                    placeholder="e.g. ucollins2@gmail.com"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
@@ -708,408 +713,930 @@ export default function ReceiptInvoiceTemplatesPage() {
             <span className="text-[10px] text-slate-400 font-bold uppercase">Updates Automatically</span>
           </div>
 
+          {/* ========================================================================= */}
+          {/* RECEIPT TAB PREVIEWS                                                     */}
+          {/* ========================================================================= */}
           {activeTab === 'receipt' && (
-            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-xl space-y-4 max-w-sm mx-auto">
-              {/* Thermal Paper Preview Container */}
-              <div className="p-5 rounded-xl bg-slate-50 border border-dashed border-slate-300 font-mono text-xs text-slate-800 space-y-3 text-left">
-                {/* Logo & Store Header */}
-                <div className="text-center space-y-1 border-b border-slate-200 pb-3">
-                  {logoUrl && showLogoOnReceipt && (
-                    <div className="mb-2 flex justify-center">
-                      <img
-                        src={logoUrl}
-                        alt="Store Logo"
-                        className="h-10 max-w-[130px] object-contain filter grayscale contrast-125"
-                      />
+            <div className="space-y-3">
+              {/* Receipt Preview Mode Switcher */}
+              <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto">
+                <button
+                  type="button"
+                  onClick={() => setReceiptPreviewMode('email')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 ${
+                    receiptPreviewMode === 'email'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Mail className="w-3 h-3" /> Customer Email UI
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReceiptPreviewMode('thermal')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition ${
+                    receiptPreviewMode === 'thermal'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  80mm POS Slip
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReceiptPreviewMode('a4')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition ${
+                    receiptPreviewMode === 'a4'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  A4 Receipt
+                </button>
+              </div>
+
+              {receiptPreviewMode === 'email' ? (
+                /* ================= EXACT CUSTOMER EMAIL DELIVERY PREVIEW ================= */
+                <div className="rounded-2xl border border-slate-300 bg-slate-100 shadow-2xl overflow-hidden text-xs">
+                  {/* Mail Client Envelope Header */}
+                  <div className="bg-slate-900 text-white p-3.5 text-[11px] space-y-1.5 font-sans">
+                    <div className="flex items-center justify-between text-slate-400 text-[10px]">
+                      <span className="flex items-center gap-1">
+                        <Mail className="w-3.5 h-3.5 text-teal-400" /> Customer Email Delivery View
+                      </span>
+                      <span className="text-slate-300 font-mono">Today at 17:42</span>
+                    </div>
+                    <div className="text-slate-200">
+                      <span className="text-slate-400">Subject: </span>
+                      <strong className="text-white">[{storeName || 'Store Name'}] POS Sales Receipt #RCP-84920</strong>
+                    </div>
+                    <div className="flex justify-between text-slate-300 text-[10px]">
+                      <div>
+                        <span className="text-slate-400">From: </span>
+                        <span>{storeName || 'Store'} &lt;{businessEmail || 'billing@store.ng'}&gt;</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">To: </span>
+                        <span>Adeola Johnson &lt;adeola@example.com&gt;</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Mail Body Container */}
+                  <div className="p-4 sm:p-5 font-sans">
+                    <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 text-slate-800 text-left">
+                      {/* Store Header inside Email */}
+                      <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
+                        {logoUrl && showLogoOnReceipt ? (
+                          <img
+                            src={logoUrl}
+                            alt="Store Logo"
+                            className="h-9 max-w-[120px] object-contain"
+                          />
+                        ) : (
+                          <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                            {(storeName || 'NG').slice(0, 2).toUpperCase()}
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="font-extrabold text-slate-950 text-sm leading-tight">
+                            {storeName || 'Your Store Name'}
+                          </h4>
+                          <p className="text-[10px] text-slate-500 font-medium">
+                            {storeBranch} • {storeAddress || 'Computer Village, Ikeja, Lagos'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Salutation & Intro */}
+                      <div className="space-y-1">
+                        <p className="font-bold text-slate-900 text-xs">Hello Adeola Johnson,</p>
+                        <p className="text-slate-600 text-[11px] leading-relaxed">
+                          Thank you for shopping with us! Please find attached your official sales receipt (<strong>#RCP-84920</strong>) and warranty documentation.
+                        </p>
+                      </div>
+
+                      {/* Statement Overview Highlight Box */}
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] space-y-1.5 font-medium">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Statement Number:</span>
+                          <span className="font-mono font-bold text-slate-900">#RCP-84920</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Total Paid Amount:</span>
+                          <span className="font-black text-emerald-700 text-xs">₦1,148,000</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Payment Status:</span>
+                          <span className="font-bold text-emerald-600 uppercase">PAID (POS CARD)</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Transaction Date:</span>
+                          <span className="text-slate-800">23 Sep 2026</span>
+                        </div>
+                      </div>
+
+                      {/* Purchased Items List */}
+                      <div className="space-y-2 pt-1">
+                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Items Summary:</p>
+                        <div className="p-3 rounded-xl bg-slate-50/60 border border-slate-200 space-y-2 text-[11px]">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <p className="font-bold text-slate-900">Apple iPhone 15 Pro (256GB - Titanium)</p>
+                              {showImei && (
+                                <p className="text-[9px] text-teal-700 font-mono font-semibold">
+                                  IMEI: 358291048291048
+                                </p>
+                              )}
+                            </div>
+                            <span className="font-bold text-slate-900 font-mono">₦1,099,000</span>
+                          </div>
+                          <div className="flex justify-between items-start pt-1.5 border-t border-slate-150">
+                            <div>
+                              <p className="font-bold text-slate-900">Oraimo 20,000mAh PowerBank (22.5W GaN)</p>
+                              {showImei && (
+                                <p className="text-[9px] text-slate-500 font-mono">
+                                  SKU: PB-20K-84920
+                                </p>
+                              )}
+                            </div>
+                            <span className="font-bold text-slate-900 font-mono">₦49,000</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Attached PDF Pill */}
+                      <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-[10px]">
+                            PDF
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-blue-950 truncate text-[11px]">Receipt-RCP-84920.pdf</p>
+                            <p className="text-[10px] text-blue-600">Official Signed PDF Document • 142 KB</p>
+                          </div>
+                        </div>
+                        <span className="text-[11px] font-bold text-blue-700 hover:underline shrink-0 flex items-center gap-1 cursor-pointer">
+                          <Download className="w-3.5 h-3.5" /> Download
+                        </span>
+                      </div>
+
+                      {/* Policy & Warranty Note */}
+                      <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-500 leading-relaxed font-medium">
+                        {receiptFooter}
+                      </div>
+
+                      {/* Store Signature Footer */}
+                      <div className="pt-3 border-t border-slate-100 text-[10px] text-slate-500 space-y-0.5">
+                        <p className="font-bold text-slate-800">{storeName || 'Your Store'}</p>
+                        {storeAddress && <p>{storeAddress}</p>}
+                        <p>
+                          {storePhone && <span>Tel: {storePhone} </span>}
+                          {businessEmail && <span>• Email: {businessEmail}</span>}
+                        </p>
+                        <p className="text-[9px] text-slate-400 pt-1">
+                          Secured by NoxGuarda Electronics Ledger
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : receiptPreviewMode === 'thermal' ? (
+                /* ================= 80mm POS Thermal Slip ================= */
+                <div className="bg-white rounded-2xl border border-slate-300 shadow-2xl p-6 max-w-sm mx-auto font-mono text-slate-900 text-xs relative overflow-hidden text-left">
+                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-500 via-blue-500 to-indigo-500" />
+
+                  <div className="text-center space-y-1.5 pb-4 border-b-2 border-dashed border-slate-300">
+                    {logoUrl && showLogoOnReceipt ? (
+                      <div className="mb-2 flex justify-center">
+                        <img
+                          src={logoUrl}
+                          alt="Store Logo"
+                          className="h-11 max-w-[140px] object-contain"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-sm mx-auto shadow-sm">
+                        {(storeName || 'NG').slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
+                    <h4 className="font-black text-base tracking-tight text-slate-950 uppercase font-sans">
+                      {storeName || 'Your Store Name'}
+                    </h4>
+                    {storeBranch && (
+                      <p className="text-[10px] font-bold text-teal-700 font-sans tracking-wide uppercase">
+                        {storeBranch}
+                      </p>
+                    )}
+                    <p className="text-[11px] text-slate-600 leading-tight font-sans">
+                      {storeAddress || 'Computer Village, Ikeja, Lagos'}
+                    </p>
+                    <div className="text-[10px] text-slate-500 font-sans flex flex-wrap justify-center gap-x-2">
+                      {storePhone && <span>Tel: {storePhone}</span>}
+                      {businessEmail && <span>• {businessEmail}</span>}
+                    </div>
+                  </div>
+
+                  <div className="py-3 border-b border-slate-200 text-[11px] space-y-1 font-sans">
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-medium">Receipt Ref:</span>
+                      <span className="font-mono font-black text-slate-950 bg-slate-100 px-2 py-0.5 rounded">#RCP-84920</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-medium">Date & Time:</span>
+                      <span className="font-bold text-slate-800">23 Sep 2026, 17:42</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-medium">Cashier / Sales Rep:</span>
+                      <span className="font-bold text-slate-800">Attendant #02</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-500 font-medium">Customer:</span>
+                      <span className="font-bold text-slate-800">Adeola Johnson</span>
+                    </div>
+                  </div>
+
+                  <div className="py-3 border-b-2 border-dashed border-slate-300 space-y-2.5">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1 pr-2">
+                        <p className="font-extrabold text-slate-950 text-xs font-sans">Apple iPhone 15 Pro</p>
+                        <p className="text-[10px] text-slate-500 font-sans">256GB • Natural Titanium</p>
+                        {showImei && (
+                          <p className="text-[9px] font-mono text-teal-700 font-bold bg-teal-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
+                            IMEI: 358291048291048
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-slate-950 font-sans">₦1,099,000</p>
+                        <p className="text-[9px] text-slate-400">Qty: 1</p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-start pt-1.5 border-t border-slate-100">
+                      <div className="flex-1 pr-2">
+                        <p className="font-extrabold text-slate-950 text-xs font-sans">Oraimo 20,000mAh PowerBank</p>
+                        <p className="text-[10px] text-slate-500 font-sans">22.5W Fast Charge GaN</p>
+                        {showImei && (
+                          <p className="text-[9px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded w-fit mt-0.5">
+                            SKU: PB-20K-84920
+                          </p>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        <p className="font-black text-slate-950 font-sans">₦49,000</p>
+                        <p className="text-[9px] text-slate-400">Qty: 1</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="py-3 space-y-1.5 font-sans">
+                    <div className="flex justify-between text-slate-600 text-[11px]">
+                      <span>Subtotal</span>
+                      <span className="font-bold text-slate-900">₦1,148,000</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-900 text-white flex justify-between items-center mt-2">
+                      <div>
+                        <p className="text-[9px] text-slate-400 uppercase font-black">Total Paid</p>
+                        <p className="text-[10px] text-teal-400 font-bold">💳 POS / CARD TERMINAL</p>
+                      </div>
+                      <span className="text-base font-black tracking-tight text-white">₦1,148,000</span>
+                    </div>
+                  </div>
+
+                  {showQrCode && (
+                    <div className="pt-3 pb-2 text-center border-t border-dashed border-slate-300 space-y-1.5">
+                      <div className="w-20 h-20 bg-white border-2 border-slate-900 p-1 rounded-xl mx-auto flex items-center justify-center shadow-xs">
+                        <QrCode className="w-14 h-14 text-slate-950" />
+                      </div>
+                      <p className="text-[9px] font-bold text-slate-700 font-sans uppercase tracking-wider">
+                        Scan for Digital Proof & Warranty
+                      </p>
                     </div>
                   )}
-                  <p className="font-extrabold text-sm text-slate-900">{storeName || 'Store Name'}</p>
-                  {storeBranch && <p className="text-[10px] text-slate-500 font-sans">{storeBranch}</p>}
-                  {storeAddress && <p className="text-[10px] text-slate-500 font-sans">{storeAddress}</p>}
-                  {storePhone && <p className="text-[10px] text-slate-500 font-sans">Tel: {storePhone}</p>}
-                  {businessEmail && <p className="text-[10px] text-slate-500 font-sans">Email: {businessEmail}</p>}
-                </div>
 
-                <div className="flex justify-between text-[10px] text-slate-500 pt-1">
-                  <span>Receipt: <strong>#RCP-84920</strong></span>
-                  <span>Aug 11, 2026</span>
-                </div>
+                  <div className="pt-2 text-center text-[10px] text-slate-600 font-sans border-t border-slate-200 leading-relaxed font-medium">
+                    {receiptFooter}
+                  </div>
 
-                <div className="border-y border-slate-200 py-2 space-y-1.5">
-                  <div className="flex justify-between text-[11px]">
+                  <div className="pt-4 text-center text-[8px] text-slate-400 font-mono tracking-widest select-none">
+                    - - - - - - - - - - ✂ - - - - - - - - - -
+                  </div>
+                </div>
+              ) : (
+                /* ================= Standard A4 Full Retail Receipt ================= */
+                <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden text-left">
+                  <div className="flex justify-between items-start gap-4 border-b border-slate-200 pb-4">
                     <div>
-                      <p className="font-bold text-slate-900">iPhone 15 Pro (256GB)</p>
-                      {showImei && <p className="text-[9px] text-slate-500">IMEI: 358291048291048</p>}
+                      <h3 className="font-black text-base text-slate-950">{storeName || 'Your Store Name'}</h3>
+                      <p className="text-slate-600">{storeBranch}</p>
+                      <p className="text-slate-600">{storeAddress || 'Computer Village, Ikeja, Lagos'}</p>
+                      <p className="text-slate-600">Tel: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'support@store.ng'}</p>
                     </div>
-                    <span className="font-bold text-slate-900">₦1,099,000</span>
+                    {logoUrl && showLogoOnReceipt ? (
+                      <div className="h-12 w-28 flex items-center justify-end">
+                        <img src={logoUrl} alt="Logo" className="max-h-12 max-w-full object-contain" />
+                      </div>
+                    ) : (
+                      <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center font-black text-xs">
+                        {(storeName || 'ST').slice(0, 2).toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                  <div className="flex justify-between text-[11px]">
-                    <div>
-                      <p className="font-bold text-slate-900">MagSafe Case Navy</p>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase">Customer Information</p>
+                      <p className="font-extrabold text-slate-900 text-xs mt-0.5">Adeola Johnson</p>
+                      <p className="text-slate-600 text-[10px]">08028286644 • adeola@example.com</p>
                     </div>
-                    <span className="font-bold text-slate-900">₦49,000</span>
+                    <div className="p-3 rounded-xl bg-teal-50/60 border border-teal-200">
+                      <p className="text-[10px] font-bold text-teal-800 uppercase">Official Sales Receipt</p>
+                      <p className="font-mono font-black text-slate-900 text-xs mt-0.5">#RCP-84920</p>
+                      <p className="text-teal-700 text-[10px] font-bold">Status: FULLY PAID (POS CARD)</p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 overflow-hidden">
+                    <table className="w-full text-left text-[10px]">
+                      <thead className="bg-slate-900 text-white font-bold">
+                        <tr>
+                          <th className="py-2 px-2.5">Item & IMEI / SKU</th>
+                          <th className="py-2 px-2.5 text-center w-12">Qty</th>
+                          <th className="py-2 px-2.5 text-right w-24">Price</th>
+                          <th className="py-2 px-2.5 text-right w-24">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        <tr>
+                          <td className="py-2 px-2.5">
+                            <p className="font-bold text-slate-900">Apple iPhone 15 Pro (256GB - Titanium)</p>
+                            {showImei && <p className="text-[9px] text-teal-700 font-mono">IMEI: 358291048291048</p>}
+                          </td>
+                          <td className="py-2 px-2.5 text-center font-bold">1</td>
+                          <td className="py-2 px-2.5 text-right font-mono">₦1,099,000</td>
+                          <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦1,099,000</td>
+                        </tr>
+                        <tr className="bg-slate-50/50">
+                          <td className="py-2 px-2.5">
+                            <p className="font-bold text-slate-900">Oraimo 20,000mAh PowerBank (22.5W Fast Charge)</p>
+                            {showImei && <p className="text-[9px] text-slate-500 font-mono">SKU: PB-20K-84920</p>}
+                          </td>
+                          <td className="py-2 px-2.5 text-center font-bold">1</td>
+                          <td className="py-2 px-2.5 text-right font-mono">₦49,000</td>
+                          <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦49,000</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="flex justify-end pt-1">
+                    <div className="w-56 space-y-1 text-[11px]">
+                      <div className="flex justify-between text-slate-600">
+                        <span>Subtotal</span>
+                        <span className="font-mono text-slate-900">₦1,148,000</span>
+                      </div>
+                      <div className="border-t-2 border-slate-900 pt-1.5 flex justify-between text-slate-900 font-black text-xs">
+                        <span>TOTAL PAID</span>
+                        <span className="font-mono text-teal-700 text-sm">₦1,148,000</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 text-[10px] text-slate-500 border-t border-slate-200 text-center font-medium">
+                    {receiptFooter}
                   </div>
                 </div>
-
-                <div className="space-y-1 text-[11px]">
-                  <div className="flex justify-between text-slate-500">
-                    <span>Subtotal</span>
-                    <span>₦1,148,000</span>
-                  </div>
-                  <div className="flex justify-between font-extrabold text-xs border-t border-slate-200 pt-1 text-slate-900">
-                    <span>TOTAL PAID</span>
-                    <span className="text-blue-600">₦1,148,000</span>
-                  </div>
-                </div>
-
-                {showQrCode && (
-                  <div className="pt-2 text-center border-t border-slate-200 space-y-1">
-                    <div className="w-16 h-16 bg-white border border-slate-200 rounded mx-auto flex items-center justify-center text-slate-400">
-                      <QrCode className="w-10 h-10" />
-                    </div>
-                    <p className="text-[9px] text-slate-400 font-sans">Scan QR to verify proof of purchase</p>
-                  </div>
-                )}
-
-                <div className="pt-2 text-center text-[10px] text-slate-500 font-sans border-t border-slate-200 leading-snug">
-                  {receiptFooter}
-                </div>
-              </div>
+              )}
             </div>
           )}
 
+          {/* ========================================================================= */}
+          {/* INVOICE TAB PREVIEWS                                                     */}
+          {/* ========================================================================= */}
           {activeTab === 'invoice' && (
-            <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden">
-              {/* Top Company Header (Left: Details, Right: Logo) */}
-              <div className="flex justify-between items-start gap-4">
-                <div className="space-y-0.5">
-                  <h3 className="font-black text-sm sm:text-base text-slate-950">{companyName || 'Your Company'}</h3>
-                  <p className="text-slate-600">{storeAddress || 'Computer Village, Ikeja, Lagos'}</p>
-                  <p className="text-slate-600">Tel: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'billing@store.ng'}</p>
-                </div>
-
-                {logoUrl && showLogoOnInvoice ? (
-                  <div className="h-12 w-28 flex items-center justify-end">
-                    <img src={logoUrl} alt="Logo" className="max-h-12 max-w-full object-contain" />
-                  </div>
-                ) : (
-                  <div className="text-right flex items-center gap-1.5 justify-end">
-                    <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">
-                      {(companyName || 'NG').slice(0, 2).toUpperCase()}
-                    </div>
-                    <span className="text-lg font-black text-slate-900 tracking-tight">
-                      {companyName || 'NoxGuarda'}
-                    </span>
-                  </div>
-                )}
+            <div className="space-y-3">
+              <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto">
+                <button
+                  type="button"
+                  onClick={() => setInvoicePreviewMode('email')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 ${
+                    invoicePreviewMode === 'email'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Mail className="w-3 h-3" /> Customer Email UI
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInvoicePreviewMode('a4')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition ${
+                    invoicePreviewMode === 'a4'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  A4 PDF Statement
+                </button>
               </div>
 
-              <div className="border-t border-slate-200" />
-
-              {/* Dual Box (Left: Invoice To, Right: Invoice No Solid Block) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
-                {/* Left Card: Invoice To */}
-                <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
-                  <p className="font-black text-blue-700 text-xs tracking-tight">Invoice To:</p>
-                  <p className="font-extrabold text-slate-900 text-xs">Corporate Client Ltd, Adeola Johnson</p>
-                  <p className="text-slate-600 text-[10px]">14 Marina Street, Victoria Island, Lagos</p>
-                  <p className="text-slate-600 text-[10px] font-medium pt-0.5">
-                    <strong>Email:</strong> procurement@client.example.ng
-                  </p>
-                </div>
-
-                {/* Right Card: Solid Blue Header Metadata Table */}
-                <div className="rounded-xl border border-blue-900/20 overflow-hidden shadow-xs">
-                  <div className="bg-[#3b5998] text-white px-3 py-2 flex justify-between items-center font-extrabold text-xs">
-                    <span>Invoice No:</span>
-                    <span className="font-mono tracking-wide">VF-INV-0013</span>
-                  </div>
-                  <div className="bg-white p-2 space-y-1 text-[10px] border-t border-blue-900/10">
-                    <div className="flex justify-between border-b border-slate-100 pb-1">
-                      <span className="font-bold text-slate-600">Invoice Date:</span>
-                      <span className="font-mono text-slate-900">2026-09-17</span>
+              {invoicePreviewMode === 'email' ? (
+                /* Invoice Customer Email Preview */
+                <div className="rounded-2xl border border-slate-300 bg-slate-100 shadow-2xl overflow-hidden text-xs text-left">
+                  <div className="bg-slate-900 text-white p-3.5 text-[11px] space-y-1.5 font-sans">
+                    <div className="flex items-center justify-between text-slate-400 text-[10px]">
+                      <span className="flex items-center gap-1">
+                        <Mail className="w-3.5 h-3.5 text-blue-400" /> Customer Email Delivery View
+                      </span>
+                      <span className="text-slate-300 font-mono">2026-09-17</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-100 pb-1">
-                      <span className="font-bold text-slate-600">Payment Status:</span>
-                      <span className="font-bold text-amber-600">PENDING</span>
+                    <div className="text-slate-200">
+                      <span className="text-slate-400">Subject: </span>
+                      <strong className="text-white">[{companyName || 'Your Company'}] Commercial Invoice Statement #VF-INV-0013</strong>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-slate-600">Due Date:</span>
-                      <span className="font-mono text-slate-900">2026-10-02</span>
+                    <div className="flex justify-between text-slate-300 text-[10px]">
+                      <div>
+                        <span className="text-slate-400">From: </span>
+                        <span>{companyName || 'Your Company'} &lt;{businessEmail || 'billing@store.ng'}&gt;</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">To: </span>
+                        <span>Corporate Client Ltd &lt;procurement@client.example.ng&gt;</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Items Table with Solid Blue Header */}
-              <div className="rounded-xl border border-slate-200 overflow-hidden">
-                <table className="w-full text-left text-[10px]">
-                  <thead className="bg-[#3b5998] text-white font-black">
-                    <tr>
-                      <th className="py-2 px-2.5 w-8">#</th>
-                      <th className="py-2 px-2.5">Item Description & Specs</th>
-                      <th className="py-2 px-2.5 text-center w-14">Qty</th>
-                      <th className="py-2 px-2.5 text-right w-24">Unit Price</th>
-                      <th className="py-2 px-2.5 text-right w-24">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-150">
-                    <tr className="bg-white">
-                      <td className="py-2 px-2.5 text-slate-400 font-bold">1</td>
-                      <td className="py-2 px-2.5">
-                        <p className="font-bold text-slate-900">Apple iPhone 15 Pro Max (256GB - Natural Titanium)</p>
-                        <p className="text-[9px] text-slate-500 leading-tight">
-                          IMEI: 354892019482910 • 12-Month Store Warranty
+                  <div className="p-4 sm:p-5 font-sans">
+                    <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 text-slate-800">
+                      <div className="space-y-1">
+                        <p className="font-bold text-slate-900 text-xs">Hello Corporate Client Ltd,</p>
+                        <p className="text-slate-600 text-[11px] leading-relaxed">
+                          Please find attached your official commercial invoice statement (<strong>#VF-INV-0013</strong>) from <strong>{companyName || 'Your Company'}</strong>.
                         </p>
-                      </td>
-                      <td className="py-2 px-2.5 text-center font-bold">1</td>
-                      <td className="py-2 px-2.5 text-right font-mono">₦1,450,000</td>
-                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦1,450,000</td>
-                    </tr>
-                    <tr className="bg-slate-50/70">
-                      <td className="py-2 px-2.5 text-slate-400 font-bold">2</td>
-                      <td className="py-2 px-2.5">
-                        <p className="font-bold text-slate-900">Samsung Galaxy S24 Ultra (512GB - Titanium Black)</p>
-                        <p className="text-[9px] text-slate-500 leading-tight">
-                          IMEI: 358902194829014 • Screen Guard & Case Installed
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] space-y-1.5 font-medium">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Statement Number:</span>
+                          <span className="font-mono font-bold text-slate-900">VF-INV-0013</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Total Due Amount:</span>
+                          <span className="font-black text-blue-700 text-xs">₦3,130,000</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Due Date:</span>
+                          <span className="font-bold text-slate-900">2026-10-02</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Payment Status:</span>
+                          <span className="font-bold text-amber-600 uppercase">PENDING REMITTANCE</span>
+                        </div>
+                      </div>
+
+                      {bankName && accountNumber && (
+                        <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200 text-[11px] space-y-1 text-emerald-950">
+                          <p className="font-black text-emerald-900 uppercase text-[10px] tracking-wider">
+                            Direct Bank Remittance Instructions:
+                          </p>
+                          <p><strong>Bank:</strong> {bankName}</p>
+                          <p><strong>Account Number:</strong> <span className="font-mono font-bold">{accountNumber}</span></p>
+                          <p><strong>Account Name:</strong> {accountName || companyName}</p>
+                          <p className="text-[10px] text-emerald-700 font-bold pt-0.5">Payment Reference: VF-INV-0013</p>
+                        </div>
+                      )}
+
+                      <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-[10px]">
+                            PDF
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-blue-950 truncate text-[11px]">Invoice-VF-INV-0013.pdf</p>
+                            <p className="text-[10px] text-blue-600">Commercial Invoice Document • 158 KB</p>
+                          </div>
+                        </div>
+                        <span className="text-[11px] font-bold text-blue-700 hover:underline shrink-0 flex items-center gap-1 cursor-pointer">
+                          <Download className="w-3.5 h-3.5" /> Download
+                        </span>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-500 space-y-0.5">
+                        <p className="font-bold text-slate-800">{companyName || 'Your Company'}</p>
+                        {storeAddress && <p>{storeAddress}</p>}
+                        <p>{storePhone && `Tel: ${storePhone}`} {businessEmail && `• Email: ${businessEmail}`}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* A4 PDF Statement View */
+                <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden text-left">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-0.5">
+                      <h3 className="font-black text-sm sm:text-base text-slate-950">{companyName || 'Your Company'}</h3>
+                      <p className="text-slate-600">{storeAddress || 'Computer Village, Ikeja, Lagos'}</p>
+                      <p className="text-slate-600">Tel: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'billing@store.ng'}</p>
+                    </div>
+
+                    {logoUrl && showLogoOnInvoice ? (
+                      <div className="h-12 w-28 flex items-center justify-end">
+                        <img src={logoUrl} alt="Logo" className="max-h-12 max-w-full object-contain" />
+                      </div>
+                    ) : (
+                      <div className="text-right flex items-center gap-1.5 justify-end">
+                        <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">
+                          {(companyName || 'NG').slice(0, 2).toUpperCase()}
+                        </div>
+                        <span className="text-lg font-black text-slate-900 tracking-tight">
+                          {companyName || 'NoxGuarda'}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-slate-200" />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                    <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
+                      <p className="font-black text-blue-700 text-xs tracking-tight">Invoice To:</p>
+                      <p className="font-extrabold text-slate-900 text-xs">Corporate Client Ltd, Adeola Johnson</p>
+                      <p className="text-slate-600 text-[10px]">14 Marina Street, Victoria Island, Lagos</p>
+                      <p className="text-slate-600 text-[10px] font-medium pt-0.5">
+                        <strong>Email:</strong> procurement@client.example.ng
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-blue-900/20 overflow-hidden shadow-xs">
+                      <div className="bg-[#3b5998] text-white px-3 py-2 flex justify-between items-center font-extrabold text-xs">
+                        <span>Invoice No:</span>
+                        <span className="font-mono tracking-wide">VF-INV-0013</span>
+                      </div>
+                      <div className="bg-white p-2 space-y-1 text-[10px] border-t border-blue-900/10">
+                        <div className="flex justify-between border-b border-slate-100 pb-1">
+                          <span className="font-bold text-slate-600">Invoice Date:</span>
+                          <span className="font-mono text-slate-900">2026-09-17</span>
+                        </div>
+                        <div className="flex justify-between border-b border-slate-100 pb-1">
+                          <span className="font-bold text-slate-600">Payment Status:</span>
+                          <span className="font-bold text-amber-600">PENDING</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-bold text-slate-600">Due Date:</span>
+                          <span className="font-mono text-slate-900">2026-10-02</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl border border-slate-200 overflow-hidden">
+                    <table className="w-full text-left text-[10px]">
+                      <thead className="bg-[#3b5998] text-white font-black">
+                        <tr>
+                          <th className="py-2 px-2.5 w-8">#</th>
+                          <th className="py-2 px-2.5">Item Description & Specs</th>
+                          <th className="py-2 px-2.5 text-center w-14">Qty</th>
+                          <th className="py-2 px-2.5 text-right w-24">Unit Price</th>
+                          <th className="py-2 px-2.5 text-right w-24">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-150">
+                        <tr className="bg-white">
+                          <td className="py-2 px-2.5 text-slate-400 font-bold">1</td>
+                          <td className="py-2 px-2.5">
+                            <p className="font-bold text-slate-900">Apple iPhone 15 Pro Max (256GB - Natural Titanium)</p>
+                            <p className="text-[9px] text-slate-500 leading-tight">
+                              IMEI: 354892019482910 • 12-Month Store Warranty
+                            </p>
+                          </td>
+                          <td className="py-2 px-2.5 text-center font-bold">1</td>
+                          <td className="py-2 px-2.5 text-right font-mono">₦1,450,000</td>
+                          <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦1,450,000</td>
+                        </tr>
+                        <tr className="bg-slate-50/70">
+                          <td className="py-2 px-2.5 text-slate-400 font-bold">2</td>
+                          <td className="py-2 px-2.5">
+                            <p className="font-bold text-slate-900">Samsung Galaxy S24 Ultra (512GB - Titanium Black)</p>
+                            <p className="text-[9px] text-slate-500 leading-tight">
+                              IMEI: 358902194829014 • Screen Guard & Case Installed
+                            </p>
+                          </td>
+                          <td className="py-2 px-2.5 text-center font-bold">1</td>
+                          <td className="py-2 px-2.5 text-right font-mono">₦1,680,000</td>
+                          <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦1,680,000</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start pt-1">
+                    {bankName && accountNumber ? (
+                      <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-[10px] space-y-1">
+                        <p className="font-black text-blue-900 uppercase tracking-wide">
+                          Direct Bank Remittance Instructions:
                         </p>
-                      </td>
-                      <td className="py-2 px-2.5 text-center font-bold">1</td>
-                      <td className="py-2 px-2.5 text-right font-mono">₦1,680,000</td>
-                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦1,680,000</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                        <p className="text-blue-950 font-bold">
+                          Bank: <span className="font-normal">{bankName}</span>
+                        </p>
+                        <p className="text-blue-950 font-bold">
+                          Account #: <span className="font-mono">{accountNumber}</span>
+                        </p>
+                        <p className="text-blue-950 font-bold">
+                          Account Name: <span className="font-normal">{accountName || companyName}</span>
+                        </p>
+                        <p className="text-blue-700 text-[9px]">
+                          Payment Ref: <span className="font-mono font-bold">VF-INV-0013</span>
+                        </p>
+                      </div>
+                    ) : (
+                      <div />
+                    )}
 
-              {/* Subtotal, Total & Bank Remittance Box */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start pt-1">
-                {/* Bank Wire Details on Left */}
-                {bankName && accountNumber ? (
-                  <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-[10px] space-y-1">
-                    <p className="font-black text-blue-900 uppercase tracking-wide">
-                      Direct Bank Remittance Instructions:
-                    </p>
-                    <p className="text-blue-950 font-bold">
-                      Bank: <span className="font-normal">{bankName}</span>
-                    </p>
-                    <p className="text-blue-950 font-bold">
-                      Account #: <span className="font-mono">{accountNumber}</span>
-                    </p>
-                    <p className="text-blue-950 font-bold">
-                      Account Name: <span className="font-normal">{accountName || companyName}</span>
-                    </p>
-                    <p className="text-blue-700 text-[9px]">
-                      Payment Ref: <span className="font-mono font-bold">VF-INV-0013</span>
-                    </p>
+                    <div className="space-y-1 text-[11px] sm:ml-auto w-full sm:w-56">
+                      <div className="flex justify-between text-slate-600 font-medium">
+                        <span>SubTotal</span>
+                        <span className="font-mono text-slate-900">₦3,130,000</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600 font-medium">
+                        <span>VAT (0%)</span>
+                        <span className="font-mono text-slate-900">₦0.00</span>
+                      </div>
+                      <div className="border-t-2 border-slate-900 pt-1.5 flex justify-between text-slate-900 font-black text-xs">
+                        <span>TOTAL DUE</span>
+                        <span className="font-mono text-slate-950 text-sm">₦3,130,000</span>
+                      </div>
+                    </div>
                   </div>
-                ) : (
-                  <div />
-                )}
 
-                {/* Subtotal & Total Right Aligned */}
-                <div className="space-y-1 text-[11px] sm:ml-auto w-full sm:w-56">
-                  <div className="flex justify-between text-slate-600 font-medium">
-                    <span>SubTotal</span>
-                    <span className="font-mono text-slate-900">₦3,130,000</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600 font-medium">
-                    <span>VAT (0%)</span>
-                    <span className="font-mono text-slate-900">₦0.00</span>
-                  </div>
-                  <div className="border-t-2 border-slate-900 pt-1.5 flex justify-between text-slate-900 font-black text-xs">
-                    <span>TOTAL DUE</span>
-                    <span className="font-mono text-slate-950 text-sm">₦3,130,000</span>
+                  <div className="pt-2 text-[10px] text-slate-600 space-y-1">
+                    <p className="flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
+                      <strong>Payment Term:</strong> {invoiceTerms}
+                    </p>
                   </div>
                 </div>
-              </div>
-
-              {/* Policy & Remark Bullets */}
-              <div className="pt-2 text-[10px] text-slate-600 space-y-1">
-                <p className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
-                  <strong>Payment Term:</strong> {invoiceTerms}
-                </p>
-                <p className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-slate-900 shrink-0" />
-                  <strong>Policy Remarks:</strong> All serial & IMEI numbers are permanently verified in store ledger.
-                </p>
-              </div>
-
-              {/* Bottom Footer Bar */}
-              <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[9px] text-slate-500 font-medium">
-                <div>
-                  {companyName} • Phone: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'billing@store.ng'}
-                </div>
-                <div className="font-bold text-slate-600">Page: 1 / 1</div>
-              </div>
+              )}
             </div>
           )}
 
+          {/* ========================================================================= */}
+          {/* QUOTE TAB PREVIEWS                                                       */}
+          {/* ========================================================================= */}
           {activeTab === 'quote' && (
-            <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden">
-              {/* Top Quotation Header (Left: Details, Right: Title in Accent Color) */}
-              <div className="flex justify-between items-start gap-4">
-                <div className="space-y-0.5">
-                  <h3 className="font-black text-sm sm:text-base text-slate-950">{storeName || companyName || 'Your Store'}</h3>
-                  <p className="text-slate-600">{storeAddress || 'Computer Village, Ikeja, Lagos'}</p>
-                  <p className="text-slate-600">Tel: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'quotes@store.ng'}</p>
-                </div>
-
-                <div className="text-right">
-                  <div
-                    className="inline-block px-3 py-1 rounded-lg text-white font-black text-xs tracking-wider"
-                    style={{ backgroundColor: quoteAccentColor }}
-                  >
-                    {quoteTitle}
-                  </div>
-                  <p className="font-mono text-slate-500 text-[10px] mt-1 font-bold">QT-2026-0001</p>
-                </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto">
+                <button
+                  type="button"
+                  onClick={() => setQuotePreviewMode('email')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 ${
+                    quotePreviewMode === 'email'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Mail className="w-3 h-3" /> Customer Email UI
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQuotePreviewMode('a4')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition ${
+                    quotePreviewMode === 'a4'
+                      ? 'bg-white text-slate-900 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  A4 Proposal PDF
+                </button>
               </div>
 
-              <div className="border-t border-slate-200" />
-
-              {/* Dual Box (Left: Quotation For, Right: Proposal Validity Details) */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
-                {/* Left Card: Quotation For */}
-                <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
-                  <p className="font-black text-xs tracking-tight" style={{ color: quoteAccentColor }}>Quotation For:</p>
-                  <p className="font-extrabold text-slate-900 text-xs">Prospective Client Enterprise</p>
-                  <p className="text-slate-600 text-[10px]">Lekki Phase 1, Lagos</p>
-                  <p className="text-slate-600 text-[10px] font-medium pt-0.5">
-                    <strong>Contact:</strong> +234 809 999 8888 • client@company.ng
-                  </p>
-                </div>
-
-                {/* Right Card: Metadata Table with Accent Bar */}
-                <div className="rounded-xl border border-slate-200 overflow-hidden shadow-xs">
-                  <div className="text-white px-3 py-2 flex justify-between items-center font-extrabold text-xs" style={{ backgroundColor: quoteAccentColor }}>
-                    <span>Estimate Summary</span>
-                    <span className="font-mono tracking-wide text-[10px]">PENDING</span>
-                  </div>
-                  <div className="bg-white p-2 space-y-1 text-[10px]">
-                    <div className="flex justify-between border-b border-slate-100 pb-1">
-                      <span className="font-bold text-slate-600">Quote Date:</span>
-                      <span className="font-mono text-slate-900">2026-09-23</span>
+              {quotePreviewMode === 'email' ? (
+                /* Quote Customer Email Preview */
+                <div className="rounded-2xl border border-slate-300 bg-slate-100 shadow-2xl overflow-hidden text-xs text-left">
+                  <div className="bg-slate-900 text-white p-3.5 text-[11px] space-y-1.5 font-sans">
+                    <div className="flex items-center justify-between text-slate-400 text-[10px]">
+                      <span className="flex items-center gap-1">
+                        <Mail className="w-3.5 h-3.5 text-blue-400" /> Customer Email Delivery View
+                      </span>
+                      <span className="text-slate-300 font-mono">Today</span>
                     </div>
-                    <div className="flex justify-between border-b border-slate-100 pb-1">
-                      <span className="font-bold text-slate-600">Validity Period:</span>
-                      <span className="font-bold text-amber-600">{quoteValidityDays} Days</span>
+                    <div className="text-slate-200">
+                      <span className="text-slate-400">Subject: </span>
+                      <strong className="text-white">{quoteTitle} #QT-2026-0001 from {storeName || 'Store'}</strong>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="font-bold text-slate-600">Valid Until:</span>
-                      <span className="font-mono text-slate-900">2026-10-07</span>
+                    <div className="flex justify-between text-slate-300 text-[10px]">
+                      <div>
+                        <span className="text-slate-400">From: </span>
+                        <span>{storeName || 'Store'} &lt;{businessEmail || 'quotes@store.ng'}&gt;</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400">To: </span>
+                        <span>Prospective Client &lt;client@company.ng&gt;</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Optional Opening Greeting */}
-              {quoteNotes && (
-                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic">
-                  &ldquo;{quoteNotes}&rdquo;
+                  <div className="p-4 sm:p-5 font-sans">
+                    <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 text-slate-800">
+                      <div className="space-y-1">
+                        <p className="font-bold text-slate-900 text-xs">Hello Valued Client,</p>
+                        <p className="text-slate-600 text-[11px] leading-relaxed">
+                          Thank you for your inquiry. Please find attached your formal <strong>{quoteTitle} (#QT-2026-0001)</strong> from <strong>{storeName || 'Our Store'}</strong>.
+                        </p>
+                      </div>
+
+                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] space-y-1.5 font-medium">
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Quotation Number:</span>
+                          <span className="font-mono font-bold text-slate-900">QT-2026-0001</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Estimated Total:</span>
+                          <span className="font-black text-xs" style={{ color: quoteAccentColor }}>₦4,790,000</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-500">Validity Period:</span>
+                          <span className="font-bold text-amber-600">{quoteValidityDays} Days (Valid until 07 Oct 2026)</span>
+                        </div>
+                      </div>
+
+                      {quoteNotes && (
+                        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic">
+                          &ldquo;{quoteNotes}&rdquo;
+                        </div>
+                      )}
+
+                      <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-[10px]">
+                            PDF
+                          </div>
+                          <div className="min-w-0">
+                            <p className="font-bold text-blue-950 truncate text-[11px]">Quotation-QT-2026-0001.pdf</p>
+                            <p className="text-[10px] text-blue-600">Commercial Proposal PDF • 148 KB</p>
+                          </div>
+                        </div>
+                        <span className="text-[11px] font-bold text-blue-700 hover:underline shrink-0 flex items-center gap-1 cursor-pointer">
+                          <Download className="w-3.5 h-3.5" /> Download
+                        </span>
+                      </div>
+
+                      <div className="pt-2 border-t border-slate-100 text-[10px] text-slate-500 space-y-0.5">
+                        <p className="font-bold text-slate-800">{storeName || 'Your Store'}</p>
+                        {storeAddress && <p>{storeAddress}</p>}
+                        <p>{storePhone && `Tel: ${storePhone}`} {businessEmail && `• Email: ${businessEmail}`}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* A4 Proposal View */
+                <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden text-left">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="space-y-0.5">
+                      <h3 className="font-black text-sm sm:text-base text-slate-950">{storeName || companyName || 'Your Store'}</h3>
+                      <p className="text-slate-600">{storeAddress || 'Computer Village, Ikeja, Lagos'}</p>
+                      <p className="text-slate-600">Tel: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'quotes@store.ng'}</p>
+                    </div>
+
+                    <div className="text-right">
+                      <div
+                        className="inline-block px-3 py-1 rounded-lg text-white font-black text-xs tracking-wider"
+                        style={{ backgroundColor: quoteAccentColor }}
+                      >
+                        {quoteTitle}
+                      </div>
+                      <p className="font-mono text-slate-500 text-[10px] mt-1 font-bold">QT-2026-0001</p>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-slate-200" />
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                    <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
+                      <p className="font-black text-xs tracking-tight" style={{ color: quoteAccentColor }}>Quotation For:</p>
+                      <p className="font-extrabold text-slate-900 text-xs">Prospective Client Enterprise</p>
+                      <p className="text-slate-600 text-[10px]">Lekki Phase 1, Lagos</p>
+                      <p className="text-slate-600 text-[10px] font-medium pt-0.5">
+                        <strong>Contact:</strong> +234 809 999 8888 • client@company.ng
+                      </p>
+                    </div>
+
+                    <div className="rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+                      <div className="text-white px-3 py-2 flex justify-between items-center font-extrabold text-xs" style={{ backgroundColor: quoteAccentColor }}>
+                        <span>Estimate Summary</span>
+                        <span className="font-mono tracking-wide text-[10px]">PENDING</span>
+                      </div>
+                      <div className="bg-white p-2 space-y-1 text-[10px]">
+                        <div className="flex justify-between border-b border-slate-100 pb-1">
+                          <span className="font-bold text-slate-600">Quote Date:</span>
+                          <span className="font-mono text-slate-900">2026-09-23</span>
+                        </div>
+                        <div className="flex justify-between border-b border-slate-100 pb-1">
+                          <span className="font-bold text-slate-600">Validity Period:</span>
+                          <span className="font-bold text-amber-600">{quoteValidityDays} Days</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="font-bold text-slate-600">Valid Until:</span>
+                          <span className="font-mono text-slate-900">2026-10-07</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {quoteNotes && (
+                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic">
+                      &ldquo;{quoteNotes}&rdquo;
+                    </div>
+                  )}
+
+                  <div className="rounded-xl border border-slate-200 overflow-hidden">
+                    <table className="w-full text-left text-[10px]">
+                      <thead className="text-white font-black" style={{ backgroundColor: quoteAccentColor }}>
+                        <tr>
+                          <th className="py-2 px-2.5 w-8">#</th>
+                          <th className="py-2 px-2.5">Item Description & Hardware Specs</th>
+                          <th className="py-2 px-2.5 text-center w-14">Qty</th>
+                          <th className="py-2 px-2.5 text-right w-24">Unit Price</th>
+                          <th className="py-2 px-2.5 text-right w-24">Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-150">
+                        <tr className="bg-white">
+                          <td className="py-2 px-2.5 text-slate-400 font-bold">1</td>
+                          <td className="py-2 px-2.5">
+                            <p className="font-bold text-slate-900">Apple MacBook Pro 14&quot; M3 (18GB / 512GB Space Black)</p>
+                            <p className="text-[9px] text-slate-500 leading-tight">Brand New Sealed • 1-Year Global Warranty</p>
+                          </td>
+                          <td className="py-2 px-2.5 text-center font-bold">2</td>
+                          <td className="py-2 px-2.5 text-right font-mono">₦2,350,000</td>
+                          <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦4,700,000</td>
+                        </tr>
+                        <tr className="bg-slate-50/70">
+                          <td className="py-2 px-2.5 text-slate-400 font-bold">2</td>
+                          <td className="py-2 px-2.5">
+                            <p className="font-bold text-slate-900">USB-C Multiport Hub & Laptop Sleeve</p>
+                          </td>
+                          <td className="py-2 px-2.5 text-center font-bold">2</td>
+                          <td className="py-2 px-2.5 text-right font-mono">₦45,000</td>
+                          <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦90,000</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start pt-1">
+                    {quoteShowBankDetails && bankName && accountNumber ? (
+                      <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[10px] space-y-1">
+                        <p className="font-black text-slate-800 uppercase tracking-wide">
+                          Remittance Details for Wire Transfer:
+                        </p>
+                        <p className="text-slate-900 font-bold">
+                          Bank: <span className="font-normal">{bankName}</span>
+                        </p>
+                        <p className="text-slate-900 font-bold">
+                          Account #: <span className="font-mono">{accountNumber}</span>
+                        </p>
+                        <p className="text-slate-900 font-bold">
+                          Account Name: <span className="font-normal">{accountName || storeName}</span>
+                        </p>
+                      </div>
+                    ) : (
+                      <div />
+                    )}
+
+                    <div className="space-y-1 text-[11px] sm:ml-auto w-full sm:w-56">
+                      <div className="flex justify-between text-slate-600 font-medium">
+                        <span>SubTotal</span>
+                        <span className="font-mono text-slate-900">₦4,790,000</span>
+                      </div>
+                      <div className="flex justify-between text-slate-600 font-medium">
+                        <span>Discount</span>
+                        <span className="font-mono text-slate-900">₦0.00</span>
+                      </div>
+                      <div className="p-2 rounded-xl text-white flex justify-between items-center font-black" style={{ backgroundColor: quoteAccentColor }}>
+                        <span className="text-xs">ESTIMATED TOTAL</span>
+                        <span className="font-mono text-sm">₦4,790,000</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {quoteTerms && (
+                    <div className="pt-2 text-[10px] text-slate-600 space-y-1">
+                      <p className="font-bold text-slate-800">Quotation Terms & Conditions:</p>
+                      <p className="leading-relaxed">{quoteTerms}</p>
+                    </div>
+                  )}
+
+                  {quoteShowSignature && (
+                    <div className="pt-4 flex justify-end">
+                      <div className="w-48 text-center border-t border-slate-300 pt-1 text-[9px] font-bold text-slate-600">
+                        Authorized Representative Signature
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
-
-              {/* Items Table with Accent Header */}
-              <div className="rounded-xl border border-slate-200 overflow-hidden">
-                <table className="w-full text-left text-[10px]">
-                  <thead className="text-white font-black" style={{ backgroundColor: quoteAccentColor }}>
-                    <tr>
-                      <th className="py-2 px-2.5 w-8">#</th>
-                      <th className="py-2 px-2.5">Item Description & Hardware Specs</th>
-                      <th className="py-2 px-2.5 text-center w-14">Qty</th>
-                      <th className="py-2 px-2.5 text-right w-24">Unit Price</th>
-                      <th className="py-2 px-2.5 text-right w-24">Amount</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-150">
-                    <tr className="bg-white">
-                      <td className="py-2 px-2.5 text-slate-400 font-bold">1</td>
-                      <td className="py-2 px-2.5">
-                        <p className="font-bold text-slate-900">Apple MacBook Pro 14&quot; M3 (18GB / 512GB Space Black)</p>
-                        <p className="text-[9px] text-slate-500 leading-tight">Brand New Sealed • 1-Year Global Warranty</p>
-                      </td>
-                      <td className="py-2 px-2.5 text-center font-bold">2</td>
-                      <td className="py-2 px-2.5 text-right font-mono">₦2,350,000</td>
-                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦4,700,000</td>
-                    </tr>
-                    <tr className="bg-slate-50/70">
-                      <td className="py-2 px-2.5 text-slate-400 font-bold">2</td>
-                      <td className="py-2 px-2.5">
-                        <p className="font-bold text-slate-900">USB-C Multiport Hub & Laptop Sleeve</p>
-                      </td>
-                      <td className="py-2 px-2.5 text-center font-bold">2</td>
-                      <td className="py-2 px-2.5 text-right font-mono">₦45,000</td>
-                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦90,000</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Subtotal, Total & Bank Instructions */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start pt-1">
-                {/* Bank Wire Details on Left */}
-                {quoteShowBankDetails && bankName && accountNumber ? (
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[10px] space-y-1">
-                    <p className="font-black text-slate-800 uppercase tracking-wide">
-                      Remittance Details for Wire Transfer:
-                    </p>
-                    <p className="text-slate-900 font-bold">
-                      Bank: <span className="font-normal">{bankName}</span>
-                    </p>
-                    <p className="text-slate-900 font-bold">
-                      Account #: <span className="font-mono">{accountNumber}</span>
-                    </p>
-                    <p className="text-slate-900 font-bold">
-                      Account Name: <span className="font-normal">{accountName || storeName}</span>
-                    </p>
-                  </div>
-                ) : (
-                  <div />
-                )}
-
-                {/* Subtotal & Total Right Aligned */}
-                <div className="space-y-1 text-[11px] sm:ml-auto w-full sm:w-56">
-                  <div className="flex justify-between text-slate-600 font-medium">
-                    <span>SubTotal</span>
-                    <span className="font-mono text-slate-900">₦4,790,000</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600 font-medium">
-                    <span>Discount</span>
-                    <span className="font-mono text-slate-900">₦0.00</span>
-                  </div>
-                  <div className="p-2 rounded-xl text-white flex justify-between items-center font-black" style={{ backgroundColor: quoteAccentColor }}>
-                    <span className="text-xs">ESTIMATED TOTAL</span>
-                    <span className="font-mono text-sm">₦4,790,000</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Terms & Conditions */}
-              {quoteTerms && (
-                <div className="pt-2 text-[10px] text-slate-600 space-y-1">
-                  <p className="font-bold text-slate-800">Quotation Terms & Conditions:</p>
-                  <p className="leading-relaxed">{quoteTerms}</p>
-                </div>
-              )}
-
-              {/* Signature Line */}
-              {quoteShowSignature && (
-                <div className="pt-4 flex justify-end">
-                  <div className="w-48 text-center border-t border-slate-300 pt-1 text-[9px] font-bold text-slate-600">
-                    Authorized Representative Signature
-                  </div>
-                </div>
-              )}
-
-              {/* Bottom Footer Bar */}
-              <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[9px] text-slate-500 font-medium">
-                <div>
-                  {storeName} • Phone: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'quotes@store.ng'}
-                </div>
-                <div className="font-bold text-slate-600">Proposal Page: 1 / 1</div>
-              </div>
             </div>
           )}
 

@@ -3,8 +3,8 @@ import { PhoneCondition } from '@prisma/client';
 
 export class RegisterPhoneDto {
   @IsString()
-  @IsNotEmpty()
-  imei1: string;
+  @IsOptional()
+  imei1?: string;
 
   @IsString()
   @IsOptional()
