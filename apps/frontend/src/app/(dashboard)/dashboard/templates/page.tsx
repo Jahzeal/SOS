@@ -17,13 +17,15 @@ import {
   Upload,
   Image as ImageIcon,
   Trash2,
+  FileSpreadsheet,
+  Palette,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 
 export default function ReceiptInvoiceTemplatesPage() {
-  const [activeTab, setActiveTab] = useState<'receipt' | 'invoice'>('receipt');
+  const [activeTab, setActiveTab] = useState<'receipt' | 'invoice' | 'quote'>('receipt');
   const [loading, setLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
@@ -33,6 +35,7 @@ export default function ReceiptInvoiceTemplatesPage() {
   const [logoUrl, setLogoUrl] = useState<string>('');
   const [showLogoOnReceipt, setShowLogoOnReceipt] = useState(true);
   const [showLogoOnInvoice, setShowLogoOnInvoice] = useState(true);
+  const [showLogoOnQuote, setShowLogoOnQuote] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Receipt Customization Settings
@@ -53,6 +56,15 @@ export default function ReceiptInvoiceTemplatesPage() {
   const [accountNumber, setAccountNumber] = useState('');
   const [accountName, setAccountName] = useState('');
   const [invoiceTerms, setInvoiceTerms] = useState('Payment is due within the selected term days. 12-Month Store Warranty Included.');
+
+  // Quote Customization Settings
+  const [quoteTitle, setQuoteTitle] = useState('PRICE QUOTATION');
+  const [quoteValidityDays, setQuoteValidityDays] = useState(14);
+  const [quoteNotes, setQuoteNotes] = useState('Thank you for your inquiry. Please review our formal price quotation and specifications below.');
+  const [quoteTerms, setQuoteTerms] = useState('Prices quoted are valid for the stated duration. Device availability and warranty conditions apply upon final confirmation.');
+  const [quoteAccentColor, setQuoteAccentColor] = useState('#2563EB');
+  const [quoteShowBankDetails, setQuoteShowBankDetails] = useState(true);
+  const [quoteShowSignature, setQuoteShowSignature] = useState(true);
 
   useEffect(() => {
     async function loadTemplates() {
@@ -78,6 +90,14 @@ export default function ReceiptInvoiceTemplatesPage() {
           if (data.accountName) setAccountName(data.accountName);
           if (data.receiptFooter) setReceiptFooter(data.receiptFooter);
           if (data.receiptTerms) setInvoiceTerms(data.receiptTerms);
+
+          if (data.quoteTitle) setQuoteTitle(data.quoteTitle);
+          if (data.quoteValidityDays) setQuoteValidityDays(data.quoteValidityDays);
+          if (data.quoteNotes) setQuoteNotes(data.quoteNotes);
+          if (data.quoteTerms) setQuoteTerms(data.quoteTerms);
+          if (data.quoteAccentColor) setQuoteAccentColor(data.quoteAccentColor);
+          if (data.quoteShowBankDetails !== undefined) setQuoteShowBankDetails(data.quoteShowBankDetails);
+          if (data.quoteShowSignature !== undefined) setQuoteShowSignature(data.quoteShowSignature);
         }
       } catch (err: any) {
         console.error('Failed to load business templates:', err);
@@ -135,6 +155,13 @@ export default function ReceiptInvoiceTemplatesPage() {
         accountName: accountName.trim(),
         receiptFooter: receiptFooter.trim(),
         receiptTerms: invoiceTerms.trim(),
+        quoteTitle: quoteTitle.trim(),
+        quoteValidityDays: Number(quoteValidityDays),
+        quoteNotes: quoteNotes.trim(),
+        quoteTerms: quoteTerms.trim(),
+        quoteAccentColor,
+        quoteShowBankDetails,
+        quoteShowSignature,
       });
       setIsSaved(true);
       setTimeout(() => setIsSaved(false), 2500);
@@ -298,7 +325,7 @@ export default function ReceiptInvoiceTemplatesPage() {
       </div>
 
       {/* Mode Switcher Tabs */}
-      <div className="flex items-center gap-2 border-b border-slate-200 pb-2">
+      <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-2">
         <button
           onClick={() => setActiveTab('receipt')}
           className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition ${
@@ -319,6 +346,17 @@ export default function ReceiptInvoiceTemplatesPage() {
           }`}
         >
           <FileText className="w-4 h-4" /> PDF Invoice Statement Template
+        </button>
+
+        <button
+          onClick={() => setActiveTab('quote')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition ${
+            activeTab === 'quote'
+              ? 'bg-slate-900 text-white shadow-sm'
+              : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+          }`}
+        >
+          <FileSpreadsheet className="w-4 h-4 text-blue-400" /> Quotation / Estimate Template
         </button>
       </div>
 
@@ -542,6 +580,119 @@ export default function ReceiptInvoiceTemplatesPage() {
                   onChange={(e) => setInvoiceTerms(e.target.value)}
                   className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-blue-600"
                 />
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'quote' && (
+            <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
+              <div className="border-b border-slate-100 pb-3">
+                <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                  <FileSpreadsheet className="w-4 h-4 text-blue-600" /> Quotation & Proforma Layout Settings
+                </h2>
+                <p className="text-xs text-slate-500">Customize the title, theme accents, validity duration, and standard terms printed on commercial proposals.</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Document Title / Header *</label>
+                  <input
+                    type="text"
+                    value={quoteTitle}
+                    onChange={(e) => setQuoteTitle(e.target.value)}
+                    placeholder="e.g. PRICE QUOTATION"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600 uppercase"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Default Price Validity (Days)</label>
+                  <select
+                    value={quoteValidityDays}
+                    onChange={(e) => setQuoteValidityDays(Number(e.target.value))}
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  >
+                    <option value={7}>7 Days (1 Week)</option>
+                    <option value={14}>14 Days (2 Weeks - Standard)</option>
+                    <option value={30}>30 Days (1 Month)</option>
+                    <option value={60}>60 Days (2 Months)</option>
+                  </select>
+                </div>
+
+                {/* Accent Color Picker */}
+                <div className="sm:col-span-2 space-y-2">
+                  <label className="font-bold text-slate-700 flex items-center gap-1.5">
+                    <Palette className="w-3.5 h-3.5 text-blue-600" /> Quotation Brand Accent Color
+                  </label>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {[
+                      { name: 'Royal Blue', hex: '#2563EB' },
+                      { name: 'Indigo', hex: '#4F46E5' },
+                      { name: 'Emerald', hex: '#059669' },
+                      { name: 'Teal', hex: '#0D9488' },
+                      { name: 'Purple', hex: '#7C3AED' },
+                      { name: 'Amber', hex: '#D97706' },
+                      { name: 'Slate Dark', hex: '#0F172A' },
+                    ].map((col) => (
+                      <button
+                        key={col.hex}
+                        type="button"
+                        onClick={() => setQuoteAccentColor(col.hex)}
+                        className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+                          quoteAccentColor === col.hex
+                            ? 'border-slate-900 ring-2 ring-slate-900/20 bg-slate-50'
+                            : 'border-slate-200 hover:border-slate-300'
+                        }`}
+                      >
+                        <span className="w-3.5 h-3.5 rounded-full shadow-xs" style={{ backgroundColor: col.hex }} />
+                        <span className="text-slate-800">{col.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="font-bold text-slate-700">Opening Greeting / Introductory Note</label>
+                  <textarea
+                    rows={2}
+                    value={quoteNotes}
+                    onChange={(e) => setQuoteNotes(e.target.value)}
+                    className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div className="sm:col-span-2 space-y-1">
+                  <label className="font-bold text-slate-700">Standard Quotation Terms & Conditions</label>
+                  <textarea
+                    rows={3}
+                    value={quoteTerms}
+                    onChange={(e) => setQuoteTerms(e.target.value)}
+                    className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+              </div>
+
+              {/* Toggles */}
+              <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <label className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-800 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={quoteShowBankDetails}
+                    onChange={(e) => setQuoteShowBankDetails(e.target.checked)}
+                    className="w-4 h-4 rounded text-blue-600"
+                  />
+                  <span>Show Bank Details on Quotation</span>
+                </label>
+
+                <label className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-200 font-bold text-slate-800 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={quoteShowSignature}
+                    onChange={(e) => setQuoteShowSignature(e.target.checked)}
+                    className="w-4 h-4 rounded text-blue-600"
+                  />
+                  <span>Include Authorized Signature Line</span>
+                </label>
               </div>
             </div>
           )}
@@ -791,6 +942,173 @@ export default function ReceiptInvoiceTemplatesPage() {
                   {companyName} • Phone: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'billing@store.ng'}
                 </div>
                 <div className="font-bold text-slate-600">Page: 1 / 1</div>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'quote' && (
+            <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden">
+              {/* Top Quotation Header (Left: Details, Right: Title in Accent Color) */}
+              <div className="flex justify-between items-start gap-4">
+                <div className="space-y-0.5">
+                  <h3 className="font-black text-sm sm:text-base text-slate-950">{storeName || companyName || 'Your Store'}</h3>
+                  <p className="text-slate-600">{storeAddress || 'Computer Village, Ikeja, Lagos'}</p>
+                  <p className="text-slate-600">Tel: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'quotes@store.ng'}</p>
+                </div>
+
+                <div className="text-right">
+                  <div
+                    className="inline-block px-3 py-1 rounded-lg text-white font-black text-xs tracking-wider"
+                    style={{ backgroundColor: quoteAccentColor }}
+                  >
+                    {quoteTitle}
+                  </div>
+                  <p className="font-mono text-slate-500 text-[10px] mt-1 font-bold">QT-2026-0001</p>
+                </div>
+              </div>
+
+              <div className="border-t border-slate-200" />
+
+              {/* Dual Box (Left: Quotation For, Right: Proposal Validity Details) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
+                {/* Left Card: Quotation For */}
+                <div className="p-3.5 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
+                  <p className="font-black text-xs tracking-tight" style={{ color: quoteAccentColor }}>Quotation For:</p>
+                  <p className="font-extrabold text-slate-900 text-xs">Prospective Client Enterprise</p>
+                  <p className="text-slate-600 text-[10px]">Lekki Phase 1, Lagos</p>
+                  <p className="text-slate-600 text-[10px] font-medium pt-0.5">
+                    <strong>Contact:</strong> +234 809 999 8888 • client@company.ng
+                  </p>
+                </div>
+
+                {/* Right Card: Metadata Table with Accent Bar */}
+                <div className="rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+                  <div className="text-white px-3 py-2 flex justify-between items-center font-extrabold text-xs" style={{ backgroundColor: quoteAccentColor }}>
+                    <span>Estimate Summary</span>
+                    <span className="font-mono tracking-wide text-[10px]">PENDING</span>
+                  </div>
+                  <div className="bg-white p-2 space-y-1 text-[10px]">
+                    <div className="flex justify-between border-b border-slate-100 pb-1">
+                      <span className="font-bold text-slate-600">Quote Date:</span>
+                      <span className="font-mono text-slate-900">2026-09-23</span>
+                    </div>
+                    <div className="flex justify-between border-b border-slate-100 pb-1">
+                      <span className="font-bold text-slate-600">Validity Period:</span>
+                      <span className="font-bold text-amber-600">{quoteValidityDays} Days</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-bold text-slate-600">Valid Until:</span>
+                      <span className="font-mono text-slate-900">2026-10-07</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Optional Opening Greeting */}
+              {quoteNotes && (
+                <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic">
+                  &ldquo;{quoteNotes}&rdquo;
+                </div>
+              )}
+
+              {/* Items Table with Accent Header */}
+              <div className="rounded-xl border border-slate-200 overflow-hidden">
+                <table className="w-full text-left text-[10px]">
+                  <thead className="text-white font-black" style={{ backgroundColor: quoteAccentColor }}>
+                    <tr>
+                      <th className="py-2 px-2.5 w-8">#</th>
+                      <th className="py-2 px-2.5">Item Description & Hardware Specs</th>
+                      <th className="py-2 px-2.5 text-center w-14">Qty</th>
+                      <th className="py-2 px-2.5 text-right w-24">Unit Price</th>
+                      <th className="py-2 px-2.5 text-right w-24">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-150">
+                    <tr className="bg-white">
+                      <td className="py-2 px-2.5 text-slate-400 font-bold">1</td>
+                      <td className="py-2 px-2.5">
+                        <p className="font-bold text-slate-900">Apple MacBook Pro 14&quot; M3 (18GB / 512GB Space Black)</p>
+                        <p className="text-[9px] text-slate-500 leading-tight">Brand New Sealed • 1-Year Global Warranty</p>
+                      </td>
+                      <td className="py-2 px-2.5 text-center font-bold">2</td>
+                      <td className="py-2 px-2.5 text-right font-mono">₦2,350,000</td>
+                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦4,700,000</td>
+                    </tr>
+                    <tr className="bg-slate-50/70">
+                      <td className="py-2 px-2.5 text-slate-400 font-bold">2</td>
+                      <td className="py-2 px-2.5">
+                        <p className="font-bold text-slate-900">USB-C Multiport Hub & Laptop Sleeve</p>
+                      </td>
+                      <td className="py-2 px-2.5 text-center font-bold">2</td>
+                      <td className="py-2 px-2.5 text-right font-mono">₦45,000</td>
+                      <td className="py-2 px-2.5 text-right font-bold text-slate-900 font-mono">₦90,000</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Subtotal, Total & Bank Instructions */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-start pt-1">
+                {/* Bank Wire Details on Left */}
+                {quoteShowBankDetails && bankName && accountNumber ? (
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[10px] space-y-1">
+                    <p className="font-black text-slate-800 uppercase tracking-wide">
+                      Remittance Details for Wire Transfer:
+                    </p>
+                    <p className="text-slate-900 font-bold">
+                      Bank: <span className="font-normal">{bankName}</span>
+                    </p>
+                    <p className="text-slate-900 font-bold">
+                      Account #: <span className="font-mono">{accountNumber}</span>
+                    </p>
+                    <p className="text-slate-900 font-bold">
+                      Account Name: <span className="font-normal">{accountName || storeName}</span>
+                    </p>
+                  </div>
+                ) : (
+                  <div />
+                )}
+
+                {/* Subtotal & Total Right Aligned */}
+                <div className="space-y-1 text-[11px] sm:ml-auto w-full sm:w-56">
+                  <div className="flex justify-between text-slate-600 font-medium">
+                    <span>SubTotal</span>
+                    <span className="font-mono text-slate-900">₦4,790,000</span>
+                  </div>
+                  <div className="flex justify-between text-slate-600 font-medium">
+                    <span>Discount</span>
+                    <span className="font-mono text-slate-900">₦0.00</span>
+                  </div>
+                  <div className="p-2 rounded-xl text-white flex justify-between items-center font-black" style={{ backgroundColor: quoteAccentColor }}>
+                    <span className="text-xs">ESTIMATED TOTAL</span>
+                    <span className="font-mono text-sm">₦4,790,000</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Terms & Conditions */}
+              {quoteTerms && (
+                <div className="pt-2 text-[10px] text-slate-600 space-y-1">
+                  <p className="font-bold text-slate-800">Quotation Terms & Conditions:</p>
+                  <p className="leading-relaxed">{quoteTerms}</p>
+                </div>
+              )}
+
+              {/* Signature Line */}
+              {quoteShowSignature && (
+                <div className="pt-4 flex justify-end">
+                  <div className="w-48 text-center border-t border-slate-300 pt-1 text-[9px] font-bold text-slate-600">
+                    Authorized Representative Signature
+                  </div>
+                </div>
+              )}
+
+              {/* Bottom Footer Bar */}
+              <div className="pt-3 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[9px] text-slate-500 font-medium">
+                <div>
+                  {storeName} • Phone: {storePhone || '+234 801 234 5678'} • Email: {businessEmail || 'quotes@store.ng'}
+                </div>
+                <div className="font-bold text-slate-600">Proposal Page: 1 / 1</div>
               </div>
             </div>
           )}

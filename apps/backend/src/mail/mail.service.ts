@@ -344,4 +344,92 @@ export class MailService {
       text: `${finalHeading}\n\n${finalBody}\n\nAccess your dashboard: ${dashboardUrl}`,
     });
   }
+
+  public async sendQuoteEmail(options: {
+    to: string;
+    customerName?: string;
+    storeName: string;
+    quoteNumber: string;
+    quoteTitle?: string;
+    totalAmount: number;
+    expiryDateStr?: string;
+    pdfBuffer: Buffer;
+  }) {
+    const {
+      to,
+      customerName,
+      storeName,
+      quoteNumber,
+      quoteTitle = 'Price Quotation',
+      totalAmount,
+      expiryDateStr,
+      pdfBuffer,
+    } = options;
+
+    const subject = `${quoteTitle} ${quoteNumber} from ${storeName}`;
+    const formattedAmount = `NGN ${totalAmount.toLocaleString()}`;
+
+    const html = `
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #0f172a; border-radius: 16px; color: #f8fafc;">
+        <div style="text-align: center; margin-bottom: 24px;">
+          <div style="display: inline-block; padding: 8px 18px; background-color: #2563eb; color: #ffffff; border-radius: 8px; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
+          <h1 style="color: #ffffff; font-size: 22px; font-weight: 800; margin: 16px 0 4px 0;">${quoteTitle} #${quoteNumber}</h1>
+          <p style="color: #94a3b8; font-size: 13px; margin: 0;">Official Commercial Proposal</p>
+        </div>
+
+        <div style="background-color: #1e293b; padding: 28px 24px; border-radius: 14px; border: 1px solid #334155;">
+          <p style="color: #f1f5f9; font-size: 14px; line-height: 1.6; margin-top: 0;">
+            Hello <strong>${customerName || 'Valued Client'}</strong>,
+          </p>
+          <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
+            Thank you for your interest. Please find attached your formal <strong>${quoteTitle} (#${quoteNumber})</strong> from <strong>${storeName}</strong>.
+          </p>
+
+          <!-- Quote Breakdown Box -->
+          <div style="background-color: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 20px 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+              <span>Quotation Number:</span>
+              <strong style="color: #f8fafc;">${quoteNumber}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+              <span>Estimated Total:</span>
+              <strong style="color: #38bdf8; font-size: 16px;">${formattedAmount}</strong>
+            </div>
+            ${
+              expiryDateStr
+                ? `<div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8;">
+                    <span>Valid Until:</span>
+                    <strong style="color: #f59e0b;">${expiryDateStr}</strong>
+                  </div>`
+                : ''
+            }
+          </div>
+
+          <p style="color: #94a3b8; font-size: 12.5px; line-height: 1.5; margin-bottom: 0;">
+            📎 The complete itemized PDF quotation is attached to this email. You can reply directly to this email or contact us via phone/WhatsApp to confirm or proceed with the order.
+          </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 24px; color: #64748b; font-size: 11px;">
+          Sent by ${storeName} via NoxGuarda Retail OS.<br/>
+          © ${new Date().getFullYear()} ${storeName}. All rights reserved.
+        </div>
+      </div>
+    `;
+
+    return this.dispatchEmail({
+      to,
+      subject,
+      html,
+      text: `Hello ${customerName || 'Valued Client'},\n\nPlease find attached your quotation ${quoteNumber} for ${formattedAmount} from ${storeName}.\n\nValid until: ${expiryDateStr || 'As specified on PDF'}.`,
+      attachments: [
+        {
+          filename: `Quotation-${quoteNumber}.pdf`,
+          content: pdfBuffer,
+          contentType: 'application/pdf',
+        },
+      ],
+    });
+  }
 }
+

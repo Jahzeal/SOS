@@ -26,6 +26,7 @@ import {
   Palette,
   LogOut,
   X,
+  FileSpreadsheet,
 } from 'lucide-react';
 import { Badge } from './ui/Badge';
 import { PwaInstallButton } from './PwaInstallButton';
@@ -45,7 +46,7 @@ const menuItems: MenuItem[] = [
     href: '/dashboard',
   },
   {
-    name: 'Register Phone',
+    name: 'Register Phone / Item',
     icon: PlusCircle,
     href: '/dashboard/register',
   },
@@ -55,7 +56,7 @@ const menuItems: MenuItem[] = [
     href: '/dashboard/verify',
   },
   {
-    name: 'Phone Records',
+    name: 'Phone & Item Records',
     icon: List,
     href: '/dashboard/records',
   },
@@ -69,6 +70,7 @@ const menuItems: MenuItem[] = [
     icon: ShoppingCart,
     children: [
       { name: 'Checkout (POS)', href: '/dashboard/checkout', icon: PlusCircle },
+      { name: 'Quotations / Estimates', href: '/dashboard/quotes', icon: FileSpreadsheet },
       { name: 'Invoices Registry', href: '/dashboard/invoices', icon: FileText },
       { name: 'Receipts Archive', href: '/dashboard/receipts', icon: Receipt },
     ],

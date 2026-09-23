@@ -298,6 +298,73 @@ class ApiClient {
     );
   }
 
+  // --- Quotations & Estimates Endpoints ---
+  async getQuotes(params?: { search?: string; status?: string }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.status && params.status !== 'ALL') query.append('status', params.status);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request<any[]>(`/quotes${qs}`);
+  }
+
+  async getQuoteStats() {
+    return this.request<{
+      totalQuotesCount: number;
+      totalQuotedAmount: number;
+      acceptedAmount: number;
+      acceptedCount: number;
+      convertedCount: number;
+      activeCount: number;
+      conversionRate: number;
+    }>('/quotes/stats');
+  }
+
+  async getQuoteById(id: string) {
+    return this.request<any>(`/quotes/${id}`);
+  }
+
+  async createQuote(payload: any) {
+    return this.request<any>('/quotes', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateQuote(id: string, payload: any) {
+    return this.request<any>(`/quotes/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async deleteQuote(id: string) {
+    return this.request<any>(`/quotes/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async sendQuoteEmail(id: string, email?: string) {
+    return this.request<{ success: boolean; messageId?: string; sentTo?: string }>(
+      `/quotes/${id}/email`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      },
+    );
+  }
+
+  async convertQuoteToSale(id: string, payload?: { paymentMethod?: string; notes?: string; asInvoice?: boolean }) {
+    return this.request<{ sale: any; quote: any }>(`/quotes/${id}/convert`, {
+      method: 'POST',
+      body: JSON.stringify(payload || {}),
+    });
+  }
+
+  getQuotePdfDownloadUrl(id: string): string {
+    const token = this.getToken();
+    return `${API_BASE_URL}/quotes/${id}/pdf${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+  }
+
   // --- POS Receipts Endpoints ---
   async getReceipts(search?: string) {
     const query = search ? `?search=${encodeURIComponent(search)}` : '';

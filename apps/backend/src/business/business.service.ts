@@ -74,6 +74,13 @@ export class BusinessService {
         receiptTerms: true,
         warrantyTerms: true,
         receiptPaperSize: true,
+        quoteTitle: true,
+        quoteTerms: true,
+        quoteNotes: true,
+        quoteValidityDays: true,
+        quoteAccentColor: true,
+        quoteShowBankDetails: true,
+        quoteShowSignature: true,
       },
     });
 
@@ -98,6 +105,15 @@ export class BusinessService {
     if (data.receiptTerms !== undefined) updateData.receiptTerms = data.receiptTerms;
     if (data.warrantyTerms !== undefined) updateData.warrantyTerms = data.warrantyTerms;
     if (data.receiptPaperSize !== undefined) updateData.receiptPaperSize = data.receiptPaperSize;
+
+    // Quote Settings
+    if (data.quoteTitle !== undefined) updateData.quoteTitle = data.quoteTitle;
+    if (data.quoteTerms !== undefined) updateData.quoteTerms = data.quoteTerms;
+    if (data.quoteNotes !== undefined) updateData.quoteNotes = data.quoteNotes;
+    if (data.quoteValidityDays !== undefined) updateData.quoteValidityDays = Number(data.quoteValidityDays);
+    if (data.quoteAccentColor !== undefined) updateData.quoteAccentColor = data.quoteAccentColor;
+    if (data.quoteShowBankDetails !== undefined) updateData.quoteShowBankDetails = Boolean(data.quoteShowBankDetails);
+    if (data.quoteShowSignature !== undefined) updateData.quoteShowSignature = Boolean(data.quoteShowSignature);
 
     return this.prisma.business.update({
       where: { id: businessId },

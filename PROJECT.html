@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>NOXGUARDA — Institutional Phone Retail OS & Anti-Theft Registry</title>
+<style>
+    body {
+        font-family: 'Segoe UI', Calibri, Arial, sans-serif;
+        line-height: 1.6;
+        color: #1e293b;
+        margin: 40px auto;
+        max-width: 900px;
+        padding: 0 20px;
+    }
+    h1 {
+        font-size: 26pt;
+        color: #0f172a;
+        border-bottom: 2px solid #2563eb;
+        padding-bottom: 8px;
+        margin-top: 24pt;
+        margin-bottom: 12pt;
+    }
+    h2 {
+        font-size: 18pt;
+        color: #1e3a8a;
+        border-bottom: 1px solid #cbd5e1;
+        padding-bottom: 6px;
+        margin-top: 20pt;
+        margin-bottom: 10pt;
+    }
+    h3 {
+        font-size: 14pt;
+        color: #1e40af;
+        margin-top: 14pt;
+        margin-bottom: 6pt;
+    }
+    h4 {
+        font-size: 12pt;
+        color: #334155;
+        margin-top: 10pt;
+        margin-bottom: 4pt;
+    }
+    p, li {
+        font-size: 11pt;
+    }
+    blockquote {
+        border-left: 4px solid #2563eb;
+        background-color: #f1f5f9;
+        margin: 15px 0;
+        padding: 12px 18px;
+        font-style: italic;
+        color: #334155;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+        font-size: 10.5pt;
+    }
+    th, td {
+        border: 1px solid #cbd5e1;
+        padding: 10px 14px;
+        text-align: left;
+    }
+    th {
+        background-color: #f8fafc;
+        color: #0f172a;
+        font-weight: bold;
+    }
+    tr:nth-child(even) {
+        background-color: #f8fafc;
+    }
+    code {
+        background-color: #f1f5f9;
+        color: #0f172a;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-family: Consolas, 'Courier New', monospace;
+        font-size: 10pt;
+    }
+    pre {
+        background-color: #0f172a;
+        color: #f8fafc;
+        padding: 14px;
+        border-radius: 6px;
+        overflow-x: auto;
+        font-family: Consolas, 'Courier New', monospace;
+        font-size: 10pt;
+    }
+    ul, ol {
+        padding-left: 25px;
+    }
+    li {
+        margin-bottom: 6px;
+    }
+    .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        font-size: 9pt;
+        font-weight: bold;
+        border-radius: 4px;
+        background-color: #e0f2fe;
+        color: #0369a1;
+    }
+</style>
+</head>
+<body>
+
+<h1>🛡️ NOXGUARDA — Institutional Phone Retail OS & Anti-Theft Registry</h1>
+
+<blockquote>
+    <strong>NOXGUARDA</strong> is an enterprise-grade device lifecycle, inventory management, anti-theft verification, and Point of Sale (POS) SaaS platform tailored for mobile phone retailers, repair technicians, and consumers.
+</blockquote>
+
+<hr>
+
+<h2>1. Executive Summary</h2>
+
+<h3>The Problem</h3>
+<p>The secondary mobile phone market (used, refurbished, and newly imported devices) faces high fraud rates, lack of provenance tracking, stolen phone trade, and disjointed repair/warranty records. Traditional phone shops rely on physical paper receipts and manual logs, leading to lost records, warranty disputes, and inability to verify if a device is legitimate or blacklisted.</p>
+
+<h3>The Solution: NOXGUARDA</h3>
+<p>NOXGUARDA provides an all-in-one ecosystem for:</p>
+<ul>
+    <li><strong>Phone Retailers & Repair Shops:</strong> Manage inventory, record IMEI/Serial numbers, issue digital and 80mm thermal receipts, manage repair tickets, track warranties, and analyze sales.</li>
+    <li><strong>Consumers & Buyers:</strong> Instantly verify device authenticity, carrier lock, activation status, warranty validity, and theft status via QR codes or public IMEI lookups.</li>
+    <li><strong>Victims & Law Enforcement:</strong> Report lost/stolen phones with IMEI blacklisting, police case numbers, and optional recovery bounties.</li>
+    <li><strong>Platform Administrators:</strong> Centrally oversee registered businesses, track transactions, moderate stolen device reports, and manage subscription plans.</li>
+</ul>
+
+<hr>
+
+<h2>2. How the System Works</h2>
+
+<h3>Step 1: Intake & Device Registration</h3>
+<ul>
+    <li>The shop adds a device with its <code>IMEI 1</code>, <code>IMEI 2</code>, <code>Serial Number</code>, <code>Brand</code>, <code>Model</code>, <code>Storage</code>, <code>Color</code>, <code>Condition</code> (NEW, REFURBISHED, LIKE_NEW, etc.), and <code>Purchase Price</code>.</li>
+    <li>The system queries TAC parsers or cached device data to auto-fill hardware specs, carrier lock (UNLOCKED, CARRIER_LOCKED), and activation status.</li>
+    <li>A unique QR code is generated for the device.</li>
+</ul>
+
+<h3>Step 2: Sales & Point of Sale (POS)</h3>
+<ul>
+    <li>When sold, a <code>Sale</code> and <code>SaleItem</code> record is created.</li>
+    <li>The device status transitions: <code>IN_STOCK</code> → <code>SOLD</code>.</li>
+    <li>Warranty start and expiry dates are automatically computed based on duration.</li>
+    <li>Formatted invoices and 80mm POS thermal receipts with QR codes are generated.</li>
+</ul>
+
+<h3>Step 3: Public Verification</h3>
+<ul>
+    <li>Anyone (buyer, law enforcement, or downstream reseller) scans the QR code or enters the IMEI on the public portal.</li>
+    <li>The portal reveals whether the device belongs to a verified business, warranty status, specifications, and if any theft claims exist.</li>
+    <li>Every lookup records an audit entry in <code>VerificationLog</code> (capturing IP, timestamp, and status).</li>
+</ul>
+
+<h3>Step 4: Repair & Maintenance Management</h3>
+<ul>
+    <li>Customers bring devices for repair → A <code>RepairTicket</code> is opened.</li>
+    <li>Status progression: <code>DIAGNOSING</code> → <code>WAITING_PARTS</code> → <code>IN_PROGRESS</code> → <code>READY_FOR_PICKUP</code> → <code>COMPLETED</code>.</li>
+    <li>Technician notes, diagnostic logs, estimated vs final costs, and warranty validations are tied directly to the customer and device history.</li>
+</ul>
+
+<h3>Step 5: Anti-Theft Blacklisting & Bounty Flow</h3>
+<ul>
+    <li>Users who lost their phone report it with proof (Google account screenshot, purchase receipt, police case number).</li>
+    <li>Once flagged in <code>TheftReport</code>, any verification check immediately triggers a red banner warning that the phone is stolen, displaying owner contact info or recovery bounty instructions.</li>
+</ul>
+
+<hr>
+
+<h2>3. Core Feature Breakdown</h2>
+
+<h3>1. Public Verification Portal</h3>
+<ul>
+    <li><strong>Instant IMEI / Serial Check:</strong> Real-time validation against the database and TAC cache.</li>
+    <li><strong>Verification Badge:</strong> Shows authentic certification, merchant provenance, warranty expiration, and carrier status.</li>
+    <li><strong>Stolen Device Alert:</strong> Real-time warning if an IMEI has an active theft report.</li>
+</ul>
+
+<h3>2. Merchant Dashboard</h3>
+<ul>
+    <li><strong>Overview & Analytics:</strong> Total inventory value, monthly revenue, total sales, active repair count, and device breakdown.</li>
+    <li><strong>Device Inventory Management:</strong> Bulk & single device registration with IMEI deduplication, brand/condition filters, and instant QR badge printing.</li>
+    <li><strong>Point of Sale (POS) & Receipts:</strong> Fast checkout with Cash, Card, Bank Transfer, POS, and Split payments. Automated 80mm thermal receipts and standard A4 PDF invoices.</li>
+    <li><strong>Repairs Management:</strong> Track repair tickets with dynamic status badges, cost estimation, technician assignments, and customer updates.</li>
+    <li><strong>Customer Directory:</strong> Complete customer purchase history, linked devices, and active repair tickets.</li>
+    <li><strong>Business Settings & Branding:</strong> Store profile, logo upload, custom verification success messages, receipt printer formats (58mm/80mm), and bank details.</li>
+</ul>
+
+<h3>3. Stolen Device Registry</h3>
+<ul>
+    <li><strong>Public Theft Reporting:</strong> Anyone can file a theft report for their device.</li>
+    <li><strong>Verification & Proof Upload:</strong> Attach proof of ownership, police report number, and contact details.</li>
+    <li><strong>Bounty System:</strong> Set a reward amount for anyone who finds or recovers the device.</li>
+    <li><strong>Dispute & Resolution:</strong> Ability to resolve or clear a theft flag once recovered.</li>
+</ul>
+
+<h3>4. Subscription & Billing System</h3>
+<ul>
+    <li><strong>Tiered Subscription Plans:</strong> FREE, STARTER, BUSINESS, ENTERPRISE tiers with device limits and custom branding.</li>
+    <li><strong>Paystack Payment Gateway:</strong> Seamless NGN checkout, card payments, bank transfers, automatic renewals, and real-time payment verification.</li>
+</ul>
+
+<h3>5. Super Admin Panel</h3>
+<ul>
+    <li><strong>Business Directory:</strong> View all registered shops, suspend/activate accounts, and monitor device counts.</li>
+    <li><strong>Subscription Management:</strong> Manage plan pricing, active subscribers, and revenue metrics.</li>
+    <li><strong>Platform Settings:</strong> Configure global feature toggles, API keys, and maintenance modes.</li>
+    <li><strong>Support Ticket Center:</strong> Helpdesk for resolving merchant inquiries and IMEI ownership disputes.</li>
+    <li><strong>Audit & Notifications:</strong> Global security alerts, new signups, and high-priority system events.</li>
+</ul>
+
+<hr>
+
+<h2>4. User Roles & Access Control (RBAC)</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Role</th>
+            <th>Scope & Permissions</th>
+            <th>Typical User</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>ADMIN</strong></td>
+            <td>Full platform access: manage businesses, modify plans, inspect system logs, moderate theft reports, global settings.</td>
+            <td>Platform Owner / Ops Team</td>
+        </tr>
+        <tr>
+            <td><strong>BUSINESS</strong></td>
+            <td>Tenant-scoped access: manage own store inventory, sales, receipts, customers, repairs, and staff. Data is isolated by <code>businessId</code>.</td>
+            <td>Shop Owner, Store Manager</td>
+        </tr>
+        <tr>
+            <td><strong>Public / Guest</strong></td>
+            <td>Read-only access to verify IMEIs, view public business verification pages, and report lost/stolen devices.</td>
+            <td>End Buyers, Consumers, Police</td>
+        </tr>
+    </tbody>
+</table>
+
+<hr>
+
+<h2>5. System Architecture & Tech Stack</h2>
+
+<h3>Backend (<code>apps/backend</code>)</h3>
+<ul>
+    <li><strong>Framework:</strong> NestJS (Modular architecture, dependency injection).</li>
+    <li><strong>Database & ORM:</strong> PostgreSQL with Prisma ORM.</li>
+    <li><strong>Authentication:</strong> JWT (Access Tokens + Refresh Token rotation) with bcrypt password hashing.</li>
+    <li><strong>Mailing:</strong> Nodemailer for automated transactional emails and notifications.</li>
+    <li><strong>Payments:</strong> Paystack API integration for automated recurring billing and webhooks.</li>
+</ul>
+
+<h3>Frontend (<code>apps/frontend</code>)</h3>
+<ul>
+    <li><strong>Framework:</strong> Next.js (App Router, Server & Client Components).</li>
+    <li><strong>Styling:</strong> Tailwind CSS with custom design system and dark mode support.</li>
+    <li><strong>Icons & UI:</strong> Lucide React, Radix UI primitives, Canvas QR code generation, HTML5 Thermal receipt printing.</li>
+    <li><strong>State & Fetching:</strong> React Hooks, Context API, Axios / Fetch client with automatic token refresh.</li>
+</ul>
+
+<hr>
+
+<h2>6. Data Model & Entity Relationships</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Model</th>
+            <th>Description</th>
+            <th>Key Relations</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>Business</strong></td>
+            <td>The tenant shop profile, branding, and billing status.</td>
+            <td>Has many Users, PhoneRecords, Sales, Repairs, Customers.</td>
+        </tr>
+        <tr>
+            <td><strong>User</strong></td>
+            <td>Authenticated accounts (ADMIN or BUSINESS).</td>
+            <td>Belongs to Business, has many RefreshTokens.</td>
+        </tr>
+        <tr>
+            <td><strong>PhoneRecord</strong></td>
+            <td>Core device entity storing IMEIs, specs, pricing, and warranty.</td>
+            <td>Belongs to Business, optionally linked to Customer, SaleItem, RepairTicket.</td>
+        </tr>
+        <tr>
+            <td><strong>Sale & SaleItem</strong></td>
+            <td>Point of sale transaction record with invoice/receipt numbers.</td>
+            <td>Belongs to Business, linked to Customer and PhoneRecord.</td>
+        </tr>
+        <tr>
+            <td><strong>RepairTicket</strong></td>
+            <td>Tracks diagnostic and repair job orders for devices.</td>
+            <td>Belongs to Business, linked to Customer and PhoneRecord.</td>
+        </tr>
+        <tr>
+            <td><strong>Customer</strong></td>
+            <td>Directory of clients who buy or repair devices.</td>
+            <td>Belongs to Business, linked to PhoneRecords, Sales, Repairs.</td>
+        </tr>
+        <tr>
+            <td><strong>TheftReport</strong></td>
+            <td>Global registry of stolen devices with proof and bounty.</td>
+            <td>Indexed by imei1, imei2, serialNumber.</td>
+        </tr>
+        <tr>
+            <td><strong>VerificationLog</strong></td>
+            <td>Audit trail of every public lookup attempt.</td>
+            <td>Linked to Business (if verified) with status and IP.</td>
+        </tr>
+        <tr>
+            <td><strong>SubscriptionPlan & Payment</strong></td>
+            <td>SaaS subscription tiers and Paystack transactions.</td>
+            <td>Linked to Business.</td>
+        </tr>
+    </tbody>
+</table>
+
+<hr>
+
+<h2>7. External Integrations</h2>
+<ol>
+    <li><strong>Paystack Gateway:</strong> Card, Bank Transfer, USSD checkout; subscription lifecycle management and webhook event handling.</li>
+    <li><strong>IMEI & TAC Database:</strong> Automatic hardware model and manufacturer detection based on TAC; in-memory/database caching to minimize latency.</li>
+    <li><strong>QR Code Engine:</strong> Dynamically generated QR codes for every device linking directly to public verification URLs.</li>
+    <li><strong>Thermal Printer (ESC/POS & Web Print):</strong> Direct-to-print 80mm and 58mm POS receipt layout for physical retail stores.</li>
+</ol>
+
+</body>
+</html>
