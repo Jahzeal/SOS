@@ -92,12 +92,8 @@ export default function RegisterPhonePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [registeredItem, setRegisteredItem] = useState<any>(null);
-  const [brandOpen, setBrandOpen] = useState(false);
 
   const activeBrands = mode === 'PHONE' ? PHONE_BRANDS : ACCESSORY_BRANDS;
-  const filteredBrands = activeBrands.filter((b) =>
-    b.toLowerCase().includes(brand.toLowerCase())
-  );
 
   const generateSku = () => {
     const prefix = mode === 'PHONE' ? 'PH' : 'SKU';
@@ -437,23 +433,14 @@ export default function RegisterPhonePage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Inventory SKU / Serial Number
-                    </label>
-                    <button
-                      type="button"
-                      onClick={generateSku}
-                      className="text-[11px] text-teal-600 hover:text-teal-800 font-bold flex items-center gap-1"
-                    >
-                      <Sparkles className="w-3 h-3" /> Auto-Generate SKU
-                    </button>
-                  </div>
+                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Inventory SKU / Serial Number
+                  </label>
                   <input
                     type="text"
                     value={serialNumber}
                     onChange={(e) => setSerialNumber(e.target.value)}
-                    placeholder="Enter SKU or click Auto-Generate"
+                    placeholder="Enter SKU or barcode number"
                     className="w-full text-sm px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 font-mono font-semibold text-slate-900 shadow-subtle"
                   />
                 </div>
@@ -548,31 +535,41 @@ export default function RegisterPhonePage() {
               )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                {/* Brand Combobox */}
-                <div className="space-y-1.5 relative">
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider">Brand *</label>
+                {/* Brand Input (Freely Type Any Brand + Quick Suggestions) */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider">Brand *</label>
+                    <span className="text-[11px] text-slate-500 font-medium">Type any brand or pick below</span>
+                  </div>
                   <input
                     type="text"
+                    list="brand-suggestions"
                     value={brand}
-                    onChange={(e) => { setBrand(e.target.value); setBrandOpen(true); }}
-                    onFocus={() => setBrandOpen(true)}
-                    onBlur={() => setTimeout(() => setBrandOpen(false), 200)}
-                    placeholder={`e.g. ${activeBrands.slice(0, 3).join(', ')}…`}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
+                    onChange={(e) => setBrand(e.target.value)}
+                    placeholder={mode === 'PHONE' ? "e.g. Apple, Samsung, Google, Xiaomi, Custom..." : "e.g. Oraimo, Anker, Baseus, Sony, Generic..."}
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600 shadow-subtle text-xs"
                   />
-                  {brandOpen && filteredBrands.length > 0 && (
-                    <ul className="absolute z-50 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-lg max-h-48 overflow-y-auto text-xs">
-                      {filteredBrands.map((b) => (
-                        <li
-                          key={b}
-                          onMouseDown={() => { setBrand(b); setBrandOpen(false); }}
-                          className="px-4 py-2.5 font-bold text-slate-800 hover:bg-teal-50 hover:text-teal-700 cursor-pointer transition"
-                        >
-                          {b}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <datalist id="brand-suggestions">
+                    {activeBrands.map((b) => (
+                      <option key={b} value={b} />
+                    ))}
+                  </datalist>
+                  <div className="flex flex-wrap gap-1 pt-0.5">
+                    {activeBrands.slice(0, 8).map((b) => (
+                      <button
+                        key={b}
+                        type="button"
+                        onClick={() => setBrand(b)}
+                        className={`px-2 py-1 rounded-lg text-[11px] font-bold transition ${
+                          brand.toLowerCase() === b.toLowerCase()
+                            ? 'bg-teal-600 text-white'
+                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        }`}
+                      >
+                        {b}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Model / Title Input */}
@@ -589,7 +586,7 @@ export default function RegisterPhonePage() {
                         ? 'e.g. iPhone 15 Pro Max, Galaxy S24 Ultra'
                         : 'e.g. Toast 10 Byte 20000mAh, FreePods 4 ANC, 65W GaN Charger'
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600 shadow-subtle text-xs"
                   />
                 </div>
 
