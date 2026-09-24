@@ -55,16 +55,10 @@ export function SubscriptionStatusBanner() {
             </button>
 
             <button
-              onClick={async () => {
-                setIsDowngrading(true);
-                await switchToFreePlan();
-                setIsDowngrading(false);
-              }}
-              disabled={isDowngrading}
-              className="px-3 py-1.5 bg-white/80 hover:bg-white text-slate-700 hover:text-slate-900 font-bold border border-slate-300/80 rounded-lg transition text-xs flex items-center gap-1 cursor-pointer disabled:opacity-50"
+              onClick={() => openPaywall('free_details')}
+              className="px-3 py-1.5 bg-white/80 hover:bg-white text-slate-700 hover:text-slate-900 font-bold border border-slate-300/80 rounded-lg transition text-xs flex items-center gap-1 cursor-pointer"
             >
-              {isDowngrading ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : null}
-              <span>Continue with Free Basic</span>
+              <span>Continue with Free Basic →</span>
             </button>
           </div>
 
