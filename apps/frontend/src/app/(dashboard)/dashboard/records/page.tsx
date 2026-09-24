@@ -163,7 +163,7 @@ export default function PhoneRecordsPage() {
           </Link>
           <Link href="/dashboard/register">
             <Button variant="primary" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
-              Register Phone
+              Register Phone / Item
             </Button>
           </Link>
         </div>

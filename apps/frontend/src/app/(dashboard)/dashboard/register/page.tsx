@@ -505,10 +505,37 @@ export default function RegisterPhonePage() {
               {/* General Item Type Quick Selector */}
               {mode === 'ITEM' && (
                 <div className="space-y-2">
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
-                    Item Category / Type *
-                  </label>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
+                      Item Category / Type *
+                    </label>
+                    <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">Select or type custom</span>
+                  </div>
+
+                  {/* Mobile Select Dropdown */}
+                  <div className="block sm:hidden">
+                    <select
+                      value={POPULAR_ITEM_TYPES.includes(itemType) ? itemType : 'CUSTOM'}
+                      onChange={(e) => {
+                        if (e.target.value === 'CUSTOM') {
+                          setItemType('');
+                        } else {
+                          setItemType(e.target.value);
+                        }
+                      }}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-xs focus:outline-none focus:border-teal-600 shadow-subtle"
+                    >
+                      {POPULAR_ITEM_TYPES.map((type) => (
+                        <option key={type} value={type}>
+                          {type}
+                        </option>
+                      ))}
+                      <option value="CUSTOM">Custom / Other Category...</option>
+                    </select>
+                  </div>
+
+                  {/* Desktop Quick Chips */}
+                  <div className="hidden sm:flex flex-wrap gap-1.5">
                     {POPULAR_ITEM_TYPES.map((type) => (
                       <button
                         key={type}
@@ -524,13 +551,18 @@ export default function RegisterPhonePage() {
                       </button>
                     ))}
                   </div>
-                  <input
-                    type="text"
-                    value={itemType}
-                    onChange={(e) => setItemType(e.target.value)}
-                    placeholder="Or type a custom category (e.g. Ring Light, Drone, Wireless Mic...)"
-                    className="w-full mt-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-xs focus:outline-none focus:border-teal-600"
-                  />
+
+                  {/* Custom / Specific Category Text Input */}
+                  {(!POPULAR_ITEM_TYPES.includes(itemType) || itemType === 'General Accessory / Other') && (
+                    <input
+                      type="text"
+                      value={itemType}
+                      onChange={(e) => setItemType(e.target.value)}
+                      placeholder="Specify custom category (e.g. Ring Light, Drone, Wireless Mic...)"
+                      className="w-full mt-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
+                      autoFocus={!POPULAR_ITEM_TYPES.includes(itemType)}
+                    />
+                  )}
                 </div>
               )}
 

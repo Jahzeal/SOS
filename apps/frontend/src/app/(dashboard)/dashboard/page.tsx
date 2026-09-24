@@ -125,8 +125,8 @@ export default function BusinessDashboardPage() {
               leftIcon={<Plus className="w-4 h-4" />}
               className="w-full sm:w-auto shadow-md shadow-blue-600/10 font-bold"
             >
-              <span className="hidden sm:inline">Register New Phone</span>
-              <span className="inline sm:hidden">Register Phone</span>
+              <span className="hidden sm:inline">Register Phone / Item</span>
+              <span className="inline sm:hidden">Register Item</span>
             </Button>
           </Link>
           <Link href="/dashboard/verify" className="flex-1 sm:flex-none">
@@ -275,7 +275,7 @@ export default function BusinessDashboardPage() {
               <Plus className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-extrabold text-xs text-slate-900">Register Phone</div>
+              <div className="font-extrabold text-xs text-slate-900">Register Phone / Item</div>
               <div className="text-[10px] text-slate-500 font-medium">Add serial / IMEI</div>
             </div>
           </Link>

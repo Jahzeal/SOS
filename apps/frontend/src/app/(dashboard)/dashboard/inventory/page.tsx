@@ -194,7 +194,7 @@ export default function InventoryPage() {
           </Button>
           <Link href="/dashboard/register">
             <Button variant="primary" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
-              Register Phone
+              Register Phone / Item
             </Button>
           </Link>
         </div>

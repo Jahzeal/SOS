@@ -446,11 +446,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span>Verify</span>
         </Link>
 
-        {/* Floating Register Phone FAB Action Button in Center */}
+        {/* Floating Register Phone / Item FAB Action Button in Center */}
         <Link
           href="/dashboard/register"
           className="w-12 h-12 rounded-full bg-teal-600 text-white shadow-xl flex items-center justify-center -mt-6 border-4 border-white transition-transform active:scale-95"
-          title="Register Phone"
+          title="Register Phone / Item"
         >
           <Plus className="w-6 h-6" />
         </Link>
