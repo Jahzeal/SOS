@@ -50,10 +50,24 @@ export class BusinessService {
     });
   }
 
-  async updatePlan(businessId: string, plan: any) {
+  async updatePlan(businessId: string, planCode: any) {
+    const cleanPlan = (planCode || 'FREE').toUpperCase();
+    const subPlan = await this.prisma.subscriptionPlan.findUnique({
+      where: { code: cleanPlan },
+    });
+
+    const isFree = cleanPlan === 'FREE' || cleanPlan === 'BASIC';
+
     return this.prisma.business.update({
       where: { id: businessId },
-      data: { plan },
+      data: {
+        plan: cleanPlan,
+        planId: subPlan ? subPlan.id : undefined,
+        subscriptionStatus: isFree ? 'FREE' : undefined,
+      },
+      include: {
+        subscriptionPlan: true,
+      },
     });
   }
 

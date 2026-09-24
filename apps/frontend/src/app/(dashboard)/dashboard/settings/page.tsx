@@ -1062,8 +1062,10 @@ export default function RebuiltSettingsPage() {
                 <p className="text-xs text-slate-400 font-medium mt-1">
                   {liveBusinessData?.subscriptionEndsAt ? (
                     <>Active until {new Date(liveBusinessData.subscriptionEndsAt).toLocaleDateString()} • Renews via Paystack</>
+                  ) : liveBusinessData?.subscriptionStatus === 'EXPIRED' || (liveBusinessData?.trialEndsAt && new Date(liveBusinessData.trialEndsAt) <= new Date()) ? (
+                    <>Trial ended on {new Date(liveBusinessData?.trialEndsAt || Date.now()).toLocaleDateString()} • Pay for your selected plan to keep full access</>
                   ) : liveBusinessData?.trialEndsAt ? (
-                    <>Trial ends on {new Date(liveBusinessData.trialEndsAt).toLocaleDateString()} • Upgrade to maintain full access</>
+                    <>14-Day Free Trial ends on {new Date(liveBusinessData.trialEndsAt).toLocaleDateString()} • Pay anytime to keep full access</>
                   ) : (
                     <>Instant verification, POS, and thermal receipt generation active</>
                   )}
@@ -1075,7 +1077,7 @@ export default function RebuiltSettingsPage() {
                   variant="primary"
                   size="md"
                   onClick={() => {
-                    const upgradePlan = availablePlans.find((p) => p.code !== (liveBusinessData?.plan || 'STARTER')) || availablePlans[0];
+                    const upgradePlan = availablePlans.find((p) => p.code === (liveBusinessData?.plan || 'STARTER')) || availablePlans[0];
                     if (upgradePlan) {
                       setSelectedPlanForCheckout(upgradePlan);
                       setIsPaystackModalOpen(true);
@@ -1084,7 +1086,9 @@ export default function RebuiltSettingsPage() {
                   className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/20"
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
-                  Upgrade with Paystack →
+                  {liveBusinessData?.subscriptionStatus === 'EXPIRED' || (liveBusinessData?.trialEndsAt && new Date(liveBusinessData.trialEndsAt) <= new Date())
+                    ? 'Pay & Activate Plan with Paystack →'
+                    : 'Pay / Upgrade with Paystack →'}
                 </Button>
               </div>
             </div>
@@ -1207,7 +1211,13 @@ export default function RebuiltSettingsPage() {
                         }`}
                       >
                         <CreditCard className="w-3.5 h-3.5" />
-                        <span>{isCurrent ? 'Renew / Extend with Paystack' : `Upgrade to ${p.name}`}</span>
+                        <span>
+                          {isCurrent
+                            ? liveBusinessData?.subscriptionStatus === 'EXPIRED' || (liveBusinessData?.trialEndsAt && new Date(liveBusinessData.trialEndsAt) <= new Date())
+                              ? `Pay & Activate ${p.name}`
+                              : 'Renew / Extend with Paystack'
+                            : `Switch to ${p.name}`}
+                        </span>
                       </button>
                     </div>
                   </div>

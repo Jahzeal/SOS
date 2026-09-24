@@ -32,6 +32,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { ImeiCameraScanner } from '@/components/scanner/ImeiCameraScanner';
+import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 type RegistrationMode = 'PHONE' | 'ITEM';
 
@@ -61,6 +62,7 @@ const ACCESSORY_BRANDS = [
 
 export default function RegisterPhonePage() {
   const router = useRouter();
+  const { checkCanPerformAction } = useSubscriptionGuard();
 
   // Registration Mode: 'PHONE' or 'ITEM'
   const [mode, setMode] = useState<RegistrationMode>('PHONE');
@@ -151,6 +153,10 @@ export default function RegisterPhonePage() {
   };
 
   const handleCompleteRegistration = async () => {
+    if (!checkCanPerformAction('register_device')) {
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMessage(null);
 

@@ -33,6 +33,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
+import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 import { api } from '@/lib/api';
 
 interface CartDeviceItem {
@@ -51,6 +52,7 @@ interface CartDeviceItem {
 function CheckoutPOSContent() {
   const searchParams = useSearchParams();
   const initialDeviceId = searchParams.get('device');
+  const { checkCanPerformAction } = useSubscriptionGuard();
 
   // Step Workflow: 1 = ORDER_BUILDER, 2 = PAYMENT_METHOD, 3 = RECEIPT_PREVIEW
   const [checkoutStep, setCheckoutStep] = useState<1 | 2 | 3>(1);
@@ -260,6 +262,10 @@ function CheckoutPOSContent() {
 
   // Step 2: Confirm Payment & Finalize Receipt
   const handleConfirmPayment = async () => {
+    if (!checkCanPerformAction('create_sale')) {
+      return;
+    }
+
     setIsProcessing(true);
     setErrorMessage(null);
     try {

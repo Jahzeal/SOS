@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   FileSpreadsheet,
+  FileText,
   Plus,
   Trash2,
   ChevronRight,
@@ -27,6 +28,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 interface LineItem {
   id: string; // phoneRecord.id or custom temp ID
@@ -41,6 +43,7 @@ interface LineItem {
 
 export default function CreateQuotePage() {
   const router = useRouter();
+  const { checkCanPerformAction } = useSubscriptionGuard();
 
   // Quote Meta State
   const [quoteDate, setQuoteDate] = useState(new Date().toISOString().split('T')[0]);
@@ -226,6 +229,10 @@ export default function CreateQuotePage() {
   };
 
   const handleSubmit = async (targetStatus: 'DRAFT' | 'SENT') => {
+    if (!checkCanPerformAction('create_quote')) {
+      return;
+    }
+
     if (items.length === 0) {
       setErrorMessage('Please add at least one device or service line item.');
       return;
@@ -383,17 +390,17 @@ export default function CreateQuotePage() {
           </div>
 
           {/* Card 2: Customer Information */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3 sm:space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 sm:pb-3">
+              <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <User className="w-4 h-4 text-blue-600" /> Prospective Client Information
               </h2>
-              <span className="text-[11px] text-slate-400 font-medium">Select existing or type new</span>
+              <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Select existing or type new</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs relative">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs relative">
               <div className="space-y-1 relative">
-                <label className="font-bold text-slate-700">Customer / Company Name *</label>
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Customer / Company Name *</label>
                 <input
                   type="text"
                   value={customerName}
@@ -403,7 +410,7 @@ export default function CreateQuotePage() {
                   }}
                   onFocus={() => setShowCustomerDropdown(true)}
                   placeholder="e.g. Adeola Johnson or TechCorp Ltd"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-slate-900 focus:outline-none focus:border-blue-600 placeholder:text-slate-400"
                 />
 
                 {/* Customer Autocomplete Dropdown */}
@@ -431,35 +438,35 @@ export default function CreateQuotePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Phone Number</label>
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Phone Number</label>
                 <input
                   type="text"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="e.g. +234 801 234 5678"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-xs text-slate-900 focus:outline-none focus:border-blue-600 placeholder:text-slate-400"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Email Address (For PDF Delivery)</label>
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Email Address (For PDF Delivery)</label>
                 <input
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   placeholder="e.g. client@company.ng"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-xs text-slate-900 focus:outline-none focus:border-blue-600 placeholder:text-slate-400"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Billing / Delivery Address</label>
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Billing / Delivery Address</label>
                 <input
                   type="text"
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
                   placeholder="e.g. 14 Marina Street, Victoria Island, Lagos"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-xs text-slate-900 focus:outline-none focus:border-blue-600 placeholder:text-slate-400"
                 />
               </div>
             </div>
@@ -677,29 +684,35 @@ export default function CreateQuotePage() {
           </div>
 
           {/* Card 4: Notes and Terms */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-            <h2 className="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3">
-              Customer Note & Legal Terms
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3 sm:space-y-4">
+            <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2.5 sm:pb-3">
+              <FileText className="w-4 h-4 text-blue-600" /> Customer Note & Legal Terms
             </h2>
 
             <div className="space-y-3 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Opening Greeting / Note to Client</label>
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">
+                  Opening Greeting / Note to Client
+                </label>
                 <textarea
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-blue-600"
+                  placeholder="Thank you for your inquiry. Please review the estimated pricing and terms below."
+                  className="w-full px-3 py-2 sm:p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-xs text-slate-800 focus:outline-none focus:border-blue-600 leading-relaxed placeholder:text-slate-400"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Quotation Terms & Conditions</label>
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">
+                  Quotation Terms & Conditions
+                </label>
                 <textarea
                   rows={3}
                   value={terms}
                   onChange={(e) => setTerms(e.target.value)}
-                  className="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-blue-600"
+                  placeholder="This price quotation is valid for the stated duration. Device availability and warranty conditions apply upon final confirmation."
+                  className="w-full px-3 py-2 sm:p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-xs text-slate-800 focus:outline-none focus:border-blue-600 leading-relaxed placeholder:text-slate-400"
                 />
               </div>
             </div>
