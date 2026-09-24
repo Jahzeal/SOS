@@ -23,6 +23,11 @@ export class AdminPlansController {
     return this.plansService.create(dto);
   }
 
+  @Patch('reorder/bulk')
+  async reorder(@Body('items') items: { id: string; sortOrder: number }[]) {
+    return this.plansService.reorder(items);
+  }
+
   @Patch(':id')
   async update(@Param('id') id: string, @Body() dto: Partial<CreatePlanDto>) {
     return this.plansService.update(id, dto);

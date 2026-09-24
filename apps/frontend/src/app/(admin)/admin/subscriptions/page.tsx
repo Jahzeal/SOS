@@ -151,7 +151,11 @@ export default function AdminSubscriptionsPage() {
 
   // Modal State for Plan Creation / Editing
   const [showPlanModal, setShowPlanModal] = useState(false);
+  const [showPublicPreviewModal, setShowPublicPreviewModal] = useState(false);
+  const [previewBillingCycle, setPreviewBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [editingPlan, setEditingPlan] = useState<any | null>(null);
+  const [isReordering, setIsReordering] = useState(false);
+
   const [planForm, setPlanForm] = useState({
     name: '',
     code: '',
@@ -163,6 +167,7 @@ export default function AdminSubscriptionsPage() {
     prioritySupport: false,
     isActive: true,
     isPublic: true,
+    sortOrder: 0,
     features: [] as string[],
   });
   const [savingPlan, setSavingPlan] = useState(false);
@@ -180,6 +185,7 @@ export default function AdminSubscriptionsPage() {
       prioritySupport: false,
       isActive: true,
       isPublic: true,
+      sortOrder: dbPlans.length + 1,
       features: [],
     });
     setShowPlanModal(true);
@@ -198,9 +204,43 @@ export default function AdminSubscriptionsPage() {
       prioritySupport: plan.prioritySupport,
       isActive: plan.isActive,
       isPublic: plan.isPublic,
+      sortOrder: plan.sortOrder !== undefined ? plan.sortOrder : 0,
       features: Array.isArray(plan.features) ? plan.features : [],
     });
     setShowPlanModal(true);
+  };
+
+  const handleMovePlan = async (index: number, direction: 'left' | 'right') => {
+    const targetIndex = direction === 'left' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= dbPlans.length) return;
+
+    const newPlans = [...dbPlans];
+    const [moved] = newPlans.splice(index, 1);
+    newPlans.splice(targetIndex, 0, moved);
+
+    const reorderPayload = newPlans.map((p, idx) => ({
+      id: p.id,
+      sortOrder: idx + 1,
+    }));
+
+    setIsReordering(true);
+    try {
+      await api.adminReorderPlans(reorderPayload);
+      invalidateAdminSubscriptions();
+    } catch (err: any) {
+      alert(err.message || 'Failed to reorder plans');
+    } finally {
+      setIsReordering(false);
+    }
+  };
+
+  const handleTogglePublic = async (plan: any) => {
+    try {
+      await api.adminUpdatePlan(plan.id, { isPublic: !plan.isPublic });
+      invalidateAdminSubscriptions();
+    } catch (err: any) {
+      alert(err.message || 'Failed to update visibility');
+    }
   };
 
   const toggleFeature = (feature: string) => {
@@ -291,6 +331,15 @@ export default function AdminSubscriptionsPage() {
 
         <div className="flex items-center gap-2.5">
           <button
+            onClick={() => setShowPublicPreviewModal(true)}
+            className="inline-flex items-center gap-2 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition border border-slate-200 cursor-pointer shadow-xs"
+            title="Preview how plans appear to the public"
+          >
+            <Sparkles className="w-4 h-4 text-teal-600" />
+            <span>Preview Public (/pricing)</span>
+          </button>
+
+          <button
             onClick={handleOpenCreateModal}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold transition shadow-sm cursor-pointer"
           >
@@ -353,15 +402,25 @@ export default function AdminSubscriptionsPage() {
 
       {/* Dynamic Database Plans Grid (Plan Builder Section) */}
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h2 className="text-lg font-extrabold text-slate-900 flex items-center gap-2">
               <Layers className="w-5 h-5 text-blue-600" />
               <span>Configured Store Plans ({dbPlans.length})</span>
             </h2>
             <p className="text-xs text-slate-500 font-medium">
-              Create, adjust pricing, device limits, receipt branding, and feature flags.
+              Use <strong>◀ Move Left</strong> and <strong>Move Right ▶</strong> to arrange how cards appear on the public pricing page.
             </p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowPublicPreviewModal(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-xs font-extrabold border border-teal-200 transition cursor-pointer"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+              <span>Live Public Preview</span>
+            </button>
           </div>
         </div>
 
@@ -381,37 +440,94 @@ export default function AdminSubscriptionsPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {dbPlans.map((p) => (
+            {dbPlans.map((p, idx) => (
               <div
                 key={p.id}
-                className="bg-white border border-slate-200 rounded-2xl p-5 shadow-subtle flex flex-col justify-between hover:border-blue-300 transition"
+                className={`bg-white border rounded-2xl p-5 shadow-subtle flex flex-col justify-between transition-all ${
+                  p.isPublic
+                    ? 'border-slate-200 hover:border-blue-300'
+                    : 'border-slate-200/60 bg-slate-50/40 opacity-90'
+                }`}
               >
                 <div className="space-y-3">
+                  {/* Card Header & Sequence Position */}
                   <div className="flex items-start justify-between">
                     <div>
-                      <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                        {p.code}
-                      </span>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                          {p.code}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                          Pos #{idx + 1}
+                        </span>
+                        {p.code === 'BUSINESS' && (
+                          <span className="text-[10px] font-extrabold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">
+                            ★ Popular
+                          </span>
+                        )}
+                      </div>
                       <h3 className="text-lg font-black text-slate-900 mt-1">{p.name}</h3>
                       <p className="text-xs text-slate-500 font-medium mt-0.5 line-clamp-2">
                         {p.description || 'Custom store subscription tier.'}
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1 shrink-0">
                       <button
                         onClick={() => handleOpenEditModal(p)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition cursor-pointer"
+                        title="Edit Plan"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
                       </button>
                       <button
                         onClick={() => handleDeletePlan(p.id, p.name)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                        title="Delete Plan"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
+                  </div>
+
+                  {/* Public Page Arrangement & Visibility Toolbar */}
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px]">
+                    {/* Reorder Buttons */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => handleMovePlan(idx, 'left')}
+                        disabled={idx === 0 || isReordering}
+                        className="px-2 py-1 bg-white border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 rounded-lg font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition shadow-2xs"
+                        title="Move Left (Show earlier on public page)"
+                      >
+                        ◀ Left
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleMovePlan(idx, 'right')}
+                        disabled={idx === dbPlans.length - 1 || isReordering}
+                        className="px-2 py-1 bg-white border border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 rounded-lg font-bold disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition shadow-2xs"
+                        title="Move Right (Show later on public page)"
+                      >
+                        Right ▶
+                      </button>
+                    </div>
+
+                    {/* Quick Visibility Toggle */}
+                    <button
+                      type="button"
+                      onClick={() => handleTogglePublic(p)}
+                      className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 cursor-pointer border ${
+                        p.isPublic
+                          ? 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+                          : 'bg-slate-200/80 text-slate-600 border-slate-300 hover:bg-slate-300'
+                      }`}
+                      title={p.isPublic ? 'Publicly visible on /pricing. Click to hide.' : 'Hidden from /pricing. Click to publish.'}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full ${p.isPublic ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
+                      <span>{p.isPublic ? 'Public' : 'Hidden'}</span>
+                    </button>
                   </div>
 
                   <div className="pt-2 border-t border-slate-100">
@@ -465,8 +581,8 @@ export default function AdminSubscriptionsPage() {
                         Included Features ({p.features.length}):
                       </span>
                       <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-                        {p.features.map((f: string, idx: number) => (
-                          <div key={idx} className="flex items-start gap-1.5 text-[11px] text-slate-700 font-medium">
+                        {p.features.map((f: string, fIdx: number) => (
+                          <div key={fIdx} className="flex items-start gap-1.5 text-[11px] text-slate-700 font-medium">
                             <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                             <span className="leading-snug">{f}</span>
                           </div>
@@ -931,6 +1047,194 @@ export default function AdminSubscriptionsPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Live Public Pricing Preview Modal */}
+      {showPublicPreviewModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-slate-50 rounded-3xl shadow-2xl border border-slate-200 max-w-6xl w-full p-6 sm:p-8 space-y-6 animate-in fade-in zoom-in-95 duration-150 max-h-[92vh] overflow-y-auto">
+            {/* Modal Header with Billing Switch */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-[10px] font-extrabold uppercase tracking-wider mb-1">
+                  <Sparkles className="w-3 h-3 text-teal-600" />
+                  <span>Interactive Public View Preview</span>
+                </div>
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  Public Pricing Page Preview (/pricing)
+                </h3>
+                <p className="text-xs text-slate-500 font-medium">
+                  This is exactly how prospective merchant stores view your subscription cards and features.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* Billing Cycle Switch */}
+                <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-slate-200/80 border border-slate-300/60">
+                  <button
+                    onClick={() => setPreviewBillingCycle('monthly')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      previewBillingCycle === 'monthly'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Monthly
+                  </button>
+                  <button
+                    onClick={() => setPreviewBillingCycle('annual')}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                      previewBillingCycle === 'annual'
+                        ? 'bg-white text-slate-900 shadow-xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Annual
+                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">
+                      -20%
+                    </span>
+                  </button>
+                </div>
+
+                <button
+                  onClick={() => setShowPublicPreviewModal(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-slate-700 bg-white border border-slate-200 cursor-pointer shadow-2xs"
+                  title="Close Preview"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Public Cards Preview Grid */}
+            {(() => {
+              const publicPlans = dbPlans.filter((p) => p.isPublic !== false);
+              if (publicPlans.length === 0) {
+                return (
+                  <div className="py-12 text-center bg-white rounded-2xl border border-dashed border-slate-300 p-6 space-y-2">
+                    <p className="text-sm font-bold text-slate-700">No plans are currently marked as Public.</p>
+                    <p className="text-xs text-slate-400">Toggle "Public" on your plans to display them here.</p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 items-stretch pt-2">
+                  {publicPlans.map((plan, idx) => {
+                    const isFree = plan.code === 'FREE' || (!plan.monthlyPriceNgn && !plan.annualPriceNgn);
+                    const monthlyPrice = plan.monthlyPriceNgn || 0;
+                    const annualPrice = plan.annualPriceNgn && plan.annualPriceNgn > 0 ? plan.annualPriceNgn : monthlyPrice * 10;
+                    const displayPrice = isFree
+                      ? 0
+                      : previewBillingCycle === 'annual'
+                      ? Math.round(annualPrice / 12)
+                      : monthlyPrice;
+                    const isPopular = plan.code === 'BUSINESS';
+
+                    return (
+                      <div
+                        key={plan.code || plan.id}
+                        className={`rounded-2xl bg-white p-5 flex flex-col justify-between relative transition-all shadow-sm ${
+                          isPopular
+                            ? 'border-2 border-teal-600 shadow-xl ring-4 ring-teal-500/10'
+                            : 'border border-slate-200'
+                        }`}
+                      >
+                        {isPopular && (
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-teal-600 text-white text-[9px] font-extrabold uppercase tracking-widest shadow-xs">
+                            MOST POPULAR
+                          </div>
+                        )}
+
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex items-center justify-between">
+                              <h4 className="text-base font-extrabold text-slate-900">{plan.name}</h4>
+                              <span className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                                #{idx + 1}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 font-medium mt-1 min-h-[30px] line-clamp-2">
+                              {plan.description || 'Verified device tracking, POS checkout, and receipts.'}
+                            </p>
+                          </div>
+
+                          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80">
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-2xl font-black text-slate-900 font-mono">
+                                ₦{displayPrice.toLocaleString()}
+                              </span>
+                              <span className="text-[11px] text-slate-500 font-bold">
+                                {isFree ? '/ forever' : '/ mo'}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                              {isFree
+                                ? 'Zero credit card required'
+                                : previewBillingCycle === 'annual'
+                                ? `₦${annualPrice.toLocaleString()} / year (Save 20%)`
+                                : 'Billed monthly'}
+                            </p>
+                          </div>
+
+                          {/* Features */}
+                          <div className="space-y-2 pt-1">
+                            <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block">
+                              Included Features:
+                            </span>
+                            <div className="space-y-1.5 text-[11px] text-slate-700 max-h-44 overflow-y-auto pr-1">
+                              {Array.isArray(plan.features) && plan.features.length > 0 ? (
+                                plan.features.map((feat: string, fIdx: number) => (
+                                  <div key={fIdx} className="flex items-start gap-1.5 font-medium">
+                                    <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                    <span className="leading-snug">{feat}</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <div className="flex items-start gap-1.5 text-slate-500">
+                                  <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                  <span>
+                                    {plan.maxDevices > 0
+                                      ? `Up to ${plan.maxDevices.toLocaleString()} Devices`
+                                      : 'Unlimited Devices'}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-5">
+                          <button
+                            type="button"
+                            disabled
+                            className={`w-full py-2.5 rounded-xl text-xs font-bold transition shadow-xs ${
+                              isPopular
+                                ? 'bg-teal-600 text-white'
+                                : 'bg-slate-900 text-white'
+                            }`}
+                          >
+                            Start 14-Day Free Trial →
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200 text-xs text-slate-500">
+              <span>Showing active public plans in exact display sequence</span>
+              <button
+                onClick={() => setShowPublicPreviewModal(false)}
+                className="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-bold cursor-pointer transition shadow-xs"
+              >
+                Close Preview
+              </button>
+            </div>
           </div>
         </div>
       )}

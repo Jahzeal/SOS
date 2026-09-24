@@ -609,6 +609,13 @@ class ApiClient {
     });
   }
 
+  async adminReorderPlans(items: { id: string; sortOrder: number }[]) {
+    return this.request<{ success: boolean; message: string }>('/admin/plans/reorder/bulk', {
+      method: 'PATCH',
+      body: JSON.stringify({ items }),
+    });
+  }
+
   async adminDeletePlan(id: string) {
     return this.request<{ success: boolean; message: string }>(`/admin/plans/${id}`, {
       method: 'DELETE',

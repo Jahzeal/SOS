@@ -17,45 +17,41 @@ import {
   Info,
 } from 'lucide-react';
 import VerificationActivityChart from '@/components/admin/VerificationActivityChart';
-import { api } from '@/lib/api';
+import { useAdminMetrics, useAdminSystemLogs } from '@/hooks/useDashboardQueries';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminOverviewDashboard() {
   const [timeRange, setTimeRange] = useState<'today' | '7d' | '30d' | '90d'>('today');
-  const [loading, setLoading] = useState(true);
-  const [metrics, setMetrics] = useState({
+
+  const {
+    data: metrics,
+    isLoading: isMetricsLoading,
+    isFetching: isMetricsFetching,
+    refetch: refetchMetrics,
+  } = useAdminMetrics(timeRange);
+
+  const {
+    data: systemLogs = [],
+    isLoading: isLogsLoading,
+    refetch: refetchLogs,
+  } = useAdminSystemLogs();
+
+  const handleRefreshAll = () => {
+    refetchMetrics();
+    refetchLogs();
+  };
+
+  const isRefreshing = isMetricsFetching || isLogsLoading;
+  const isInitialLoad = isMetricsLoading && !metrics;
+
+  const currentMetrics = metrics || {
     totalBusinesses: 0,
     activeBusinesses: 0,
     totalRegisteredPhones: 0,
     calculatedMrr: 0,
     totalRevenue: 0,
     systemHealth: '100% Operational',
-  });
-  const [systemLogs, setSystemLogs] = useState<any[]>([]);
-
-  const fetchDashboardData = async () => {
-    setLoading(true);
-    try {
-      const [metricsRes, logsRes] = await Promise.allSettled([
-        api.adminGetMetrics(timeRange),
-        api.adminGetSystemLogs(),
-      ]);
-
-      if (metricsRes.status === 'fulfilled' && metricsRes.value?.success) {
-        setMetrics(metricsRes.value.kpis);
-      }
-      if (logsRes.status === 'fulfilled' && logsRes.value?.success) {
-        setSystemLogs(logsRes.value.logs);
-      }
-    } catch (err) {
-      console.error('Failed to load dashboard metrics:', err);
-    } finally {
-      setLoading(false);
-    }
   };
-
-  useEffect(() => {
-    fetchDashboardData();
-  }, [timeRange]);
 
   return (
     <div className="space-y-6 pb-8 font-sans">
@@ -70,11 +66,12 @@ export default function AdminOverviewDashboard() {
 
         <div className="flex items-center gap-2">
           <button
-            onClick={fetchDashboardData}
+            onClick={handleRefreshAll}
             title="Refresh Metrics"
-            className="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:border-blue-400 text-slate-600 flex items-center justify-center transition shadow-xs"
+            disabled={isRefreshing}
+            className="w-8 h-8 rounded-xl bg-white border border-slate-200 hover:border-blue-400 text-slate-600 flex items-center justify-center transition shadow-xs cursor-pointer disabled:opacity-60"
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-600' : ''}`} />
+            <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-blue-600' : ''}`} />
           </button>
 
           <div className="flex items-center bg-slate-200/70 p-1 rounded-xl border border-slate-200 text-xs font-bold">
@@ -82,7 +79,7 @@ export default function AdminOverviewDashboard() {
               <button
                 key={t}
                 onClick={() => setTimeRange(t)}
-                className={`px-3 py-1.5 rounded-lg transition-all ${
+                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                   timeRange === t
                     ? 'bg-white text-blue-700 shadow-sm border border-slate-200/80 font-extrabold'
                     : 'text-slate-600 hover:text-slate-900'
@@ -95,109 +92,137 @@ export default function AdminOverviewDashboard() {
         </div>
       </div>
 
-      {/* Top 5 Bento KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* KPI 1: Total Businesses */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
-              Total Businesses
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-              <Building2 className="w-4 h-4" />
+      {/* Top 5 Bento KPI Cards Container with Frosted Blur & Rolling Spinner Overlay */}
+      <div className="relative">
+        {/* Rolling Spinner + Frosted Blur Overlay during background refresh/filter change */}
+        {isRefreshing && !isInitialLoad && (
+          <div className="absolute inset-0 z-20 bg-slate-50/40 backdrop-blur-xs rounded-2xl flex items-center justify-center transition-all duration-200">
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-xl bg-white/95 border border-slate-200/90 text-slate-800 text-xs font-extrabold shadow-lg animate-in fade-in zoom-in-95 duration-150">
+              <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+              <span>Updating live metrics...</span>
             </div>
           </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
-              {metrics.totalBusinesses}
-            </div>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-blue-600">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>Active directory</span>
-            </div>
-          </div>
-        </div>
+        )}
 
-        {/* KPI 2: Active Businesses */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
-              Active Stores
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
-              <CheckCircle2 className="w-4 h-4" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          {/* KPI 1: Total Businesses */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                Total Businesses
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                <Building2 className="w-4 h-4" />
+              </div>
+            </div>
+            <div>
+              {isInitialLoad ? (
+                <div className="h-8 w-16 bg-slate-200 animate-pulse rounded-lg mb-1" />
+              ) : (
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
+                  {currentMetrics.totalBusinesses}
+                </div>
+              )}
+              <div className="flex items-center gap-1 text-[11px] font-bold text-blue-600">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Active directory</span>
+              </div>
             </div>
           </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
-              {metrics.activeBusinesses}
-            </div>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
-              <Activity className="w-3.5 h-3.5" />
-              <span>Public lookup active</span>
-            </div>
-          </div>
-        </div>
 
-        {/* KPI 3: Registered Devices */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
-              Registered Devices
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-              <Smartphone className="w-4 h-4" />
+          {/* KPI 2: Active Businesses */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                Active Stores
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4" />
+              </div>
+            </div>
+            <div>
+              {isInitialLoad ? (
+                <div className="h-8 w-16 bg-slate-200 animate-pulse rounded-lg mb-1" />
+              ) : (
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
+                  {currentMetrics.activeBusinesses}
+                </div>
+              )}
+              <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+                <Activity className="w-3.5 h-3.5" />
+                <span>Public lookup active</span>
+              </div>
             </div>
           </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
-              {metrics.totalRegisteredPhones.toLocaleString()}
-            </div>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>IMEI secured</span>
-            </div>
-          </div>
-        </div>
 
-        {/* KPI 4: Monthly Recurring Revenue (MRR) */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
-              Active MRR
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
-              <CreditCard className="w-4 h-4" />
+          {/* KPI 3: Registered Devices */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                Registered Devices
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                <Smartphone className="w-4 h-4" />
+              </div>
+            </div>
+            <div>
+              {isInitialLoad ? (
+                <div className="h-8 w-24 bg-slate-200 animate-pulse rounded-lg mb-1" />
+              ) : (
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
+                  {currentMetrics.totalRegisteredPhones.toLocaleString()}
+                </div>
+              )}
+              <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>IMEI secured</span>
+              </div>
             </div>
           </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1 font-mono">
-              ₦{metrics.calculatedMrr ? metrics.calculatedMrr.toLocaleString() : '0'}
-            </div>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600">
-              <TrendingUp className="w-3.5 h-3.5" />
-              <span>Live MRR billing</span>
-            </div>
-          </div>
-        </div>
 
-        {/* KPI 5: System Health */}
-        <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
-              System Health
-            </span>
-            <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
-              <Activity className="w-4 h-4" />
+          {/* KPI 4: Monthly Recurring Revenue (MRR) */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                Active MRR
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                <CreditCard className="w-4 h-4" />
+              </div>
+            </div>
+            <div>
+              {isInitialLoad ? (
+                <div className="h-8 w-28 bg-slate-200 animate-pulse rounded-lg mb-1" />
+              ) : (
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1 font-mono">
+                  ₦{currentMetrics.calculatedMrr ? currentMetrics.calculatedMrr.toLocaleString() : '0'}
+                </div>
+              )}
+              <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600">
+                <TrendingUp className="w-3.5 h-3.5" />
+                <span>Live MRR billing</span>
+              </div>
             </div>
           </div>
-          <div>
-            <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight mb-1">
-              100%
+
+          {/* KPI 5: System Health */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+                System Health
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+                <Activity className="w-4 h-4" />
+              </div>
             </div>
-            <div className="flex items-center gap-1 text-[11px] font-bold text-slate-600">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
-              <span>All clusters operational</span>
+            <div>
+              <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight mb-1">
+                100%
+              </div>
+              <div className="flex items-center gap-1 text-[11px] font-bold text-slate-600">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
+                <span>All clusters operational</span>
+              </div>
             </div>
           </div>
         </div>

@@ -368,8 +368,8 @@ export default function ReceiptInvoiceTemplatesPage() {
       {/* Main 2-Column Customizer & Live Preview Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
-        {/* LEFT 7 COLUMNS: CUSTOMIZATION FORM */}
-        <div className="lg:col-span-7 space-y-6">
+        {/* LEFT COLUMNS: CUSTOMIZATION FORM */}
+        <div className="lg:col-span-6 xl:col-span-6 space-y-6">
 
           {activeTab === 'receipt' && (
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
@@ -704,13 +704,18 @@ export default function ReceiptInvoiceTemplatesPage() {
 
         </div>
 
-        {/* RIGHT 5 COLUMNS: LIVE PREVIEW CARD */}
-        <div className="lg:col-span-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
-              <Eye className="w-4 h-4 text-blue-600" /> Real-Time Live Preview
-            </h3>
-            <span className="text-[10px] text-slate-400 font-bold uppercase">Updates Automatically</span>
+        {/* RIGHT COLUMNS: LIVE PREVIEW CARD */}
+        <div className="lg:col-span-6 xl:col-span-6 space-y-4 xl:sticky xl:top-6">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-1">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+              <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
+                <Eye className="w-4 h-4 text-blue-600" /> Real-Time Live Preview
+              </h3>
+            </div>
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+              Updates Automatically
+            </span>
           </div>
 
           {/* ========================================================================= */}
@@ -719,7 +724,7 @@ export default function ReceiptInvoiceTemplatesPage() {
           {activeTab === 'receipt' && (
             <div className="space-y-3">
               {/* Receipt Preview Mode Switcher */}
-              <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto">
+              <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto border border-slate-200/60 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setReceiptPreviewMode('email')}
@@ -758,54 +763,76 @@ export default function ReceiptInvoiceTemplatesPage() {
               {receiptPreviewMode === 'email' ? (
                 /* ================= EXACT CUSTOMER EMAIL DELIVERY PREVIEW ================= */
                 <div className="rounded-2xl border border-slate-300 bg-slate-100 shadow-2xl overflow-hidden text-xs">
-                  {/* Mail Client Envelope Header */}
-                  <div className="bg-slate-900 text-white p-3.5 text-[11px] space-y-1.5 font-sans">
-                    <div className="flex items-center justify-between text-slate-400 text-[10px]">
-                      <span className="flex items-center gap-1">
-                        <Mail className="w-3.5 h-3.5 text-teal-400" /> Customer Email Delivery View
-                      </span>
-                      <span className="text-slate-300 font-mono">Today at 17:42</span>
-                    </div>
-                    <div className="text-slate-200">
-                      <span className="text-slate-400">Subject: </span>
-                      <strong className="text-white">[{storeName || 'Store Name'}] POS Sales Receipt #RCP-84920</strong>
-                    </div>
-                    <div className="flex justify-between text-slate-300 text-[10px]">
-                      <div>
-                        <span className="text-slate-400">From: </span>
-                        <span>{storeName || 'Store'} &lt;{businessEmail || 'billing@store.ng'}&gt;</span>
+                  {/* Mail Client Window & Header Bar */}
+                  <div className="bg-slate-900 text-white p-4 sm:p-5 text-[11px] space-y-3 font-sans border-b border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 pl-1.5 flex items-center gap-1">
+                          <Mail className="w-3.5 h-3.5 text-teal-400" /> Customer Email Inbox View
+                        </span>
                       </div>
-                      <div>
-                        <span className="text-slate-400">To: </span>
-                        <span>Adeola Johnson &lt;adeola@example.com&gt;</span>
+                      <span className="text-[10px] text-slate-400 font-mono bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/60">
+                        Today at 17:42
+                      </span>
+                    </div>
+
+                    <div className="pt-1">
+                      <p className="text-white font-black text-xs sm:text-[13px] leading-snug">
+                        [{storeName || 'Store Name'}] POS Sales Receipt #RCP-84920
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-950/60 p-3 rounded-xl border border-white/5 space-y-1.5 text-[11px]">
+                      <div className="flex flex-wrap items-center justify-between gap-1 text-slate-300">
+                        <span className="text-slate-400 font-medium">From:</span>
+                        <span className="font-semibold text-slate-200">
+                          {storeName || 'Store'} &lt;<span className="text-teal-400 font-mono">{businessEmail || 'billing@store.ng'}</span>&gt;
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-1 text-slate-300 pt-1 border-t border-white/5">
+                        <span className="text-slate-400 font-medium">To:</span>
+                        <span className="font-semibold text-slate-200">
+                          Adeola Johnson &lt;<span className="text-slate-400 font-mono">adeola@example.com</span>&gt;
+                        </span>
                       </div>
                     </div>
                   </div>
 
                   {/* Mail Body Container */}
-                  <div className="p-4 sm:p-5 font-sans">
-                    <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 text-slate-800 text-left">
+                  <div className="p-4 sm:p-6 font-sans">
+                    <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-5 text-slate-800 text-left">
                       {/* Store Header inside Email */}
-                      <div className="flex items-center gap-3 border-b border-slate-100 pb-3">
-                        {logoUrl && showLogoOnReceipt ? (
-                          <img
-                            src={logoUrl}
-                            alt="Store Logo"
-                            className="h-9 max-w-[120px] object-contain"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-black text-xs">
-                            {(storeName || 'NG').slice(0, 2).toUpperCase()}
+                      <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/70 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3.5">
+                          {logoUrl && showLogoOnReceipt ? (
+                            <img
+                              src={logoUrl}
+                              alt="Store Logo"
+                              className="h-10 max-w-[130px] object-contain rounded-md"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
+                              {(storeName || 'NG').slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-extrabold text-slate-950 text-sm sm:text-base leading-tight">
+                              {storeName || 'Your Store Name'}
+                            </h4>
+                            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                              {storeBranch} • {storeAddress || 'Computer Village, Ikeja, Lagos'}
+                            </p>
                           </div>
-                        )}
-                        <div>
-                          <h4 className="font-extrabold text-slate-950 text-sm leading-tight">
-                            {storeName || 'Your Store Name'}
-                          </h4>
-                          <p className="text-[10px] text-slate-500 font-medium">
-                            {storeBranch} • {storeAddress || 'Computer Village, Ikeja, Lagos'}
-                          </p>
                         </div>
+
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black bg-teal-50 text-teal-700 border border-teal-200 uppercase tracking-wider">
+                          Official Receipt
+                        </span>
                       </div>
 
                       {/* Salutation & Intro */}
@@ -817,29 +844,31 @@ export default function ReceiptInvoiceTemplatesPage() {
                       </div>
 
                       {/* Statement Overview Highlight Box */}
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] space-y-1.5 font-medium">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Statement Number:</span>
-                          <span className="font-mono font-bold text-slate-900">#RCP-84920</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Total Paid Amount:</span>
-                          <span className="font-black text-emerald-700 text-xs">₦1,148,000</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Payment Status:</span>
-                          <span className="font-bold text-emerald-600 uppercase">PAID (POS CARD)</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Transaction Date:</span>
-                          <span className="text-slate-800">23 Sep 2026</span>
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 text-[11px] space-y-2.5 font-medium shadow-2xs">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Receipt No.</p>
+                            <p className="font-mono font-bold text-slate-900 mt-0.5">#RCP-84920</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Transaction Date</p>
+                            <p className="text-slate-800 font-bold mt-0.5">23 Sep 2026</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payment Status</p>
+                            <p className="font-bold text-emerald-600 uppercase mt-0.5">PAID (POS CARD)</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Paid Amount</p>
+                            <p className="font-black text-emerald-700 text-sm mt-0.5">₦1,148,000</p>
+                          </div>
                         </div>
                       </div>
 
                       {/* Purchased Items List */}
                       <div className="space-y-2 pt-1">
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Items Summary:</p>
-                        <div className="p-3 rounded-xl bg-slate-50/60 border border-slate-200 space-y-2 text-[11px]">
+                        <div className="p-3.5 rounded-xl bg-slate-50/70 border border-slate-200 space-y-2.5 text-[11px]">
                           <div className="flex justify-between items-start">
                             <div>
                               <p className="font-bold text-slate-900">Apple iPhone 15 Pro (256GB - Titanium)</p>
@@ -851,7 +880,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                             </div>
                             <span className="font-bold text-slate-900 font-mono">₦1,099,000</span>
                           </div>
-                          <div className="flex justify-between items-start pt-1.5 border-t border-slate-150">
+                          <div className="flex justify-between items-start pt-2 border-t border-slate-200">
                             <div>
                               <p className="font-bold text-slate-900">Oraimo 20,000mAh PowerBank (22.5W GaN)</p>
                               {showImei && (
@@ -866,9 +895,9 @@ export default function ReceiptInvoiceTemplatesPage() {
                       </div>
 
                       {/* Attached PDF Pill */}
-                      <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3 text-xs">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-[10px]">
+                      <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-[10px]">
                             PDF
                           </div>
                           <div className="min-w-0">
@@ -1116,7 +1145,7 @@ export default function ReceiptInvoiceTemplatesPage() {
           {/* ========================================================================= */}
           {activeTab === 'invoice' && (
             <div className="space-y-3">
-              <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto">
+              <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto border border-slate-200/60 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setInvoicePreviewMode('email')}
@@ -1144,31 +1173,77 @@ export default function ReceiptInvoiceTemplatesPage() {
               {invoicePreviewMode === 'email' ? (
                 /* Invoice Customer Email Preview */
                 <div className="rounded-2xl border border-slate-300 bg-slate-100 shadow-2xl overflow-hidden text-xs text-left">
-                  <div className="bg-slate-900 text-white p-3.5 text-[11px] space-y-1.5 font-sans">
-                    <div className="flex items-center justify-between text-slate-400 text-[10px]">
-                      <span className="flex items-center gap-1">
-                        <Mail className="w-3.5 h-3.5 text-blue-400" /> Customer Email Delivery View
-                      </span>
-                      <span className="text-slate-300 font-mono">2026-09-17</span>
-                    </div>
-                    <div className="text-slate-200">
-                      <span className="text-slate-400">Subject: </span>
-                      <strong className="text-white">[{companyName || 'Your Company'}] Commercial Invoice Statement #VF-INV-0013</strong>
-                    </div>
-                    <div className="flex justify-between text-slate-300 text-[10px]">
-                      <div>
-                        <span className="text-slate-400">From: </span>
-                        <span>{companyName || 'Your Company'} &lt;{businessEmail || 'billing@store.ng'}&gt;</span>
+                  {/* Mail Client Window & Header Bar */}
+                  <div className="bg-slate-900 text-white p-4 sm:p-5 text-[11px] space-y-3 font-sans border-b border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 pl-1.5 flex items-center gap-1">
+                          <Mail className="w-3.5 h-3.5 text-blue-400" /> Customer Email Delivery View
+                        </span>
                       </div>
-                      <div>
-                        <span className="text-slate-400">To: </span>
-                        <span>Corporate Client Ltd &lt;procurement@client.example.ng&gt;</span>
+                      <span className="text-[10px] text-slate-400 font-mono bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/60">
+                        2026-09-17
+                      </span>
+                    </div>
+
+                    <div className="pt-1">
+                      <p className="text-white font-black text-xs sm:text-[13px] leading-snug">
+                        [{companyName || 'Your Company'}] Commercial Invoice Statement #VF-INV-0013
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-950/60 p-3 rounded-xl border border-white/5 space-y-1.5 text-[11px]">
+                      <div className="flex flex-wrap items-center justify-between gap-1 text-slate-300">
+                        <span className="text-slate-400 font-medium">From:</span>
+                        <span className="font-semibold text-slate-200">
+                          {companyName || 'Your Company'} &lt;<span className="text-blue-400 font-mono">{businessEmail || 'billing@store.ng'}</span>&gt;
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-1 text-slate-300 pt-1 border-t border-white/5">
+                        <span className="text-slate-400 font-medium">To:</span>
+                        <span className="font-semibold text-slate-200">
+                          Corporate Client Ltd &lt;<span className="text-slate-400 font-mono">procurement@client.example.ng</span>&gt;
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 sm:p-5 font-sans">
-                    <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 text-slate-800">
+                  <div className="p-4 sm:p-6 font-sans">
+                    <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-5 text-slate-800">
+                      {/* Store Header inside Invoice Email */}
+                      <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/70 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3.5">
+                          {logoUrl && showLogoOnInvoice ? (
+                            <img
+                              src={logoUrl}
+                              alt="Company Logo"
+                              className="h-10 max-w-[130px] object-contain rounded-md"
+                            />
+                          ) : (
+                            <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0">
+                              {(companyName || 'CO').slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-extrabold text-slate-950 text-sm sm:text-base leading-tight">
+                              {companyName || 'Your Company'}
+                            </h4>
+                            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                              {storeAddress || 'Computer Village, Ikeja, Lagos'} • {storePhone || '+234 801 234 5678'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-700 border border-blue-200 uppercase tracking-wider">
+                          Commercial Invoice
+                        </span>
+                      </div>
+
                       <div className="space-y-1">
                         <p className="font-bold text-slate-900 text-xs">Hello Corporate Client Ltd,</p>
                         <p className="text-slate-600 text-[11px] leading-relaxed">
@@ -1176,40 +1251,55 @@ export default function ReceiptInvoiceTemplatesPage() {
                         </p>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] space-y-1.5 font-medium">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Statement Number:</span>
-                          <span className="font-mono font-bold text-slate-900">VF-INV-0013</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Total Due Amount:</span>
-                          <span className="font-black text-blue-700 text-xs">₦3,130,000</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Due Date:</span>
-                          <span className="font-bold text-slate-900">2026-10-02</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Payment Status:</span>
-                          <span className="font-bold text-amber-600 uppercase">PENDING REMITTANCE</span>
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 text-[11px] space-y-2.5 font-medium shadow-2xs">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Invoice No.</p>
+                            <p className="font-mono font-bold text-slate-900 mt-0.5">VF-INV-0013</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Due Date</p>
+                            <p className="text-slate-800 font-bold mt-0.5">2026-10-02</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Payment Status</p>
+                            <p className="font-bold text-amber-600 uppercase mt-0.5">PENDING REMITTANCE</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Due Amount</p>
+                            <p className="font-black text-blue-700 text-sm mt-0.5">₦3,130,000</p>
+                          </div>
                         </div>
                       </div>
 
                       {bankName && accountNumber && (
-                        <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200 text-[11px] space-y-1 text-emerald-950">
+                        <div className="p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-200 text-[11px] space-y-1.5 text-emerald-950">
                           <p className="font-black text-emerald-900 uppercase text-[10px] tracking-wider">
                             Direct Bank Remittance Instructions:
                           </p>
-                          <p><strong>Bank:</strong> {bankName}</p>
-                          <p><strong>Account Number:</strong> <span className="font-mono font-bold">{accountNumber}</span></p>
-                          <p><strong>Account Name:</strong> {accountName || companyName}</p>
-                          <p className="text-[10px] text-emerald-700 font-bold pt-0.5">Payment Reference: VF-INV-0013</p>
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-xs pt-0.5">
+                            <div>
+                              <span className="text-slate-500 text-[10px] block">Bank Name:</span>
+                              <span className="font-bold">{bankName}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 text-[10px] block">Account Number:</span>
+                              <span className="font-mono font-bold">{accountNumber}</span>
+                            </div>
+                            <div>
+                              <span className="text-slate-500 text-[10px] block">Account Name:</span>
+                              <span className="font-bold truncate block">{accountName || companyName}</span>
+                            </div>
+                          </div>
+                          <p className="text-[10px] text-emerald-700 font-bold pt-1 border-t border-emerald-200/60">
+                            Payment Reference: <span className="font-mono">VF-INV-0013</span>
+                          </p>
                         </div>
                       )}
 
-                      <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3 text-xs">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-[10px]">
+                      <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-[10px]">
                             PDF
                           </div>
                           <div className="min-w-0">
@@ -1232,7 +1322,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                 </div>
               ) : (
                 /* A4 PDF Statement View */
-                <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden text-left">
+                <div className="p-6 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden text-left">
                   <div className="flex justify-between items-start gap-4">
                     <div className="space-y-0.5">
                       <h3 className="font-black text-sm sm:text-base text-slate-950">{companyName || 'Your Company'}</h3>
@@ -1385,7 +1475,7 @@ export default function ReceiptInvoiceTemplatesPage() {
           {/* ========================================================================= */}
           {activeTab === 'quote' && (
             <div className="space-y-3">
-              <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto">
+              <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto border border-slate-200/60 shadow-2xs">
                 <button
                   type="button"
                   onClick={() => setQuotePreviewMode('email')}
@@ -1413,31 +1503,83 @@ export default function ReceiptInvoiceTemplatesPage() {
               {quotePreviewMode === 'email' ? (
                 /* Quote Customer Email Preview */
                 <div className="rounded-2xl border border-slate-300 bg-slate-100 shadow-2xl overflow-hidden text-xs text-left">
-                  <div className="bg-slate-900 text-white p-3.5 text-[11px] space-y-1.5 font-sans">
-                    <div className="flex items-center justify-between text-slate-400 text-[10px]">
-                      <span className="flex items-center gap-1">
-                        <Mail className="w-3.5 h-3.5 text-blue-400" /> Customer Email Delivery View
-                      </span>
-                      <span className="text-slate-300 font-mono">Today</span>
-                    </div>
-                    <div className="text-slate-200">
-                      <span className="text-slate-400">Subject: </span>
-                      <strong className="text-white">{quoteTitle} #QT-2026-0001 from {storeName || 'Store'}</strong>
-                    </div>
-                    <div className="flex justify-between text-slate-300 text-[10px]">
-                      <div>
-                        <span className="text-slate-400">From: </span>
-                        <span>{storeName || 'Store'} &lt;{businessEmail || 'quotes@store.ng'}&gt;</span>
+                  {/* Mail Client Window & Header Bar */}
+                  <div className="bg-slate-900 text-white p-4 sm:p-5 text-[11px] space-y-3 font-sans border-b border-slate-800">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-2.5 h-2.5 rounded-full bg-rose-500/80 inline-block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-amber-500/80 inline-block" />
+                          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/80 inline-block" />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400 pl-1.5 flex items-center gap-1">
+                          <Mail className="w-3.5 h-3.5 text-blue-400" /> Customer Email Delivery View
+                        </span>
                       </div>
-                      <div>
-                        <span className="text-slate-400">To: </span>
-                        <span>Prospective Client &lt;client@company.ng&gt;</span>
+                      <span className="text-[10px] text-slate-400 font-mono bg-slate-800/80 px-2 py-0.5 rounded-md border border-slate-700/60">
+                        Today
+                      </span>
+                    </div>
+
+                    <div className="pt-1">
+                      <p className="text-white font-black text-xs sm:text-[13px] leading-snug">
+                        {quoteTitle} #QT-2026-0001 from {storeName || 'Store'}
+                      </p>
+                    </div>
+
+                    <div className="bg-slate-950/60 p-3 rounded-xl border border-white/5 space-y-1.5 text-[11px]">
+                      <div className="flex flex-wrap items-center justify-between gap-1 text-slate-300">
+                        <span className="text-slate-400 font-medium">From:</span>
+                        <span className="font-semibold text-slate-200">
+                          {storeName || 'Store'} &lt;<span className="text-blue-400 font-mono">{businessEmail || 'quotes@store.ng'}</span>&gt;
+                        </span>
+                      </div>
+                      <div className="flex flex-wrap items-center justify-between gap-1 text-slate-300 pt-1 border-t border-white/5">
+                        <span className="text-slate-400 font-medium">To:</span>
+                        <span className="font-semibold text-slate-200">
+                          Prospective Client &lt;<span className="text-slate-400 font-mono">client@company.ng</span>&gt;
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="p-4 sm:p-5 font-sans">
-                    <div className="bg-white rounded-xl border border-slate-200/80 p-5 shadow-sm space-y-4 text-slate-800">
+                  <div className="p-4 sm:p-6 font-sans">
+                    <div className="bg-white rounded-2xl border border-slate-200/90 p-5 sm:p-6 shadow-sm space-y-5 text-slate-800">
+                      {/* Store Header inside Quote Email */}
+                      <div className="p-4 rounded-xl bg-gradient-to-b from-slate-50 to-white border border-slate-200/70 flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3.5">
+                          {logoUrl && showLogoOnQuote ? (
+                            <img
+                              src={logoUrl}
+                              alt="Store Logo"
+                              className="h-10 max-w-[130px] object-contain rounded-md"
+                            />
+                          ) : (
+                            <div
+                              className="w-10 h-10 rounded-xl text-white flex items-center justify-center font-black text-sm shadow-xs shrink-0"
+                              style={{ backgroundColor: quoteAccentColor }}
+                            >
+                              {(storeName || 'NG').slice(0, 2).toUpperCase()}
+                            </div>
+                          )}
+                          <div>
+                            <h4 className="font-extrabold text-slate-950 text-sm sm:text-base leading-tight">
+                              {storeName || 'Your Store Name'}
+                            </h4>
+                            <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                              {storeAddress || 'Computer Village, Ikeja, Lagos'} • {storePhone || '+234 801 234 5678'}
+                            </p>
+                          </div>
+                        </div>
+
+                        <span
+                          className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white shadow-2xs"
+                          style={{ backgroundColor: quoteAccentColor }}
+                        >
+                          {quoteTitle}
+                        </span>
+                      </div>
+
                       <div className="space-y-1">
                         <p className="font-bold text-slate-900 text-xs">Hello Valued Client,</p>
                         <p className="text-slate-600 text-[11px] leading-relaxed">
@@ -1445,30 +1587,32 @@ export default function ReceiptInvoiceTemplatesPage() {
                         </p>
                       </div>
 
-                      <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] space-y-1.5 font-medium">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Quotation Number:</span>
-                          <span className="font-mono font-bold text-slate-900">QT-2026-0001</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Estimated Total:</span>
-                          <span className="font-black text-xs" style={{ color: quoteAccentColor }}>₦4,790,000</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Validity Period:</span>
-                          <span className="font-bold text-amber-600">{quoteValidityDays} Days (Valid until 07 Oct 2026)</span>
+                      <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/90 text-[11px] space-y-2.5 font-medium shadow-2xs">
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Proposal No.</p>
+                            <p className="font-mono font-bold text-slate-900 mt-0.5">QT-2026-0001</p>
+                          </div>
+                          <div>
+                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Validity Period</p>
+                            <p className="text-amber-600 font-bold mt-0.5">{quoteValidityDays} Days (Valid until 07 Oct 2026)</p>
+                          </div>
+                          <div className="col-span-2 pt-1 border-t border-slate-200/60 flex justify-between items-center">
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Estimated Total</span>
+                            <span className="font-black text-sm" style={{ color: quoteAccentColor }}>₦4,790,000</span>
+                          </div>
                         </div>
                       </div>
 
                       {quoteNotes && (
-                        <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[10px] text-slate-600 italic">
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 italic leading-relaxed">
                           &ldquo;{quoteNotes}&rdquo;
                         </div>
                       )}
 
-                      <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3 text-xs">
-                        <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-[10px]">
+                      <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 flex items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs font-bold text-[10px]">
                             PDF
                           </div>
                           <div className="min-w-0">
@@ -1491,7 +1635,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                 </div>
               ) : (
                 /* A4 Proposal View */
-                <div className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden text-left">
+                <div className="p-6 sm:p-7 rounded-2xl bg-white border border-slate-300 shadow-2xl space-y-5 text-[11px] font-sans text-slate-800 max-w-xl mx-auto overflow-hidden text-left">
                   <div className="flex justify-between items-start gap-4">
                     <div className="space-y-0.5">
                       <h3 className="font-black text-sm sm:text-base text-slate-950">{storeName || companyName || 'Your Store'}</h3>
@@ -1501,7 +1645,7 @@ export default function ReceiptInvoiceTemplatesPage() {
 
                     <div className="text-right">
                       <div
-                        className="inline-block px-3 py-1 rounded-lg text-white font-black text-xs tracking-wider"
+                        className="inline-block px-3 py-1 rounded-lg text-white font-black text-xs tracking-wider shadow-2xs"
                         style={{ backgroundColor: quoteAccentColor }}
                       >
                         {quoteTitle}

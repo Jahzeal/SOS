@@ -338,156 +338,285 @@ export default function QuotesRegistryPage() {
             </div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
-                  <th className="py-3 px-4">Quote #</th>
-                  <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Subject / Devices</th>
-                  <th className="py-3 px-4">Dates & Validity</th>
-                  <th className="py-3 px-4 text-right">Amount</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 font-medium">
-                {quotes.map((quote) => {
-                  const isConverted = quote.status === 'CONVERTED';
-                  const isAccepted = quote.status === 'ACCEPTED';
-                  const formattedDate = new Date(quote.quoteDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  });
-                  const expiryDateStr = quote.expiryDate
-                    ? new Date(quote.expiryDate).toLocaleDateString('en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })
-                    : 'N/A';
+          <div>
+            {/* Mobile Quote Cards (Visible on mobile < md) */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {quotes.map((quote) => {
+                const isConverted = quote.status === 'CONVERTED';
+                const formattedDate = new Date(quote.quoteDate).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                });
+                const expiryDateStr = quote.expiryDate
+                  ? new Date(quote.expiryDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })
+                  : null;
 
-                  return (
-                    <tr key={quote.id} className="hover:bg-slate-50/60 transition group">
-                      {/* Quote Number */}
-                      <td className="py-3 px-4 whitespace-nowrap">
-                        <Link href={`/dashboard/quotes/${quote.id}`} className="font-extrabold text-blue-600 hover:text-blue-700 hover:underline font-mono">
-                          {quote.quoteNumber}
-                        </Link>
-                      </td>
-
-                      {/* Customer */}
-                      <td className="py-3 px-4">
-                        <p className="font-bold text-slate-900">{quote.customer?.name || 'Walk-in / General Client'}</p>
-                        {quote.customer?.phone && (
-                          <p className="text-[10px] text-slate-400 font-mono">{quote.customer.phone}</p>
-                        )}
-                      </td>
-
-                      {/* Subject & Item Summary */}
-                      <td className="py-3 px-4 max-w-xs truncate">
-                        <p className="font-bold text-slate-800 truncate">{quote.subject || quote.items[0]?.description || 'Equipment Quote'}</p>
-                        <p className="text-[10px] text-slate-400">
-                          {quote.items.length} {quote.items.length === 1 ? 'item' : 'items'}
-                          {quote.items.some((i) => i.phoneRecord) ? ' • Includes verified hardware' : ''}
+                return (
+                  <div key={quote.id} className="p-4 space-y-3 bg-white hover:bg-slate-50/50 transition">
+                    <div className="flex items-start justify-between gap-2">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/dashboard/quotes/${quote.id}`}
+                            className="font-black text-blue-600 hover:text-blue-700 font-mono text-sm"
+                          >
+                            {quote.quoteNumber}
+                          </Link>
+                          {getStatusBadge(quote.status)}
+                        </div>
+                        <p className="font-bold text-slate-900 text-xs mt-1">
+                          {quote.customer?.name || 'Walk-in / General Client'}
                         </p>
-                      </td>
+                        {quote.customer?.phone && (
+                          <p className="text-[11px] text-slate-400 font-mono">{quote.customer.phone}</p>
+                        )}
+                      </div>
 
-                      {/* Dates */}
-                      <td className="py-3 px-4 whitespace-nowrap text-slate-600 text-[11px]">
-                        <div>Issued: <span className="font-bold text-slate-800">{formattedDate}</span></div>
-                        <div className="text-[10px] text-slate-400">Valid to: {expiryDateStr}</div>
-                      </td>
-
-                      {/* Amount */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <span className="font-black text-slate-900 font-mono text-sm">
+                      <div className="text-right">
+                        <span className="font-black text-slate-900 font-mono text-base block">
                           ₦{quote.totalAmount.toLocaleString()}
                         </span>
                         {quote.discount > 0 && (
-                          <p className="text-[9px] text-rose-500 font-mono">Disc: -₦{quote.discount.toLocaleString()}</p>
+                          <span className="text-[10px] text-rose-500 font-mono block">
+                            Disc: -₦{quote.discount.toLocaleString()}
+                          </span>
                         )}
-                      </td>
+                      </div>
+                    </div>
 
-                      {/* Status */}
-                      <td className="py-3 px-4 text-center whitespace-nowrap">
-                        {getStatusBadge(quote.status)}
-                      </td>
+                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-600 space-y-1">
+                      <p className="font-medium text-slate-800 line-clamp-1">
+                        <strong className="text-slate-500">Subject:</strong> {quote.subject || quote.items[0]?.description || 'Equipment Quote'}
+                      </p>
+                      <div className="flex items-center justify-between text-slate-500 pt-0.5 text-[10px]">
+                        <span>Issued: <strong className="text-slate-700">{formattedDate}</strong></span>
+                        {expiryDateStr && <span>Valid to: <strong className="text-slate-700">{expiryDateStr}</strong></span>}
+                        <span>{quote.items.length} {quote.items.length === 1 ? 'item' : 'items'}</span>
+                      </div>
+                    </div>
 
-                      {/* Actions */}
-                      <td className="py-3 px-4 text-right whitespace-nowrap">
-                        <div className="flex items-center justify-end gap-1.5">
-                          {/* Quick Convert Button for Accepted or Sent Quotes */}
-                          {!isConverted && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleConvertToSale(quote)}
-                              disabled={convertingQuoteId === quote.id}
-                              leftIcon={
-                                convertingQuoteId === quote.id ? (
-                                  <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
-                                ) : (
-                                  <Receipt className="w-3.5 h-3.5 text-blue-600" />
-                                )
-                              }
-                              className="text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100"
-                              title="Convert to Invoice"
-                            >
-                              Convert
-                            </Button>
-                          )}
+                    {/* Mobile Action Buttons */}
+                    <div className="flex items-center justify-between gap-1.5 pt-1">
+                      <div className="flex items-center gap-1">
+                        {!isConverted && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleConvertToSale(quote)}
+                            disabled={convertingQuoteId === quote.id}
+                            leftIcon={
+                              convertingQuoteId === quote.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                              ) : (
+                                <Receipt className="w-3.5 h-3.5 text-blue-600" />
+                              )
+                            }
+                            className="text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 py-1.5 px-2.5 h-auto"
+                            title="Convert to Invoice"
+                          >
+                            Convert
+                          </Button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setSelectedQuoteForEmail(quote);
+                            setEmailInput(quote.customer?.email || '');
+                          }}
+                          className="p-2 rounded-lg text-slate-500 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 transition"
+                          title="Email Quote"
+                        >
+                          <Mail className="w-3.5 h-3.5" />
+                        </button>
+                        <a
+                          href={api.getQuotePdfDownloadUrl(quote.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 rounded-lg text-slate-500 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition"
+                          title="Download PDF"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </a>
+                      </div>
 
-                          {/* Email Quote Button */}
+                      <div className="flex items-center gap-1">
+                        <Link
+                          href={`/dashboard/quotes/${quote.id}`}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 transition"
+                        >
+                          View Details →
+                        </Link>
+                        {!isConverted && (
                           <button
-                            onClick={() => {
-                              setSelectedQuoteForEmail(quote);
-                              setEmailInput(quote.customer?.email || '');
-                            }}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition"
-                            title="Send Quote via Email"
+                            onClick={() => handleDelete(quote)}
+                            className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                            title="Delete Quote"
                           >
-                            <Mail className="w-4 h-4" />
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
 
-                          {/* Download PDF */}
-                          <a
-                            href={api.getQuotePdfDownloadUrl(quote.id)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
-                            title="Download A4 PDF"
-                          >
-                            <Download className="w-4 h-4" />
-                          </a>
+            {/* Desktop Table View (Visible on md and above) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                    <th className="py-3 px-4">Quote #</th>
+                    <th className="py-3 px-4">Customer</th>
+                    <th className="py-3 px-4">Subject / Devices</th>
+                    <th className="py-3 px-4">Dates & Validity</th>
+                    <th className="py-3 px-4 text-right">Amount</th>
+                    <th className="py-3 px-4 text-center">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 font-medium">
+                  {quotes.map((quote) => {
+                    const isConverted = quote.status === 'CONVERTED';
+                    const formattedDate = new Date(quote.quoteDate).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    });
+                    const expiryDateStr = quote.expiryDate
+                      ? new Date(quote.expiryDate).toLocaleDateString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          year: 'numeric',
+                        })
+                      : 'N/A';
 
-                          {/* View */}
-                          <Link
-                            href={`/dashboard/quotes/${quote.id}`}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition"
-                            title="View Full Quote"
-                          >
-                            <Eye className="w-4 h-4" />
+                    return (
+                      <tr key={quote.id} className="hover:bg-slate-50/60 transition group">
+                        {/* Quote Number */}
+                        <td className="py-3 px-4 whitespace-nowrap">
+                          <Link href={`/dashboard/quotes/${quote.id}`} className="font-extrabold text-blue-600 hover:text-blue-700 hover:underline font-mono">
+                            {quote.quoteNumber}
                           </Link>
+                        </td>
 
-                          {/* Delete if not converted */}
-                          {!isConverted && (
-                            <button
-                              onClick={() => handleDelete(quote)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                              title="Delete Quote"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                        {/* Customer */}
+                        <td className="py-3 px-4">
+                          <p className="font-bold text-slate-900">{quote.customer?.name || 'Walk-in / General Client'}</p>
+                          {quote.customer?.phone && (
+                            <p className="text-[10px] text-slate-400 font-mono">{quote.customer.phone}</p>
                           )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                        </td>
+
+                        {/* Subject & Item Summary */}
+                        <td className="py-3 px-4 max-w-xs truncate">
+                          <p className="font-bold text-slate-800 truncate">{quote.subject || quote.items[0]?.description || 'Equipment Quote'}</p>
+                          <p className="text-[10px] text-slate-400">
+                            {quote.items.length} {quote.items.length === 1 ? 'item' : 'items'}
+                            {quote.items.some((i) => i.phoneRecord) ? ' • Includes verified hardware' : ''}
+                          </p>
+                        </td>
+
+                        {/* Dates */}
+                        <td className="py-3 px-4 whitespace-nowrap text-slate-600 text-[11px]">
+                          <div>Issued: <span className="font-bold text-slate-800">{formattedDate}</span></div>
+                          <div className="text-[10px] text-slate-400">Valid to: {expiryDateStr}</div>
+                        </td>
+
+                        {/* Amount */}
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <span className="font-black text-slate-900 font-mono text-sm">
+                            ₦{quote.totalAmount.toLocaleString()}
+                          </span>
+                          {quote.discount > 0 && (
+                            <p className="text-[9px] text-rose-500 font-mono">Disc: -₦{quote.discount.toLocaleString()}</p>
+                          )}
+                        </td>
+
+                        {/* Status */}
+                        <td className="py-3 px-4 text-center whitespace-nowrap">
+                          {getStatusBadge(quote.status)}
+                        </td>
+
+                        {/* Actions */}
+                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                          <div className="flex items-center justify-end gap-1.5">
+                            {/* Quick Convert Button for Accepted or Sent Quotes */}
+                            {!isConverted && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleConvertToSale(quote)}
+                                disabled={convertingQuoteId === quote.id}
+                                leftIcon={
+                                  convertingQuoteId === quote.id ? (
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                                  ) : (
+                                    <Receipt className="w-3.5 h-3.5 text-blue-600" />
+                                  )
+                                }
+                                className="text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100"
+                                title="Convert to Invoice"
+                              >
+                                Convert
+                              </Button>
+                            )}
+
+                            {/* Email Quote Button */}
+                            <button
+                              onClick={() => {
+                                setSelectedQuoteForEmail(quote);
+                                setEmailInput(quote.customer?.email || '');
+                              }}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition"
+                              title="Send Quote via Email"
+                            >
+                              <Mail className="w-4 h-4" />
+                            </button>
+
+                            {/* Download PDF */}
+                            <a
+                              href={api.getQuotePdfDownloadUrl(quote.id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+                              title="Download A4 PDF"
+                            >
+                              <Download className="w-4 h-4" />
+                            </a>
+
+                            {/* View */}
+                            <Link
+                              href={`/dashboard/quotes/${quote.id}`}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition"
+                              title="View Full Quote"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Link>
+
+                            {/* Delete if not converted */}
+                            {!isConverted && (
+                              <button
+                                onClick={() => handleDelete(quote)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                                title="Delete Quote"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

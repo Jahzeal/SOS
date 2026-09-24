@@ -11,6 +11,8 @@ export const QUERY_KEYS = {
   recordDetail: (id: string) => ['record-detail', id] as const,
   receipts: (params?: any) => ['receipts', params] as const,
   adminSubscriptions: ['admin-subscriptions'] as const,
+  adminMetrics: (timeRange?: string) => ['admin-metrics', timeRange] as const,
+  adminLogs: ['admin-logs'] as const,
   publicPlans: ['public-plans'] as const,
   businessProfile: ['business-profile'] as const,
 };
@@ -96,6 +98,34 @@ export function useAdminSubscriptions() {
       return await api.adminGetSubscriptions();
     },
     staleTime: 30 * 1000,
+  });
+}
+
+/**
+ * Cached hook for Admin Overview Metrics
+ */
+export function useAdminMetrics(timeRange: 'today' | '7d' | '30d' | '90d' = 'today') {
+  return useQuery({
+    queryKey: QUERY_KEYS.adminMetrics(timeRange),
+    queryFn: async () => {
+      const res = await api.adminGetMetrics(timeRange);
+      return res?.kpis || null;
+    },
+    staleTime: 30 * 1000,
+  });
+}
+
+/**
+ * Cached hook for Admin System Activity Logs
+ */
+export function useAdminSystemLogs() {
+  return useQuery({
+    queryKey: QUERY_KEYS.adminLogs,
+    queryFn: async () => {
+      const res = await api.adminGetSystemLogs();
+      return Array.isArray(res?.logs) ? res.logs : [];
+    },
+    staleTime: 15 * 1000,
   });
 }
 

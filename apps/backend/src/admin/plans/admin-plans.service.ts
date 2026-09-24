@@ -131,6 +131,26 @@ export class AdminPlansService {
     };
   }
 
+  async reorder(items: { id: string; sortOrder: number }[]) {
+    if (!Array.isArray(items)) {
+      throw new BadRequestException('Items array required');
+    }
+
+    await Promise.all(
+      items.map((item) =>
+        this.prisma.subscriptionPlan.update({
+          where: { id: item.id },
+          data: { sortOrder: Number(item.sortOrder) || 0 },
+        })
+      )
+    );
+
+    return {
+      success: true,
+      message: 'Plan display order updated successfully.',
+    };
+  }
+
   async delete(id: string) {
     const plan = await this.prisma.subscriptionPlan.findUnique({
       where: { id },

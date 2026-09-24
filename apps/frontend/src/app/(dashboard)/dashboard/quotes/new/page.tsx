@@ -331,39 +331,39 @@ export default function CreateQuotePage() {
         <div className="lg:col-span-8 space-y-6">
 
           {/* Card 1: Quotation Metadata */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-4">
-            <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-3">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-3 sm:space-y-4">
+            <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2 border-b border-slate-100 pb-2.5">
               <FileSpreadsheet className="w-4 h-4 text-blue-600" /> Quotation Subject & Timeline
             </h2>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div className="sm:col-span-3 space-y-1">
-                <label className="font-bold text-slate-700">Proposal Subject / Reference</label>
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Proposal Subject / Reference</label>
                 <input
                   type="text"
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="e.g. Corporate Procurement - 10x iPhone 15 Pro Max (256GB)"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium sm:font-bold text-xs text-slate-900 focus:outline-none focus:border-blue-600 placeholder:text-slate-400"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Quote Date</label>
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Quote Date</label>
                 <input
                   type="date"
                   value={quoteDate}
                   onChange={(e) => setQuoteDate(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Price Validity Duration</label>
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Price Validity Duration</label>
                 <select
                   value={validityDays}
                   onChange={(e) => setValidityDays(Number(e.target.value))}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-xs text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
                 >
                   <option value={7}>7 Days (1 Week)</option>
                   <option value={14}>14 Days (2 Weeks)</option>
@@ -373,9 +373,10 @@ export default function CreateQuotePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Valid Until Date</label>
-                <div className="w-full px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-bold text-slate-800 font-mono">
-                  {expiryDate}
+                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Valid Until Date</label>
+                <div className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-100/90 border border-slate-200 rounded-xl font-bold text-xs text-slate-800 font-mono flex items-center justify-between">
+                  <span>{expiryDate}</span>
+                  <span className="text-[10px] text-slate-500 font-sans font-semibold">({validityDays}d)</span>
                 </div>
               </div>
             </div>
