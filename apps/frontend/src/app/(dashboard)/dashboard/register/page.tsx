@@ -1,16 +1,16 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   QrCode,
   Smartphone,
+  Package,
   BatteryCharging,
   Headphones,
+  Zap,
   Laptop,
-  Package,
-  Search,
   Upload,
   AlertTriangle,
   Camera,
@@ -25,132 +25,56 @@ import {
   ArrowRight,
   Edit3,
   Sparkles,
-  Zap,
+  Tag,
+  Layers,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { ImeiCameraScanner } from '@/components/scanner/ImeiCameraScanner';
 
-type ItemCategory = 'PHONE' | 'POWER_BANK' | 'AUDIO' | 'COMPUTING' | 'ACCESSORY';
+type RegistrationMode = 'PHONE' | 'ITEM';
 
-interface CategoryConfig {
-  id: ItemCategory;
-  name: string;
-  icon: React.ReactNode;
-  badge: string;
-  description: string;
-  requiresImei: boolean;
-  brandList: string[];
-  specsLabel: string;
-  specsPresets: string[];
-}
+const POPULAR_ITEM_TYPES = [
+  'Power Bank',
+  'Earphones / AirPods / Audio',
+  'Fast Charger & Adapter',
+  'Laptop & Tablet',
+  'Charging Cable & Hub',
+  'Case & Screen Guard',
+  'Smartwatch & Wearable',
+  'Speaker & Audio Gadget',
+  'General Accessory / Other',
+];
 
-const CATEGORIES: CategoryConfig[] = [
-  {
-    id: 'PHONE',
-    name: 'Phone / Smartphone',
-    icon: <Smartphone className="w-4 h-4" />,
-    badge: 'Mobile Devices',
-    description: 'Smartphones, feature phones, and cellular tablets',
-    requiresImei: true,
-    brandList: [
-      'Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Huawei',
-      'Oppo', 'Vivo', 'Realme', 'Tecno', 'Infinix', 'Itel',
-      'Nokia', 'Motorola', 'Sony', 'Honor',
-    ],
-    specsLabel: 'Internal Storage',
-    specsPresets: ['32 GB', '64 GB', '128 GB', '256 GB', '512 GB', '1 TB'],
-  },
-  {
-    id: 'POWER_BANK',
-    name: 'Power Bank / Battery',
-    icon: <BatteryCharging className="w-4 h-4" />,
-    badge: 'Charging & Power',
-    description: 'Portable power banks, magsafe packs, fast chargers',
-    requiresImei: false,
-    brandList: [
-      'Oraimo', 'Anker', 'Romoss', 'New-Age', 'Baseus', 'Xiaomi',
-      'Itel', 'Joyroom', 'Remax', 'UGREEN', 'Apple', 'Samsung',
-    ],
-    specsLabel: 'Battery Capacity / Wattage',
-    specsPresets: [
-      '5,000 mAh', '10,000 mAh', '20,000 mAh', '27,000 mAh',
-      '30,000 mAh', '40,000 mAh', '50,000 mAh', '20W MagSafe', '65W Fast Charge GaN'
-    ],
-  },
-  {
-    id: 'AUDIO',
-    name: 'Earphones / Audio',
-    icon: <Headphones className="w-4 h-4" />,
-    badge: 'Audio & Wearables',
-    description: 'AirPods, TWS earbuds, over-ear headphones, speakers',
-    requiresImei: false,
-    brandList: [
-      'Apple', 'Oraimo', 'JBL', 'Sony', 'Soundcore', 'Samsung',
-      'Beats', 'Bose', 'Zealot', 'Xiaomi', 'Lenovo', 'Havit',
-    ],
-    specsLabel: 'Audio Type / Format',
-    specsPresets: [
-      'TWS Wireless Earbuds (ANC)', 'TWS Wireless Earbuds', 'Over-Ear Headphones',
-      'Sports Wireless Neckband', 'Wired Earphones (3.5mm)', 'Wired Earphones (Type-C / Lightning)',
-      'Portable Bluetooth Speaker'
-    ],
-  },
-  {
-    id: 'COMPUTING',
-    name: 'Laptop / Tablet / Watch',
-    icon: <Laptop className="w-4 h-4" />,
-    badge: 'Computers & Tablets',
-    description: 'Laptops, MacBooks, iPads, Smartwatches, and Monitors',
-    requiresImei: false,
-    brandList: [
-      'Apple', 'HP', 'Dell', 'Lenovo', 'Asus', 'Acer',
-      'Samsung', 'Microsoft', 'Huawei', 'Toshiba',
-    ],
-    specsLabel: 'Storage & Memory Configuration',
-    specsPresets: [
-      '128 GB SSD / 8GB RAM', '256 GB SSD / 8GB RAM', '512 GB SSD / 16GB RAM',
-      '1 TB SSD / 16GB RAM', '1 TB SSD / 32GB RAM', '64 GB WiFi', '128 GB WiFi + Cellular',
-      '40mm / 44mm GPS'
-    ],
-  },
-  {
-    id: 'ACCESSORY',
-    name: 'General Accessory / Gadget',
-    icon: <Package className="w-4 h-4" />,
-    badge: 'Peripherals & Accessories',
-    description: 'Cables, screen guards, cases, adapters, car mounts',
-    requiresImei: false,
-    brandList: [
-      'Oraimo', 'Anker', 'Baseus', 'UGREEN', 'Apple', 'Samsung',
-      'Joyroom', 'LDNIO', 'Generic / OEM',
-    ],
-    specsLabel: 'Item Type / Specification',
-    specsPresets: [
-      'Fast Charging Cable (Type-C to Type-C)', 'Fast Charging Cable (Type-C to Lightning)',
-      'USB-A to Type-C / Lightning Cable', '20W Fast Wall Adapter', '65W GaN Multi-Port Charger',
-      '9D Tempered Screen Protector', 'Shockproof Silicone / Clear Case', 'MagSafe Car Mount / Charger'
-    ],
-  },
+const PHONE_BRANDS = [
+  'Apple', 'Samsung', 'Google', 'OnePlus', 'Xiaomi', 'Huawei',
+  'Oppo', 'Vivo', 'Realme', 'Tecno', 'Infinix', 'Itel',
+  'Nokia', 'Motorola', 'Sony', 'Honor',
+];
+
+const ACCESSORY_BRANDS = [
+  'Oraimo', 'Anker', 'Apple', 'Samsung', 'Baseus', 'New-Age',
+  'Romoss', 'JBL', 'Sony', 'UGREEN', 'Zealot', 'Joyroom',
+  'Remax', 'LDNIO', 'Xiaomi', 'HP', 'Dell', 'Lenovo', 'Generic / OEM',
 ];
 
 export default function RegisterPhonePage() {
   const router = useRouter();
 
-  // Active Category
-  const [category, setCategory] = useState<ItemCategory>('PHONE');
+  // Registration Mode: 'PHONE' or 'ITEM'
+  const [mode, setMode] = useState<RegistrationMode>('PHONE');
 
-  // Page Step State: 1 = Identify, 2 = Details, 3 = Summary
+  // Page Step State: 1 = Identify, 2 = Specs & Details, 3 = Summary
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // Form Data
   const [imei, setImei] = useState('');
   const [serialNumber, setSerialNumber] = useState('');
+  const [itemType, setItemType] = useState('Power Bank');
   const [brand, setBrand] = useState('');
   const [model, setModel] = useState('');
-  const [storage, setStorage] = useState('128 GB');
-  const [customStorage, setCustomStorage] = useState('');
+  const [specs, setSpecs] = useState('');
   const [condition, setCondition] = useState<'New' | 'Used' | 'Refurb'>('New');
   const [carrierStatus, setCarrierStatus] = useState<'UNLOCKED' | 'CARRIER_LOCKED'>('UNLOCKED');
   const [lockedCarrier, setLockedCarrier] = useState('');
@@ -170,40 +94,24 @@ export default function RegisterPhonePage() {
   const [registeredItem, setRegisteredItem] = useState<any>(null);
   const [brandOpen, setBrandOpen] = useState(false);
 
-  const activeCategoryConfig = CATEGORIES.find((c) => c.id === category) || CATEGORIES[0];
-
-  // Update default specs when category changes
-  useEffect(() => {
-    if (activeCategoryConfig.specsPresets.length > 0) {
-      setStorage(activeCategoryConfig.specsPresets[0]);
-    }
-    setCustomStorage('');
-  }, [category]);
-
-  const filteredBrands = activeCategoryConfig.brandList.filter((b) =>
+  const activeBrands = mode === 'PHONE' ? PHONE_BRANDS : ACCESSORY_BRANDS;
+  const filteredBrands = activeBrands.filter((b) =>
     b.toLowerCase().includes(brand.toLowerCase())
   );
 
   const generateSku = () => {
-    const prefixMap: Record<ItemCategory, string> = {
-      PHONE: 'PH',
-      POWER_BANK: 'PB',
-      AUDIO: 'EAR',
-      COMPUTING: 'PC',
-      ACCESSORY: 'ACC',
-    };
-    const prefix = prefixMap[category] || 'SKU';
+    const prefix = mode === 'PHONE' ? 'PH' : 'SKU';
     const randomCode = Math.floor(100000 + Math.random() * 900000);
     const sku = `${prefix}-${randomCode}`;
     setSerialNumber(sku);
-    if (!imei && category !== 'PHONE') {
+    if (!imei && mode === 'ITEM') {
       setImei(sku);
     }
   };
 
   const handleNextToStep2 = async () => {
     setErrorMessage(null);
-    if (activeCategoryConfig.requiresImei && !imei.trim()) {
+    if (mode === 'PHONE' && !imei.trim()) {
       setErrorMessage('Please enter or scan a valid 15-digit IMEI for phones.');
       return;
     }
@@ -232,7 +140,7 @@ export default function RegisterPhonePage() {
       return;
     }
     if (!model.trim()) {
-      setErrorMessage('Please specify the model name or item description.');
+      setErrorMessage('Please specify the product / model name.');
       return;
     }
     setStep(3);
@@ -256,7 +164,10 @@ export default function RegisterPhonePage() {
       Refurb: 'REFURBISHED',
     };
 
-    const finalStorage = customStorage.trim() || storage;
+    // For general items, combine itemType and specs in storageCapacity for seamless POS & invoice display
+    const finalSpecs = mode === 'PHONE'
+      ? (specs || '128 GB')
+      : [itemType, specs].filter(Boolean).join(' • ');
 
     try {
       const registered = await api.registerPhone({
@@ -264,11 +175,11 @@ export default function RegisterPhonePage() {
         serialNumber: serialNumber.trim() || undefined,
         brand: brand.trim(),
         model: model.trim(),
-        storageCapacity: finalStorage,
+        storageCapacity: finalSpecs,
         condition: conditionMap[condition] || 'NEW',
-        carrierStatus: category === 'PHONE' ? (carrierStatus as any) : 'UNLOCKED',
-        lockedCarrier: category === 'PHONE' && carrierStatus === 'CARRIER_LOCKED' ? lockedCarrier.trim() : undefined,
-        activationStatus: category === 'PHONE' ? (activationStatus as any) : 'READY_FOR_SETUP',
+        carrierStatus: mode === 'PHONE' ? (carrierStatus as any) : 'UNLOCKED',
+        lockedCarrier: mode === 'PHONE' && carrierStatus === 'CARRIER_LOCKED' ? lockedCarrier.trim() : undefined,
+        activationStatus: mode === 'PHONE' ? (activationStatus as any) : 'READY_FOR_SETUP',
         warrantyDurationMonths: warrantyMonths,
         purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
         sellingPrice: sellingPrice ? parseFloat(sellingPrice) : undefined,
@@ -279,8 +190,8 @@ export default function RegisterPhonePage() {
         imei: registered.imei1 || registered.serialNumber || 'N/A',
         model: registered.model,
         brand: registered.brand,
-        categoryName: activeCategoryConfig.name,
-        storage: registered.storageCapacity || finalStorage,
+        modeName: mode === 'PHONE' ? 'Phone / Device' : itemType || 'General Item',
+        specs: registered.storageCapacity || finalSpecs,
         condition: registered.condition || condition,
         sellingPrice: registered.sellingPrice || sellingPrice,
         qrCodeUrl: registered.qrCodeUrl,
@@ -306,51 +217,69 @@ export default function RegisterPhonePage() {
               Register Phone or Item
             </h1>
             <Badge variant="new" size="sm" className="hidden sm:inline-flex">
-              Multi-Category Stock
+              Stock Ingestion
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-2xl mt-1 leading-relaxed">
-            Catalog phones, power banks, audio gadgets, laptops, and accessories into inventory with instant barcode & QR traceability.
+            Add phones, power banks, audio gadgets, chargers, laptops, and accessories into inventory with instant barcode & QR traceability.
           </p>
         </div>
 
         <div className="flex items-center gap-2 shrink-0">
           <Button variant="secondary" size="sm" leftIcon={<Upload className="w-4 h-4 text-slate-600" />}>
-            Bulk Registration
+            Bulk Upload
           </Button>
         </div>
       </div>
 
-      {/* Category Switcher Tabs */}
-      <div className="bg-slate-100/80 p-1.5 rounded-2xl border border-slate-200/80">
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5">
-          {CATEGORIES.map((cat) => {
-            const isSelected = category === cat.id;
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                onClick={() => {
-                  setCategory(cat.id);
-                  setBrand('');
-                  setModel('');
-                  setErrorMessage(null);
-                }}
-                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  isSelected
-                    ? 'bg-white text-slate-900 shadow-sm border border-slate-200/80 font-extrabold ring-1 ring-teal-500/20'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
-                }`}
-              >
-                <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
-                  isSelected ? 'bg-teal-50 text-teal-700' : 'bg-slate-200/70 text-slate-500'
-                }`}>
-                  {cat.icon}
-                </div>
-                <span className="truncate text-left">{cat.name}</span>
-              </button>
-            );
-          })}
+      {/* Primary 2-Mode Switcher */}
+      <div className="bg-slate-100 p-1.5 rounded-2xl border border-slate-200 max-w-2xl">
+        <div className="grid grid-cols-2 gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              setMode('PHONE');
+              setErrorMessage(null);
+            }}
+            className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-xs font-extrabold transition-all ${
+              mode === 'PHONE'
+                ? 'bg-white text-slate-950 shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+            }`}
+          >
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+              mode === 'PHONE' ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-500'
+            }`}>
+              <Smartphone className="w-4 h-4" />
+            </div>
+            <div className="text-left">
+              <span className="block font-black">Phone / Cellular Device</span>
+              <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">15-Digit IMEI Tracked</span>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMode('ITEM');
+              setErrorMessage(null);
+            }}
+            className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-xs font-extrabold transition-all ${
+              mode === 'ITEM'
+                ? 'bg-white text-slate-950 shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+            }`}
+          >
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+              mode === 'ITEM' ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-500'
+            }`}>
+              <Package className="w-4 h-4" />
+            </div>
+            <div className="text-left">
+              <span className="block font-black">General Item / Accessory</span>
+              <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">Power banks, ear pieces, chargers, laptops...</span>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -438,21 +367,21 @@ export default function RegisterPhonePage() {
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2.5 sm:gap-3">
                   <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-200 flex items-center justify-center font-bold shadow-sm shrink-0">
-                    {activeCategoryConfig.icon}
+                    {mode === 'PHONE' ? <Smartphone className="w-5 h-5" /> : <Package className="w-5 h-5" />}
                   </div>
                   <div>
                     <h2 className="text-base sm:text-xl font-extrabold text-slate-900 leading-tight">
-                      Step 1: Identify {activeCategoryConfig.name}
+                      Step 1: Identify {mode === 'PHONE' ? 'Phone / Device' : 'Product / Accessory'}
                     </h2>
                     <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
-                      {activeCategoryConfig.requiresImei
-                        ? 'Scan phone box barcode or enter 15-digit IMEI'
-                        : 'Scan box barcode, enter serial number, or auto-generate a stock SKU'}
+                      {mode === 'PHONE'
+                        ? 'Scan retail box barcode or enter 15-digit IMEI number'
+                        : 'Scan box barcode, enter serial number, or auto-generate a unique inventory SKU'}
                     </p>
                   </div>
                 </div>
                 <Badge variant="new" size="sm">
-                  {activeCategoryConfig.badge}
+                  {mode === 'PHONE' ? 'IMEI Tracked' : 'General Item'}
                 </Badge>
               </div>
 
@@ -462,13 +391,13 @@ export default function RegisterPhonePage() {
                   <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <p className="font-extrabold text-rose-950 text-sm">Potential Duplicate Detected</p>
+                      <p className="font-extrabold text-rose-950 text-sm">Duplicate Identifier Detected</p>
                       <button onClick={() => setShowDuplicateWarning(false)} className="text-rose-500 hover:text-rose-700">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
                     <p className="text-rose-800 font-medium mt-1">
-                      Identifier: <strong>{imei}</strong> is already registered: <strong>{duplicateDetails?.brand} {duplicateDetails?.model}</strong>.
+                      Identifier <strong>{imei}</strong> is already registered: <strong>{duplicateDetails?.brand} {duplicateDetails?.model}</strong>.
                     </p>
                   </div>
                 </div>
@@ -483,9 +412,11 @@ export default function RegisterPhonePage() {
                   <QrCode className="w-5 h-5 sm:w-8 sm:h-8 text-teal-600" />
                 </div>
                 <div className="text-left">
-                  <p className="font-extrabold text-sm sm:text-base text-teal-700">Scan Product Barcode / QR</p>
+                  <p className="font-extrabold text-sm sm:text-base text-teal-700">
+                    Scan Product Barcode / QR
+                  </p>
                   <p className="text-[11px] sm:text-xs text-slate-500 font-medium mt-0.5 leading-tight">
-                    Use device camera or physical handheld barcode scanner
+                    Use device camera or handheld USB/Bluetooth barcode scanner
                   </p>
                 </div>
               </div>
@@ -494,13 +425,13 @@ export default function RegisterPhonePage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    {activeCategoryConfig.requiresImei ? 'IMEI Number *' : 'IMEI / Unique Barcode (Optional)'}
+                    {mode === 'PHONE' ? 'IMEI Number *' : 'Barcode / EAN / S/N (Optional)'}
                   </label>
                   <input
                     type="text"
                     value={imei}
                     onChange={(e) => setImei(e.target.value)}
-                    placeholder={activeCategoryConfig.requiresImei ? "Enter 15-digit IMEI" : "e.g. 693420849102"}
+                    placeholder={mode === 'PHONE' ? "Enter 15-digit IMEI" : "e.g. 693420849102 or scan box"}
                     className="w-full text-sm px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 font-mono font-semibold text-slate-900 shadow-subtle"
                   />
                 </div>
@@ -508,7 +439,7 @@ export default function RegisterPhonePage() {
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      Serial Number / SKU
+                      Inventory SKU / Serial Number
                     </label>
                     <button
                       type="button"
@@ -522,17 +453,17 @@ export default function RegisterPhonePage() {
                     type="text"
                     value={serialNumber}
                     onChange={(e) => setSerialNumber(e.target.value)}
-                    placeholder="Enter S/N or click Auto-Generate"
+                    placeholder="Enter SKU or click Auto-Generate"
                     className="w-full text-sm px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 font-mono font-semibold text-slate-900 shadow-subtle"
                   />
                 </div>
               </div>
 
-              {!activeCategoryConfig.requiresImei && !imei && !serialNumber && (
+              {mode === 'ITEM' && !imei && !serialNumber && (
                 <div className="p-3.5 rounded-xl bg-teal-50/60 border border-teal-200/80 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2 text-teal-800 font-medium">
                     <Info className="w-4 h-4 text-teal-600 shrink-0" />
-                    <span>No barcode on box? Generate a unique SKU code with 1 click.</span>
+                    <span>No barcode on product packaging? Generate a unique stock SKU code in 1 click.</span>
                   </div>
                   <button
                     type="button"
@@ -553,7 +484,7 @@ export default function RegisterPhonePage() {
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                   className="shadow-md bg-teal-600 hover:bg-teal-500 border-none font-bold w-full sm:w-auto"
                 >
-                  <span>Proceed to Step 2: Specifications & Pricing</span>
+                  <span>Proceed to Step 2: Item Details & Pricing</span>
                 </Button>
               </div>
             </section>
@@ -565,14 +496,14 @@ export default function RegisterPhonePage() {
               <div className="flex items-center justify-between border-b border-slate-100 pb-4 gap-2">
                 <div className="flex items-center gap-2.5 sm:gap-3 justify-start text-left">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-200 flex items-center justify-center font-bold shadow-sm shrink-0">
-                    {activeCategoryConfig.icon}
+                    {mode === 'PHONE' ? <Smartphone className="w-4 h-4" /> : <Package className="w-4 h-4" />}
                   </div>
                   <div className="text-left">
                     <h2 className="text-base sm:text-xl font-extrabold text-slate-900 leading-tight">
-                      Step 2: {activeCategoryConfig.name} Details
+                      Step 2: {mode === 'PHONE' ? 'Phone Specifications' : 'Product Information & Pricing'}
                     </h2>
                     <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
-                      Configure brand, model, hardware specifications, and inventory pricing
+                      Configure category type, brand, model, specifications, and retail pricing
                     </p>
                   </div>
                 </div>
@@ -584,6 +515,38 @@ export default function RegisterPhonePage() {
                 </button>
               </div>
 
+              {/* General Item Type Quick Selector */}
+              {mode === 'ITEM' && (
+                <div className="space-y-2">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
+                    Item Category / Type *
+                  </label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {POPULAR_ITEM_TYPES.map((type) => (
+                      <button
+                        key={type}
+                        type="button"
+                        onClick={() => setItemType(type)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                          itemType === type
+                            ? 'bg-teal-600 text-white shadow-xs'
+                            : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={itemType}
+                    onChange={(e) => setItemType(e.target.value)}
+                    placeholder="Or type a custom category (e.g. Ring Light, Drone, Wireless Mic...)"
+                    className="w-full mt-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-xs focus:outline-none focus:border-teal-600"
+                  />
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                 {/* Brand Combobox */}
                 <div className="space-y-1.5 relative">
@@ -594,7 +557,7 @@ export default function RegisterPhonePage() {
                     onChange={(e) => { setBrand(e.target.value); setBrandOpen(true); }}
                     onFocus={() => setBrandOpen(true)}
                     onBlur={() => setTimeout(() => setBrandOpen(false), 200)}
-                    placeholder={`e.g. ${activeCategoryConfig.brandList.slice(0, 3).join(', ')}…`}
+                    placeholder={`e.g. ${activeBrands.slice(0, 3).join(', ')}…`}
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
                   />
                   {brandOpen && filteredBrands.length > 0 && (
@@ -612,64 +575,55 @@ export default function RegisterPhonePage() {
                   )}
                 </div>
 
-                {/* Model Input */}
+                {/* Model / Title Input */}
                 <div className="space-y-1.5">
                   <label className="block font-bold text-slate-700 uppercase tracking-wider">
-                    Model Name / Item Title *
+                    {mode === 'PHONE' ? 'Model Name *' : 'Product Title / Model Name *'}
                   </label>
                   <input
                     type="text"
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
                     placeholder={
-                      category === 'PHONE'
+                      mode === 'PHONE'
                         ? 'e.g. iPhone 15 Pro Max, Galaxy S24 Ultra'
-                        : category === 'POWER_BANK'
-                        ? 'e.g. Toast 10 Byte 20000mAh, 65W PowerBank'
-                        : category === 'AUDIO'
-                        ? 'e.g. FreePods 4 ANC, AirPods Pro 2, WH-1000XM5'
-                        : category === 'COMPUTING'
-                        ? 'e.g. MacBook Air M2 13", ThinkPad X1 Carbon'
-                        : 'e.g. 20W USB-C Fast Charger, Type-C Braided Cable'
+                        : 'e.g. Toast 10 Byte 20000mAh, FreePods 4 ANC, 65W GaN Charger'
                     }
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
                   />
                 </div>
 
-                {/* Specs / Storage / Capacity Selector */}
+                {/* Specifications / Storage / Capacity */}
                 <div className="space-y-1.5 md:col-span-2">
                   <label className="block font-bold text-slate-700 uppercase tracking-wider">
-                    {activeCategoryConfig.specsLabel}
+                    {mode === 'PHONE' ? 'Internal Storage Capacity' : 'Specifications / Capacity / Variant'}
                   </label>
-                  <div className="flex flex-wrap gap-2 mb-2">
-                    {activeCategoryConfig.specsPresets.map((preset) => (
-                      <button
-                        key={preset}
-                        type="button"
-                        onClick={() => {
-                          setStorage(preset);
-                          setCustomStorage('');
-                        }}
-                        className={`px-3 py-2 rounded-xl text-xs font-bold transition ${
-                          storage === preset && !customStorage
-                            ? 'bg-teal-50 text-teal-700 border-2 border-teal-600 shadow-xs'
-                            : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
-                        }`}
-                      >
-                        {preset}
-                      </button>
-                    ))}
-                  </div>
-                  <input
-                    type="text"
-                    value={customStorage}
-                    onChange={(e) => {
-                      setCustomStorage(e.target.value);
-                      if (e.target.value) setStorage(e.target.value);
-                    }}
-                    placeholder="Or enter custom capacity / specification (e.g. 256GB / 12GB RAM, 45W GaN, etc.)"
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-slate-50 font-medium text-slate-900 focus:bg-white focus:outline-none focus:border-teal-600 text-xs"
-                  />
+                  {mode === 'PHONE' ? (
+                    <div className="flex flex-wrap gap-2">
+                      {['32 GB', '64 GB', '128 GB', '256 GB', '512 GB', '1 TB'].map((st) => (
+                        <button
+                          key={st}
+                          type="button"
+                          onClick={() => setSpecs(st)}
+                          className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${
+                            (specs || '128 GB') === st
+                              ? 'bg-teal-50 text-teal-700 border-2 border-teal-600 shadow-xs'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                          }`}
+                        >
+                          {st}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <input
+                      type="text"
+                      value={specs}
+                      onChange={(e) => setSpecs(e.target.value)}
+                      placeholder="e.g. 20,000mAh (22.5W Fast Charge), TWS Wireless ANC, 512GB SSD / 16GB RAM, 1.5m Black..."
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-medium text-slate-900 focus:outline-none focus:border-teal-600"
+                    />
+                  )}
                 </div>
 
                 {/* Condition Selector */}
@@ -710,10 +664,9 @@ export default function RegisterPhonePage() {
                   </select>
                 </div>
 
-                {/* Phone-Specific Fields */}
-                {category === 'PHONE' && (
+                {/* Phone-Specific Carrier & Activation Fields */}
+                {mode === 'PHONE' && (
                   <>
-                    {/* Carrier Compatibility */}
                     <div className="space-y-1.5">
                       <label className="block font-bold text-slate-700 uppercase tracking-wider">Carrier Lock Status</label>
                       <div className="flex gap-2">
@@ -751,7 +704,6 @@ export default function RegisterPhonePage() {
                       )}
                     </div>
 
-                    {/* Activation Status */}
                     <div className="space-y-1.5">
                       <label className="block font-bold text-slate-700 uppercase tracking-wider">Cloud / FRP Activation</label>
                       <select
@@ -801,7 +753,7 @@ export default function RegisterPhonePage() {
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="Add details about packaging, cable color, battery health, or accessories included..."
+                    placeholder="Add details about packaging, color, battery health, or included cables..."
                     className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:border-teal-600 resize-none"
                   />
                 </div>
@@ -838,7 +790,7 @@ export default function RegisterPhonePage() {
                       Step 3: Registration Summary
                     </h2>
                     <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">
-                      Review {activeCategoryConfig.name.toLowerCase()} metadata before committing to inventory
+                      Review {mode === 'PHONE' ? 'phone' : itemType.toLowerCase()} metadata before adding to inventory
                     </p>
                   </div>
                 </div>
@@ -853,17 +805,18 @@ export default function RegisterPhonePage() {
               <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-4">
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Category</span>
+                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Type</span>
                     <span className="font-extrabold text-teal-700 text-sm flex items-center gap-1.5 mt-0.5">
-                      {activeCategoryConfig.icon} {activeCategoryConfig.name}
+                      {mode === 'PHONE' ? <Smartphone className="w-3.5 h-3.5" /> : <Package className="w-3.5 h-3.5" />}
+                      {mode === 'PHONE' ? 'Phone / Device' : itemType}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Brand & Model</span>
+                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Brand & Product</span>
                     <span className="font-extrabold text-slate-900 text-sm mt-0.5 block truncate">{brand} {model}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Identifier / IMEI</span>
+                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Identifier / SKU</span>
                     <span className="font-mono font-bold text-teal-700 text-sm mt-0.5 block truncate">
                       {imei || serialNumber || 'Auto SKU Assigned'}
                     </span>
@@ -871,7 +824,7 @@ export default function RegisterPhonePage() {
                   <div>
                     <span className="text-slate-500 block uppercase font-bold text-[10px]">Specifications</span>
                     <span className="font-bold text-slate-900 mt-0.5 block truncate">
-                      {customStorage || storage} • {condition}
+                      {mode === 'PHONE' ? (specs || '128 GB') : (specs || 'Standard')} • {condition}
                     </span>
                   </div>
                 </div>
@@ -880,13 +833,13 @@ export default function RegisterPhonePage() {
                   <div>
                     <span className="text-slate-500 block uppercase font-bold text-[10px]">Cost Price</span>
                     <span className="font-bold text-slate-800 text-xs mt-0.5 block">
-                      {purchasePrice ? `$${parseFloat(purchasePrice).toLocaleString()}` : '—'}
+                      {purchasePrice ? `₦${parseFloat(purchasePrice).toLocaleString()}` : '—'}
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-500 block uppercase font-bold text-[10px]">Selling Price</span>
                     <span className="font-extrabold text-emerald-700 text-sm mt-0.5 block">
-                      {sellingPrice ? `$${parseFloat(sellingPrice).toLocaleString()}` : '—'}
+                      {sellingPrice ? `₦${parseFloat(sellingPrice).toLocaleString()}` : '—'}
                     </span>
                   </div>
                   <div>
@@ -911,7 +864,7 @@ export default function RegisterPhonePage() {
                   leftIcon={<Check className="w-4 h-4" />}
                   className="shadow-md bg-emerald-600 hover:bg-emerald-500 border-none font-bold text-xs w-full sm:w-auto py-2"
                 >
-                  <span>Complete Registration & Add to Inventory</span>
+                  <span>Complete Registration & Add to Stock</span>
                 </Button>
               </div>
             </section>
@@ -936,24 +889,20 @@ export default function RegisterPhonePage() {
 
               <div className="space-y-3 text-xs border-b border-slate-100 pb-4 font-medium">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Category</span>
-                  <span className="font-bold text-teal-700">{activeCategoryConfig.name}</span>
+                  <span className="text-slate-500">Item Type</span>
+                  <span className="font-bold text-teal-700">{mode === 'PHONE' ? 'Phone / Device' : itemType}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Identifier/SKU</span>
+                  <span className="text-slate-500">Identifier / SKU</span>
                   <span className="font-mono font-bold text-slate-900">{imei || serialNumber || 'Auto SKU'}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Brand</span>
-                  <span className="font-bold text-slate-900">{brand}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Model</span>
-                  <span className="font-bold text-slate-900">{model}</span>
+                  <span className="text-slate-500">Brand & Title</span>
+                  <span className="font-bold text-slate-900">{brand} {model}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Specifications</span>
-                  <span className="font-bold text-slate-900">{customStorage || storage}</span>
+                  <span className="font-bold text-slate-900">{mode === 'PHONE' ? (specs || '128 GB') : (specs || 'Standard')}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Condition</span>
@@ -989,55 +938,32 @@ export default function RegisterPhonePage() {
           ) : (
             /* DURING STEP 1 & 2: SHOW GUIDANCE & TIPS PANEL */
             <div className="space-y-5 sticky top-20 animate-in fade-in duration-200">
-              {/* Category-Specific Guidance */}
               <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3">
                 <div className="flex items-center gap-2 text-slate-900 font-extrabold text-xs">
                   <HelpCircle className="w-4 h-4 text-teal-600" />
-                  <span>{activeCategoryConfig.name} Registration Tips</span>
+                  <span>{mode === 'PHONE' ? 'Phone' : 'Accessory'} Registration Tips</span>
                 </div>
                 <ul className="space-y-2.5 text-xs text-slate-600 font-medium">
-                  {category === 'PHONE' ? (
+                  {mode === 'PHONE' ? (
                     <>
                       <li className="flex gap-2">
                         <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                        <span>Ensure 15-digit IMEI is captured for warranty & blacklist verification.</span>
+                        <span>Ensure 15-digit IMEI is captured for blacklist & warranty tracking.</span>
                       </li>
                       <li className="flex gap-2">
                         <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                        <span>Dial *#06# on the device or scan the retail box sticker barcode.</span>
-                      </li>
-                    </>
-                  ) : category === 'POWER_BANK' ? (
-                    <>
-                      <li className="flex gap-2">
-                        <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                        <span>Scan the retail box barcode (EAN-13/UPC) or click Auto-Generate SKU.</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                        <span>Specify rated capacity (e.g. 20,000 mAh) and fast-charge output wattage.</span>
-                      </li>
-                    </>
-                  ) : category === 'AUDIO' ? (
-                    <>
-                      <li className="flex gap-2">
-                        <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                        <span>For AirPods / TWS, check serial number inside charging case lid or box.</span>
-                      </li>
-                      <li className="flex gap-2">
-                        <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                        <span>Select audio format (TWS ANC, wireless neckband, or over-ear).</span>
+                        <span>Dial *#06# on the phone keypad or scan the box sticker.</span>
                       </li>
                     </>
                   ) : (
                     <>
                       <li className="flex gap-2">
                         <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                        <span>Scan product barcode or click Auto-Generate SKU for instant inventory code.</span>
+                        <span>Scan the barcode from the packaging or click Auto-Generate SKU.</span>
                       </li>
                       <li className="flex gap-2">
                         <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                        <span>Set accurate purchase and retail pricing for instant POS sale & quotes.</span>
+                        <span>Set accurate purchase cost and retail price for instant POS sales and quote proposals.</span>
                       </li>
                     </>
                   )}
@@ -1048,10 +974,10 @@ export default function RegisterPhonePage() {
               <div className="p-5 rounded-2xl bg-gradient-to-br from-teal-900 to-slate-900 text-white shadow-md space-y-3">
                 <div className="flex items-center gap-2">
                   <Zap className="w-4 h-4 text-teal-400" />
-                  <h4 className="font-extrabold text-xs tracking-wider uppercase text-teal-300">Unified POS & Quotes</h4>
+                  <h4 className="font-extrabold text-xs tracking-wider uppercase text-teal-300">Universal Catalog</h4>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed font-medium">
-                  All registered items can be immediately added to Quotations & Estimates, sold via POS Terminal, and tracked with QR codes.
+                  All registered phones and items are automatically available across your POS checkout terminal, Quotations & Estimates, and Inventory Ledger.
                 </p>
               </div>
 
@@ -1085,9 +1011,9 @@ export default function RegisterPhonePage() {
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-xl font-extrabold text-slate-900">Item Registered!</h3>
+              <h3 className="text-xl font-extrabold text-slate-900">Stock Ingestion Complete!</h3>
               <p className="text-xs text-slate-600 font-medium mt-1">
-                <strong>{registeredItem.brand} {registeredItem.model}</strong> ({registeredItem.imei}) has been added to your inventory catalog.
+                <strong>{registeredItem.brand} {registeredItem.model}</strong> ({registeredItem.imei}) has been added to your inventory.
               </p>
             </div>
             <div className="space-y-2 pt-2">
@@ -1128,7 +1054,7 @@ export default function RegisterPhonePage() {
           if (result.imei) setImei(result.imei);
           if (result.serial) setSerialNumber(result.serial);
         }}
-        title={`Scan ${activeCategoryConfig.name} Barcode / QR`}
+        title={`Scan ${mode === 'PHONE' ? 'Phone Box / IMEI' : 'Product Barcode / SKU'}`}
         subtitle="Align product box barcode, IMEI, or serial number inside the scanner frame."
       />
 
