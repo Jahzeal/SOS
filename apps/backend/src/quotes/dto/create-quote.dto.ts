@@ -24,6 +24,17 @@ export class CreateQuoteItemDto {
   discount?: number;
 }
 
+export class CreateQuoteInstallmentDto {
+  @IsNumber()
+  installmentNo: number;
+
+  @IsNumber()
+  amountDue: number;
+
+  @IsString()
+  dueDate: string;
+}
+
 export class CreateQuoteDto {
   @IsOptional()
   @IsString()
@@ -66,6 +77,16 @@ export class CreateQuoteDto {
   taxRate?: number;
 
   @IsOptional()
+  @IsNumber()
+  amountPaid?: number;
+
+  @IsOptional()
+  hasInstallments?: boolean;
+
+  @IsOptional()
+  sendCustomerReminders?: boolean;
+
+  @IsOptional()
   @IsString()
   notes?: string;
 
@@ -81,4 +102,10 @@ export class CreateQuoteDto {
   @ValidateNested({ each: true })
   @Type(() => CreateQuoteItemDto)
   items: CreateQuoteItemDto[];
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateQuoteInstallmentDto)
+  installments?: CreateQuoteInstallmentDto[];
 }

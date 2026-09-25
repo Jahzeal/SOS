@@ -315,11 +315,17 @@ class ApiClient {
       acceptedCount: number;
       convertedCount: number;
       activeCount: number;
+      totalDepositCollected: number;
+      totalOutstandingCredit: number;
       conversionRate: number;
     }>('/quotes/stats');
   }
 
   async getQuoteById(id: string) {
+    return this.request<any>(`/quotes/${id}`);
+  }
+
+  async getQuote(id: string) {
     return this.request<any>(`/quotes/${id}`);
   }
 
@@ -351,6 +357,27 @@ class ApiClient {
         body: JSON.stringify({ email }),
       },
     );
+  }
+
+  async recordQuotePayment(id: string, payload: { amount: number; paymentMethod?: string; reference?: string; notes?: string; installmentId?: string }) {
+    return this.request<any>(`/quotes/${id}/payment`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async sendQuoteInstallmentReminder(id: string, payload?: { installmentId?: string }) {
+    return this.request<{
+      success: boolean;
+      emailSent: boolean;
+      targetInstallment?: any;
+      whatsappMsg?: string;
+      whatsappUrl?: string;
+      message?: string;
+    }>(`/quotes/${id}/remind`, {
+      method: 'POST',
+      body: JSON.stringify(payload || {}),
+    });
   }
 
   async convertQuoteToSale(id: string, payload?: { paymentMethod?: string; notes?: string; asInvoice?: boolean }) {

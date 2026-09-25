@@ -13,6 +13,8 @@ export interface QuotePdfData {
   taxRate: number;
   taxAmount: number;
   totalAmount: number;
+  amountPaid?: number;
+  balanceDue?: number;
   customerName?: string | null;
   customerEmail?: string | null;
   customerPhone?: string | null;
@@ -37,6 +39,13 @@ export interface QuotePdfData {
     unitPrice: number;
     discount?: number;
     totalPrice: number;
+  }>;
+  installments?: Array<{
+    installmentNo: number;
+    amountDue: number;
+    amountPaid?: number;
+    dueDate: Date | string;
+    status: string;
   }>;
 }
 
@@ -261,9 +270,12 @@ export function generateQuotePdfBuffer(data: QuotePdfData): Buffer {
 
   // Totals Box (Right Side)
   const totalsLeft = 14 + bottomBoxWidth + 8;
+  const hasPartPayment = (data.amountPaid || 0) > 0 || (data.balanceDue !== undefined && data.balanceDue < data.totalAmount);
+  const totalsBoxHeight = hasPartPayment ? 58 : 42;
+
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(totalsLeft, finalTableY, bottomBoxWidth, 42, 3, 3, 'FD');
+  doc.roundedRect(totalsLeft, finalTableY, bottomBoxWidth, totalsBoxHeight, 3, 3, 'FD');
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
@@ -290,12 +302,30 @@ export function generateQuotePdfBuffer(data: QuotePdfData): Buffer {
   // Grand Total Banner
   totY += 7;
   doc.setFillColor(accentRgb[0], accentRgb[1], accentRgb[2]);
-  doc.roundedRect(totalsLeft + 4, totY, bottomBoxWidth - 8, 10, 2, 2, 'F');
+  doc.roundedRect(totalsLeft + 4, totY, bottomBoxWidth - 8, 9, 2, 2, 'F');
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(9.5);
-  doc.text('ESTIMATED TOTAL:', totalsLeft + 8, totY + 6.5);
-  doc.text(`NGN ${data.totalAmount.toLocaleString()}`, pageWidth - 18, totY + 6.5, { align: 'right' });
+  doc.setFontSize(9);
+  doc.text('ESTIMATED TOTAL:', totalsLeft + 8, totY + 6);
+  doc.text(`NGN ${data.totalAmount.toLocaleString()}`, pageWidth - 18, totY + 6, { align: 'right' });
+
+  if (hasPartPayment) {
+    totY += 14;
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(8);
+    doc.setTextColor(16, 185, 129); // green
+    doc.text('Initial Deposit Received:', totalsLeft + 6, totY);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`NGN ${(data.amountPaid || 0).toLocaleString()}`, pageWidth - 18, totY, { align: 'right' });
+
+    totY += 5.5;
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(217, 119, 6); // amber
+    doc.text('Remaining Balance Due:', totalsLeft + 6, totY);
+    doc.setFont('helvetica', 'bold');
+    const remaining = data.balanceDue !== undefined ? data.balanceDue : Math.max(0, data.totalAmount - (data.amountPaid || 0));
+    doc.text(`NGN ${remaining.toLocaleString()}`, pageWidth - 18, totY, { align: 'right' });
+  }
 
   // Bank & Terms (Left Side)
   let leftY = finalTableY;
@@ -323,19 +353,72 @@ export function generateQuotePdfBuffer(data: QuotePdfData): Buffer {
     leftY += 28;
   }
 
+  // Installment Schedule Table (if installments are configured)
+  let nextSectionY = Math.max(leftY, finalTableY + totalsBoxHeight + 6);
+  if (data.installments && data.installments.length > 0) {
+    doc.setTextColor(15, 23, 42);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.text('AGREED INSTALLMENT PAYMENT SCHEDULE', 14, nextSectionY + 2);
+
+    const instRows = data.installments.map((inst) => {
+      const dueStr = new Date(inst.dueDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+      return [
+        `Installment #${inst.installmentNo}`,
+        dueStr,
+        `NGN ${inst.amountDue.toLocaleString()}`,
+        `NGN ${(inst.amountPaid || 0).toLocaleString()}`,
+        inst.status.toUpperCase(),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: nextSectionY + 4,
+      margin: { left: 14, right: 14 },
+      head: [['Installment', 'Due Date', 'Amount Due', 'Amount Paid', 'Status']],
+      body: instRows,
+      theme: 'grid',
+      headStyles: {
+        fillColor: [51, 65, 85],
+        textColor: [255, 255, 255],
+        fontStyle: 'bold',
+        fontSize: 7.5,
+      },
+      styles: {
+        fontSize: 7.5,
+        cellPadding: 2,
+        textColor: [30, 41, 59],
+      },
+      columnStyles: {
+        0: { cellWidth: 35 },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 35, halign: 'right' },
+        3: { cellWidth: 35, halign: 'right' },
+        4: { cellWidth: 'auto', halign: 'center', fontStyle: 'bold' },
+      },
+    });
+
+    nextSectionY = (doc as any).lastAutoTable.finalY + 6;
+  }
+
   // Customer Notes & Terms
   if (data.terms || data.notes) {
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(8);
     doc.setTextColor(30, 41, 59);
-    doc.text('Terms & Conditions / Disclaimers:', 14, leftY + 4);
+    doc.text('Terms & Conditions / Disclaimers:', 14, nextSectionY);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(7);
     doc.setTextColor(100, 116, 139);
     const termsText = data.terms || data.notes || 'This price quotation is valid until the expiry date shown above.';
-    const splitTerms = doc.splitTextToSize(termsText, bottomBoxWidth + 10);
-    doc.text(splitTerms, 14, leftY + 8.5);
+    const splitTerms = doc.splitTextToSize(termsText, pageWidth - 28);
+    doc.text(splitTerms, 14, nextSectionY + 4);
+    nextSectionY += 12;
   }
 
   // Signature Section (if enabled)

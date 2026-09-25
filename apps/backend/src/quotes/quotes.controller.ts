@@ -15,6 +15,7 @@ import {
 import { QuotesService } from './quotes.service';
 import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
+import { RecordQuotePaymentDto } from './dto/record-payment.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PaymentMethod } from '@prisma/client';
 
@@ -88,6 +89,27 @@ export class QuotesController {
     return this.quotesService.sendQuoteEmail(businessId, id, body?.email);
   }
 
+  @Post(':id/payment')
+  async recordPayment(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() dto: RecordQuotePaymentDto,
+  ) {
+    const businessId = req.user.businessId;
+    const userId = req.user.id;
+    return this.quotesService.recordPayment(businessId, id, userId, dto);
+  }
+
+  @Post(':id/remind')
+  async sendReminder(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() body?: { installmentId?: string },
+  ) {
+    const businessId = req.user.businessId;
+    return this.quotesService.sendInstallmentReminder(businessId, id, body?.installmentId);
+  }
+
   @Post(':id/convert')
   async convertToSale(
     @Request() req,
@@ -99,3 +121,4 @@ export class QuotesController {
     return this.quotesService.convertToSale(businessId, userId, id, body);
   }
 }
+

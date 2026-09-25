@@ -56,7 +56,11 @@ interface Quote {
   taxRate: number;
   taxAmount: number;
   totalAmount: number;
-  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CONVERTED';
+  amountPaid: number;
+  balanceDue: number;
+  hasInstallments: boolean;
+  sendCustomerReminders: boolean;
+  status: 'DRAFT' | 'SENT' | 'ACCEPTED' | 'DECLINED' | 'EXPIRED' | 'CONVERTED' | 'PARTIALLY_PAID';
   notes?: string;
   terms?: string;
   customer?: {
@@ -65,6 +69,14 @@ interface Quote {
     phone: string;
     email?: string;
   };
+  installments?: Array<{
+    id: string;
+    installmentNo: number;
+    amountDue: number;
+    amountPaid: number;
+    dueDate: string;
+    status: string;
+  }>;
   items: QuoteItem[];
   convertedSale?: {
     id: string;
@@ -84,6 +96,8 @@ export default function QuotesRegistryPage() {
     acceptedCount: number;
     convertedCount: number;
     activeCount: number;
+    totalDepositCollected: number;
+    totalOutstandingCredit: number;
     conversionRate: number;
   } | null>(null);
 
@@ -94,6 +108,19 @@ export default function QuotesRegistryPage() {
   const [emailInput, setEmailInput] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSuccessMessage, setEmailSuccessMessage] = useState<string | null>(null);
+
+  // Payment Recording Modal State
+  const [selectedQuoteForPayment, setSelectedQuoteForPayment] = useState<Quote | null>(null);
+  const [paymentAmount, setPaymentAmount] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('TRANSFER');
+  const [paymentRef, setPaymentRef] = useState('');
+  const [paymentNotes, setPaymentNotes] = useState('');
+  const [isRecordingPayment, setIsRecordingPayment] = useState(false);
+
+  // Reminder Modal State
+  const [selectedQuoteForReminder, setSelectedQuoteForReminder] = useState<Quote | null>(null);
+  const [isSendingReminder, setIsSendingReminder] = useState(false);
+  const [reminderResult, setReminderResult] = useState<any>(null);
 
   const [convertingQuoteId, setConvertingQuoteId] = useState<string | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
@@ -163,6 +190,51 @@ export default function QuotesRegistryPage() {
     }
   };
 
+  const handleRecordPaymentSubmit = async () => {
+    if (!selectedQuoteForPayment) return;
+    const amount = parseFloat(paymentAmount);
+    if (!amount || amount <= 0) {
+      alert('Please enter a valid deposit or payment amount.');
+      return;
+    }
+
+    setIsRecordingPayment(true);
+    try {
+      await api.recordQuotePayment(selectedQuoteForPayment.id, {
+        amount,
+        paymentMethod,
+        reference: paymentRef.trim() || undefined,
+        notes: paymentNotes.trim() || undefined,
+      });
+      alert(`Payment of ₦${amount.toLocaleString()} recorded successfully!`);
+      setSelectedQuoteForPayment(null);
+      setPaymentAmount('');
+      setPaymentRef('');
+      setPaymentNotes('');
+      loadQuotes();
+    } catch (err: any) {
+      alert(err.message || 'Failed to record payment.');
+    } finally {
+      setIsRecordingPayment(false);
+    }
+  };
+
+  const handleSendReminderSubmit = async (quote: Quote) => {
+    setIsSendingReminder(true);
+    setSelectedQuoteForReminder(quote);
+    setReminderResult(null);
+    try {
+      const res = await api.sendQuoteInstallmentReminder(quote.id);
+      setReminderResult(res);
+      loadQuotes();
+    } catch (err: any) {
+      alert(err.message || 'Failed to send payment reminder.');
+      setSelectedQuoteForReminder(null);
+    } finally {
+      setIsSendingReminder(false);
+    }
+  };
+
   const handleDelete = async (quote: Quote) => {
     if (!confirm(`Are you sure you want to delete quotation ${quote.quoteNumber}? This cannot be undone.`)) {
       return;
@@ -181,6 +253,8 @@ export default function QuotesRegistryPage() {
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-100 text-slate-700 border border-slate-200">DRAFT</span>;
       case 'SENT':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">SENT</span>;
+      case 'PARTIALLY_PAID':
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-50 text-amber-800 border border-amber-300">PARTIAL DEPOSIT</span>;
       case 'ACCEPTED':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">ACCEPTED</span>;
       case 'CONVERTED':
@@ -381,6 +455,16 @@ export default function QuotesRegistryPage() {
                         <span className="font-black text-slate-900 font-mono text-base block">
                           ₦{quote.totalAmount.toLocaleString()}
                         </span>
+                        {quote.amountPaid > 0 && (
+                          <span className="text-[10px] text-emerald-600 font-mono font-bold block">
+                            Paid: ₦{quote.amountPaid.toLocaleString()}
+                          </span>
+                        )}
+                        {quote.balanceDue > 0 && quote.amountPaid > 0 && (
+                          <span className="text-[10px] text-amber-700 font-mono font-bold block">
+                            Due: ₦{quote.balanceDue.toLocaleString()}
+                          </span>
+                        )}
                         {quote.discount > 0 && (
                           <span className="text-[10px] text-rose-500 font-mono block">
                             Disc: -₦{quote.discount.toLocaleString()}
@@ -398,10 +482,22 @@ export default function QuotesRegistryPage() {
                         {expiryDateStr && <span>Valid to: <strong className="text-slate-700">{expiryDateStr}</strong></span>}
                         <span>{quote.items.length} {quote.items.length === 1 ? 'item' : 'items'}</span>
                       </div>
+                      {quote.hasInstallments && quote.installments && quote.installments.length > 0 && (
+                        <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                          <span className="text-blue-700 font-bold">
+                            Installments: {quote.installments.filter(i => i.status === 'PAID').length}/{quote.installments.length} Paid
+                          </span>
+                          {quote.balanceDue > 0 && (
+                            <span className="text-amber-700 font-bold">
+                              Balance: ₦{quote.balanceDue.toLocaleString()}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Mobile Action Buttons */}
-                    <div className="flex items-center justify-between gap-1.5 pt-1">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1">
                       <div className="flex items-center gap-1">
                         {!isConverted && (
                           <Button
@@ -421,6 +517,27 @@ export default function QuotesRegistryPage() {
                           >
                             Convert
                           </Button>
+                        )}
+                        {!isConverted && quote.balanceDue > 0 && (
+                          <button
+                            onClick={() => {
+                              setSelectedQuoteForPayment(quote);
+                              setPaymentAmount(quote.balanceDue.toString());
+                            }}
+                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition"
+                            title="Record Deposit or Installment Payment"
+                          >
+                            + Pay
+                          </button>
+                        )}
+                        {!isConverted && quote.balanceDue > 0 && (
+                          <button
+                            onClick={() => handleSendReminderSubmit(quote)}
+                            className="p-1.5 rounded-lg text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 transition"
+                            title="Send Payment Reminder"
+                          >
+                            🔔
+                          </button>
                         )}
                         <button
                           onClick={() => {
@@ -475,7 +592,7 @@ export default function QuotesRegistryPage() {
                     <th className="py-3 px-4">Customer</th>
                     <th className="py-3 px-4">Subject / Devices</th>
                     <th className="py-3 px-4">Dates & Validity</th>
-                    <th className="py-3 px-4 text-right">Amount</th>
+                    <th className="py-3 px-4 text-right">Amount & Payments</th>
                     <th className="py-3 px-4 text-center">Status</th>
                     <th className="py-3 px-4 text-right">Actions</th>
                   </tr>
@@ -503,6 +620,11 @@ export default function QuotesRegistryPage() {
                           <Link href={`/dashboard/quotes/${quote.id}`} className="font-extrabold text-blue-600 hover:text-blue-700 hover:underline font-mono">
                             {quote.quoteNumber}
                           </Link>
+                          {quote.hasInstallments && (
+                            <span className="block text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
+                              {quote.installments?.length || 0} Installments
+                            </span>
+                          )}
                         </td>
 
                         {/* Customer */}
@@ -528,11 +650,21 @@ export default function QuotesRegistryPage() {
                           <div className="text-[10px] text-slate-400">Valid to: {expiryDateStr}</div>
                         </td>
 
-                        {/* Amount */}
+                        {/* Amount & Payments */}
                         <td className="py-3 px-4 text-right whitespace-nowrap">
-                          <span className="font-black text-slate-900 font-mono text-sm">
+                          <span className="font-black text-slate-900 font-mono text-sm block">
                             ₦{quote.totalAmount.toLocaleString()}
                           </span>
+                          {quote.amountPaid > 0 && (
+                            <span className="text-[10px] text-emerald-600 font-mono font-bold block">
+                              Deposit: ₦{quote.amountPaid.toLocaleString()}
+                            </span>
+                          )}
+                          {quote.balanceDue > 0 && quote.amountPaid > 0 && (
+                            <span className="text-[10px] text-amber-700 font-mono font-bold block">
+                              Due: ₦{quote.balanceDue.toLocaleString()}
+                            </span>
+                          )}
                           {quote.discount > 0 && (
                             <p className="text-[9px] text-rose-500 font-mono">Disc: -₦{quote.discount.toLocaleString()}</p>
                           )}
@@ -565,6 +697,31 @@ export default function QuotesRegistryPage() {
                               >
                                 Convert
                               </Button>
+                            )}
+
+                            {/* Record Payment Button */}
+                            {!isConverted && quote.balanceDue > 0 && (
+                              <button
+                                onClick={() => {
+                                  setSelectedQuoteForPayment(quote);
+                                  setPaymentAmount(quote.balanceDue.toString());
+                                }}
+                                className="px-2.5 py-1 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition"
+                                title="Record Deposit or Part Payment"
+                              >
+                                + Pay
+                              </button>
+                            )}
+
+                            {/* Send Reminder Button */}
+                            {!isConverted && quote.balanceDue > 0 && (
+                              <button
+                                onClick={() => handleSendReminderSubmit(quote)}
+                                className="p-1.5 rounded-lg text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition"
+                                title="Send Installment / Payment Reminder"
+                              >
+                                🔔
+                              </button>
                             )}
 
                             {/* Email Quote Button */}
@@ -620,6 +777,192 @@ export default function QuotesRegistryPage() {
           </div>
         )}
       </div>
+
+      {/* Record Payment Modal */}
+      {selectedQuoteForPayment && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                  <Receipt className="w-4 h-4 text-emerald-600" /> Record Deposit / Installment Payment
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Quote #{selectedQuoteForPayment.quoteNumber} • {selectedQuoteForPayment.customer?.name || 'Client'}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedQuoteForPayment(null)}
+                className="text-slate-400 hover:text-slate-700 p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-3 gap-2 text-center text-xs">
+              <div>
+                <span className="text-[10px] text-slate-400 font-bold block">Total Amount</span>
+                <span className="font-mono font-bold text-slate-900">₦{selectedQuoteForPayment.totalAmount.toLocaleString()}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-emerald-600 font-bold block">Already Paid</span>
+                <span className="font-mono font-bold text-emerald-700">₦{selectedQuoteForPayment.amountPaid.toLocaleString()}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-amber-700 font-bold block">Balance Due</span>
+                <span className="font-mono font-bold text-amber-800">₦{selectedQuoteForPayment.balanceDue.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Amount Received Today (₦) *</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  max={selectedQuoteForPayment.balanceDue}
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  placeholder="e.g. 50000"
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono text-slate-900 focus:outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Payment Channel / Method</label>
+                <select
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
+                >
+                  <option value="TRANSFER">Bank Transfer</option>
+                  <option value="CASH">Cash in Hand</option>
+                  <option value="CARD">POS / Card Terminal</option>
+                  <option value="OTHER">Other Remittance</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Payment Reference / Transaction ID (Optional)</label>
+                <input
+                  type="text"
+                  value={paymentRef}
+                  onChange={(e) => setPaymentRef(e.target.value)}
+                  placeholder="e.g. GTB/TRF/9812401"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="font-bold text-slate-700">Internal Audit Note (Optional)</label>
+                <input
+                  type="text"
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                  placeholder="e.g. Received first 50% installment deposit"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setSelectedQuoteForPayment(null)}
+                  disabled={isRecordingPayment}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleRecordPaymentSubmit}
+                  disabled={isRecordingPayment || !paymentAmount}
+                  leftIcon={isRecordingPayment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                  className="bg-emerald-600 hover:bg-emerald-500 font-bold"
+                >
+                  {isRecordingPayment ? 'Recording...' : 'Confirm & Issue Payment Receipt'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reminder Dispatch Result Modal */}
+      {selectedQuoteForReminder && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                  🔔 Payment Reminder Dispatched
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Quote #{selectedQuoteForReminder.quoteNumber} • {selectedQuoteForReminder.customer?.name}
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setSelectedQuoteForReminder(null);
+                  setReminderResult(null);
+                }}
+                className="text-slate-400 hover:text-slate-700 p-1"
+              >
+                ✕
+              </button>
+            </div>
+
+            {isSendingReminder ? (
+              <div className="py-8 text-center text-slate-500 space-y-2">
+                <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
+                <p className="text-xs font-bold">Dispatching payment reminder...</p>
+              </div>
+            ) : reminderResult ? (
+              <div className="space-y-4 text-xs">
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  {reminderResult.message || 'Reminder processed successfully!'}
+                </div>
+
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-[11px] text-slate-700">
+                  <p><strong>Customer:</strong> {selectedQuoteForReminder.customer?.name}</p>
+                  <p><strong>Outstanding Balance:</strong> ₦{selectedQuoteForReminder.balanceDue.toLocaleString()}</p>
+                  {reminderResult.emailSent && (
+                    <p className="text-emerald-700 font-bold">✓ Email statement sent to {selectedQuoteForReminder.customer?.email}</p>
+                  )}
+                </div>
+
+                {reminderResult.whatsAppShareUrl && (
+                  <div className="pt-1">
+                    <a
+                      href={reminderResult.whatsAppShareUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition"
+                    >
+                      <span>💬 Open in WhatsApp Web / Mobile</span>
+                    </a>
+                  </div>
+                )}
+
+                <div className="flex justify-end pt-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedQuoteForReminder(null);
+                      setReminderResult(null);
+                    }}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      )}
 
       {/* Email Dispatch Modal */}
       {selectedQuoteForEmail && (
