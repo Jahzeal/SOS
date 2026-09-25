@@ -10,11 +10,15 @@ export const QUERY_KEYS = {
   records: (params?: any) => ['records', params] as const,
   recordDetail: (id: string) => ['record-detail', id] as const,
   receipts: (params?: any) => ['receipts', params] as const,
+  invoices: (search?: string) => ['invoices', search] as const,
+  quotes: (params?: any) => ['quotes', params] as const,
+  customers: (search?: string) => ['customers', search] as const,
   adminSubscriptions: ['admin-subscriptions'] as const,
   adminMetrics: (timeRange?: string) => ['admin-metrics', timeRange] as const,
   adminLogs: ['admin-logs'] as const,
   publicPlans: ['public-plans'] as const,
   businessProfile: ['business-profile'] as const,
+  dashboardMetrics: (timeRange?: string) => ['dashboard-metrics', timeRange] as const,
 };
 
 /**
@@ -27,7 +31,7 @@ export function useInventory(params?: { search?: string; status?: string; brand?
       const res = await api.getInventory(params);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 60 * 1000, // 1 minute fresh
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -40,7 +44,50 @@ export function useInventorySummary() {
     queryFn: async () => {
       return await api.getDashboardSummary();
     },
-    staleTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Cached hook for Invoices
+ */
+export function useInvoices(search?: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.invoices(search),
+    queryFn: async () => {
+      const res = await api.getInvoices(search?.trim() || undefined);
+      return Array.isArray(res) ? res : [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Cached hook for Quotes
+ */
+export function useQuotes(params?: { search?: string; status?: string } | string) {
+  const queryParams = typeof params === 'string' ? { search: params.trim() || undefined } : params;
+  return useQuery({
+    queryKey: QUERY_KEYS.quotes(queryParams),
+    queryFn: async () => {
+      const res = await api.getQuotes(queryParams);
+      return Array.isArray(res) ? res : [];
+    },
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Cached hook for Customers
+ */
+export function useCustomers(search?: string) {
+  return useQuery({
+    queryKey: QUERY_KEYS.customers(search),
+    queryFn: async () => {
+      const res = await api.getCustomers();
+      return Array.isArray(res) ? res : [];
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -54,7 +101,7 @@ export function usePhoneRecords(params?: any) {
       const res = await api.getInventory(params);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -70,7 +117,7 @@ export function usePhoneRecordDetail(id?: string) {
       return res || null;
     },
     enabled: Boolean(id),
-    staleTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -84,7 +131,20 @@ export function useReceipts(search?: string) {
       const res = await api.getReceipts(search);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 60 * 1000,
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Cached hook for Business Profile & Subscription
+ */
+export function useBusinessProfile() {
+  return useQuery({
+    queryKey: QUERY_KEYS.businessProfile,
+    queryFn: async () => {
+      return await api.getBusinessProfile();
+    },
+    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -97,7 +157,7 @@ export function useAdminSubscriptions() {
     queryFn: async () => {
       return await api.adminGetSubscriptions();
     },
-    staleTime: 30 * 1000,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -111,7 +171,7 @@ export function useAdminMetrics(timeRange: 'today' | '7d' | '30d' | '90d' = 'tod
       const res = await api.adminGetMetrics(timeRange);
       return res?.kpis || null;
     },
-    staleTime: 30 * 1000,
+    staleTime: 2 * 60 * 1000,
   });
 }
 
@@ -125,7 +185,7 @@ export function useAdminSystemLogs() {
       const res = await api.adminGetSystemLogs();
       return Array.isArray(res?.logs) ? res.logs : [];
     },
-    staleTime: 15 * 1000,
+    staleTime: 30 * 1000,
   });
 }
 
@@ -139,7 +199,7 @@ export function usePublicPlans() {
       const res = await api.getPlans();
       return res?.plans || [];
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes fresh
+    staleTime: 10 * 60 * 1000,
   });
 }
 
@@ -162,6 +222,19 @@ export function useDashboardCacheUtils() {
     invalidateReceipts: () => {
       queryClient.invalidateQueries({ queryKey: ['receipts'] });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventorySummary });
+    },
+    invalidateInvoices: () => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventorySummary });
+    },
+    invalidateQuotes: () => {
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+    },
+    invalidateCustomers: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+    },
+    invalidateBusinessProfile: () => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.businessProfile });
     },
     invalidateAdminSubscriptions: () => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminSubscriptions });

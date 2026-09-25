@@ -24,41 +24,26 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { useCustomers, useInventorySummary } from '@/hooks/useDashboardQueries';
 
 export default function CustomersManagementPage() {
-  const [customers, setCustomers] = useState<any[]>([]);
-  const [summaryData, setSummaryData] = useState<any>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>('ALL');
   const [selectedCustomer, setSelectedCustomer] = useState<any | null>(null);
-
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  const fetchCustomersData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [customersList, summary] = await Promise.all([
-        api.getCustomers(searchTerm.trim() || undefined),
-        api.getDashboardSummary(),
-      ]);
-      setCustomers(customersList || []);
-      setSummaryData(summary || null);
-    } catch (err: any) {
-      console.error('Failed to load customer directory:', err);
-      setError(err.message || 'Failed to load customer directory.');
-      setCustomers([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm]);
 
   // Debounced search trigger
   useEffect(() => {
-    const t = setTimeout(() => fetchCustomersData(), 300);
+    const t = setTimeout(() => setDebouncedSearch(searchTerm), 300);
     return () => clearTimeout(t);
-  }, [fetchCustomersData]);
+  }, [searchTerm]);
+
+  // Cached persistent queries
+  const { data: customers = [], isLoading: loadingCustomers } = useCustomers(debouncedSearch);
+  const { data: summaryData } = useInventorySummary();
+
+  const loading = loadingCustomers && customers.length === 0;
 
   // Filtered Customers
   const filteredCustomers = useMemo(() => {

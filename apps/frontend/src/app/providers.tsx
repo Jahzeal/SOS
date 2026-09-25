@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { AuthProvider } from '@/lib/auth-context';
 import { WifiOff, CheckCircle2 } from 'lucide-react';
 
@@ -64,19 +66,49 @@ export function Providers({ children }: { children: React.ReactNode }) {
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60 * 1000,
+            staleTime: 1000 * 60 * 5, // 5 minutes fresh
+            gcTime: 1000 * 60 * 60 * 24, // 24 hours garbage collection time
             refetchOnWindowFocus: false,
+            retry: 1,
           },
         },
       }),
   );
+
+  const [persister] = useState(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        return createSyncStoragePersister({
+          storage: window.localStorage,
+          key: 'NOXGUARDA_REACT_QUERY_CACHE',
+        });
+      } catch (e) {
+        console.warn('LocalStorage persister error:', e);
+      }
+    }
+    return null;
+  });
+
+  if (!persister) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <NetworkStatusListener />
+          {children}
+        </AuthProvider>
+      </QueryClientProvider>
+    );
+  }
   
   return (
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 }}
+    >
       <AuthProvider>
         <NetworkStatusListener />
         {children}
       </AuthProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   );
 }

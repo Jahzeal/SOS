@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -30,6 +30,8 @@ import {
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { api } from '@/lib/api';
+import { useQuotes, useDashboardCacheUtils } from '@/hooks/useDashboardQueries';
+import { useQuery } from '@tanstack/react-query';
 
 interface QuoteItem {
   id: string;
@@ -88,22 +90,34 @@ interface Quote {
 
 export default function QuotesRegistryPage() {
   const router = useRouter();
-  const [quotes, setQuotes] = useState<Quote[]>([]);
-  const [stats, setStats] = useState<{
-    totalQuotesCount: number;
-    totalQuotedAmount: number;
-    acceptedAmount: number;
-    acceptedCount: number;
-    convertedCount: number;
-    activeCount: number;
-    totalDepositCollected: number;
-    totalOutstandingCredit: number;
-    conversionRate: number;
-  } | null>(null);
+  const { invalidateQuotes, invalidateInvoices } = useDashboardCacheUtils();
 
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // Cached persistent queries
+  const { data: rawQuotes = [], isLoading: loadingQuotes, refetch: loadQuotes } = useQuotes(debouncedSearch);
+  const { data: stats } = useQuery({
+    queryKey: ['quote-stats'],
+    queryFn: async () => await api.getQuoteStats(),
+    staleTime: 5 * 60 * 1000,
+  });
+
+  // Filter quotes in memory
+  const quotes = useMemo(() => {
+    if (statusFilter === 'ALL') return rawQuotes;
+    return rawQuotes.filter((q: Quote) => q.status === statusFilter);
+  }, [rawQuotes, statusFilter]);
+
+  const loading = loadingQuotes && rawQuotes.length === 0;
+
   const [selectedQuoteForEmail, setSelectedQuoteForEmail] = useState<Quote | null>(null);
   const [emailInput, setEmailInput] = useState('');
   const [isSendingEmail, setIsSendingEmail] = useState(false);
@@ -124,32 +138,6 @@ export default function QuotesRegistryPage() {
 
   const [convertingQuoteId, setConvertingQuoteId] = useState<string | null>(null);
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
-
-  const loadQuotes = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [quotesData, statsData] = await Promise.all([
-        api.getQuotes({
-          search: searchTerm || undefined,
-          status: statusFilter !== 'ALL' ? statusFilter : undefined,
-        }),
-        api.getQuoteStats().catch(() => null),
-      ]);
-      setQuotes(quotesData || []);
-      if (statsData) setStats(statsData);
-    } catch (err) {
-      console.error('Failed to load quotes:', err);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, statusFilter]);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      loadQuotes();
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [loadQuotes]);
 
   const handleConvertToSale = async (quote: Quote) => {
     if (!confirm(`Convert Quotation ${quote.quoteNumber} into a Commercial Invoice / Sale? This will generate the invoice and lock device inventory.`)) {
@@ -241,7 +229,7 @@ export default function QuotesRegistryPage() {
     }
     try {
       await api.deleteQuote(quote.id);
-      setQuotes((prev) => prev.filter((q) => q.id !== quote.id));
+      invalidateQuotes();
     } catch (err: any) {
       alert(err.message || 'Failed to delete quotation.');
     }
@@ -376,7 +364,7 @@ export default function QuotesRegistryPage() {
           ))}
 
           <button
-            onClick={loadQuotes}
+            onClick={() => loadQuotes()}
             title="Refresh Quotes"
             className="p-2 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 transition shrink-0 ml-auto"
           >

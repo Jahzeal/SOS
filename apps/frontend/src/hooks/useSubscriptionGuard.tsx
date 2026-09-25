@@ -41,8 +41,24 @@ const SubscriptionGuardContext = createContext<SubscriptionGuardContextType | un
 
 export function SubscriptionGuardProvider({ children }: { children: React.ReactNode }) {
   const { user, setPlan } = useAuthStore();
-  const [business, setBusiness] = useState<any>(null);
-  const [plans, setPlans] = useState<PlanDetails[]>([]);
+  const [business, setBusiness] = useState<any>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('vf_business_profile');
+        if (cached) return JSON.parse(cached);
+      } catch {}
+    }
+    return null;
+  });
+  const [plans, setPlans] = useState<PlanDetails[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('vf_cached_plans');
+        if (cached) return JSON.parse(cached);
+      } catch {}
+    }
+    return [];
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [isPaywallOpen, setIsPaywallOpen] = useState(false);
   const [paywallContextAction, setPaywallContextAction] = useState<string | null>(null);
@@ -63,9 +79,15 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
 
       if (profileData) {
         setBusiness(profileData);
+        try {
+          localStorage.setItem('vf_business_profile', JSON.stringify(profileData));
+        } catch {}
       }
       if (plansData?.plans && Array.isArray(plansData.plans)) {
         setPlans(plansData.plans);
+        try {
+          localStorage.setItem('vf_cached_plans', JSON.stringify(plansData.plans));
+        } catch {}
       }
     } catch (err) {
       console.warn('Subscription guard data fetch error:', err);
@@ -78,9 +100,9 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
     fetchSubscriptionData();
   }, [fetchSubscriptionData]);
 
-  // Derive status
+  // Derive status with authoritative database fields
   const planCode = (business?.plan || user?.business?.plan || 'STARTER').toUpperCase();
-  const subscriptionStatus = (business?.subscriptionStatus || 'TRIAL').toUpperCase();
+  const subscriptionStatus = (business?.subscriptionStatus || (business ? 'FREE' : 'TRIAL')).toUpperCase();
 
   // Find matching plan object
   const selectedPlan: PlanDetails = plans.find(
@@ -98,31 +120,35 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
 
   const trialEndsAt = business?.trialEndsAt ? new Date(business.trialEndsAt) : null;
   const now = new Date();
+  const hasValidTrialDate = trialEndsAt !== null && !isNaN(trialEndsAt.getTime());
 
   const isFreePlan = planCode === 'FREE' || subscriptionStatus === 'FREE';
   const isPaidActive = subscriptionStatus === 'ACTIVE';
   
-  // Trial is expired if status is EXPIRED, or status is TRIAL but date is in the past
+  // Trial is expired ONLY if status is explicitly EXPIRED/PAST_DUE, or status is TRIAL and DB trial date has passed
   const isTrialExpired =
     !isFreePlan &&
     !isPaidActive &&
     (subscriptionStatus === 'EXPIRED' ||
       subscriptionStatus === 'PAST_DUE' ||
-      (trialEndsAt !== null && !isNaN(trialEndsAt.getTime()) && trialEndsAt.getTime() <= now.getTime()));
+      (subscriptionStatus === 'TRIAL' && hasValidTrialDate && trialEndsAt.getTime() <= now.getTime()));
 
+  // Trial is active ONLY if status is TRIAL AND we have a verified trial date from the DB that is in the future
   const isTrialActive =
     !isFreePlan &&
     !isPaidActive &&
     !isTrialExpired &&
-    (subscriptionStatus === 'TRIAL' || trialEndsAt !== null);
+    subscriptionStatus === 'TRIAL' &&
+    hasValidTrialDate &&
+    trialEndsAt.getTime() > now.getTime();
 
   const trialDaysRemaining =
-    trialEndsAt && !isNaN(trialEndsAt.getTime())
-      ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+    isTrialActive && hasValidTrialDate
+      ? Math.max(1, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
       : 0;
 
   const formattedTrialEndDate =
-    trialEndsAt && !isNaN(trialEndsAt.getTime())
+    hasValidTrialDate
       ? trialEndsAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
       : 'recently';
 

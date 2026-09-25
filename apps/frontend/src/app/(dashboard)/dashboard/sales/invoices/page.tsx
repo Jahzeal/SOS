@@ -29,15 +29,25 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { useInvoices, useInventorySummary } from '@/hooks/useDashboardQueries';
 
 export default function InvoicesRegistryPage() {
-  const [invoices, setInvoices] = useState<any[]>([]);
-  const [summaryData, setSummaryData] = useState<any>(null);
-
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Debounced search
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Cached persistent queries
+  const { data: invoices = [], isLoading: loadingInvoices } = useInvoices(debouncedSearch);
+  const { data: summaryData } = useInventorySummary();
+
+  const loading = loadingInvoices && invoices.length === 0;
 
   // Email & View Modal State
   const [emailModalInvoice, setEmailModalInvoice] = useState<any | null>(null);
@@ -47,31 +57,6 @@ export default function InvoicesRegistryPage() {
   const [emailStatusMsg, setEmailStatusMsg] = useState<string | null>(null);
 
   const [isSendingEmail, setIsSendingEmail] = useState(false);
-
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const [salesData, summary] = await Promise.all([
-        api.getInvoices(search.trim() || undefined),
-        api.getDashboardSummary(),
-      ]);
-      setInvoices(salesData || []);
-      setSummaryData(summary || null);
-    } catch (err: any) {
-      console.error('Failed to load invoice registry:', err);
-      setError(err.message || 'Failed to load invoice registry.');
-      setInvoices([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [search]);
-
-  // Debounced search
-  useEffect(() => {
-    const t = setTimeout(() => fetchData(), 300);
-    return () => clearTimeout(t);
-  }, [fetchData]);
 
   // Status breakdown calculations
   const counts = useMemo(() => {

@@ -7,6 +7,8 @@ import Link from 'next/link';
 
 export function SubscriptionStatusBanner() {
   const {
+    business,
+    isLoading,
     isTrialExpired,
     isTrialActive,
     trialDaysRemaining,
@@ -21,7 +23,8 @@ export function SubscriptionStatusBanner() {
   const [isDismissed, setIsDismissed] = useState(false);
   const [isDowngrading, setIsDowngrading] = useState(false);
 
-  if (isDismissed || isFreePlan || isPaidActive) return null;
+  // Strictly do not show any banner if loading, if business data is not yet verified from DB, or if on Free / Paid Active plans
+  if (isLoading || !business || isDismissed || isFreePlan || isPaidActive) return null;
 
   const planName = selectedPlan?.name || 'Starter';
   const monthlyPrice = selectedPlan?.monthlyPriceNgn || 5000;
@@ -67,8 +70,8 @@ export function SubscriptionStatusBanner() {
     );
   }
 
-  // 2. Trial is Active but Ending Soon (<= 3 days)
-  if (isTrialActive && trialDaysRemaining <= 3) {
+  // 2. Trial is Active but Ending Soon (1 to 3 days remaining)
+  if (isTrialActive && trialDaysRemaining > 0 && trialDaysRemaining <= 3) {
     return (
       <div className="bg-gradient-to-r from-blue-500/10 via-teal-500/10 to-blue-500/10 border-b border-blue-200/80 px-4 py-2 sm:px-6 sticky top-16 z-10 backdrop-blur-md text-xs">
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-3">
