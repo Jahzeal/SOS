@@ -176,6 +176,25 @@ export default function InvoicesRegistryPage() {
     setTimeout(() => setCopiedLink(false), 2500);
   };
 
+  const [payingInvoiceId, setPayingInvoiceId] = useState<string | null>(null);
+
+  const handlePayInvoice = async (inv: any) => {
+    const invNum = inv.invoiceNumber || inv.receiptNumber || inv.id;
+    if (!confirm(`Mark Invoice #${invNum} as fully PAID and generate official Sales Receipt?`)) {
+      return;
+    }
+    setPayingInvoiceId(inv.id);
+    try {
+      await api.payInvoice(inv.id, 'TRANSFER');
+      alert(`Invoice #${invNum} is now marked as PAID! Official Receipt generated.`);
+      window.location.reload();
+    } catch (err: any) {
+      alert(err.message || 'Failed to mark invoice as paid.');
+    } finally {
+      setPayingInvoiceId(null);
+    }
+  };
+
   return (
     <div className="space-y-6 font-sans pb-24 md:pb-8">
 
@@ -474,6 +493,21 @@ export default function InvoicesRegistryPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-slate-400">
+                          {status !== 'PAID' && (
+                            <button
+                              onClick={() => handlePayInvoice(inv)}
+                              disabled={payingInvoiceId === inv.id}
+                              className="px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-bold transition flex items-center gap-1"
+                              title="Mark as Paid & Generate Receipt"
+                            >
+                              {payingInvoiceId === inv.id ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                              )}
+                              <span>Pay</span>
+                            </button>
+                          )}
                           <button
                             onClick={() => setViewModalInvoice(inv)}
                             className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded transition"
@@ -672,6 +706,21 @@ export default function InvoicesRegistryPage() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
+                {(viewModalInvoice.paymentStatus || 'PAID').toUpperCase() !== 'PAID' && (
+                  <button
+                    type="button"
+                    onClick={() => handlePayInvoice(viewModalInvoice)}
+                    disabled={payingInvoiceId === viewModalInvoice.id}
+                    className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-emerald-600/20"
+                  >
+                    {payingInvoiceId === viewModalInvoice.id ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                    )}
+                    <span>Mark as Paid & Issue Receipt</span>
+                  </button>
+                )}
                 <button
                   type="button"
                   onClick={() => window.print()}

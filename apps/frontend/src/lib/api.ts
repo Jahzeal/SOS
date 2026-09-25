@@ -288,6 +288,10 @@ class ApiClient {
     });
   }
 
+  async payInvoice(id: string, paymentMethod?: string) {
+    return this.markInvoicePaid(id, paymentMethod);
+  }
+
   async sendInvoiceEmail(id: string, email?: string) {
     return this.request<{ success: boolean; message?: string; recipient?: string; dispatched?: boolean }>(
       `/sales/invoices/${id}/email`,
