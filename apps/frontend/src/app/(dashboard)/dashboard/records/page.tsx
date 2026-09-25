@@ -155,16 +155,19 @@ export default function PhoneRecordsPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5">
           <Link href="/report-stolen">
-            <Button variant="secondary" size="sm" className="border-rose-200 text-rose-600 hover:bg-rose-50" leftIcon={<ShieldAlert className="w-4 h-4" />}>
-              Public Theft Registry
-            </Button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-rose-200 text-rose-600 bg-transparent hover:bg-rose-50 shadow-xs">
+              <ShieldAlert className="w-3.5 h-3.5" />
+              <span>Public Theft Registry</span>
+            </button>
           </Link>
           <Link href="/dashboard/register">
-            <Button variant="primary" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
-              Register Phone / Item
-            </Button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-blue-600/30 text-blue-700 bg-blue-50/30 hover:bg-blue-50 sm:bg-blue-600 sm:text-white sm:border-blue-600 sm:hover:bg-blue-700 shadow-xs sm:shadow-md sm:shadow-blue-600/10">
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 sm:text-white" />
+              <span className="hidden sm:inline">Register Phone / Item</span>
+              <span className="inline sm:hidden">Register Item</span>
+            </button>
           </Link>
         </div>
       </div>
@@ -190,7 +193,11 @@ export default function PhoneRecordsPage() {
           </div>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Registered</p>
-            <p className="text-xl font-extrabold text-slate-900">{stats?.totalRegistered ?? records.length}</p>
+            {loading && records.length === 0 ? (
+              <div className="h-6 w-14 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+            ) : (
+              <p className="text-xl font-extrabold text-slate-900">{stats?.totalRegistered ?? records.length}</p>
+            )}
           </div>
         </div>
 
@@ -200,7 +207,11 @@ export default function PhoneRecordsPage() {
           </div>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">In Stock</p>
-            <p className="text-xl font-extrabold text-slate-900">{stats?.inStockCount ?? '—'}</p>
+            {loading && records.length === 0 ? (
+              <div className="h-6 w-14 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+            ) : (
+              <p className="text-xl font-extrabold text-slate-900">{stats?.inStockCount ?? '—'}</p>
+            )}
           </div>
         </div>
 
@@ -210,7 +221,11 @@ export default function PhoneRecordsPage() {
           </div>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Under Warranty</p>
-            <p className="text-xl font-extrabold text-slate-900">{stats?.activeWarrantiesCount ?? '—'}</p>
+            {loading && records.length === 0 ? (
+              <div className="h-6 w-14 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+            ) : (
+              <p className="text-xl font-extrabold text-slate-900">{stats?.activeWarrantiesCount ?? '—'}</p>
+            )}
           </div>
         </div>
 
@@ -220,7 +235,11 @@ export default function PhoneRecordsPage() {
           </div>
           <div>
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Stolen / Blacklisted</p>
-            <p className="text-xl font-extrabold text-rose-600">{records.filter((r) => r.isStolen || r.theftStatus === 'STOLEN').length}</p>
+            {loading && records.length === 0 ? (
+              <div className="h-6 w-14 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+            ) : (
+              <p className="text-xl font-extrabold text-rose-600">{records.filter((r) => r.isStolen || r.theftStatus === 'STOLEN').length}</p>
+            )}
           </div>
         </div>
       </div>

@@ -194,14 +194,19 @@ export default function InvoicesRegistryPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2 shrink-0">
-          <Button variant="secondary" size="sm" leftIcon={<Download className="w-4 h-4 text-slate-600" />}>
-            Export Data
-          </Button>
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 shrink-0">
+          <button
+            onClick={() => handlePrint()}
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 text-slate-700 bg-transparent hover:bg-slate-50 shadow-xs"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-600" />
+            <span>Export</span>
+          </button>
           <Link href="/dashboard/sales/invoices/new">
-            <Button variant="primary" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
-              Create Invoice
-            </Button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-blue-600/30 text-blue-700 bg-blue-50/30 hover:bg-blue-50 sm:bg-blue-600 sm:text-white sm:border-blue-600 sm:hover:bg-blue-700 shadow-xs sm:shadow-md sm:shadow-blue-600/10">
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 sm:text-white" />
+              <span>Create Invoice</span>
+            </button>
           </Link>
         </div>
       </div>
@@ -216,7 +221,11 @@ export default function InvoicesRegistryPage() {
             </div>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Invoices</p>
-          <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{invoices.length}</h3>
+          {loading && invoices.length === 0 ? (
+            <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+          ) : (
+            <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{invoices.length}</h3>
+          )}
           <p className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-0.5 mt-1">
             <TrendingUp className="w-3 h-3" /> Live records
           </p>
@@ -230,7 +239,11 @@ export default function InvoicesRegistryPage() {
             </div>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Draft</p>
-          <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{counts.draft}</h3>
+          {loading && invoices.length === 0 ? (
+            <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+          ) : (
+            <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{counts.draft}</h3>
+          )}
           <p className="text-[10px] text-slate-400 font-bold mt-1">Draft state</p>
         </div>
 
@@ -242,7 +255,11 @@ export default function InvoicesRegistryPage() {
             </div>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Pending</p>
-          <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{counts.pending}</h3>
+          {loading && invoices.length === 0 ? (
+            <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+          ) : (
+            <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{counts.pending}</h3>
+          )}
           <p className="text-[10px] text-amber-700 font-bold mt-1">Awaiting payment</p>
         </div>
 
@@ -254,7 +271,11 @@ export default function InvoicesRegistryPage() {
             </div>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Paid</p>
-          <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{counts.paid}</h3>
+          {loading && invoices.length === 0 ? (
+            <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+          ) : (
+            <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{counts.paid}</h3>
+          )}
           <p className="text-[10px] text-emerald-700 font-bold mt-1">Settled invoices</p>
         </div>
 
@@ -266,7 +287,11 @@ export default function InvoicesRegistryPage() {
             </div>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Overdue</p>
-          <h3 className="text-xl font-extrabold text-rose-600 mt-0.5">{counts.overdue}</h3>
+          {loading && invoices.length === 0 ? (
+            <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+          ) : (
+            <h3 className="text-xl font-extrabold text-rose-600 mt-0.5">{counts.overdue}</h3>
+          )}
           <p className="text-[10px] text-rose-600 font-bold mt-1">Requires action</p>
         </div>
 
@@ -278,7 +303,11 @@ export default function InvoicesRegistryPage() {
             </div>
           </div>
           <p className="text-indigo-100 font-extrabold text-[10px] uppercase tracking-wider">Outstanding</p>
-          <h3 className="text-xl font-extrabold text-white mt-0.5">₦{counts.outstandingTotal.toLocaleString()}</h3>
+          {loading && invoices.length === 0 ? (
+            <div className="h-6 w-20 bg-indigo-500/60 rounded-md animate-pulse mt-0.5" />
+          ) : (
+            <h3 className="text-xl font-extrabold text-white mt-0.5">₦{counts.outstandingTotal.toLocaleString()}</h3>
+          )}
           <p className="text-[10px] text-indigo-100 font-medium mt-1">Total receivables</p>
         </div>
       </div>

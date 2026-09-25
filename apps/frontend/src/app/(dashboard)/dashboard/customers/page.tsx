@@ -83,6 +83,21 @@ export default function CustomersManagementPage() {
     return count;
   }, [customers]);
 
+  const handleExport = () => {
+    if (customers.length === 0) return;
+    const csvContent = 'data:text/csv;charset=utf-8,' +
+      ['Name,Phone,Email,Total Spending,Created At']
+        .concat(customers.map((c) => `"${c.name}","${c.phone}","${c.email || ''}",${c.totalSpending || 0},"${c.createdAt}"`))
+        .join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `customers_export_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-6 font-sans pb-24 md:pb-8">
 
@@ -170,19 +185,19 @@ export default function CustomersManagementPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
-          <Button variant="secondary" size="md" leftIcon={<Download className="w-4 h-4 text-slate-600" />}>
-            Export Customers
-          </Button>
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 shrink-0">
+          <button
+            onClick={() => handleExport()}
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 text-slate-700 bg-transparent hover:bg-slate-50 shadow-xs"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-600" />
+            <span>Export</span>
+          </button>
           <Link href="/dashboard/sales/new">
-            <Button
-              variant="primary"
-              size="md"
-              leftIcon={<ShoppingCart className="w-4 h-4" />}
-              className="bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/20 font-bold"
-            >
-              New Sale Checkout
-            </Button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-blue-600/30 text-blue-700 bg-blue-50/30 hover:bg-blue-50 sm:bg-blue-600 sm:text-white sm:border-blue-600 sm:hover:bg-blue-700 shadow-xs sm:shadow-md sm:shadow-blue-600/10">
+              <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 sm:text-white" />
+              <span>New Sale Checkout</span>
+            </button>
           </Link>
         </div>
       </div>
@@ -197,7 +212,11 @@ export default function CustomersManagementPage() {
           </div>
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Active</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-0.5">{customers.length}</p>
+            {loading && customers.length === 0 ? (
+              <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+            ) : (
+              <p className="text-xl font-extrabold text-slate-900 mt-0.5">{customers.length}</p>
+            )}
           </div>
         </div>
 
@@ -209,9 +228,13 @@ export default function CustomersManagementPage() {
           </div>
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">New (30d)</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-0.5">
-              {customers.filter((c) => (Date.now() - new Date(c.createdAt).getTime()) < 30 * 86400000).length}
-            </p>
+            {loading && customers.length === 0 ? (
+              <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+            ) : (
+              <p className="text-xl font-extrabold text-slate-900 mt-0.5">
+                {customers.filter((c) => (Date.now() - new Date(c.createdAt).getTime()) < 30 * 86400000).length}
+              </p>
+            )}
           </div>
         </div>
 
@@ -223,9 +246,13 @@ export default function CustomersManagementPage() {
           </div>
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">With Devices</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-0.5">
-              {customers.filter((c) => (c.devicesCount || 0) > 0).length}
-            </p>
+            {loading && customers.length === 0 ? (
+              <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+            ) : (
+              <p className="text-xl font-extrabold text-slate-900 mt-0.5">
+                {customers.filter((c) => (c.devicesCount || 0) > 0).length}
+              </p>
+            )}
           </div>
         </div>
 

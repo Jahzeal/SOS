@@ -277,27 +277,32 @@ export default function QuotesRegistryPage() {
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5 shrink-0">
+        <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 shrink-0">
           <Link href="/dashboard/templates">
-            <Button variant="secondary" size="md" className="font-bold border-slate-200 text-slate-700 hover:bg-slate-50">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 text-slate-700 bg-transparent hover:bg-slate-50 shadow-xs">
               Customize Template
-            </Button>
+            </button>
           </Link>
           <Link href="/dashboard/quotes/new">
-            <Button variant="primary" size="md" leftIcon={<Plus className="w-4 h-4" />} className="bg-blue-600 hover:bg-blue-500 font-bold shadow-md shadow-blue-600/20">
-              Create New Quote
-            </Button>
+            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-blue-600/30 text-blue-700 bg-blue-50/30 hover:bg-blue-50 sm:bg-blue-600 sm:text-white sm:border-blue-600 sm:hover:bg-blue-700 shadow-xs sm:shadow-md sm:shadow-blue-600/10">
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 sm:text-white" />
+              <span>Create New Quote</span>
+            </button>
           </Link>
         </div>
       </div>
 
       {/* Metric KPI Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
           <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Quoted Value</span>
-          <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
-            ₦{(stats?.totalQuotedAmount || 0).toLocaleString()}
-          </p>
+          {loading && !stats ? (
+            <div className="h-7 w-24 bg-slate-200/60 rounded-md animate-pulse my-1" />
+          ) : (
+            <p className="text-xl sm:text-2xl font-black text-slate-900 font-mono">
+              ₦{(stats?.totalQuotedAmount || 0).toLocaleString()}
+            </p>
+          )}
           <p className="text-[11px] font-semibold text-slate-400">
             Across {stats?.totalQuotesCount || 0} total proposals
           </p>
@@ -305,9 +310,13 @@ export default function QuotesRegistryPage() {
 
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
           <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Accepted / Won</span>
-          <p className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">
-            ₦{(stats?.acceptedAmount || 0).toLocaleString()}
-          </p>
+          {loading && !stats ? (
+            <div className="h-7 w-24 bg-slate-200/60 rounded-md animate-pulse my-1" />
+          ) : (
+            <p className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">
+              ₦{(stats?.acceptedAmount || 0).toLocaleString()}
+            </p>
+          )}
           <p className="text-[11px] font-semibold text-slate-400">
             {stats?.acceptedCount || 0} quotes approved
           </p>
@@ -315,9 +324,13 @@ export default function QuotesRegistryPage() {
 
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
           <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Active / Pending</span>
-          <p className="text-xl sm:text-2xl font-black text-blue-600 font-mono">
-            {stats?.activeCount || 0}
-          </p>
+          {loading && !stats ? (
+            <div className="h-7 w-16 bg-slate-200/60 rounded-md animate-pulse my-1" />
+          ) : (
+            <p className="text-xl sm:text-2xl font-black text-blue-600 font-mono">
+              {stats?.activeCount || 0}
+            </p>
+          )}
           <p className="text-[11px] font-semibold text-slate-400">
             Awaiting client confirmation
           </p>
@@ -325,9 +338,13 @@ export default function QuotesRegistryPage() {
 
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
           <span className="text-xs font-bold text-purple-600 uppercase tracking-wider">Win Rate</span>
-          <p className="text-xl sm:text-2xl font-black text-purple-600 font-mono">
-            {stats?.conversionRate || 0}%
-          </p>
+          {loading && !stats ? (
+            <div className="h-7 w-16 bg-slate-200/60 rounded-md animate-pulse my-1" />
+          ) : (
+            <p className="text-xl sm:text-2xl font-black text-purple-600 font-mono">
+              {stats?.conversionRate || 0}%
+            </p>
+          )}
           <p className="text-[11px] font-semibold text-slate-400">
             {stats?.convertedCount || 0} converted to sales
           </p>
