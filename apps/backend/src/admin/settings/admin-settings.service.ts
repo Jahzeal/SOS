@@ -59,6 +59,12 @@ export class AdminSettingsService implements OnModuleInit {
         await this.prisma.platformSetting.create({
           data: { key, value },
         });
+      } else if (existing.value && /verifyflow/i.test(existing.value)) {
+        const cleanedValue = existing.value.replace(/verifyflow/gi, 'NoxGuarda');
+        await this.prisma.platformSetting.update({
+          where: { key },
+          data: { value: cleanedValue },
+        });
       }
     }
   }

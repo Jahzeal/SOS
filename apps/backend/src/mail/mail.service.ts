@@ -370,47 +370,47 @@ export class MailService {
     const formattedAmount = `NGN ${totalAmount.toLocaleString()}`;
 
     const html = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #0f172a; border-radius: 16px; color: #f8fafc;">
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; color: #0f172a;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; padding: 8px 18px; background-color: #2563eb; color: #ffffff; border-radius: 8px; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
-          <h1 style="color: #ffffff; font-size: 22px; font-weight: 800; margin: 16px 0 4px 0;">${quoteTitle} #${quoteNumber}</h1>
-          <p style="color: #94a3b8; font-size: 13px; margin: 0;">Official Commercial Proposal</p>
+          <div style="display: inline-block; padding: 6px 16px; background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
+          <h1 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 14px 0 4px 0; letter-spacing: -0.5px;">${quoteTitle} #${quoteNumber}</h1>
+          <p style="color: #64748b; font-size: 13px; margin: 0;">Official Commercial Proposal</p>
         </div>
 
-        <div style="background-color: #1e293b; padding: 28px 24px; border-radius: 14px; border: 1px solid #334155;">
-          <p style="color: #f1f5f9; font-size: 14px; line-height: 1.6; margin-top: 0;">
+        <div style="background-color: #ffffff; padding: 28px 24px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+          <p style="color: #0f172a; font-size: 14px; line-height: 1.6; margin-top: 0;">
             Hello <strong>${customerName || 'Valued Client'}</strong>,
           </p>
-          <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
+          <p style="color: #475569; font-size: 13.5px; line-height: 1.6;">
             Thank you for your interest. Please find attached your formal <strong>${quoteTitle} (#${quoteNumber})</strong> from <strong>${storeName}</strong>.
           </p>
 
           <!-- Quote Breakdown Box -->
-          <div style="background-color: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 20px 0;">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+          <div style="background-color: #f8fafc; padding: 18px 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 20px 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Quotation Number:</span>
-              <strong style="color: #f8fafc;">${quoteNumber}</strong>
+              <strong style="color: #0f172a;">${quoteNumber}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Estimated Total:</span>
-              <strong style="color: #38bdf8; font-size: 16px;">${formattedAmount}</strong>
+              <strong style="color: #2563eb; font-size: 16px;">${formattedAmount}</strong>
             </div>
             ${
               expiryDateStr
-                ? `<div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8;">
+                ? `<div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b;">
                     <span>Valid Until:</span>
-                    <strong style="color: #f59e0b;">${expiryDateStr}</strong>
+                    <strong style="color: #d97706;">${expiryDateStr}</strong>
                   </div>`
                 : ''
             }
           </div>
 
-          <p style="color: #94a3b8; font-size: 12.5px; line-height: 1.5; margin-bottom: 0;">
+          <p style="color: #64748b; font-size: 12.5px; line-height: 1.5; margin-bottom: 0;">
             📎 The complete itemized PDF quotation is attached to this email. You can reply directly to this email or contact us via phone/WhatsApp to confirm or proceed with the order.
           </p>
         </div>
 
-        <div style="text-align: center; margin-top: 24px; color: #64748b; font-size: 11px;">
+        <div style="text-align: center; margin-top: 24px; color: #94a3b8; font-size: 11px;">
           Sent by ${storeName} via NoxGuarda Retail OS.<br/>
           © ${new Date().getFullYear()} ${storeName}. All rights reserved.
         </div>
@@ -477,59 +477,59 @@ export class MailService {
     const formattedBalanceDue = `NGN ${balanceDue.toLocaleString()}`;
 
     const html = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #0f172a; border-radius: 16px; color: #f8fafc;">
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; color: #0f172a;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; padding: 8px 18px; background-color: ${isOverdue ? '#ef4444' : '#2E6F5E'}; color: #ffffff; border-radius: 8px; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
-          <h1 style="color: #ffffff; font-size: 22px; font-weight: 800; margin: 16px 0 4px 0;">${isOverdue ? 'Overdue Payment Reminder' : 'Installment Due Reminder'}</h1>
-          <p style="color: #94a3b8; font-size: 13px; margin: 0;">${docType} #${docNumber} • ${installmentLabel}</p>
+          <div style="display: inline-block; padding: 6px 16px; background-color: ${isOverdue ? '#fee2e2' : '#ecfdf5'}; color: ${isOverdue ? '#dc2626' : '#059669'}; border: 1px solid ${isOverdue ? '#fecaca' : '#a7f3d0'}; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
+          <h1 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 14px 0 4px 0;">${isOverdue ? 'Overdue Payment Reminder' : 'Installment Due Reminder'}</h1>
+          <p style="color: #64748b; font-size: 13px; margin: 0;">${docType} #${docNumber} • ${installmentLabel}</p>
         </div>
 
-        <div style="background-color: #1e293b; padding: 28px 24px; border-radius: 14px; border: 1px solid #334155;">
-          <p style="color: #f1f5f9; font-size: 14px; line-height: 1.6; margin-top: 0;">
+        <div style="background-color: #ffffff; padding: 28px 24px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+          <p style="color: #0f172a; font-size: 14px; line-height: 1.6; margin-top: 0;">
             Hello <strong>${customerName}</strong>,
           </p>
-          <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
+          <p style="color: #475569; font-size: 13.5px; line-height: 1.6;">
             This is a friendly reminder regarding your upcoming scheduled installment payment for <strong>${docType} #${docNumber}</strong> with <strong>${storeName}</strong>.
           </p>
 
           <!-- Due Summary Box -->
-          <div style="background-color: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid ${isOverdue ? '#ef4444' : '#334155'}; margin: 20px 0;">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+          <div style="background-color: #f8fafc; padding: 18px 20px; border-radius: 12px; border: 1px solid ${isOverdue ? '#fca5a5' : '#e2e8f0'}; margin: 20px 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Payment Stage:</span>
-              <strong style="color: #f8fafc;">${installmentLabel}</strong>
+              <strong style="color: #0f172a;">${installmentLabel}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Amount Due for this Period:</span>
-              <strong style="color: ${isOverdue ? '#f87171' : '#38bdf8'}; font-size: 16px;">${formattedAmountDue}</strong>
+              <strong style="color: ${isOverdue ? '#dc2626' : '#2563eb'}; font-size: 16px;">${formattedAmountDue}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Total Outstanding Balance:</span>
-              <strong style="color: #fbbf24;">${formattedBalanceDue}</strong>
+              <strong style="color: #d97706;">${formattedBalanceDue}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b;">
               <span>Due Date:</span>
-              <strong style="color: ${isOverdue ? '#ef4444' : '#10b981'};">${dueDateStr}</strong>
+              <strong style="color: ${isOverdue ? '#dc2626' : '#059669'};">${dueDateStr}</strong>
             </div>
           </div>
 
           ${
             bankName || accountNumber
               ? `<!-- Bank Transfer Info -->
-              <div style="background-color: #121417; padding: 16px; border-radius: 10px; border: 1px solid #334155; margin-bottom: 20px;">
-                <div style="font-size: 11px; font-weight: 700; color: #52a38c; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Payment Remittance Details</div>
-                ${bankName ? `<div style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;">Bank: <strong>${bankName}</strong></div>` : ''}
-                ${accountNumber ? `<div style="font-size: 13px; color: #cbd5e1; margin-bottom: 4px;">Account Number: <strong style="color: #38bdf8; font-family: monospace;">${accountNumber}</strong></div>` : ''}
-                ${accountName ? `<div style="font-size: 13px; color: #cbd5e1;">Account Name: <strong>${accountName}</strong></div>` : ''}
+              <div style="background-color: #f1f5f9; padding: 16px; border-radius: 10px; border: 1px solid #cbd5e1; margin-bottom: 20px;">
+                <div style="font-size: 11px; font-weight: 700; color: #2E6F5E; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Payment Remittance Details</div>
+                ${bankName ? `<div style="font-size: 13px; color: #334155; margin-bottom: 4px;">Bank: <strong>${bankName}</strong></div>` : ''}
+                ${accountNumber ? `<div style="font-size: 13px; color: #334155; margin-bottom: 4px;">Account Number: <strong style="color: #0284c7; font-family: monospace;">${accountNumber}</strong></div>` : ''}
+                ${accountName ? `<div style="font-size: 13px; color: #334155;">Account Name: <strong>${accountName}</strong></div>` : ''}
               </div>`
               : ''
           }
 
-          <p style="color: #94a3b8; font-size: 12.5px; line-height: 1.5; margin-bottom: 0;">
+          <p style="color: #64748b; font-size: 12.5px; line-height: 1.5; margin-bottom: 0;">
             Please contact <strong>${storeName}</strong> after making payment to confirm receipt and update your account records.
           </p>
         </div>
 
-        <div style="text-align: center; margin-top: 24px; color: #64748b; font-size: 11px;">
+        <div style="text-align: center; margin-top: 24px; color: #94a3b8; font-size: 11px;">
           Sent by ${storeName} via NoxGuarda Retail OS.<br/>
           © ${new Date().getFullYear()} ${storeName}. All rights reserved.
         </div>
@@ -572,42 +572,42 @@ export class MailService {
     const subject = `Payment Confirmation: ₦${amountPaid.toLocaleString()} received for ${docType} #${docNumber} - ${storeName}`;
 
     const html = `
-      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #0f172a; border-radius: 16px; color: #f8fafc;">
+      <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; color: #0f172a;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; padding: 8px 18px; background-color: #10b981; color: #ffffff; border-radius: 8px; font-weight: 800; font-size: 14px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
-          <h1 style="color: #ffffff; font-size: 22px; font-weight: 800; margin: 16px 0 4px 0;">Payment Receipt Confirmation</h1>
-          <p style="color: #94a3b8; font-size: 13px; margin: 0;">${docType} #${docNumber} ${receiptRef ? `• Ref: ${receiptRef}` : ''}</p>
+          <div style="display: inline-block; padding: 6px 16px; background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
+          <h1 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 14px 0 4px 0; letter-spacing: -0.5px;">Payment Receipt Confirmation</h1>
+          <p style="color: #64748b; font-size: 13px; margin: 0;">${docType} #${docNumber} ${receiptRef ? `• Ref: ${receiptRef}` : ''}</p>
         </div>
 
-        <div style="background-color: #1e293b; padding: 28px 24px; border-radius: 14px; border: 1px solid #334155;">
-          <p style="color: #f1f5f9; font-size: 14px; line-height: 1.6; margin-top: 0;">
+        <div style="background-color: #ffffff; padding: 28px 24px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
+          <p style="color: #0f172a; font-size: 14px; line-height: 1.6; margin-top: 0;">
             Hello <strong>${customerName}</strong>,
           </p>
-          <p style="color: #cbd5e1; font-size: 13.5px; line-height: 1.6;">
-            We have successfully received and recorded your payment of <strong style="color: #10b981;">₦${amountPaid.toLocaleString()}</strong> towards <strong>${docType} #${docNumber}</strong>.
+          <p style="color: #475569; font-size: 13.5px; line-height: 1.6;">
+            We have successfully received and recorded your payment of <strong style="color: #059669;">₦${amountPaid.toLocaleString()}</strong> towards <strong>${docType} #${docNumber}</strong>.
           </p>
 
-          <div style="background-color: #0f172a; padding: 20px; border-radius: 12px; border: 1px solid #334155; margin: 20px 0;">
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+          <div style="background-color: #f8fafc; padding: 18px 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 20px 0;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Amount Paid:</span>
-              <strong style="color: #10b981; font-size: 16px;">₦${amountPaid.toLocaleString()}</strong>
+              <strong style="color: #059669; font-size: 16px;">₦${amountPaid.toLocaleString()}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Payment Method:</span>
-              <strong style="color: #f8fafc;">${paymentMethod}</strong>
+              <strong style="color: #0f172a;">${paymentMethod}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Date Received:</span>
-              <strong style="color: #f8fafc;">${paymentDateStr}</strong>
+              <strong style="color: #0f172a;">${paymentDateStr}</strong>
             </div>
-            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8;">
+            <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b;">
               <span>Remaining Balance:</span>
-              <strong style="color: ${balanceRemaining > 0 ? '#f59e0b' : '#10b981'}; font-size: 14px;">${balanceRemaining > 0 ? `₦${balanceRemaining.toLocaleString()}` : 'COMPLETELY PAID (₦0)'}</strong>
+              <strong style="color: ${balanceRemaining > 0 ? '#d97706' : '#059669'}; font-size: 14px;">${balanceRemaining > 0 ? `₦${balanceRemaining.toLocaleString()}` : 'COMPLETELY PAID (₦0)'}</strong>
             </div>
           </div>
         </div>
 
-        <div style="text-align: center; margin-top: 24px; color: #64748b; font-size: 11px;">
+        <div style="text-align: center; margin-top: 24px; color: #94a3b8; font-size: 11px;">
           Sent by ${storeName} via NoxGuarda Retail OS.<br/>
           © ${new Date().getFullYear()} ${storeName}. All rights reserved.
         </div>

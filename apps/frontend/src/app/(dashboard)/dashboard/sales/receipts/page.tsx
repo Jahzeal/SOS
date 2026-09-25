@@ -19,6 +19,7 @@ import {
   X,
   FileText,
   Loader2,
+  QrCode,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -32,12 +33,23 @@ export default function ReceiptsArchivePage() {
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('ALL');
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
   const [receiptForEmailModal, setReceiptForEmailModal] = useState<any | null>(null);
+  const [receiptToPrint, setReceiptToPrint] = useState<any | null>(null);
 
   // Debounce search
   useEffect(() => {
     const t = setTimeout(() => setDebouncedSearch(search.trim()), 300);
     return () => clearTimeout(t);
   }, [search]);
+
+  // Handle triggered print
+  useEffect(() => {
+    if (receiptToPrint) {
+      const timer = setTimeout(() => {
+        window.print();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [receiptToPrint]);
 
   // Cached receipts query (instant 0ms switch)
   const {
@@ -75,8 +87,10 @@ export default function ReceiptsArchivePage() {
       .join(', ');
   };
 
-  const handlePrintReceipt = () => {
-    window.print();
+  const handlePrintReceipt = (rcp?: any) => {
+    const target = rcp || selectedReceipt;
+    if (!target) return;
+    setReceiptToPrint(target);
   };
 
   const handleEmailReceipt = (rcp: any) => {
@@ -278,7 +292,7 @@ export default function ReceiptsArchivePage() {
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 text-xs">
-                    <button onClick={() => { setSelectedReceipt(rcp); handlePrintReceipt(); }} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1">
+                    <button onClick={() => handlePrintReceipt(rcp)} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1">
                       <Printer className="w-3.5 h-3.5" /> Print
                     </button>
                     <button onClick={() => handleEmailReceipt(rcp)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1">
@@ -376,7 +390,7 @@ export default function ReceiptsArchivePage() {
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1 text-slate-400 opacity-80 group-hover:opacity-100">
                           <button
-                            onClick={(e) => { e.stopPropagation(); handlePrintReceipt(); }}
+                            onClick={(e) => { e.stopPropagation(); handlePrintReceipt(rcp); }}
                             className="p-1.5 hover:text-blue-600 rounded"
                             title="Print Thermal"
                           >
@@ -505,7 +519,7 @@ export default function ReceiptsArchivePage() {
 
             {/* Modal Actions */}
             <div className="space-y-2 pt-4 border-t border-slate-100">
-              <Button variant="primary" fullWidth size="lg" onClick={handlePrintReceipt} leftIcon={<Printer className="w-4 h-4" />}>
+              <Button variant="primary" fullWidth size="lg" onClick={() => handlePrintReceipt(selectedReceipt)} leftIcon={<Printer className="w-4 h-4" />}>
                 Print Thermal Receipt
               </Button>
               <Button variant="secondary" fullWidth size="md" onClick={() => handleEmailReceipt(selectedReceipt)} leftIcon={<Mail className="w-4 h-4" />}>
@@ -515,6 +529,124 @@ export default function ReceiptsArchivePage() {
           </div>
         </div>
       )}
+
+      {/* Hidden Printable Receipt for Clean 80mm Thermal Printer Output */}
+      {(() => {
+        const rcp = receiptToPrint || selectedReceipt;
+        if (!rcp) return null;
+        const displayNum = rcp.receiptNumber || rcp.invoiceNumber || (rcp.id ? `REC-${rcp.id.slice(0, 8).toUpperCase()}` : 'RECEIPT');
+        const bizName = rcp.business?.name || summaryData?.business?.name || 'NOXGUARDA STORE';
+        const bizAddress = rcp.business?.address || summaryData?.business?.address || 'Ikeja Digital Village, Lagos';
+        const bizPhone = rcp.business?.phone || summaryData?.business?.phone || '+234 800 000 0000';
+        const bizFooter = rcp.business?.receiptFooter || 'Thank you for your purchase! 30-Day Store Warranty included. Official IMEI verified on NoxGuarda Registry.';
+
+        return (
+          <div id="printable-pos-receipt" className="hidden font-mono">
+            <div className="text-center pb-2 border-b border-black mb-2">
+              <h2 className="font-extrabold text-sm uppercase tracking-wide">{bizName}</h2>
+              <p className="text-[10px]">{bizAddress}</p>
+              <p className="text-[10px]">Tel: {bizPhone}</p>
+            </div>
+
+            <div className="space-y-1 text-[10px] pb-2 border-b border-black mb-2">
+              <div className="flex justify-between">
+                <span>Receipt #:</span>
+                <span className="font-bold">{displayNum}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Date:</span>
+                <span>{new Date(rcp.createdAt).toLocaleString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Customer:</span>
+                <span className="font-bold">{rcp.customer?.name || 'Retail Buyer'}</span>
+              </div>
+              {rcp.customer?.phone && (
+                <div className="flex justify-between">
+                  <span>Phone:</span>
+                  <span>{rcp.customer.phone}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>Payment Method:</span>
+                <span className="font-bold uppercase">{rcp.paymentMethod || 'CASH'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Status:</span>
+                <span className="font-bold uppercase">{rcp.paymentStatus || 'PAID'}</span>
+              </div>
+            </div>
+
+            {/* Items */}
+            <div className="space-y-1.5 text-[10px] pb-2 border-b border-black mb-2">
+              {(rcp.items || []).map((item: any, idx: number) => {
+                const itemTitle = item.description || (item.phoneRecord ? `${item.phoneRecord.brand} ${item.phoneRecord.model}` : 'Item');
+                const qty = item.quantity || 1;
+                const price = item.unitPrice || item.price || 0;
+                const total = price * qty;
+                const imei = item.phoneRecord?.imei1 || item.imei;
+
+                return (
+                  <div key={idx} className="space-y-0.5">
+                    <div className="flex justify-between font-bold">
+                      <span>{itemTitle} {qty > 1 ? `x${qty}` : ''}</span>
+                      <span>₦{total.toLocaleString()}</span>
+                    </div>
+                    {imei && (
+                      <p className="text-[9px] text-slate-700">IMEI: {imei}</p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Total */}
+            <div className="text-xs font-black flex justify-between pb-2 border-b border-black mb-2">
+              <span>TOTAL PAID</span>
+              <span>₦{Number(rcp.totalAmount || 0).toLocaleString()}</span>
+            </div>
+
+            {/* QR Code & Anti Theft info */}
+            <div className="text-center pt-2 space-y-1 text-[9px]">
+              <p className="font-bold">NoxGuarda Anti-Theft Protection</p>
+              <p className="text-[8px]">Scan or verify IMEI at noxguarda.com/verify</p>
+              <p className="pt-1 text-[8px] italic leading-tight">{bizFooter}</p>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* Global Print Styling for Clean POS Roll Output */}
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-pos-receipt,
+          #printable-pos-receipt * {
+            visibility: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #printable-pos-receipt {
+            display: block !important;
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 80mm !important;
+            max-width: 80mm !important;
+            margin: 0 auto !important;
+            padding: 12px !important;
+            box-shadow: none !important;
+            border: 1px dashed #000000 !important;
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-size: 11px !important;
+            line-height: 1.35 !important;
+            z-index: 99999 !important;
+          }
+        }
+      `}</style>
 
       {/* Email Receipt Modal */}
       <EmailReceiptModal

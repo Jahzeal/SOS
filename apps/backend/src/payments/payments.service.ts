@@ -45,7 +45,7 @@ export class PaymentsService {
       throw new BadRequestException('Cannot initialize payment for a free or zero-amount plan.');
     }
 
-    const reference = `VF-SUB-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const reference = `NG-SUB-${Date.now()}-${Math.floor(1000 + Math.random() * 9000)}`;
     const amountInKobo = Math.round(amountNgn * 100);
 
     let paystackData: any = null;

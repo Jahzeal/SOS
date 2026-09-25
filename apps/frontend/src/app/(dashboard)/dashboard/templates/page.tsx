@@ -1088,7 +1088,7 @@ export default function ReceiptInvoiceTemplatesPage() {
 
                   <div className="rounded-xl border border-slate-200 overflow-hidden">
                     <table className="w-full text-left text-[10px]">
-                      <thead className="bg-slate-900 text-white font-bold">
+                      <thead className="bg-slate-100 text-slate-900 border-b border-slate-200 font-bold">
                         <tr>
                           <th className="py-2 px-2.5">Item & IMEI / SKU</th>
                           <th className="py-2 px-2.5 text-center w-12">Qty</th>
@@ -1358,12 +1358,12 @@ export default function ReceiptInvoiceTemplatesPage() {
                       </p>
                     </div>
 
-                    <div className="rounded-xl border border-blue-900/20 overflow-hidden shadow-xs">
-                      <div className="bg-[#3b5998] text-white px-3 py-2 flex justify-between items-center font-extrabold text-xs">
+                    <div className="rounded-xl border border-slate-200 overflow-hidden shadow-xs">
+                      <div className="bg-slate-100 text-slate-900 border-b border-slate-200 px-3 py-2 flex justify-between items-center font-extrabold text-xs">
                         <span>Invoice No:</span>
-                        <span className="font-mono tracking-wide">VF-INV-0013</span>
+                        <span className="font-mono tracking-wide text-blue-600">NG-INV-0013</span>
                       </div>
-                      <div className="bg-white p-2 space-y-1 text-[10px] border-t border-blue-900/10">
+                      <div className="bg-white p-2 space-y-1 text-[10px]">
                         <div className="flex justify-between border-b border-slate-100 pb-1">
                           <span className="font-bold text-slate-600">Invoice Date:</span>
                           <span className="font-mono text-slate-900">2026-09-17</span>
@@ -1382,7 +1382,7 @@ export default function ReceiptInvoiceTemplatesPage() {
 
                   <div className="rounded-xl border border-slate-200 overflow-hidden">
                     <table className="w-full text-left text-[10px]">
-                      <thead className="bg-[#3b5998] text-white font-black">
+                      <thead className="bg-slate-100 text-slate-900 border-b border-slate-200 font-black">
                         <tr>
                           <th className="py-2 px-2.5 w-8">#</th>
                           <th className="py-2 px-2.5">Item Description & Specs</th>

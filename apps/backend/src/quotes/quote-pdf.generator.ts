@@ -84,17 +84,21 @@ export function generateQuotePdfBuffer(data: QuotePdfData): Buffer {
 
   const accentRgb = hexToRgb(data.accentColorHex || '#2563EB');
 
-  // 1. Top Header Banner
-  doc.setFillColor(15, 23, 42); // slate-900
+  // 1. Header Area (Clean Light Theme with Slim Brand Accent Line)
+  doc.setFillColor(255, 255, 255);
   doc.rect(0, 0, pageWidth, 28, 'F');
+
+  // Top slim brand accent bar
+  doc.setFillColor(accentRgb[0], accentRgb[1], accentRgb[2]);
+  doc.rect(0, 0, pageWidth, 3, 'F');
 
   let textLeft = 14;
   if (data.logoUrl) {
     try {
       if (data.logoUrl.startsWith('data:image/')) {
         const isPng = data.logoUrl.includes('image/png');
-        doc.addImage(data.logoUrl, isPng ? 'PNG' : 'JPEG', 14, 4, 20, 20, undefined, 'FAST');
-        textLeft = 38;
+        doc.addImage(data.logoUrl, isPng ? 'PNG' : 'JPEG', 14, 6, 18, 18, undefined, 'FAST');
+        textLeft = 36;
       }
     } catch {
       textLeft = 14;
@@ -103,50 +107,55 @@ export function generateQuotePdfBuffer(data: QuotePdfData): Buffer {
 
   if (textLeft === 14) {
     // Branded Monogram Box
-    doc.setFillColor(accentRgb[0], accentRgb[1], accentRgb[2]);
-    doc.roundedRect(14, 5, 18, 18, 2.5, 2.5, 'F');
-    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(239, 246, 255);
+    doc.setDrawColor(191, 219, 254);
+    doc.roundedRect(14, 6, 16, 16, 2, 2, 'FD');
+    doc.setTextColor(accentRgb[0], accentRgb[1], accentRgb[2]);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(10);
     const initials = data.storeName.slice(0, 2).toUpperCase() || 'QT';
-    doc.text(initials, 23, 16.5, { align: 'center' });
-    textLeft = 36;
+    doc.text(initials, 22, 16.5, { align: 'center' });
+    textLeft = 34;
   }
 
   // Store Name & Subtitle
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(15, 23, 42); // slate-900 (crisp high contrast)
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.text(data.storeName.toUpperCase(), textLeft, 13);
+  doc.setFontSize(14);
+  doc.text(data.storeName.toUpperCase(), textLeft, 14);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  doc.setTextColor(148, 163, 184); // slate-400
-  doc.text('FORMAL COMMERCIAL & DEVICE PROPOSAL', textLeft, 19);
+  doc.setTextColor(100, 116, 139); // slate-500
+  doc.text('FORMAL COMMERCIAL & DEVICE PROPOSAL', textLeft, 19.5);
 
   // Document Title & Number on Top Right
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(15, 23, 42); // slate-900
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.text(docTitle, pageWidth - 14, 13, { align: 'right' });
+  doc.setFontSize(14);
+  doc.text(docTitle, pageWidth - 14, 14, { align: 'right' });
 
   doc.setFontSize(9.5);
-  doc.setTextColor(56, 189, 248); // sky-400
-  doc.text(docNum, pageWidth - 14, 19, { align: 'right' });
+  doc.setTextColor(accentRgb[0], accentRgb[1], accentRgb[2]);
+  doc.text(docNum, pageWidth - 14, 20, { align: 'right' });
+
+  // Dividing Rule
+  doc.setDrawColor(226, 232, 240);
+  doc.line(14, 26, pageWidth - 14, 26);
 
   // 2. Info Boxes: Store Details Left, Customer & Quotation Meta Right
-  const boxTop = 34;
+  const boxTop = 32;
   const boxWidth = (pageWidth - 36) / 2;
-  const boxHeight = 48;
+  const boxHeight = 50;
 
   // Left Box: Store Info
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(14, boxTop, boxWidth, boxHeight, 3, 3, 'FD');
 
-  doc.setFillColor(accentRgb[0], accentRgb[1], accentRgb[2]);
+  doc.setFillColor(241, 245, 249);
   doc.rect(14, boxTop, boxWidth, 7, 'F');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(51, 65, 85);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.text('PROPOSED BY / ISSUED BY', 18, boxTop + 5);
@@ -179,9 +188,9 @@ export function generateQuotePdfBuffer(data: QuotePdfData): Buffer {
   doc.setDrawColor(226, 232, 240);
   doc.roundedRect(rightBoxLeft, boxTop, boxWidth, boxHeight, 3, 3, 'FD');
 
-  doc.setFillColor(accentRgb[0], accentRgb[1], accentRgb[2]);
+  doc.setFillColor(241, 245, 249);
   doc.rect(rightBoxLeft, boxTop, boxWidth, 7, 'F');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(51, 65, 85);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.text('QUOTATION FOR / PROSPECTIVE CLIENT', rightBoxLeft + 4, boxTop + 5);
@@ -236,11 +245,13 @@ export function generateQuotePdfBuffer(data: QuotePdfData): Buffer {
     body: tableRows,
     theme: 'grid',
     headStyles: {
-      fillColor: [accentRgb[0], accentRgb[1], accentRgb[2]],
-      textColor: [255, 255, 255],
+      fillColor: [241, 245, 249], // Slate 100 (clean & readable)
+      textColor: [15, 23, 42], // Slate 900
       fontStyle: 'bold',
       fontSize: 8.5,
       halign: 'left',
+      lineColor: [203, 213, 225],
+      lineWidth: 0.2,
     },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },

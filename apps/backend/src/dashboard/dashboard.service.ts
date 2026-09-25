@@ -61,7 +61,18 @@ export class DashboardService {
       },
     });
 
-    // 5. Recent Phone Registrations (Top 10)
+    // 5. Calculate Gross Profit from Sold Phones
+    const soldPhones = await this.prisma.phoneRecord.findMany({
+      where: { businessId, status: PhoneStatus.SOLD },
+      select: { sellingPrice: true, purchasePrice: true },
+    });
+
+    const totalSoldRevenue = soldPhones.reduce((sum, p) => sum + (p.sellingPrice || 0), 0);
+    const totalSoldCost = soldPhones.reduce((sum, p) => sum + (p.purchasePrice || 0), 0);
+    const totalProfit = Math.max(0, totalSoldRevenue - totalSoldCost);
+    const profitMargin = totalSoldRevenue > 0 ? Math.round((totalProfit / totalSoldRevenue) * 100) : 0;
+
+    // 6. Recent Phone Registrations (Top 10)
     const recentPhones = await this.prisma.phoneRecord.findMany({
       where: { businessId },
       include: {
@@ -73,7 +84,7 @@ export class DashboardService {
       take: 10,
     });
 
-    // 6. Recent Sales Receipts (Top 5)
+    // 7. Recent Sales Receipts (Top 5)
     const recentSales = await this.prisma.sale.findMany({
       where: { businessId },
       include: {
@@ -101,8 +112,10 @@ export class DashboardService {
         inRepairCount,
         activeWarrantiesCount,
         stockValuation: stockValuationAggregate._sum.sellingPrice || 0,
-        totalSalesRevenue: salesAggregate._sum.totalAmount || 0,
-        totalSalesCount: salesAggregate._count.id || 0,
+        totalSalesRevenue: salesAggregate._sum.totalAmount || totalSoldRevenue,
+        totalSalesCount: salesAggregate._count.id || soldCount,
+        totalProfit,
+        profitMargin,
       },
       recentPhones,
       recentSales,
@@ -156,6 +169,16 @@ export class DashboardService {
     const totalRevenue = salesRevenue + repairRevenue;
     const totalSalesCount = salesAggregate._count.id || 0;
     const avgOrderValue = totalSalesCount > 0 ? Math.round(salesRevenue / totalSalesCount) : 0;
+
+    // Calculate gross profit for the period
+    const rangeSoldPhones = await this.prisma.phoneRecord.findMany({
+      where: { businessId, status: PhoneStatus.SOLD, updatedAt: dateFilter },
+      select: { sellingPrice: true, purchasePrice: true },
+    });
+    const rangeSoldRevenue = rangeSoldPhones.reduce((sum, p) => sum + (p.sellingPrice || 0), 0);
+    const rangeSoldCost = rangeSoldPhones.reduce((sum, p) => sum + (p.purchasePrice || 0), 0);
+    const totalProfit = Math.max(0, rangeSoldRevenue - rangeSoldCost);
+    const profitMargin = rangeSoldRevenue > 0 ? Math.round((totalProfit / rangeSoldRevenue) * 100) : 0;
 
     // 6. Top Selling Models
     const saleItems = await this.prisma.saleItem.findMany({
@@ -228,6 +251,8 @@ export class DashboardService {
         avgOrderValue,
         newCustomersCount,
         repairRevenue,
+        totalProfit,
+        profitMargin,
       },
       topSellingModels,
       inventoryAgeing: {

@@ -162,6 +162,8 @@ class ApiClient {
         stockValuation: number;
         totalSalesRevenue: number;
         totalSalesCount: number;
+        totalProfit?: number;
+        profitMargin?: number;
       };
       recentPhones: any[];
       recentSales: any[];

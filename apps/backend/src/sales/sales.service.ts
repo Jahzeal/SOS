@@ -72,9 +72,9 @@ export class SalesService {
     // 3. Compute Totals & Generate Invoice / Receipt Numbers
     const totalAmount = dto.items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
     const ref = Math.floor(100000 + Math.random() * 900000);
-    const invoiceNumber = `VF-INV-${ref}`;
+    const invoiceNumber = `NG-INV-${ref}`;
     // Commercial Invoices do not have receipt numbers; POS checkouts have receipt numbers
-    const receiptNumber = isInvoice ? null : `VF-REC-${ref}`;
+    const receiptNumber = isInvoice ? null : `NG-REC-${ref}`;
 
     // Pack metadata into notes if invoice
     let combinedNotes = dto.notes?.trim() || '';

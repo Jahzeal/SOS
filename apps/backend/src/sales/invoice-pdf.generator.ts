@@ -49,9 +49,13 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
   });
   const dueDateStr = data.dueDate || issueDateStr;
 
-  // 1. Header Bar (Dark Slate Banner)
-  doc.setFillColor(15, 23, 42); // slate-900
-  doc.rect(0, 0, pageWidth, 26, 'F');
+  // 1. Header Area (Clean Light Theme with Slim Brand Accent Line)
+  doc.setFillColor(255, 255, 255);
+  doc.rect(0, 0, pageWidth, 28, 'F');
+  
+  // Top slim brand accent bar
+  doc.setFillColor(37, 99, 235); // blue-600
+  doc.rect(0, 0, pageWidth, 3, 'F');
 
   // Render Custom Logo or Branded Initials Badge
   let textLeft = 14;
@@ -59,7 +63,7 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
     try {
       if (data.logoUrl.startsWith('data:image/')) {
         const isPng = data.logoUrl.includes('image/png');
-        doc.addImage(data.logoUrl, isPng ? 'PNG' : 'JPEG', 14, 4, 18, 18, undefined, 'FAST');
+        doc.addImage(data.logoUrl, isPng ? 'PNG' : 'JPEG', 14, 6, 18, 18, undefined, 'FAST');
         textLeft = 36;
       }
     } catch {
@@ -69,36 +73,41 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
 
   if (textLeft === 14) {
     // Elegant Store Monogram Box
-    doc.setFillColor(37, 99, 235); // blue-600
-    doc.roundedRect(14, 5, 16, 16, 2, 2, 'F');
-    doc.setTextColor(255, 255, 255);
+    doc.setFillColor(239, 246, 255); // blue-50
+    doc.setDrawColor(191, 219, 254); // blue-200
+    doc.roundedRect(14, 6, 16, 16, 2, 2, 'FD');
+    doc.setTextColor(37, 99, 235); // blue-600
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(9);
-    const initials = data.storeName.slice(0, 2).toUpperCase() || 'VF';
-    doc.text(initials, 22, 15, { align: 'center' });
+    doc.setFontSize(10);
+    const initials = data.storeName.slice(0, 2).toUpperCase() || 'NG';
+    doc.text(initials, 22, 16.5, { align: 'center' });
     textLeft = 34;
   }
 
   // Store Name & Subtitle
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(15, 23, 42); // slate-900 (crisp high contrast)
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.text(data.storeName.toUpperCase(), textLeft, 13);
+  doc.setFontSize(14);
+  doc.text(data.storeName.toUpperCase(), textLeft, 14);
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(7.5);
-  doc.setTextColor(148, 163, 184); // slate-400
-  doc.text('VERIFIED DEVICE & ELECTRONICS RETAIL LEDGER', textLeft, 19);
+  doc.setTextColor(100, 116, 139); // slate-500
+  doc.text('VERIFIED DEVICE & ELECTRONICS RETAIL LEDGER', textLeft, 19.5);
 
   // Document Type Header on Right
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(15, 23, 42); // slate-900
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(13);
-  doc.text(docTitle, pageWidth - 14, 13, { align: 'right' });
+  doc.setFontSize(14);
+  doc.text(docTitle, pageWidth - 14, 14, { align: 'right' });
 
-  doc.setFontSize(9);
-  doc.setTextColor(56, 189, 248); // sky-400
-  doc.text(docNum, pageWidth - 14, 19, { align: 'right' });
+  doc.setFontSize(9.5);
+  doc.setTextColor(37, 99, 235); // blue-600
+  doc.text(docNum, pageWidth - 14, 20, { align: 'right' });
+
+  // Dividing Rule
+  doc.setDrawColor(226, 232, 240);
+  doc.line(14, 26, pageWidth - 14, 26);
 
   // 2. Dual Info Boxes (Store Info Left, Invoice & Customer Meta Right)
   const boxTop = 32;
@@ -110,10 +119,10 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
   doc.setDrawColor(226, 232, 240); // slate-200
   doc.roundedRect(14, boxTop, boxWidth, boxHeight, 3, 3, 'FD');
 
-  // Header banner in Left Box
-  doc.setFillColor(37, 99, 235); // blue-600
+  // Header banner in Left Box (Light Slate Tint)
+  doc.setFillColor(241, 245, 249); // slate-100
   doc.rect(14, boxTop, boxWidth, 7, 'F');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(51, 65, 85); // slate-700
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.text('ISSUED BY / STORE DETAILS', 18, boxTop + 5);
@@ -147,9 +156,9 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
   doc.roundedRect(rightBoxLeft, boxTop, boxWidth, boxHeight, 3, 3, 'FD');
 
   // Header banner in Right Box
-  doc.setFillColor(37, 99, 235);
+  doc.setFillColor(241, 245, 249);
   doc.rect(rightBoxLeft, boxTop, boxWidth, 7, 'F');
-  doc.setTextColor(255, 255, 255);
+  doc.setTextColor(51, 65, 85);
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(8);
   doc.text('BILLED TO / STATEMENT DETAILS', rightBoxLeft + 4, boxTop + 5);
@@ -188,11 +197,13 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
     body: tableRows,
     theme: 'grid',
     headStyles: {
-      fillColor: [37, 99, 235], // Solid Blue 600
-      textColor: [255, 255, 255],
+      fillColor: [241, 245, 249], // Slate 100 (clean & readable)
+      textColor: [15, 23, 42], // Slate 900
       fontStyle: 'bold',
       fontSize: 8.5,
       halign: 'left',
+      lineColor: [203, 213, 225],
+      lineWidth: 0.2,
     },
     columnStyles: {
       0: { cellWidth: 10, halign: 'center' },

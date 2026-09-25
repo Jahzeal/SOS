@@ -1185,6 +1185,8 @@ function CheckoutPOSContent() {
               }
               #printable-pos-receipt, #printable-pos-receipt * {
                 visibility: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
               }
               #printable-pos-receipt {
                 position: absolute !important;
@@ -1195,10 +1197,11 @@ function CheckoutPOSContent() {
                 margin: 0 auto !important;
                 padding: 12px !important;
                 box-shadow: none !important;
-                border: 1px solid #000 !important;
+                border: 1px dashed #000000 !important;
                 background: #ffffff !important;
                 color: #000000 !important;
                 font-size: 11px !important;
+                line-height: 1.35 !important;
               }
             }
           `}</style>

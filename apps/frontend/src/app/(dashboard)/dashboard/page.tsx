@@ -76,8 +76,16 @@ export default function BusinessDashboardPage() {
     const sold = kpis?.soldCount ?? livePhones.filter((p: any) => p.status === 'SOLD').length;
     const warranties = kpis?.activeWarrantiesCount ?? livePhones.filter((p: any) => p.warrantyExpiryDate && new Date(p.warrantyExpiryDate) > new Date()).length;
     const repairs = kpis?.inRepairCount ?? livePhones.filter((p: any) => p.status === 'IN_REPAIR').length;
-    const valuation = kpis?.stockValuation ?? livePhones.reduce((sum: number, p: any) => sum + (p.sellingPrice || 0), 0);
-    return { totalRegistered, inStock, sold, warranties, repairs, valuation };
+    const valuation = kpis?.stockValuation ?? livePhones.filter((p: any) => p.status === 'IN_STOCK').reduce((sum: number, p: any) => sum + (p.sellingPrice || 0), 0);
+    const revenue = kpis?.totalSalesRevenue ?? livePhones.filter((p: any) => p.status === 'SOLD').reduce((sum: number, p: any) => sum + (p.sellingPrice || 0), 0);
+
+    // Compute Profit Made (sellingPrice - purchasePrice) on all sold items
+    const soldPhones = livePhones.filter((p: any) => p.status === 'SOLD');
+    const computedProfit = soldPhones.reduce((sum: number, p: any) => sum + Math.max(0, (p.sellingPrice || 0) - (p.purchasePrice || 0)), 0);
+    const totalProfit = kpis?.totalProfit ?? computedProfit;
+    const profitMargin = kpis?.profitMargin ?? (revenue > 0 ? Math.round((totalProfit / revenue) * 100) : 0);
+
+    return { totalRegistered, inStock, sold, warranties, repairs, valuation, revenue, totalProfit, profitMargin };
   }, [livePhones, summaryData]);
 
   const userName = user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Store Owner';
@@ -143,7 +151,7 @@ export default function BusinessDashboardPage() {
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. EXECUTIVE KPI STAT CARDS GRID (6 Cards)                               */}
+      {/* 2. EXECUTIVE KPI STAT CARDS GRID (6 Cards with Profit Made)               */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         
@@ -205,40 +213,42 @@ export default function BusinessDashboardPage() {
           </div>
         </div>
 
-        {/* Card 4: Active Warranties */}
+        {/* Card 4: Total Revenue */}
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Warranties</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center">
-              <Lock className="w-4 h-4" />
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Revenue</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center">
+              <DollarSign className="w-4 h-4" />
             </div>
           </div>
           {isDataLoading ? (
-            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+            <div className="h-8 w-24 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
           ) : (
-            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              {metrics.warranties.toLocaleString()}
+            <div className="text-xl font-extrabold text-slate-900 tracking-tight">
+              ₦{metrics.revenue.toLocaleString()}
             </div>
           )}
-          <div className="text-[11px] font-bold text-amber-700">Active store guarantees</div>
+          <div className="text-[11px] font-bold text-blue-600">Total settled sales</div>
         </div>
 
-        {/* Card 5: Repairs In Progress */}
-        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+        {/* Card 5: Profit Made */}
+        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-emerald-200 shadow-sm space-y-2 relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/30">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Repairs</span>
-            <div className="w-8 h-8 rounded-xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center">
-              <Wrench className="w-4 h-4" />
+            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Profit Made</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4" />
             </div>
           </div>
           {isDataLoading ? (
-            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+            <div className="h-8 w-24 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
           ) : (
-            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
-              {metrics.repairs.toLocaleString()}
+            <div className="text-xl font-extrabold text-emerald-700 tracking-tight">
+              ₦{metrics.totalProfit.toLocaleString()}
             </div>
           )}
-          <div className="text-[11px] font-bold text-purple-700">In technician queue</div>
+          <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
+            <span className="px-1.5 py-0.2 bg-emerald-100 rounded text-[10px]">{metrics.profitMargin}% margin</span> Net profit realized
+          </div>
         </div>
 
         {/* Card 6: Stock Valuation */}
@@ -256,7 +266,7 @@ export default function BusinessDashboardPage() {
               ₦{metrics.valuation.toLocaleString()}
             </div>
           )}
-          <div className="text-[11px] font-bold text-slate-500">Live inventory value</div>
+          <div className="text-[11px] font-bold text-slate-500">Live inventory valuation</div>
         </div>
       </div>
 
@@ -388,11 +398,11 @@ export default function BusinessDashboardPage() {
           </div>
         </div>
 
-        {/* Module 2: Sales Snapshot */}
+        {/* Module 2: Sales & Profit Snapshot */}
         <div className="vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-emerald-600" /> Sales Snapshot
+              <BarChart3 className="w-4 h-4 text-emerald-600" /> Sales & Profit
             </h4>
             <div className="flex bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold">
               <button
@@ -410,16 +420,30 @@ export default function BusinessDashboardPage() {
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-200 text-xs space-y-1">
-            <div className="font-bold text-slate-900">Total Revenue ({salesTimeframe.toUpperCase()})</div>
-            {isDataLoading ? (
-              <div className="h-7 w-24 bg-slate-200/60 rounded animate-pulse my-0.5" />
-            ) : (
-              <div className="text-2xl font-extrabold text-emerald-950">
-                ₦{livePhones.filter((p: any) => p.status === 'SOLD').reduce((sum: number, p: any) => sum + (p.sellingPrice || 0), 0).toLocaleString()}
-              </div>
-            )}
-            <div className="text-[11px] text-emerald-700 font-semibold">Live POS Sales Revenue</div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200 space-y-0.5">
+              <div className="text-[11px] font-bold text-blue-900">Revenue</div>
+              {isDataLoading ? (
+                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse my-0.5" />
+              ) : (
+                <div className="text-lg font-extrabold text-blue-950">
+                  ₦{metrics.revenue.toLocaleString()}
+                </div>
+              )}
+              <div className="text-[9px] text-blue-700 font-semibold">Gross sales</div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-0.5">
+              <div className="text-[11px] font-bold text-emerald-900">Profit Made</div>
+              {isDataLoading ? (
+                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse my-0.5" />
+              ) : (
+                <div className="text-lg font-extrabold text-emerald-950">
+                  ₦{metrics.totalProfit.toLocaleString()}
+                </div>
+              )}
+              <div className="text-[9px] text-emerald-700 font-semibold">{metrics.profitMargin}% margin</div>
+            </div>
           </div>
         </div>
 
