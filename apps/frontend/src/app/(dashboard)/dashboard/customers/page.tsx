@@ -237,9 +237,13 @@ export default function CustomersManagementPage() {
           </div>
           <div>
             <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lifetime Rev</p>
-            <p className="text-xl font-extrabold text-slate-900 mt-0.5">
-              {summaryData?.kpis ? `₦${(summaryData.kpis.totalSalesRevenue / 1000).toFixed(1)}k` : '₦0.0k'}
-            </p>
+            {loading && !summaryData ? (
+              <div className="h-6 w-16 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
+            ) : (
+              <p className="text-xl font-extrabold text-slate-900 mt-0.5">
+                {summaryData?.kpis ? `₦${(summaryData.kpis.totalSalesRevenue / 1000).toFixed(1)}k` : '—'}
+              </p>
+            )}
           </div>
         </div>
 

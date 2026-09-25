@@ -127,6 +127,7 @@ export default function ReceiptsArchivePage() {
       {/* KPI Stat Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Total Receipts */}
+        {/* Total Sales Count */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
@@ -137,9 +138,13 @@ export default function ReceiptsArchivePage() {
             </span>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Sales Count</p>
-          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
-            {summaryData?.kpis ? summaryData.kpis.totalSalesCount.toLocaleString() : receipts.length}
-          </h3>
+          {loading && !summaryData ? (
+            <div className="h-7 w-16 bg-slate-200/60 rounded-md animate-pulse mt-1" />
+          ) : (
+            <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
+              {summaryData?.kpis ? summaryData.kpis.totalSalesCount.toLocaleString() : receipts.length}
+            </h3>
+          )}
           <p className="text-xs text-slate-400 font-medium mt-1">Archived in store database</p>
         </div>
 
@@ -154,9 +159,13 @@ export default function ReceiptsArchivePage() {
             </span>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Revenue</p>
-          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
-            {summaryData?.kpis ? `₦${summaryData.kpis.totalSalesRevenue.toLocaleString()}` : '₦0'}
-          </h3>
+          {loading && !summaryData ? (
+            <div className="h-7 w-24 bg-slate-200/60 rounded-md animate-pulse mt-1" />
+          ) : (
+            <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
+              {summaryData?.kpis ? `₦${summaryData.kpis.totalSalesRevenue.toLocaleString()}` : (receipts.length > 0 ? `₦${receipts.reduce((s: number, r: any) => s + (r.totalAmount || 0), 0).toLocaleString()}` : '—')}
+            </h3>
+          )}
           <p className="text-xs text-slate-400 font-medium mt-1">Total settled transactions</p>
         </div>
 
@@ -168,11 +177,15 @@ export default function ReceiptsArchivePage() {
             </div>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Average Sale</p>
-          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
-            {summaryData?.kpis && summaryData.kpis.totalSalesCount > 0
-              ? `₦${Math.round(summaryData.kpis.totalSalesRevenue / summaryData.kpis.totalSalesCount).toLocaleString()}`
-              : '₦0'}
-          </h3>
+          {loading && !summaryData ? (
+            <div className="h-7 w-20 bg-slate-200/60 rounded-md animate-pulse mt-1" />
+          ) : (
+            <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
+              {summaryData?.kpis && summaryData.kpis.totalSalesCount > 0
+                ? `₦${Math.round(summaryData.kpis.totalSalesRevenue / summaryData.kpis.totalSalesCount).toLocaleString()}`
+                : (receipts.length > 0 ? `₦${Math.round(receipts.reduce((s: number, r: any) => s + (r.totalAmount || 0), 0) / receipts.length).toLocaleString()}` : '—')}
+            </h3>
+          )}
           <p className="text-xs text-slate-400 font-medium mt-1">Average per sales receipt</p>
         </div>
 
@@ -184,9 +197,13 @@ export default function ReceiptsArchivePage() {
             </div>
           </div>
           <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Store Status</p>
-          <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
-            {summaryData?.business?.name || 'Main Branch'}
-          </h3>
+          {loading && !summaryData ? (
+            <div className="h-7 w-24 bg-slate-200/60 rounded-md animate-pulse mt-1" />
+          ) : (
+            <h3 className="text-2xl font-extrabold text-slate-900 mt-1">
+              {summaryData?.business?.name || 'Main Branch'}
+            </h3>
+          )}
           <p className="text-xs text-slate-400 font-medium mt-1">Audit trail verified</p>
         </div>
       </div>

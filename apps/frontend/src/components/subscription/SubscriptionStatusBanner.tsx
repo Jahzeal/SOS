@@ -48,18 +48,18 @@ export function SubscriptionStatusBanner() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2 self-end md:self-auto shrink-0">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-3 self-end md:self-auto shrink-0 pt-0.5 sm:pt-0">
             <button
               onClick={() => openPaywall('banner')}
-              className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-extrabold rounded-lg shadow-sm transition flex items-center gap-1.5 cursor-pointer text-xs"
+              className="px-2.5 py-1 sm:px-3 sm:py-1.5 bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold rounded-lg shadow-xs transition flex items-center gap-1.5 cursor-pointer text-[11px] sm:text-xs"
             >
-              <CreditCard className="w-3.5 h-3.5" />
-              <span>Pay & Activate {planName} (₦{monthlyPrice.toLocaleString()}/mo)</span>
+              <CreditCard className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+              <span>Pay & Activate (₦{monthlyPrice.toLocaleString()}/mo)</span>
             </button>
 
             <button
               onClick={() => openPaywall('free_details')}
-              className="px-3 py-1.5 bg-white/80 hover:bg-white text-slate-700 hover:text-slate-900 font-bold border border-slate-300/80 rounded-lg transition text-xs flex items-center gap-1 cursor-pointer"
+              className="text-amber-900/90 hover:text-amber-950 font-bold hover:underline transition text-[11px] sm:text-xs flex items-center gap-0.5 cursor-pointer px-1 py-0.5"
             >
               <span>Continue with Free Basic →</span>
             </button>

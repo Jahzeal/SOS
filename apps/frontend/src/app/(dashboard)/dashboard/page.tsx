@@ -53,11 +53,11 @@ export default function BusinessDashboardPage() {
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showOnboardingModal, setShowOnboardingModal] = useState(false);
 
-  // Cached Queries (instant 0ms render from memory cache)
+  // Cached Queries (instant 0ms render from persistent cache)
   const { data: livePhones = [], isLoading: isInventoryLoading } = useInventory();
   const { data: summaryData, isLoading: isSummaryLoading } = useInventorySummary();
 
-  const isDataLoading = isInventoryLoading && isSummaryLoading && livePhones.length === 0;
+  const isDataLoading = (!summaryData && isSummaryLoading) || (!livePhones.length && isInventoryLoading && !summaryData);
 
   // Protected Route Guard
   useEffect(() => {
@@ -125,27 +125,19 @@ export default function BusinessDashboardPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-row items-center gap-2.5 relative z-10 shrink-0 w-full sm:w-auto">
+        <div className="flex flex-row items-center gap-2 sm:gap-2.5 relative z-10 shrink-0 w-full sm:w-auto">
           <Link href="/dashboard/register" className="flex-1 sm:flex-none">
-            <Button
-              variant="primary"
-              size="md"
-              leftIcon={<Plus className="w-4 h-4" />}
-              className="w-full sm:w-auto shadow-md shadow-blue-600/10 font-bold"
-            >
+            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-blue-600/30 text-blue-700 bg-blue-50/30 hover:bg-blue-50 sm:bg-blue-600 sm:text-white sm:border-blue-600 sm:hover:bg-blue-700 shadow-xs sm:shadow-md sm:shadow-blue-600/10">
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 sm:text-white" />
               <span className="hidden sm:inline">Register Phone / Item</span>
               <span className="inline sm:hidden">Register Item</span>
-            </Button>
+            </button>
           </Link>
           <Link href="/dashboard/verify" className="flex-1 sm:flex-none">
-            <Button
-              variant="secondary"
-              size="md"
-              leftIcon={<Receipt className="w-4 h-4 text-blue-600" />}
-              className="w-full sm:w-auto bg-white border-slate-200 text-slate-700 hover:bg-slate-50 font-bold"
-            >
-              Record Sale
-            </Button>
+            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-slate-200 text-slate-700 bg-transparent hover:bg-slate-50 shadow-xs">
+              <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 sm:text-blue-600" />
+              <span>Record Sale</span>
+            </button>
           </Link>
         </div>
       </div>

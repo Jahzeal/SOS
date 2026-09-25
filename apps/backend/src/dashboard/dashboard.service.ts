@@ -50,16 +50,22 @@ export class DashboardService {
       },
     });
 
-    // 4. Sales Revenue Aggregate
-    const salesAggregate = await this.prisma.sale.aggregate({
-      where: { businessId, paymentStatus: 'PAID' },
-      _sum: {
-        totalAmount: true,
-      },
-      _count: {
-        id: true,
-      },
-    });
+    // 4. Sales Revenue Aggregate (PAID sales + PARTIALLY_PAID collected deposits)
+    const [salesPaidAggregate, salesPartialAggregate] = await Promise.all([
+      this.prisma.sale.aggregate({
+        where: { businessId, paymentStatus: 'PAID' },
+        _sum: { totalAmount: true },
+        _count: { id: true },
+      }),
+      this.prisma.sale.aggregate({
+        where: { businessId, paymentStatus: 'PARTIALLY_PAID' },
+        _sum: { amountPaid: true },
+        _count: { id: true },
+      }),
+    ]);
+
+    const totalSettledSaleAmount = (salesPaidAggregate._sum.totalAmount || 0) + (salesPartialAggregate._sum.amountPaid || 0);
+    const totalSalesTransactions = (salesPaidAggregate._count.id || 0) + (salesPartialAggregate._count.id || 0);
 
     // 5. Calculate Gross Profit from Sold Phones
     const soldPhones = await this.prisma.phoneRecord.findMany({
@@ -67,10 +73,13 @@ export class DashboardService {
       select: { sellingPrice: true, purchasePrice: true },
     });
 
-    const totalSoldRevenue = soldPhones.reduce((sum, p) => sum + (p.sellingPrice || 0), 0);
-    const totalSoldCost = soldPhones.reduce((sum, p) => sum + (p.purchasePrice || 0), 0);
-    const totalProfit = Math.max(0, totalSoldRevenue - totalSoldCost);
-    const profitMargin = totalSoldRevenue > 0 ? Math.round((totalProfit / totalSoldRevenue) * 100) : 0;
+    const totalSoldPhoneRevenue = soldPhones.reduce((sum, p) => sum + (p.sellingPrice || 0), 0);
+    const totalSoldPhoneCost = soldPhones.reduce((sum, p) => sum + (p.purchasePrice || 0), 0);
+
+    // Dynamic Sales Revenue: Maximum of settled sales total or sold phone records total
+    const totalSalesRevenue = Math.max(totalSettledSaleAmount, totalSoldPhoneRevenue);
+    const totalProfit = Math.max(0, totalSalesRevenue - totalSoldPhoneCost);
+    const profitMargin = totalSalesRevenue > 0 ? Math.round((totalProfit / totalSalesRevenue) * 100) : 0;
 
     // 6. Recent Phone Registrations (Top 10)
     const recentPhones = await this.prisma.phoneRecord.findMany({
@@ -112,8 +121,8 @@ export class DashboardService {
         inRepairCount,
         activeWarrantiesCount,
         stockValuation: stockValuationAggregate._sum.sellingPrice || 0,
-        totalSalesRevenue: salesAggregate._sum.totalAmount || totalSoldRevenue,
-        totalSalesCount: salesAggregate._count.id || soldCount,
+        totalSalesRevenue,
+        totalSalesCount: totalSalesTransactions || soldCount,
         totalProfit,
         profitMargin,
       },
