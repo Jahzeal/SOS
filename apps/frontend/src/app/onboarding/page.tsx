@@ -38,6 +38,87 @@ import { Logo } from '@/components/ui/Logo';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
 
+// Comprehensive Plan Specifications & Fallback Data
+const FALLBACK_PLANS = [
+  {
+    code: 'FREE',
+    name: 'Free Forever',
+    description: 'Essential IMEI ledger and POS receipts for solo technicians and micro shops.',
+    monthlyPriceNgn: 0,
+    annualPriceNgn: 0,
+    maxDevices: 25,
+    customBranding: false,
+    prioritySupport: false,
+    features: [
+      'Up to 25 Devices Registered / Month',
+      'IMEI & Serial Number Hardware Ledger',
+      'Standard POS Thermal Receipts (80mm & 58mm)',
+      'Anti-Theft Stolen Device Blacklist Check',
+      'Single Technician Store Workspace',
+      'Cryptographic QR Receipt Verification',
+    ],
+  },
+  {
+    code: 'STARTER',
+    name: 'Starter',
+    description: 'For growing phone shops requiring custom receipt branding and automated warranty receipts.',
+    monthlyPriceNgn: 5000,
+    annualPriceNgn: 50000,
+    maxDevices: 500,
+    customBranding: true,
+    prioritySupport: false,
+    isRecommended: false,
+    features: [
+      'Up to 500 Registered Devices',
+      'Custom Store Logo on Thermal Receipts',
+      'IMEI & Serial Lifecycle History Ledger',
+      'Automated Warranty Terms & Thermal Receipts',
+      'Anti-Theft Stolen Device Cross-Check',
+      'Daily Sales & Revenue Summaries',
+    ],
+  },
+  {
+    code: 'GOLD',
+    name: 'Gold',
+    description: 'High-volume phone retailers needing multi-staff accounts, cashiers, and margin tracking.',
+    monthlyPriceNgn: 10000,
+    annualPriceNgn: 100000,
+    maxDevices: 1000,
+    customBranding: true,
+    prioritySupport: true,
+    isRecommended: true,
+    features: [
+      'Up to 1,000 Registered Devices',
+      'Custom Receipt Logo & Store Watermark',
+      'Multi-Staff Accounts with Role Permissions',
+      'Instant Anti-Theft IMEI Blacklist Verification',
+      'Live Store Profit & Gross Margin Analytics',
+      'Warranty Claim Resolution Tracking',
+      'Priority WhatsApp & Email Support',
+    ],
+  },
+  {
+    code: 'ENTERPRISE',
+    name: 'Enterprise Chain',
+    description: 'For phone distributors, wholesalers, and multi-branch retail chains.',
+    monthlyPriceNgn: 25000,
+    annualPriceNgn: 250000,
+    maxDevices: null,
+    customBranding: true,
+    prioritySupport: true,
+    isRecommended: false,
+    features: [
+      'Unlimited Registered Devices & Inventory',
+      'Multi-Branch Store Workspaces & Stock Transfers',
+      'Wholesaler Bulk Serial Upload & Batch Tagging',
+      'Unlimited Staff & Cashier User Accounts',
+      'White-label Receipt Branding & Custom Domains',
+      'Advanced Multi-Store Valuation & Reports',
+      'Dedicated Account Manager & 24/7 SLA Support',
+    ],
+  },
+];
+
 export default function OnboardingPage() {
   const router = useRouter();
   const { register } = useAuth();
@@ -71,8 +152,8 @@ export default function OnboardingPage() {
   });
 
   // Step 4 Subscription Plan State
-  const [selectedPlan, setSelectedPlan] = useState<string>('BUSINESS');
-  const [dynamicPlans, setDynamicPlans] = useState<any[]>([]);
+  const [selectedPlan, setSelectedPlan] = useState<string>('GOLD');
+  const [dynamicPlans, setDynamicPlans] = useState<any[]>(FALLBACK_PLANS);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [viewingPlanDetails, setViewingPlanDetails] = useState<any | null>(null);
 
@@ -86,15 +167,23 @@ export default function OnboardingPage() {
     // Fetch dynamic database plans
     api.getPlans().then((res) => {
       if (res?.success && Array.isArray(res.plans) && res.plans.length > 0) {
-        setDynamicPlans(res.plans);
+        const merged = res.plans.map((p: any) => {
+          const fallback = FALLBACK_PLANS.find((fb) => fb.code.toUpperCase() === p.code?.toUpperCase());
+          return {
+            ...fallback,
+            ...p,
+            features: (Array.isArray(p.features) && p.features.length > 0) ? p.features : fallback?.features || [],
+          };
+        });
+        setDynamicPlans(merged);
         if (!urlPlan) {
-          const defaultChoice = res.plans.find((p: any) => p.code === 'BUSINESS') || res.plans[1] || res.plans[0];
+          const defaultChoice = merged.find((p: any) => p.code === 'GOLD' || p.code === 'BUSINESS' || p.isRecommended) || merged[1] || merged[0];
           setSelectedPlan(defaultChoice.code);
         }
       }
     }).catch((err) => {
       console.error('Failed to load database plans:', err);
-      setDynamicPlans([]);
+      setDynamicPlans(FALLBACK_PLANS);
     });
   }, []);
 
@@ -359,7 +448,7 @@ export default function OnboardingPage() {
           <WatermarkBackground size="hero" opacity="opacity-[0.03]" />
           
           {/* Header & Stepper Bar */}
-          <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-2xl xl:max-w-3xl'} mx-auto w-full space-y-2 transition-all duration-300 shrink-0`}>
+          <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-md lg:max-w-lg'} mx-auto w-full space-y-2 transition-all duration-300 shrink-0`}>
             
             {/* Mobile Top Brand & Progress Header (Clean light styling: block lg:hidden) */}
             <div className="block lg:hidden bg-white -mx-3 -mt-3 p-3.5 mb-2 border-b border-slate-200 shadow-sm rounded-b-xl space-y-2.5">
@@ -390,16 +479,23 @@ export default function OnboardingPage() {
                   const isCurrent = s === currentStep;
 
                   return (
-                    <div
+                    <button
                       key={s}
-                      className={`h-1.5 rounded-full transition-all duration-300 ${
-                        isCompleted
-                          ? 'bg-emerald-500'
-                          : isCurrent
-                          ? 'bg-blue-600 ring-2 ring-blue-500/20'
-                          : 'bg-slate-200'
-                      }`}
-                    />
+                      type="button"
+                      onClick={() => setCurrentStep(s)}
+                      className="group py-0.5 cursor-pointer w-full focus:outline-none"
+                      title={`Jump to Step ${s}`}
+                    >
+                      <div
+                        className={`h-1.5 rounded-full transition-all duration-300 ${
+                          isCompleted
+                            ? 'bg-emerald-500 group-hover:bg-emerald-600'
+                            : isCurrent
+                            ? 'bg-blue-600 ring-2 ring-blue-500/20'
+                            : 'bg-slate-200 group-hover:bg-slate-300'
+                        }`}
+                      />
+                    </button>
                   );
                 })}
               </div>
@@ -411,7 +507,7 @@ export default function OnboardingPage() {
                 onClick={handleBack}
                 disabled={currentStep === 1}
                 className={`flex items-center gap-1 text-xs font-bold transition ${
-                  currentStep === 1 ? 'opacity-0 cursor-default' : 'text-slate-600 hover:text-slate-900'
+                  currentStep === 1 ? 'opacity-0 cursor-default' : 'text-slate-600 hover:text-slate-900 cursor-pointer'
                 }`}
               >
                 <ArrowLeft className="w-3.5 h-3.5" /> Back to Step {currentStep - 1}
@@ -441,35 +537,41 @@ export default function OnboardingPage() {
                 const isCurrent = s.step === currentStep;
 
                 return (
-                  <div key={s.step} className="space-y-1 text-center">
+                  <button
+                    key={s.step}
+                    type="button"
+                    onClick={() => setCurrentStep(s.step)}
+                    className="space-y-1 text-center group cursor-pointer w-full focus:outline-none transition-transform active:scale-95"
+                    title={`Click to preview Step ${s.step}: ${s.label}`}
+                  >
                     <div
                       className={`h-1.5 rounded-full transition-all duration-300 ${
                         isCompleted
-                          ? 'bg-emerald-500'
+                          ? 'bg-emerald-500 group-hover:bg-emerald-600'
                           : isCurrent
                           ? 'bg-teal-600 ring-2 ring-teal-500/20'
-                          : 'bg-slate-200'
+                          : 'bg-slate-200 group-hover:bg-slate-300'
                       }`}
                     />
                     <div
-                      className={`text-[10px] font-bold ${
+                      className={`text-[10px] font-bold transition-colors ${
                         isCompleted
-                          ? 'text-emerald-700'
+                          ? 'text-emerald-700 group-hover:text-emerald-800'
                           : isCurrent
                           ? 'text-teal-600 font-extrabold'
-                          : 'text-slate-400'
+                          : 'text-slate-400 group-hover:text-slate-600'
                       }`}
                     >
                       {s.label}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
             </div>
           </div>
 
           {/* Main Card Content (Vertically Centered to Fit Screen) */}
-          <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-2xl xl:max-w-3xl'} mx-auto w-full my-auto py-1 sm:py-2`}>
+          <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-md lg:max-w-lg'} mx-auto w-full my-auto py-1 sm:py-2`}>
             <div className="vf-card bg-white p-4 sm:p-5 lg:p-5 xl:p-6 rounded-2xl xl:rounded-3xl border border-slate-200 shadow-lg shadow-slate-200/50 space-y-3 sm:space-y-3.5">
               
               {/* =================================================================== */}
@@ -677,33 +779,42 @@ export default function OnboardingPage() {
                     </p>
                   </div>
 
-                  <div className="space-y-2.5 sm:space-y-3">
-                    {/* Store Name */}
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Store / Business Name <span className="text-rose-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        value={businessForm.storeName}
-                        onChange={(e) => setBusinessForm({ ...businessForm, storeName: e.target.value })}
-                        placeholder="e.g. TechWorld Mobile Ltd"
-                        className="w-full text-xs sm:text-sm px-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
-                      />
-                    </div>
+                  <div className="space-y-3">
+                    {/* Store Name & Store Phone (Side-by-Side 2-Column Grid) */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                      {/* Store Name */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                          Store Name <span className="text-rose-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={businessForm.storeName}
+                            onChange={(e) => setBusinessForm({ ...businessForm, storeName: e.target.value })}
+                            placeholder="e.g. TechWorld Mobile Ltd"
+                            className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
+                          />
+                          <Store className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
+                        </div>
+                      </div>
 
-                    {/* Store Phone */}
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Store Contact Phone
-                      </label>
-                      <input
-                        type="tel"
-                        value={businessForm.phone}
-                        onChange={(e) => setBusinessForm({ ...businessForm, phone: e.target.value })}
-                        placeholder="e.g. +234 800 000 0000"
-                        className="w-full text-xs sm:text-sm px-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
-                      />
+                      {/* Store Phone */}
+                      <div>
+                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                          Contact Phone
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="tel"
+                            value={businessForm.phone}
+                            onChange={(e) => setBusinessForm({ ...businessForm, phone: e.target.value })}
+                            placeholder="e.g. +234 800 000 0000"
+                            className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
+                          />
+                          <Smartphone className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Business Type Selector */}
@@ -722,7 +833,7 @@ export default function OnboardingPage() {
                             key={cat.id}
                             type="button"
                             onClick={() => setBusinessForm({ ...businessForm, businessType: cat.id })}
-                            className={`p-2 sm:p-2.5 rounded-xl text-left border transition-all ${
+                            className={`p-2.5 rounded-xl text-left border transition-all ${
                               businessForm.businessType === cat.id
                                 ? 'bg-teal-50/70 border-teal-600 text-teal-900 shadow-sm'
                                 : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
@@ -742,34 +853,34 @@ export default function OnboardingPage() {
               {/* STEP 4: FREE TRIAL & FULL PACKAGE COMPARISON MATRIX                */}
               {/* =================================================================== */}
               {currentStep === 4 && (
-                <div className="space-y-3 animate-in fade-in duration-200">
+                <div className="space-y-3.5 sm:space-y-4 animate-in fade-in duration-200">
                   {/* Compact Header & Cycle Switcher */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2.5 border-b border-slate-100">
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
-                        <h3 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">Select Store Plan</h3>
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-extrabold inline-flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Select Store Plan</h3>
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-extrabold inline-flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                           14-Day Free Trial • ₦0 Due Today
                         </span>
                       </div>
-                      <p className="text-[11px] text-slate-500 font-medium">
+                      <p className="text-xs text-slate-500 font-medium mt-0.5">
                         No credit card required. Cancel or switch plans anytime.
                       </p>
                     </div>
                     
-                    <div className="flex bg-slate-100 p-0.5 rounded-lg text-xs font-bold text-slate-700 shrink-0 self-start sm:self-auto border border-slate-200/70">
+                    <div className="flex bg-slate-100 p-1 rounded-xl text-xs font-bold text-slate-700 shrink-0 self-start sm:self-auto border border-slate-200/70">
                       <button
                         type="button"
                         onClick={() => setBillingCycle('monthly')}
-                        className={`px-2.5 py-1 rounded-md transition ${billingCycle === 'monthly' ? 'bg-white shadow-sm text-slate-900 font-extrabold' : 'text-slate-500 hover:text-slate-800'}`}
+                        className={`px-3 py-1 rounded-lg transition ${billingCycle === 'monthly' ? 'bg-white shadow-sm text-slate-900 font-extrabold' : 'text-slate-500 hover:text-slate-800'}`}
                       >
                         Monthly
                       </button>
                       <button
                         type="button"
                         onClick={() => setBillingCycle('annual')}
-                        className={`px-2.5 py-1 rounded-md transition ${billingCycle === 'annual' ? 'bg-white shadow-sm text-slate-900 font-extrabold' : 'text-slate-500 hover:text-slate-800'}`}
+                        className={`px-3 py-1 rounded-lg transition ${billingCycle === 'annual' ? 'bg-white shadow-sm text-slate-900 font-extrabold' : 'text-slate-500 hover:text-slate-800'}`}
                       >
                         Annual (20% Off)
                       </button>
@@ -779,94 +890,131 @@ export default function OnboardingPage() {
                   {/* Dynamic Database Plan Cards OR Full About Plan Details View */}
                   {viewingPlanDetails ? (
                     /* DEDICATED ABOUT PLAN DETAIL VIEW */
-                    <div className="p-3.5 sm:p-4 rounded-xl bg-white border border-slate-200 shadow-sm space-y-3 animate-in zoom-in duration-200">
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 animate-in zoom-in duration-200">
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                         <button
                           type="button"
                           onClick={() => setViewingPlanDetails(null)}
-                          className="inline-flex items-center gap-1 text-xs font-extrabold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200/80 px-2.5 py-1 rounded-md transition cursor-pointer"
+                          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-700 hover:text-teal-700 bg-slate-100 hover:bg-teal-50 px-3 py-1.5 rounded-xl transition cursor-pointer"
                         >
-                          <ArrowLeft className="w-3 h-3" />
+                          <ArrowLeft className="w-4 h-4" />
                           <span>Back to All Plans</span>
                         </button>
 
                         <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-teal-50 text-teal-700 border border-teal-200">
-                            {viewingPlanDetails.code} Tier
+                          <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase bg-teal-50 text-teal-700 border border-teal-200">
+                            {viewingPlanDetails.code} Tier Specifications
                           </span>
                         </div>
                       </div>
 
                       {/* Plan Header & Pricing Banner */}
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 sm:p-4 rounded-xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white shadow-sm">
-                        <div className="space-y-0.5">
-                          <div className="flex items-center gap-1 text-teal-400 text-[10px] font-bold uppercase tracking-wider">
-                            <Layers className="w-3 h-3" />
-                            <span>Package Specifications</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white shadow-sm">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-1.5 text-teal-400 text-xs font-bold uppercase tracking-wider">
+                            <Layers className="w-4 h-4" />
+                            <span>Detailed Plan Capabilities</span>
                           </div>
-                          <h2 className="text-lg sm:text-xl font-black text-white">{viewingPlanDetails.name}</h2>
-                          <p className="text-[11px] text-slate-300 font-medium max-w-lg">
-                            {viewingPlanDetails.description || 'Designed for retail gadget stores seeking verified device tracking, POS, and thermal receipts.'}
+                          <h2 className="text-xl sm:text-2xl font-black text-white">{viewingPlanDetails.name}</h2>
+                          <p className="text-xs sm:text-sm text-slate-300 font-medium max-w-xl">
+                            {viewingPlanDetails.description || 'Verified device intelligence suite for store operations.'}
                           </p>
                         </div>
 
-                        <div className="p-2 sm:p-2.5 rounded-lg bg-white/10 border border-white/10 text-right shrink-0">
-                          <div className="text-[9px] font-bold text-slate-400 uppercase">
-                            {billingCycle === 'monthly' ? 'Monthly Pricing' : 'Annual Pricing'}
+                        <div className="p-3.5 rounded-xl bg-white/10 border border-white/10 text-left sm:text-right shrink-0">
+                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                            {billingCycle === 'monthly' ? 'Monthly Billing' : 'Annual Billing (20% Off)'}
                           </div>
-                          <div className="text-lg sm:text-xl font-black text-white font-mono">
+                          <div className="text-2xl sm:text-3xl font-black text-white font-mono">
                             ₦{billingCycle === 'monthly'
-                              ? viewingPlanDetails.monthlyPriceNgn?.toLocaleString()
-                              : (viewingPlanDetails.annualPriceNgn || viewingPlanDetails.monthlyPriceNgn * 10)?.toLocaleString()}
-                            <span className="text-[10px] text-slate-400 font-sans font-normal ml-0.5">
-                              /{billingCycle === 'monthly' ? 'mo' : 'yr'}
+                              ? (viewingPlanDetails.monthlyPriceNgn || 0).toLocaleString()
+                              : (viewingPlanDetails.annualPriceNgn || (viewingPlanDetails.monthlyPriceNgn || 0) * 10).toLocaleString()}
+                            <span className="text-xs text-slate-400 font-sans font-normal ml-1">
+                              /{viewingPlanDetails.monthlyPriceNgn === 0 ? 'forever' : billingCycle === 'monthly' ? 'mo' : 'yr'}
                             </span>
                           </div>
-                          <div className="text-[9px] text-emerald-400 font-bold">
-                            14-Day Free Trial • ₦0 Due
+                          <div className="text-[11px] text-emerald-400 font-extrabold mt-0.5 flex items-center sm:justify-end gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                            <span>14-Day Free Trial • ₦0 Due Today</span>
                           </div>
                         </div>
                       </div>
 
-                      {/* Detailed Capabilities Grid */}
-                      <div className="grid grid-cols-2 gap-2 text-xs text-slate-700">
-                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-start gap-2">
-                          <div className="p-1 rounded bg-teal-50 text-teal-700 shrink-0">
-                            <Smartphone className="w-3.5 h-3.5" />
+                      {/* Key Capabilities Highlights */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-slate-700">
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2.5">
+                          <div className="p-2 rounded-lg bg-teal-100 text-teal-700 shrink-0">
+                            <Smartphone className="w-4 h-4" />
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900 text-xs">
+                            <div className="font-extrabold text-slate-900 text-xs sm:text-sm">
                               {viewingPlanDetails.maxDevices
                                 ? `Up to ${viewingPlanDetails.maxDevices.toLocaleString()} Devices`
                                 : 'Unlimited Device Inventory'}
                             </div>
-                            <p className="text-[10px] text-slate-500">
-                              Register serial numbers, specs, battery health, and test reports.
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Track IMEI, serial numbers, battery health, and test status.
                             </p>
                           </div>
                         </div>
 
-                        <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 flex items-start gap-2">
-                          <div className="p-1 rounded bg-blue-50 text-blue-700 shrink-0">
-                            <Printer className="w-3.5 h-3.5" />
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2.5">
+                          <div className="p-2 rounded-lg bg-blue-100 text-blue-700 shrink-0">
+                            <Printer className="w-4 h-4" />
                           </div>
                           <div>
-                            <div className="font-bold text-slate-900 text-xs">Thermal Receipts & QR</div>
-                            <p className="text-[10px] text-slate-500">
-                              58mm and 80mm instant thermal printing with unique QR verification.
+                            <div className="font-extrabold text-slate-900 text-xs sm:text-sm">
+                              {viewingPlanDetails.customBranding ? 'Custom Branded Receipts' : 'Standard Thermal POS'}
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              80mm/58mm instant thermal receipts with QR verification codes.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2.5">
+                          <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0">
+                            <ShieldCheck className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <div className="font-extrabold text-slate-900 text-xs sm:text-sm">Anti-Theft Protection</div>
+                            <p className="text-[11px] text-slate-500 mt-0.5">
+                              Cross-checks devices against police and blacklisted registry.
                             </p>
                           </div>
                         </div>
                       </div>
 
+                      {/* Complete Features Checklist */}
+                      <div className="space-y-2 pt-2 border-t border-slate-100">
+                        <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                          <span>Everything Included In {viewingPlanDetails.name}</span>
+                        </h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/70">
+                          {Array.isArray(viewingPlanDetails.features) && viewingPlanDetails.features.length > 0 ? (
+                            viewingPlanDetails.features.map((feat: string, idx: number) => (
+                              <div key={idx} className="flex items-start gap-2 text-xs text-slate-800">
+                                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                <span className="font-medium">{feat}</span>
+                              </div>
+                            ))
+                          ) : (
+                            <p className="text-xs text-slate-500 italic col-span-2">
+                              Full platform access enabled with 14-day free trial.
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
                       {/* Detail Footer CTA */}
-                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                      <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
                         <button
                           type="button"
                           onClick={() => setViewingPlanDetails(null)}
-                          className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer"
+                          className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer text-center"
                         >
-                          ← Back
+                          ← Back to All Plans
                         </button>
 
                         <button
@@ -875,16 +1023,16 @@ export default function OnboardingPage() {
                             setSelectedPlan(viewingPlanDetails.code.toUpperCase());
                             setViewingPlanDetails(null);
                           }}
-                          className="px-4 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold shadow-sm transition flex items-center gap-1 cursor-pointer"
+                          className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <span>Select {viewingPlanDetails.name} & Continue</span>
-                          <ArrowRight className="w-3.5 h-3.5" />
+                          <ArrowRight className="w-4 h-4" />
                         </button>
                       </div>
                     </div>
                   ) : (
-                    /* DYNAMIC DATABASE PLAN CARDS GRID (4 COMPACT RESPONSIVE COLUMNS) */
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-2 sm:gap-2.5">
+                    /* DYNAMIC DATABASE PLAN CARDS GRID (4 RESPONSIVE TALL COLUMNS) */
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-3.5">
                       {dynamicPlans.length > 0 ? (
                         dynamicPlans.map((planItem) => {
                           const isSelected = selectedPlan.toUpperCase() === planItem.code.toUpperCase();
@@ -900,97 +1048,103 @@ export default function OnboardingPage() {
                             <div
                               key={planItem.code}
                               onClick={() => setSelectedPlan(planItem.code.toUpperCase())}
-                              className={`p-2.5 sm:p-3 rounded-xl border cursor-pointer transition-all relative flex flex-col justify-between space-y-2 ${
+                              className={`p-3.5 sm:p-4 rounded-2xl border cursor-pointer transition-all duration-200 relative flex flex-col justify-between space-y-3 ${
                                 isSelected
-                                  ? 'border-teal-600 bg-teal-50/25 ring-2 ring-teal-500/20 shadow-sm'
-                                  : 'border-slate-200 bg-white hover:border-slate-300'
+                                  ? 'border-2 border-teal-600 bg-teal-50/40 ring-4 ring-teal-500/15 shadow-md shadow-teal-600/10'
+                                  : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
                               }`}
                             >
                               {isRecommended && (
-                                <div className="absolute -top-2 right-2 bg-teal-600 text-white text-[8px] font-extrabold px-1.5 py-0.2 rounded-full uppercase tracking-wider shadow-sm">
+                                <div className="absolute -top-2.5 right-3 bg-teal-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                                   RECOMMENDED
                                 </div>
                               )}
 
-                              <div className="space-y-1.5">
+                              <div className="space-y-2.5">
                                 <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-1">
-                                    <span className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="text-xs sm:text-sm font-extrabold text-slate-900 uppercase tracking-wider">
                                       {planItem.name}
                                     </span>
                                     {isFree && (
-                                      <span className="text-[8px] font-extrabold px-1 py-0.2 rounded bg-emerald-100 text-emerald-800">
+                                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
                                         FREE
                                       </span>
                                     )}
                                   </div>
                                   {isSelected && (
-                                    <span className="w-3.5 h-3.5 rounded-full bg-teal-600 text-white flex items-center justify-center text-[9px] font-bold">✓</span>
+                                    <span className="w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
                                   )}
                                 </div>
 
                                 <div>
-                                  <div className="text-base sm:text-lg font-black text-slate-900 font-mono tracking-tight leading-tight">
+                                  <div className="text-lg sm:text-xl font-black text-slate-900 font-mono tracking-tight leading-tight">
                                     ₦{price?.toLocaleString()}
-                                    <span className="text-[10px] font-semibold text-slate-500 font-sans ml-0.5">
+                                    <span className="text-[11px] font-semibold text-slate-500 font-sans ml-1">
                                       {isFree ? '/forever' : '/mo'}
                                     </span>
                                   </div>
-                                  <p className="text-[10px] text-slate-500 font-medium truncate mt-0.5">
-                                    {planItem.description || 'Verified device intelligence suite.'}
+                                  <p className="text-[11px] text-slate-500 font-medium line-clamp-2 mt-0.5 min-h-[32px]">
+                                    {planItem.description || 'Verified device intelligence suite for store operations.'}
                                   </p>
                                 </div>
 
-                                {/* Features & Specs from Database (Compact) */}
-                                <div className="space-y-1 pt-1.5 border-t border-slate-100 text-[10px] font-medium text-slate-700">
-                                  <div className="flex items-center gap-1">
-                                    <Check className="w-3 h-3 text-emerald-600 shrink-0" />
-                                    <span className="truncate">Devices: <strong>{planItem.maxDevices ? `${planItem.maxDevices.toLocaleString()}` : 'Unlimited'}</strong></span>
-                                  </div>
-                                  {planItem.customBranding ? (
-                                    <div className="flex items-center gap-1">
-                                      <Check className="w-3 h-3 text-emerald-600 shrink-0" />
-                                      <span className="truncate">Custom Receipt Logo</span>
-                                    </div>
+                                {/* Rich Features List on Card */}
+                                <div className="space-y-1.5 pt-2 border-t border-slate-100 text-[11px] font-medium text-slate-700">
+                                  {Array.isArray(planItem.features) && planItem.features.length > 0 ? (
+                                    planItem.features.slice(0, 4).map((feat: string, fIdx: number) => (
+                                      <div key={fIdx} className="flex items-start gap-1.5 leading-snug">
+                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                        <span className="line-clamp-1">{feat}</span>
+                                      </div>
+                                    ))
                                   ) : (
-                                    <div className="flex items-center gap-1">
-                                      <Check className="w-3 h-3 text-emerald-600 shrink-0" />
-                                      <span className="truncate">Standard Thermal POS</span>
-                                    </div>
+                                    <>
+                                      <div className="flex items-center gap-1.5">
+                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                        <span>Devices: <strong>{planItem.maxDevices ? `${planItem.maxDevices.toLocaleString()}` : 'Unlimited'}</strong></span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5">
+                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                        <span>{planItem.customBranding ? 'Custom Receipt Logo' : 'Standard Thermal POS'}</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5">
+                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                        <span>IMEI Ledger & QR Origin</span>
+                                      </div>
+                                    </>
                                   )}
-                                  <div className="flex items-center gap-1">
-                                    <Check className="w-3 h-3 text-emerald-600 shrink-0" />
-                                    <span className="truncate">IMEI Ledger & QR</span>
-                                  </div>
                                 </div>
                               </div>
 
-                              <div className="space-y-1 pt-1.5 border-t border-slate-100">
+                              <div className="space-y-1.5 pt-2 border-t border-slate-100">
                                 <button
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setViewingPlanDetails(planItem);
                                   }}
-                                  className="w-full text-center text-[9px] font-bold text-teal-600 hover:text-teal-700 hover:underline flex items-center justify-center gap-0.5 cursor-pointer"
+                                  className="w-full text-center text-[11px] font-bold text-teal-600 hover:text-teal-700 hover:underline flex items-center justify-center gap-1 cursor-pointer py-1 bg-teal-50/50 hover:bg-teal-50 rounded-lg transition"
                                 >
-                                  <Info className="w-2.5 h-2.5" />
-                                  <span>About Plan →</span>
+                                  <Info className="w-3.5 h-3.5" />
+                                  <span>About Plan Specs ({planItem.features?.length || 6} Features) →</span>
                                 </button>
 
                                 <div
-                                  className={`py-1 px-2 rounded-lg text-center text-xs font-bold transition ${
-                                    isSelected ? 'bg-teal-600 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-slate-200/70'
+                                  className={`py-1.5 px-3 rounded-xl text-center text-xs font-bold transition-all ${
+                                    isSelected
+                                      ? 'bg-teal-600 text-white shadow-sm'
+                                      : 'bg-slate-100 text-slate-700 hover:bg-slate-200/80'
                                   }`}
                                 >
-                                  {isSelected ? 'Selected' : `Select ${planItem.name}`}
+                                  {isSelected ? 'Selected Plan' : `Select ${planItem.name}`}
                                 </div>
                               </div>
                             </div>
                           );
                         })
                       ) : (
-                        <div className="col-span-full p-4 rounded-xl bg-white border border-slate-200 text-center space-y-1">
+                        <div className="col-span-full p-6 rounded-2xl bg-white border border-slate-200 text-center space-y-1">
                           <p className="text-xs font-bold text-slate-700">14-Day Free Trial Activated</p>
                           <p className="text-xs text-slate-500">
                             Full store workspace access with unlimited features is enabled during your free trial period.
@@ -1048,21 +1202,36 @@ export default function OnboardingPage() {
                   </button>
                 )}
 
-                <Button
-                  variant="primary"
-                  fullWidth={currentStep === 1 || currentStep === 5}
-                  size="md"
-                  isLoading={isSubmitting}
-                  onClick={handleNext}
-                  rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-                  className="shadow-sm bg-teal-600 hover:bg-teal-500 font-bold text-xs sm:text-sm py-2 sm:py-2.5 px-4 sm:px-6 rounded-xl ml-auto"
-                >
-                  {currentStep === 1 && 'Create Account & Continue'}
-                  {currentStep === 2 && 'Verify Email & Continue'}
-                  {currentStep === 3 && 'Save Profile & Continue'}
-                  {currentStep === 4 && 'Start 14-Day Free Trial'}
-                  {currentStep === 5 && 'Go To Dashboard'}
-                </Button>
+                {currentStep === 4 ? (
+                  /* STEP 4: SHIMMER STRIPE SWEEPER BUTTON */
+                  <button
+                    type="button"
+                    disabled={isSubmitting}
+                    onClick={handleNext}
+                    className="relative group overflow-hidden border-2 border-teal-600 bg-white hover:bg-teal-600 text-teal-700 hover:text-white font-extrabold text-xs sm:text-sm py-2.5 px-6 sm:px-8 rounded-xl sm:rounded-2xl transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-teal-600/25 active:scale-[0.98] ml-auto flex items-center gap-2 cursor-pointer"
+                  >
+                    {/* Shimmer Light Stripe that sweeps across on hover */}
+                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-teal-100/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
+                    
+                    <span className="relative z-10">Start 14-Day Free Trial</span>
+                    <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
+                  </button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    fullWidth={currentStep === 1 || currentStep === 5}
+                    size="md"
+                    isLoading={isSubmitting}
+                    onClick={handleNext}
+                    rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
+                    className="shadow-sm bg-teal-600 hover:bg-teal-500 font-bold text-xs sm:text-sm py-2 sm:py-2.5 px-4 sm:px-6 rounded-xl ml-auto"
+                  >
+                    {currentStep === 1 && 'Create Account & Continue'}
+                    {currentStep === 2 && 'Verify Email & Continue'}
+                    {currentStep === 3 && 'Save Profile & Continue'}
+                    {currentStep === 5 && 'Go To Dashboard'}
+                  </Button>
+                )}
               </div>
 
               {/* Mobile Social Proof Banner (block lg:hidden) */}
@@ -1077,7 +1246,7 @@ export default function OnboardingPage() {
           </div>
 
           {/* Right Bottom Footer Link */}
-          <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-2xl xl:max-w-3xl'} mx-auto w-full text-center text-[11px] font-medium text-slate-500 py-1 shrink-0`}>
+          <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-md lg:max-w-lg'} mx-auto w-full text-center text-[11px] font-medium text-slate-500 py-1 shrink-0`}>
             Need assistance with workspace setup?{' '}
             <a href="#" className="text-teal-600 font-bold hover:underline">Contact Store Support</a>
           </div>
