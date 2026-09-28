@@ -549,6 +549,17 @@ export default function ReceiptsArchivePage() {
       {/* Global Print Styling for Clean A4 Page Output */}
       <style jsx global>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 10mm 12mm;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
           body * {
             visibility: hidden !important;
           }
@@ -560,17 +571,17 @@ export default function ReceiptsArchivePage() {
           }
           #printable-a4-receipt {
             display: block !important;
-            position: absolute !important;
+            position: fixed !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
             margin: 0 !important;
-            padding: 20mm !important;
+            padding: 0 !important;
             box-shadow: none !important;
             border: none !important;
             background: #ffffff !important;
-            z-index: 99999 !important;
+            z-index: 999999 !important;
           }
         }
       `}</style>
