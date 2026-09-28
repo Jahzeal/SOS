@@ -24,6 +24,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
+import { A4SalesReceipt } from '@/components/receipt/A4SalesReceipt';
 import { api } from '@/lib/api';
 import { useReceipts, useInventorySummary } from '@/hooks/useDashboardQueries';
 
@@ -409,7 +410,7 @@ export default function ReceiptsArchivePage() {
                           <button
                             onClick={(e) => { e.stopPropagation(); handlePrintReceipt(rcp); }}
                             className="p-1.5 hover:text-blue-600 rounded"
-                            title="Print Thermal"
+                            title="Print A4 Receipt"
                           >
                             <Printer className="w-3.5 h-3.5" />
                           </button>
@@ -447,219 +448,128 @@ export default function ReceiptsArchivePage() {
 
       </div>
 
-      {/* Slide-over Receipt Details Drawer */}
+      {/* Slide-over Receipt Details Modal */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 overflow-hidden bg-slate-900/40 backdrop-blur-xs flex justify-end animate-in fade-in duration-200">
-          <div className="w-full max-w-md bg-white h-full shadow-2xl p-6 overflow-y-auto flex flex-col justify-between">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-2">
-                  <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-                    <Receipt className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-slate-900 text-sm">Receipt Details</h3>
-                    <p className="text-[10px] text-slate-400 font-mono font-bold text-blue-600">
-                      {selectedReceipt.receiptNumber || selectedReceipt.invoiceNumber || selectedReceipt.id}
-                    </p>
-                  </div>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Modal Header */}
+            <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                  <Receipt className="w-5 h-5" />
                 </div>
+                <div>
+                  <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">Sales Receipt Preview</h3>
+                  <p className="text-[11px] text-slate-400 font-mono font-bold text-blue-600">
+                    {selectedReceipt.receiptNumber || selectedReceipt.invoiceNumber || selectedReceipt.id}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button variant="primary" size="sm" onClick={() => handlePrintReceipt(selectedReceipt)} leftIcon={<Printer className="w-3.5 h-3.5" />}>
+                  Print Receipt
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => handleEmailReceipt(selectedReceipt)} leftIcon={<Mail className="w-3.5 h-3.5" />}>
+                  Email
+                </Button>
                 <button
                   onClick={() => setSelectedReceipt(null)}
-                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                  className="w-8 h-8 rounded-full flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition ml-2"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
-
-              {/* Receipt Preview Box */}
-              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 font-mono text-xs space-y-3">
-                <div className="text-center border-b border-slate-200 pb-3">
-                  <h4 className="font-extrabold text-sm text-slate-900">
-                    {selectedReceipt.business?.name || summaryData?.business?.name || 'NOXGUARDA STORE'}
-                  </h4>
-                  <p className="text-[10px] text-slate-500">
-                    {selectedReceipt.business?.address || 'Ikeja Digital Village, Lagos'}
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    {selectedReceipt.business?.phone || '+234 800 000 0000'}
-                  </p>
-                </div>
-
-                <div className="space-y-1 text-[11px]">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Date:</span>
-                    <span className="font-bold text-slate-800">{new Date(selectedReceipt.createdAt).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Customer:</span>
-                    <span className="font-bold text-slate-800">{selectedReceipt.customer?.name || 'Retail Buyer'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Payment Method:</span>
-                    <span className="font-bold text-slate-800 uppercase">{selectedReceipt.paymentMethod || 'CASH'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Status:</span>
-                    <span className={`font-bold ${selectedReceipt.paymentStatus === 'PAID' ? 'text-emerald-600' : 'text-amber-600'}`}>
-                      {selectedReceipt.paymentStatus || 'PAID'}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Items */}
-                <div className="border-t border-b border-slate-200 py-2 space-y-2">
-                  {(selectedReceipt.items || []).map((item: any, idx: number) => (
-                    <div key={idx} className="flex justify-between items-start text-[11px]">
-                      <div>
-                        <p className="font-bold text-slate-900">{item.description || (item.phoneRecord ? `${item.phoneRecord.brand} ${item.phoneRecord.model}` : 'Item')}</p>
-                        {item.phoneRecord?.imei1 && (
-                          <p className="text-[9px] text-slate-500">IMEI: {item.phoneRecord.imei1}</p>
-                        )}
-                      </div>
-                      <span className="font-bold text-slate-900">₦{((item.unitPrice || 0) * (item.quantity || 1)).toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="flex justify-between font-extrabold text-sm border-t border-slate-200 pt-2 text-slate-900">
-                  <span>TOTAL PAID</span>
-                  <span className="text-teal-700">₦{selectedReceipt.totalAmount?.toLocaleString() || '0'}</span>
-                </div>
-
-
-                <div className="pt-2 text-center text-[10px] text-slate-500 font-sans border-t border-slate-200 leading-snug">
-                  {selectedReceipt.business?.receiptFooter || 'Thank you for your purchase! Devices verified with NoxGuarda.'}
-                </div>
-              </div>
             </div>
 
-            {/* Modal Actions */}
-            <div className="space-y-2 pt-4 border-t border-slate-100">
-              <Button variant="primary" fullWidth size="lg" onClick={() => handlePrintReceipt(selectedReceipt)} leftIcon={<Printer className="w-4 h-4" />}>
-                Print Thermal Receipt
-              </Button>
-              <Button variant="secondary" fullWidth size="md" onClick={() => handleEmailReceipt(selectedReceipt)} leftIcon={<Mail className="w-4 h-4" />}>
-                Email Receipt to Customer
-              </Button>
+            {/* Modal Body: A4 Receipt Document */}
+            <div className="p-4 sm:p-6 overflow-y-auto bg-slate-100/60">
+              <A4SalesReceipt
+                data={{
+                  receiptNumber: selectedReceipt.receiptNumber || selectedReceipt.invoiceNumber,
+                  invoiceNumber: selectedReceipt.invoiceNumber,
+                  createdAt: selectedReceipt.createdAt,
+                  paymentStatus: selectedReceipt.paymentStatus,
+                  paymentMethod: selectedReceipt.paymentMethod,
+                  totalAmount: selectedReceipt.totalAmount || 0,
+                  customerName: selectedReceipt.customer?.name,
+                  customerPhone: selectedReceipt.customer?.phone,
+                  customerEmail: selectedReceipt.customer?.email,
+                  customerAddress: selectedReceipt.customer?.address,
+                  business: {
+                    name: selectedReceipt.business?.name || summaryData?.business?.name,
+                    address: selectedReceipt.business?.address || summaryData?.business?.address,
+                    phone: selectedReceipt.business?.phone || summaryData?.business?.phone,
+                    email: selectedReceipt.business?.email || summaryData?.business?.email,
+                    logoUrl: selectedReceipt.business?.logoUrl,
+                    receiptFooter: selectedReceipt.business?.receiptFooter,
+                  },
+                  items: selectedReceipt.items || [],
+                }}
+              />
             </div>
           </div>
         </div>
       )}
 
-      {/* Hidden Printable Receipt for Clean 80mm Thermal Printer Output */}
+      {/* Hidden Printable Receipt for Standard Clean A4 Page Output */}
       {(() => {
         const rcp = receiptToPrint || selectedReceipt;
         if (!rcp) return null;
-        const displayNum = rcp.receiptNumber || rcp.invoiceNumber || (rcp.id ? `REC-${rcp.id.slice(0, 8).toUpperCase()}` : 'RECEIPT');
-        const bizName = rcp.business?.name || summaryData?.business?.name || 'NOXGUARDA STORE';
-        const bizAddress = rcp.business?.address || summaryData?.business?.address || 'Ikeja Digital Village, Lagos';
-        const bizPhone = rcp.business?.phone || summaryData?.business?.phone || '+234 800 000 0000';
-        const bizFooter = rcp.business?.receiptFooter || 'Thank you for your purchase! 30-Day Store Warranty included. Official IMEI verified on NoxGuarda Registry.';
 
         return (
-          <div id="printable-pos-receipt" className="hidden font-mono">
-            <div className="text-center pb-2 border-b border-black mb-2">
-              <h2 className="font-extrabold text-sm uppercase tracking-wide">{bizName}</h2>
-              <p className="text-[10px]">{bizAddress}</p>
-              <p className="text-[10px]">Tel: {bizPhone}</p>
-            </div>
-
-            <div className="space-y-1 text-[10px] pb-2 border-b border-black mb-2">
-              <div className="flex justify-between">
-                <span>Receipt #:</span>
-                <span className="font-bold">{displayNum}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Date:</span>
-                <span>{new Date(rcp.createdAt).toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Customer:</span>
-                <span className="font-bold">{rcp.customer?.name || 'Retail Buyer'}</span>
-              </div>
-              {rcp.customer?.phone && (
-                <div className="flex justify-between">
-                  <span>Phone:</span>
-                  <span>{rcp.customer.phone}</span>
-                </div>
-              )}
-              <div className="flex justify-between">
-                <span>Payment Method:</span>
-                <span className="font-bold uppercase">{rcp.paymentMethod || 'CASH'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Status:</span>
-                <span className="font-bold uppercase">{rcp.paymentStatus || 'PAID'}</span>
-              </div>
-            </div>
-
-            {/* Items */}
-            <div className="space-y-1.5 text-[10px] pb-2 border-b border-black mb-2">
-              {(rcp.items || []).map((item: any, idx: number) => {
-                const itemTitle = item.description || (item.phoneRecord ? `${item.phoneRecord.brand} ${item.phoneRecord.model}` : 'Item');
-                const qty = item.quantity || 1;
-                const price = item.unitPrice || item.price || 0;
-                const total = price * qty;
-                const imei = item.phoneRecord?.imei1 || item.imei;
-
-                return (
-                  <div key={idx} className="space-y-0.5">
-                    <div className="flex justify-between font-bold">
-                      <span>{itemTitle} {qty > 1 ? `x${qty}` : ''}</span>
-                      <span>₦{total.toLocaleString()}</span>
-                    </div>
-                    {imei && (
-                      <p className="text-[9px] text-slate-700">IMEI: {imei}</p>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Total */}
-            <div className="text-xs font-black flex justify-between pb-2 border-b border-black mb-2">
-              <span>TOTAL PAID</span>
-              <span>₦{Number(rcp.totalAmount || 0).toLocaleString()}</span>
-            </div>
-
-            {/* QR Code & Anti Theft info */}
-            <div className="text-center pt-2 space-y-1 text-[9px]">
-              <p className="font-bold">NoxGuarda Anti-Theft Protection</p>
-              <p className="text-[8px]">Scan or verify IMEI at noxguarda.com/verify</p>
-              <p className="pt-1 text-[8px] italic leading-tight">{bizFooter}</p>
-            </div>
+          <div id="printable-a4-receipt" className="hidden">
+            <A4SalesReceipt
+              id="printable-a4-receipt-content"
+              data={{
+                receiptNumber: rcp.receiptNumber || rcp.invoiceNumber,
+                invoiceNumber: rcp.invoiceNumber,
+                createdAt: rcp.createdAt,
+                paymentStatus: rcp.paymentStatus,
+                paymentMethod: rcp.paymentMethod,
+                totalAmount: rcp.totalAmount || 0,
+                customerName: rcp.customer?.name,
+                customerPhone: rcp.customer?.phone,
+                customerEmail: rcp.customer?.email,
+                customerAddress: rcp.customer?.address,
+                business: {
+                  name: rcp.business?.name || summaryData?.business?.name,
+                  address: rcp.business?.address || summaryData?.business?.address,
+                  phone: rcp.business?.phone || summaryData?.business?.phone,
+                  email: rcp.business?.email || summaryData?.business?.email,
+                  logoUrl: rcp.business?.logoUrl,
+                  receiptFooter: rcp.business?.receiptFooter,
+                },
+                items: rcp.items || [],
+              }}
+            />
           </div>
         );
       })()}
 
-      {/* Global Print Styling for Clean POS Roll Output */}
+      {/* Global Print Styling for Clean A4 Page Output */}
       <style jsx global>{`
         @media print {
           body * {
             visibility: hidden !important;
           }
-          #printable-pos-receipt,
-          #printable-pos-receipt * {
+          #printable-a4-receipt,
+          #printable-a4-receipt * {
             visibility: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          #printable-pos-receipt {
+          #printable-a4-receipt {
             display: block !important;
             position: absolute !important;
             left: 0 !important;
             top: 0 !important;
-            width: 80mm !important;
-            max-width: 80mm !important;
-            margin: 0 auto !important;
-            padding: 12px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 20mm !important;
             box-shadow: none !important;
-            border: 1px dashed #000000 !important;
+            border: none !important;
             background: #ffffff !important;
-            color: #000000 !important;
-            font-size: 11px !important;
-            line-height: 1.35 !important;
             z-index: 99999 !important;
           }
         }

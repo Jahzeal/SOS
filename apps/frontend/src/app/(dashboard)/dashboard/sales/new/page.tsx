@@ -33,6 +33,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
+import { A4SalesReceipt } from '@/components/receipt/A4SalesReceipt';
 import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 import { api } from '@/lib/api';
 
@@ -966,162 +967,45 @@ function CheckoutPOSContent() {
             </Badge>
           </div>
 
-          {/* Realistic 80mm POS Thermal Receipt Paper Display */}
-          <div
-            id="printable-pos-receipt"
-            className="p-6 sm:p-7 rounded-2xl bg-white border border-slate-300/80 shadow-xl font-mono text-xs text-slate-800 space-y-4 text-left relative overflow-hidden"
-          >
-            {/* Top Store Header */}
-            <div className="text-center space-y-1 border-b border-dashed border-slate-300 pb-4">
-              {storeSettings?.logoUrl && (
-                <div className="mb-2 flex justify-center">
-                  <img
-                    src={storeSettings.logoUrl}
-                    alt="Store Logo"
-                    className="h-10 max-w-[130px] object-contain filter grayscale contrast-125"
-                  />
-                </div>
-              )}
-              <h3 className="font-black text-base text-slate-950 tracking-tight uppercase">
-                {storeSettings?.name || storeBankDetails?.accountName || 'NOXGUARDA RETAIL POS'}
-              </h3>
-              <p className="text-[11px] font-sans font-bold text-slate-600">
-                {storeSettings?.storeBranch || 'Official Sales & Anti-Theft Verification'}
-              </p>
-              {storeSettings?.address && (
-                <p className="text-[10px] text-slate-500 font-sans leading-tight">
-                  {storeSettings.address}
-                </p>
-              )}
-              <div className="flex flex-wrap items-center justify-center gap-x-2 text-[10px] text-slate-500 font-sans pt-0.5">
-                {storeSettings?.phone && <span>Tel: {storeSettings.phone}</span>}
-                {storeSettings?.email && <span>• {storeSettings.email}</span>}
-              </div>
-            </div>
-
-            {/* Receipt Meta & Customer Information */}
-            <div className="space-y-1.5 text-[11px] border-b border-dashed border-slate-300 pb-3">
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 uppercase font-bold text-[10px]">Receipt #:</span>
-                <span className="font-bold text-slate-900 bg-slate-100 px-1.5 py-0.5 rounded text-[11px]">
-                  {finalReceipt.receiptNumber || finalReceipt.id}
-                </span>
-              </div>
-              {finalReceipt.invoiceNumber && (
-                <div className="flex justify-between items-center">
-                  <span className="text-slate-500 uppercase font-bold text-[10px]">Invoice #:</span>
-                  <span className="font-bold text-slate-900">{finalReceipt.invoiceNumber}</span>
-                </div>
-              )}
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 uppercase font-bold text-[10px]">Date & Time:</span>
-                <span className="text-slate-800 font-medium">{finalReceipt.date}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 uppercase font-bold text-[10px]">Customer:</span>
-                <span className="font-bold text-slate-900">
-                  {finalReceipt.customerName} {finalReceipt.customerPhone && finalReceipt.customerPhone !== 'N/A' ? `(${finalReceipt.customerPhone})` : ''}
-                </span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-slate-500 uppercase font-bold text-[10px]">Payment Method:</span>
-                <span className="font-bold text-slate-900 uppercase">
-                  {finalReceipt.paymentMethod?.replace('_', ' ') || 'CARD'}
-                </span>
-              </div>
-            </div>
-
-            {/* Itemized Device & Items List */}
-            <div className="space-y-2 border-b border-dashed border-slate-300 pb-3">
-              <div className="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider pb-1">
-                <span>Description / IMEI</span>
-                <span>Amount</span>
-              </div>
-
-              {finalReceipt.items.map((item: CartDeviceItem, idx: number) => (
-                <div key={item.id || idx} className="space-y-0.5 text-[11px] pt-1 border-t border-slate-100 first:border-0 first:pt-0">
-                  <div className="flex justify-between items-start font-bold text-slate-900">
-                    <span>
-                      {item.brand ? `${item.brand} ` : ''}{item.model}
-                      {item.quantity > 1 ? ` (x${item.quantity})` : ''}
-                    </span>
-                    <span className="text-right shrink-0 pl-2">
-                      ₦{(item.price * item.quantity).toLocaleString()}
-                    </span>
-                  </div>
-
-                  {/* Device IMEI & Specs Tag */}
-                  {item.isDevice && item.imei && item.imei !== 'N/A (Accessory)' && storeSettings?.showImei !== false && (
-                    <div className="flex flex-wrap items-center gap-1.5 text-[10px] text-slate-600 font-mono">
-                      <span className="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded font-bold">
-                        IMEI: {item.imei}
-                      </span>
-                      {item.storage && item.storage !== 'N/A' && (
-                        <span className="text-slate-500">• {item.storage}</span>
-                      )}
-                      {item.condition && (
-                        <span className="text-slate-500">• {item.condition}</span>
-                      )}
-                    </div>
-                  )}
-
-                  {!item.isDevice && item.color && item.color !== 'Custom' && (
-                    <p className="text-[10px] text-slate-500">{item.color}</p>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Financial Summary */}
-            <div className="space-y-1.5 text-[11px]">
-              <div className="flex justify-between text-slate-600">
-                <span>Subtotal ({finalReceipt.items.reduce((s: number, i: CartDeviceItem) => s + i.quantity, 0)} items)</span>
-                <span>₦{finalReceipt.subtotal.toLocaleString()}</span>
-              </div>
-
-              <div className="flex justify-between items-baseline font-black text-base border-t border-dashed border-slate-300 pt-2 text-slate-950">
-                <span className="uppercase text-xs tracking-wider">TOTAL PAID</span>
-                <span className="text-blue-700 text-lg">₦{finalReceipt.total.toLocaleString()}</span>
-              </div>
-
-              {finalReceipt.paymentMethod === 'CASH' && (
-                <div className="space-y-1 pt-1 border-t border-slate-100 text-[10px] text-slate-600">
-                  <div className="flex justify-between">
-                    <span>Cash Tendered:</span>
-                    <span className="font-bold text-slate-800">₦{Number(finalReceipt.cashTendered || finalReceipt.total).toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Change Due:</span>
-                    <span className="font-bold text-emerald-700">₦{Number(finalReceipt.changeDue || 0).toLocaleString()}</span>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Scannable Anti-Theft Verification QR Code */}
-            {storeSettings?.showQrCode !== false && (
-              <div className="pt-3 text-center border-t border-dashed border-slate-300 space-y-2">
-                <div className="w-20 h-20 bg-white border border-slate-200 rounded-xl mx-auto flex items-center justify-center p-1.5 shadow-xs">
-                  <QrCode className="w-full h-full text-slate-900" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-slate-800 font-sans">
-                    NoxGuarda Anti-Theft Protection
-                  </p>
-                  <p className="text-[9px] text-slate-500 font-sans">
-                    Scan QR to verify proof of purchase & ownership registry
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Warranty & Store Disclaimer Footer */}
-            <div className="pt-3 text-center text-[10px] text-slate-500 font-sans border-t border-dashed border-slate-300 leading-snug">
-              <p className="font-bold text-slate-700 pb-0.5">
-                {storeSettings?.receiptFooter || 'Thank you for your purchase! 30-Day Store Warranty included. Official IMEI verified on NoxGuarda Registry.'}
-              </p>
-              <p className="text-[9px] text-slate-400">Powered by NoxGuarda POS Security Cloud</p>
-            </div>
+          {/* A4 Sales Receipt Document Display */}
+          <div className="space-y-4">
+            <A4SalesReceipt
+              id="printable-a4-receipt"
+              data={{
+                receiptNumber: finalReceipt.receiptNumber || finalReceipt.id,
+                invoiceNumber: finalReceipt.invoiceNumber,
+                createdAt: finalReceipt.date || new Date().toISOString(),
+                paymentStatus: 'PAID',
+                paymentMethod: finalReceipt.paymentMethod,
+                totalAmount: finalReceipt.total,
+                customerName: finalReceipt.customerName,
+                customerPhone: finalReceipt.customerPhone,
+                customerEmail: finalReceipt.customerEmail,
+                customerAddress: 'Retail Customer Store Visit',
+                business: {
+                  name: storeSettings?.name || storeBankDetails?.accountName,
+                  address: storeSettings?.address,
+                  phone: storeSettings?.phone,
+                  email: storeSettings?.email,
+                  logoUrl: storeSettings?.logoUrl,
+                  receiptFooter: storeSettings?.receiptFooter,
+                },
+                items: finalReceipt.items.map((it: CartDeviceItem) => ({
+                  description: `${it.brand ? `${it.brand} ` : ''}${it.model}`,
+                  phoneRecord: it.isDevice ? {
+                    brand: it.brand,
+                    model: it.model,
+                    imei1: it.imei,
+                    storageCapacity: it.storage,
+                    condition: it.condition,
+                  } : null,
+                  imei: it.imei,
+                  quantity: it.quantity,
+                  unitPrice: it.price,
+                  totalPrice: it.price * it.quantity,
+                })),
+              }}
+            />
           </div>
 
           {/* Action Toolbar */}
@@ -1132,9 +1016,9 @@ function CheckoutPOSContent() {
                 size="md"
                 onClick={handlePrintReceipt}
                 leftIcon={<Printer className="w-4 h-4" />}
-                className="bg-slate-900 hover:bg-slate-800 font-bold shadow-sm"
+                className="bg-blue-600 hover:bg-blue-500 font-bold shadow-sm"
               >
-                Print Receipt (80mm)
+                Print Sales Receipt
               </Button>
 
               <Button
@@ -1171,37 +1055,35 @@ function CheckoutPOSContent() {
               fullWidth
               size="lg"
               onClick={resetForm}
-              className="bg-blue-600 hover:bg-blue-500 font-extrabold shadow-md mt-2"
+              className="bg-slate-900 hover:bg-slate-800 font-extrabold shadow-md mt-2"
             >
               + Start Next Walk-in Sale
             </Button>
           </div>
 
-          {/* Global Print Styling for Clean POS Roll Output */}
+          {/* Global Print Styling for Clean A4 Page Output */}
           <style jsx global>{`
             @media print {
               body * {
                 visibility: hidden !important;
               }
-              #printable-pos-receipt, #printable-pos-receipt * {
+              #printable-a4-receipt, #printable-a4-receipt * {
                 visibility: visible !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }
-              #printable-pos-receipt {
+              #printable-a4-receipt {
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
-                width: 80mm !important;
-                max-width: 80mm !important;
-                margin: 0 auto !important;
-                padding: 12px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 20mm !important;
                 box-shadow: none !important;
-                border: 1px dashed #000000 !important;
+                border: none !important;
                 background: #ffffff !important;
-                color: #000000 !important;
-                font-size: 11px !important;
-                line-height: 1.35 !important;
+                z-index: 99999 !important;
               }
             }
           `}</style>

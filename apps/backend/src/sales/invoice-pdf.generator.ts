@@ -41,7 +41,9 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
 
   const pageWidth = doc.internal.pageSize.getWidth();
   const docTitle = data.isInvoice ? 'COMMERCIAL INVOICE' : 'SALES RECEIPT';
-  const docNum = data.invoiceNumber || data.receiptNumber || 'VF-INV-001';
+  const docNum = data.isInvoice
+    ? (data.invoiceNumber || data.receiptNumber || 'NG-INV-001')
+    : (data.receiptNumber || data.invoiceNumber || 'NG-REC-001');
   const issueDateStr = new Date(data.createdAt).toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -277,8 +279,8 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
 
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10.5);
-  doc.setTextColor(37, 99, 235); // blue-600
-  doc.text('TOTAL DUE:', summaryLeft + 6, finalY + 25);
+  doc.setTextColor(data.isInvoice ? 37 : 16, data.isInvoice ? 99 : 149, data.isInvoice ? 235 : 193); // blue-600 or emerald-600
+  doc.text(data.isInvoice ? 'TOTAL DUE:' : 'TOTAL PAID:', summaryLeft + 6, finalY + 25);
   doc.text(`NGN ${data.totalAmount.toLocaleString()}`, summaryLeft + summaryWidth - 6, finalY + 25, { align: 'right' });
 
   // 5. Bottom Verified Stamp & Footer

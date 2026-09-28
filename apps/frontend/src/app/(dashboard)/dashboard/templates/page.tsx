@@ -30,7 +30,7 @@ import { api } from '@/lib/api';
 
 export default function ReceiptInvoiceTemplatesPage() {
   const [activeTab, setActiveTab] = useState<'receipt' | 'invoice' | 'quote'>('receipt');
-  const [receiptPreviewMode, setReceiptPreviewMode] = useState<'email' | 'thermal' | 'a4'>('email');
+  const [receiptPreviewMode, setReceiptPreviewMode] = useState<'a4' | 'email'>('a4');
   const [invoicePreviewMode, setInvoicePreviewMode] = useState<'email' | 'a4'>('email');
   const [quotePreviewMode, setQuotePreviewMode] = useState<'email' | 'a4'>('email');
   const [loading, setLoading] = useState(true);
@@ -727,6 +727,17 @@ export default function ReceiptInvoiceTemplatesPage() {
               <div className="flex items-center justify-end gap-1.5 bg-slate-100 p-1 rounded-xl w-fit ml-auto border border-slate-200/60 shadow-2xs">
                 <button
                   type="button"
+                  onClick={() => setReceiptPreviewMode('a4')}
+                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition ${
+                    receiptPreviewMode === 'a4'
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  A4 Sales Receipt
+                </button>
+                <button
+                  type="button"
                   onClick={() => setReceiptPreviewMode('email')}
                   className={`px-3 py-1 rounded-lg text-[11px] font-bold transition flex items-center gap-1.5 ${
                     receiptPreviewMode === 'email'
@@ -734,29 +745,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Mail className="w-3 h-3" /> Customer Email UI
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setReceiptPreviewMode('thermal')}
-                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition ${
-                    receiptPreviewMode === 'thermal'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  80mm POS Slip
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setReceiptPreviewMode('a4')}
-                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition ${
-                    receiptPreviewMode === 'a4'
-                      ? 'bg-white text-slate-900 shadow-xs'
-                      : 'text-slate-600 hover:text-slate-900'
-                  }`}
-                >
-                  A4 Receipt
+                  <Mail className="w-3 h-3" /> Customer Email Delivery
                 </button>
               </div>
 
@@ -783,7 +772,7 @@ export default function ReceiptInvoiceTemplatesPage() {
 
                     <div className="pt-1">
                       <p className="text-white font-black text-xs sm:text-[13px] leading-snug">
-                        [{storeName || 'Store Name'}] POS Sales Receipt #RCP-84920
+                        [{storeName || 'Store Name'}] POS Sales Receipt #NG-REC-193170
                       </p>
                     </div>
 
@@ -839,7 +828,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                       <div className="space-y-1">
                         <p className="font-bold text-slate-900 text-xs">Hello Adeola Johnson,</p>
                         <p className="text-slate-600 text-[11px] leading-relaxed">
-                          Thank you for shopping with us! Please find attached your official sales receipt (<strong>#RCP-84920</strong>) and warranty documentation.
+                          Thank you for shopping with us! Please find attached your official sales receipt (<strong>#NG-REC-193170</strong>) and warranty documentation.
                         </p>
                       </div>
 
@@ -848,7 +837,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                         <div className="grid grid-cols-2 gap-3">
                           <div>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Receipt No.</p>
-                            <p className="font-mono font-bold text-slate-900 mt-0.5">#RCP-84920</p>
+                            <p className="font-mono font-bold text-slate-900 mt-0.5">#NG-REC-193170</p>
                           </div>
                           <div>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Transaction Date</p>
@@ -901,7 +890,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                             PDF
                           </div>
                           <div className="min-w-0">
-                            <p className="font-bold text-blue-950 truncate text-[11px]">Receipt-RCP-84920.pdf</p>
+                            <p className="font-bold text-blue-950 truncate text-[11px]">Receipt-NG-REC-193170.pdf</p>
                             <p className="text-[10px] text-blue-600">Official Signed PDF Document • 142 KB</p>
                           </div>
                         </div>
@@ -928,128 +917,6 @@ export default function ReceiptInvoiceTemplatesPage() {
                         </p>
                       </div>
                     </div>
-                  </div>
-                </div>
-              ) : receiptPreviewMode === 'thermal' ? (
-                /* ================= 80mm POS Thermal Slip ================= */
-                <div className="bg-white rounded-2xl border border-slate-300 shadow-2xl p-6 max-w-sm mx-auto font-mono text-slate-900 text-xs relative overflow-hidden text-left">
-                  <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-teal-500 via-blue-500 to-indigo-500" />
-
-                  <div className="text-center space-y-1.5 pb-4 border-b-2 border-dashed border-slate-300">
-                    {logoUrl && showLogoOnReceipt ? (
-                      <div className="mb-2 flex justify-center">
-                        <img
-                          src={logoUrl}
-                          alt="Store Logo"
-                          className="h-11 max-w-[140px] object-contain"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-sm mx-auto shadow-sm">
-                        {(storeName || 'NG').slice(0, 2).toUpperCase()}
-                      </div>
-                    )}
-                    <h4 className="font-black text-base tracking-tight text-slate-950 uppercase font-sans">
-                      {storeName || 'Your Store Name'}
-                    </h4>
-                    {storeBranch && (
-                      <p className="text-[10px] font-bold text-teal-700 font-sans tracking-wide uppercase">
-                        {storeBranch}
-                      </p>
-                    )}
-                    <p className="text-[11px] text-slate-600 leading-tight font-sans">
-                      {storeAddress || 'Computer Village, Ikeja, Lagos'}
-                    </p>
-                    <div className="text-[10px] text-slate-500 font-sans flex flex-wrap justify-center gap-x-2">
-                      {storePhone && <span>Tel: {storePhone}</span>}
-                      {businessEmail && <span>• {businessEmail}</span>}
-                    </div>
-                  </div>
-
-                  <div className="py-3 border-b border-slate-200 text-[11px] space-y-1 font-sans">
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-medium">Receipt Ref:</span>
-                      <span className="font-mono font-black text-slate-950 bg-slate-100 px-2 py-0.5 rounded">#RCP-84920</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-medium">Date & Time:</span>
-                      <span className="font-bold text-slate-800">23 Sep 2026, 17:42</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-medium">Cashier / Sales Rep:</span>
-                      <span className="font-bold text-slate-800">Attendant #02</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-slate-500 font-medium">Customer:</span>
-                      <span className="font-bold text-slate-800">Adeola Johnson</span>
-                    </div>
-                  </div>
-
-                  <div className="py-3 border-b-2 border-dashed border-slate-300 space-y-2.5">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1 pr-2">
-                        <p className="font-extrabold text-slate-950 text-xs font-sans">Apple iPhone 15 Pro</p>
-                        <p className="text-[10px] text-slate-500 font-sans">256GB • Natural Titanium</p>
-                        {showImei && (
-                          <p className="text-[9px] font-mono text-teal-700 font-bold bg-teal-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
-                            IMEI: 358291048291048
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <p className="font-black text-slate-950 font-sans">₦1,099,000</p>
-                        <p className="text-[9px] text-slate-400">Qty: 1</p>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-between items-start pt-1.5 border-t border-slate-100">
-                      <div className="flex-1 pr-2">
-                        <p className="font-extrabold text-slate-950 text-xs font-sans">Oraimo 20,000mAh PowerBank</p>
-                        <p className="text-[10px] text-slate-500 font-sans">22.5W Fast Charge GaN</p>
-                        {showImei && (
-                          <p className="text-[9px] font-mono text-slate-600 bg-slate-100 px-1.5 py-0.5 rounded w-fit mt-0.5">
-                            SKU: PB-20K-84920
-                          </p>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <p className="font-black text-slate-950 font-sans">₦49,000</p>
-                        <p className="text-[9px] text-slate-400">Qty: 1</p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="py-3 space-y-1.5 font-sans">
-                    <div className="flex justify-between text-slate-600 text-[11px]">
-                      <span>Subtotal</span>
-                      <span className="font-bold text-slate-900">₦1,148,000</span>
-                    </div>
-                    <div className="p-2.5 rounded-xl bg-slate-900 text-white flex justify-between items-center mt-2">
-                      <div>
-                        <p className="text-[9px] text-slate-400 uppercase font-black">Total Paid</p>
-                        <p className="text-[10px] text-teal-400 font-bold">💳 POS / CARD TERMINAL</p>
-                      </div>
-                      <span className="text-base font-black tracking-tight text-white">₦1,148,000</span>
-                    </div>
-                  </div>
-
-                  {showQrCode && (
-                    <div className="pt-3 pb-2 text-center border-t border-dashed border-slate-300 space-y-1.5">
-                      <div className="w-20 h-20 bg-white border-2 border-slate-900 p-1 rounded-xl mx-auto flex items-center justify-center shadow-xs">
-                        <QrCode className="w-14 h-14 text-slate-950" />
-                      </div>
-                      <p className="text-[9px] font-bold text-slate-700 font-sans uppercase tracking-wider">
-                        Scan for Digital Proof & Warranty
-                      </p>
-                    </div>
-                  )}
-
-                  <div className="pt-2 text-center text-[10px] text-slate-600 font-sans border-t border-slate-200 leading-relaxed font-medium">
-                    {receiptFooter}
-                  </div>
-
-                  <div className="pt-4 text-center text-[8px] text-slate-400 font-mono tracking-widest select-none">
-                    - - - - - - - - - - ✂ - - - - - - - - - -
                   </div>
                 </div>
               ) : (
