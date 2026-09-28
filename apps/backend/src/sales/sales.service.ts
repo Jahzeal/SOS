@@ -252,7 +252,12 @@ export class SalesService {
     return invoice;
   }
 
-  async markInvoiceAsPaid(businessId: string, id: string, paymentMethod?: PaymentMethod) {
+  async markInvoiceAsPaid(
+    businessId: string,
+    id: string,
+    payload?: { paymentMethod?: any; amount?: number; reference?: string; notes?: string },
+    userId?: string,
+  ) {
     const invoice = await this.findOneInvoice(businessId, id);
 
     const ref = Math.floor(100000 + Math.random() * 900000);
@@ -262,16 +267,66 @@ export class SalesService {
       .filter((i) => i.phoneRecordId)
       .map((i) => i.phoneRecordId as string);
 
+    // Normalize payment method safely
+    let payMethod: PaymentMethod = PaymentMethod.CASH;
+    const rawMethod = payload?.paymentMethod || invoice.paymentMethod;
+    if (rawMethod) {
+      const upper = String(rawMethod).toUpperCase().trim();
+      if (upper === 'TRANSFER' || upper === 'BANK_TRANSFER' || upper === 'BANK' || upper === 'WIRE') {
+        payMethod = PaymentMethod.BANK_TRANSFER;
+      } else if (upper === 'CARD' || upper === 'DEBIT_CARD' || upper === 'CREDIT_CARD') {
+        payMethod = PaymentMethod.CARD;
+      } else if (upper === 'POS' || upper === 'TERMINAL') {
+        payMethod = PaymentMethod.POS;
+      } else if (upper === 'SPLIT') {
+        payMethod = PaymentMethod.SPLIT;
+      } else {
+        payMethod = PaymentMethod.CASH;
+      }
+    }
+
+    const currentPaid = Number(invoice.amountPaid || 0);
+    const totalAmount = Number(invoice.totalAmount || 0);
+    const remainingBalance = Math.max(0, totalAmount - currentPaid);
+
+    // If amount is specified and > 0, pay that amount up to remaining; otherwise pay full remaining balance
+    const amountToPay = (payload?.amount !== undefined && Number(payload.amount) > 0)
+      ? Math.min(Number(payload.amount), remainingBalance || totalAmount)
+      : (remainingBalance || totalAmount);
+
+    const newAmountPaid = Math.min(totalAmount, currentPaid + amountToPay);
+    const newBalanceDue = Math.max(0, totalAmount - newAmountPaid);
+    const newStatus = newBalanceDue <= 0 ? 'PAID' : 'PARTIALLY_PAID';
+
     return this.prisma.$transaction(async (tx) => {
+      // Record payment audit entry
+      if (amountToPay > 0) {
+        await tx.salePayment.create({
+          data: {
+            saleId: invoice.id,
+            amount: amountToPay,
+            paymentMethod: payMethod,
+            reference: payload?.reference?.trim() || null,
+            notes: payload?.notes?.trim() || null,
+            receivedById: userId || null,
+          },
+        });
+      }
+
       const updated = await tx.sale.update({
         where: { id: invoice.id },
         data: {
-          paymentStatus: 'PAID',
-          paymentMethod: paymentMethod || invoice.paymentMethod || PaymentMethod.CASH,
-          receiptNumber,
+          paymentStatus: newStatus,
+          paymentMethod: payMethod,
+          amountPaid: newAmountPaid,
+          balanceDue: newBalanceDue,
+          receiptNumber: newStatus === 'PAID' ? receiptNumber : invoice.receiptNumber,
         },
         include: {
           customer: true,
+          payments: {
+            orderBy: { createdAt: 'desc' },
+          },
           items: {
             include: {
               phoneRecord: true,
@@ -280,7 +335,7 @@ export class SalesService {
         },
       });
 
-      if (deviceItemIds.length > 0) {
+      if (newStatus === 'PAID' && deviceItemIds.length > 0) {
         await tx.phoneRecord.updateMany({
           where: { id: { in: deviceItemIds } },
           data: {

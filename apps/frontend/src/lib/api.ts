@@ -283,15 +283,22 @@ class ApiClient {
     });
   }
 
-  async markInvoicePaid(id: string, paymentMethod?: string) {
+  async markInvoicePaid(
+    id: string,
+    payload?: { paymentMethod?: string; amount?: number; reference?: string; notes?: string } | string,
+  ) {
+    const body = typeof payload === 'string' ? { paymentMethod: payload } : payload;
     return this.request<any>(`/sales/invoices/${id}/pay`, {
       method: 'POST',
-      body: JSON.stringify({ paymentMethod }),
+      body: JSON.stringify(body || {}),
     });
   }
 
-  async payInvoice(id: string, paymentMethod?: string) {
-    return this.markInvoicePaid(id, paymentMethod);
+  async payInvoice(
+    id: string,
+    payload?: { paymentMethod?: string; amount?: number; reference?: string; notes?: string } | string,
+  ) {
+    return this.markInvoicePaid(id, payload);
   }
 
   async sendInvoiceEmail(id: string, email?: string) {

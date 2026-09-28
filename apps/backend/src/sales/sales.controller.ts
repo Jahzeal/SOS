@@ -44,10 +44,11 @@ export class SalesController {
   async markInvoiceAsPaid(
     @Request() req,
     @Param('id') id: string,
-    @Body() body?: { paymentMethod?: PaymentMethod },
+    @Body() body?: { paymentMethod?: any; amount?: number; reference?: string; notes?: string },
   ) {
     const businessId = req.user.businessId;
-    return this.salesService.markInvoiceAsPaid(businessId, id, body?.paymentMethod);
+    const userId = req.user.id;
+    return this.salesService.markInvoiceAsPaid(businessId, id, body, userId);
   }
 
   @Post('invoices/:id/email')
