@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from './api';
 import { isTokenExpired } from './jwt-utils';
+import { clearAuthSessionAndCaches } from './auth-cleanup';
 
 interface UserProfile {
   id: string;
@@ -75,8 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem('vf_access_token');
-    localStorage.removeItem('vf_user');
+    clearAuthSessionAndCaches();
   };
 
   return (

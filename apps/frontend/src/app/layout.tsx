@@ -9,6 +9,18 @@ export const metadata: Metadata = {
   title: 'NOXGUARDA — Institutional Phone Retail OS & Anti-Theft Registry',
   description: 'Manage phone inventory, IMEI verification, POS receipts, customer warranties, and repairs from one secure platform.',
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-64.png', sizes: '64x64', type: 'image/png' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+    shortcut: '/favicon-32.png',
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

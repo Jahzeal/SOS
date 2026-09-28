@@ -31,6 +31,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { useQueryClient } from '@tanstack/react-query';
 import { ImeiCameraScanner } from '@/components/scanner/ImeiCameraScanner';
 import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
@@ -62,6 +63,7 @@ const ACCESSORY_BRANDS = [
 
 export default function RegisterPhonePage() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { checkCanPerformAction } = useSubscriptionGuard();
 
   // Registration Mode: 'PHONE' or 'ITEM'
@@ -94,6 +96,51 @@ export default function RegisterPhonePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [registeredItem, setRegisteredItem] = useState<any>(null);
+
+  // 1:1 Business Price Memory State
+  const [priceSuggestion, setPriceSuggestion] = useState<{
+    found: boolean;
+    sellingPrice: number | null;
+    purchasePrice: number | null;
+    brand: string;
+    model: string;
+    storageCapacity?: string;
+  } | null>(null);
+  const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
+
+  // Auto-query 1:1 store price memory when model/specs change
+  React.useEffect(() => {
+    if (!brand.trim() || !model.trim()) {
+      setPriceSuggestion(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsLoadingSuggestion(true);
+        const res = await api.getPriceSuggestion({
+          brand: brand.trim(),
+          model: model.trim(),
+          storageCapacity: specs.trim() || undefined,
+        });
+
+        if (res.found && (res.sellingPrice != null || res.purchasePrice != null)) {
+          setPriceSuggestion(res);
+          // Auto-fill prices if fields are currently empty
+          setSellingPrice((prev) => (!prev && res.sellingPrice != null ? res.sellingPrice.toString() : prev));
+          setPurchasePrice((prev) => (!prev && res.purchasePrice != null ? res.purchasePrice.toString() : prev));
+        } else {
+          setPriceSuggestion(null);
+        }
+      } catch (err) {
+        console.warn('Price suggestion lookup failed:', err);
+      } finally {
+        setIsLoadingSuggestion(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [brand, model, specs]);
 
   const activeBrands = mode === 'PHONE' ? PHONE_BRANDS : ACCESSORY_BRANDS;
 
@@ -199,6 +246,13 @@ export default function RegisterPhonePage() {
         qrCodeUrl: registered.qrCodeUrl,
         date: new Date(registered.createdAt || Date.now()).toISOString().split('T')[0],
       });
+
+      // Invalidate records & inventory caches for instant UI reflection across tabs
+      queryClient.invalidateQueries({ queryKey: ['records'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+
       setShowSuccessModal(true);
     } catch (err: any) {
       console.error('Registration failed:', err);
@@ -752,6 +806,40 @@ export default function RegisterPhonePage() {
                       </select>
                     </div>
                   </>
+                )}
+
+                {/* 1:1 Store Price Memory Active Banner */}
+                {priceSuggestion?.found && (
+                  <div className="md:col-span-2 p-3.5 rounded-2xl bg-teal-50 border border-teal-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-extrabold text-teal-950">Store Price Memory Active</span>
+                          <span className="px-1.5 py-0.5 rounded bg-teal-200/80 text-[10px] font-extrabold text-teal-800 uppercase">
+                            1:1 Store Preset
+                          </span>
+                        </div>
+                        <p className="text-teal-700 font-medium text-[11px] truncate">
+                          Matched previous <strong>{priceSuggestion.brand} {priceSuggestion.model} {priceSuggestion.storageCapacity || ''}</strong> prices
+                          {priceSuggestion.sellingPrice != null ? ` • Selling: ₦${priceSuggestion.sellingPrice.toLocaleString()}` : ''}
+                          {priceSuggestion.purchasePrice != null ? ` • Cost: ₦${priceSuggestion.purchasePrice.toLocaleString()}` : ''}
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (priceSuggestion.sellingPrice != null) setSellingPrice(priceSuggestion.sellingPrice.toString());
+                        if (priceSuggestion.purchasePrice != null) setPurchasePrice(priceSuggestion.purchasePrice.toString());
+                      }}
+                      className="px-3 py-1.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs shrink-0 transition shadow-xs"
+                    >
+                      Re-apply Preset
+                    </button>
+                  </div>
                 )}
 
                 {/* Pricing Inputs: Purchase & Selling Price */}

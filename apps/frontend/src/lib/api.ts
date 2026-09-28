@@ -209,6 +209,23 @@ class ApiClient {
     return this.request<{ exists: boolean; record: any; message: string }>(`/phones/check-imei?imei=${encodeURIComponent(imei)}`);
   }
 
+  async getPriceSuggestion(params: { brand: string; model: string; storageCapacity?: string; condition?: string }) {
+    const query = new URLSearchParams();
+    if (params.brand) query.append('brand', params.brand);
+    if (params.model) query.append('model', params.model);
+    if (params.storageCapacity) query.append('storageCapacity', params.storageCapacity);
+    if (params.condition) query.append('condition', params.condition);
+    return this.request<{
+      found: boolean;
+      sellingPrice: number | null;
+      purchasePrice: number | null;
+      warrantyDurationMonths?: number;
+      brand: string;
+      model: string;
+      storageCapacity?: string;
+    }>(`/phones/price-suggestion?${query.toString()}`);
+  }
+
   async registerPhone(payload: RegisterPhonePayload) {
     return this.request<any>('/phones/register', {
       method: 'POST',

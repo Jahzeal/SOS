@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { isTokenExpired } from '@/lib/jwt-utils';
+import { clearAuthSessionAndCaches } from '@/lib/auth-cleanup';
 
 export type PlanType = 'FREE' | 'STARTER' | 'BUSINESS' | 'ENTERPRISE';
 
@@ -57,10 +58,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   token: initialAuth.token,
   setAuth: (user, token) => set({ user, token }),
   logout: () => {
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('vf_access_token');
-      localStorage.removeItem('vf_user');
-    }
+    clearAuthSessionAndCaches();
     set({ user: null, token: null });
   },
   setPlan: (plan) =>

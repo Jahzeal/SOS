@@ -25,6 +25,7 @@ import {
   X,
   CheckCircle2,
   Radio,
+  RotateCw,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -156,6 +157,17 @@ export default function PhoneRecordsPage() {
         </div>
 
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5">
+          <button
+            onClick={() => {
+              queryClient.invalidateQueries({ queryKey: ['records'] });
+              queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+            }}
+            title="Refresh Records"
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-xs"
+          >
+            <RotateCw className="w-3.5 h-3.5 text-slate-500" />
+            <span className="hidden sm:inline">Refresh</span>
+          </button>
           <Link href="/report-stolen">
             <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-rose-200 text-rose-600 bg-transparent hover:bg-rose-50 shadow-xs">
               <ShieldAlert className="w-3.5 h-3.5" />

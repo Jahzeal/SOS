@@ -15,6 +15,23 @@ export class PhonesController {
     return this.phonesService.checkImei(businessId, imei || '');
   }
 
+  @Get('price-suggestion')
+  async getPriceSuggestion(
+    @Request() req,
+    @Query('brand') brand?: string,
+    @Query('model') model?: string,
+    @Query('storageCapacity') storageCapacity?: string,
+    @Query('condition') condition?: string,
+  ) {
+    const businessId = req.user.businessId;
+    return this.phonesService.getPriceSuggestion(businessId, {
+      brand,
+      model,
+      storageCapacity,
+      condition,
+    });
+  }
+
   @Post('register')
   async registerPhone(@Request() req, @Body() dto: RegisterPhoneDto) {
     const businessId = req.user.businessId;

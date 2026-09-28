@@ -31,6 +31,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { useQueryClient } from '@tanstack/react-query';
 
 const STATUS_OPTIONS = [
   { value: 'IN_STOCK', label: 'In Stock' },
@@ -94,6 +95,7 @@ const WARRANTY_OPTIONS = [
 export default function PhoneRecordDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const queryClient = useQueryClient();
   const recordId = params?.id as string;
 
   const [record, setRecord] = useState<any | null>(null);
@@ -179,6 +181,14 @@ export default function PhoneRecordDetailPage() {
       setRecord(updated);
       setIsEditing(false);
       setSuccessMessage('Device record successfully updated!');
+      
+      // Invalidate all related caches for instant UI reflection
+      queryClient.invalidateQueries({ queryKey: ['records'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['record-detail', recordId] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+
       setTimeout(() => setSuccessMessage(null), 4000);
     } catch (err: any) {
       console.error('Failed to update phone record:', err);
@@ -195,6 +205,13 @@ export default function PhoneRecordDetailPage() {
     setSaving(true);
     try {
       await api.deletePhone(recordId);
+      
+      // Invalidate all related caches on delete
+      queryClient.invalidateQueries({ queryKey: ['records'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+
       router.push('/dashboard/records');
     } catch (err: any) {
       alert(err.message || 'Failed to delete record');

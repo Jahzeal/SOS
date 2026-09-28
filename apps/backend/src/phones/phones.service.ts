@@ -42,6 +42,87 @@ export class PhonesService {
     };
   }
 
+  async getPriceSuggestion(
+    businessId: string,
+    query: { brand?: string; model?: string; storageCapacity?: string; condition?: string },
+  ) {
+    if (!query.brand || !query.model) {
+      return {
+        found: false,
+        sellingPrice: null,
+        purchasePrice: null,
+        brand: query.brand || null,
+        model: query.model || null,
+      };
+    }
+
+    const whereClause: any = {
+      businessId,
+      brand: { equals: query.brand.trim(), mode: 'insensitive' },
+      model: { equals: query.model.trim(), mode: 'insensitive' },
+    };
+
+    if (query.storageCapacity && query.storageCapacity.trim()) {
+      whereClause.storageCapacity = { equals: query.storageCapacity.trim(), mode: 'insensitive' };
+    }
+
+    // Try finding exact match with storage capacity first
+    let record = await this.prisma.phoneRecord.findFirst({
+      where: whereClause,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        sellingPrice: true,
+        purchasePrice: true,
+        brand: true,
+        model: true,
+        storageCapacity: true,
+        condition: true,
+        warrantyDurationMonths: true,
+      },
+    });
+
+    // If no match with storage capacity, fallback to match by brand + model
+    if (!record && query.storageCapacity) {
+      record = await this.prisma.phoneRecord.findFirst({
+        where: {
+          businessId,
+          brand: { equals: query.brand.trim(), mode: 'insensitive' },
+          model: { equals: query.model.trim(), mode: 'insensitive' },
+        },
+        orderBy: { createdAt: 'desc' },
+        select: {
+          sellingPrice: true,
+          purchasePrice: true,
+          brand: true,
+          model: true,
+          storageCapacity: true,
+          condition: true,
+          warrantyDurationMonths: true,
+        },
+      });
+    }
+
+    if (record && (record.sellingPrice != null || record.purchasePrice != null)) {
+      return {
+        found: true,
+        sellingPrice: record.sellingPrice,
+        purchasePrice: record.purchasePrice,
+        warrantyDurationMonths: record.warrantyDurationMonths,
+        brand: record.brand,
+        model: record.model,
+        storageCapacity: record.storageCapacity,
+      };
+    }
+
+    return {
+      found: false,
+      sellingPrice: null,
+      purchasePrice: null,
+      brand: query.brand,
+      model: query.model,
+    };
+  }
+
   async registerPhone(businessId: string, userId: string, dto: RegisterPhoneDto) {
     let finalImei = dto.imei1?.trim();
 

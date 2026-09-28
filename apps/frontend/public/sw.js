@@ -1,8 +1,13 @@
-const CACHE_NAME = 'verifyflow-pwa-v1';
+const CACHE_NAME = 'noxguarda-pwa-v2';
 const PRECACHE_ASSETS = [
   '/',
   '/dashboard',
-  '/manifest.json'
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
+  '/apple-touch-icon.png',
+  '/favicon-32.png',
+  '/favicon-64.png'
 ];
 
 // Install Event

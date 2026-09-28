@@ -31,7 +31,9 @@ export function useInventory(params?: { search?: string; status?: string; brand?
       const res = await api.getInventory(params);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -44,7 +46,9 @@ export function useInventorySummary() {
     queryFn: async () => {
       return await api.getDashboardSummary();
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -58,7 +62,9 @@ export function useInvoices(search?: string) {
       const res = await api.getInvoices(search?.trim() || undefined);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -73,7 +79,9 @@ export function useQuotes(params?: { search?: string; status?: string } | string
       const res = await api.getQuotes(queryParams);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -87,7 +95,9 @@ export function useCustomers(search?: string) {
       const res = await api.getCustomers();
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -101,7 +111,9 @@ export function usePhoneRecords(params?: any) {
       const res = await api.getInventory(params);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -117,7 +129,9 @@ export function usePhoneRecordDetail(id?: string) {
       return res || null;
     },
     enabled: Boolean(id),
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -131,7 +145,9 @@ export function useReceipts(search?: string) {
       const res = await api.getReceipts(search);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 }
 
@@ -144,7 +160,8 @@ export function useBusinessProfile() {
     queryFn: async () => {
       return await api.getBusinessProfile();
     },
-    staleTime: 5 * 60 * 1000,
+    staleTime: 30 * 1000,
+    refetchOnMount: 'always',
   });
 }
 

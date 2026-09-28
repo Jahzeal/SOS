@@ -149,18 +149,24 @@ export default function VerifyPhonePage() {
               )}
             </div>
           ) : (
-            <div className="p-5 rounded-3xl bg-emerald-50 border border-emerald-200 text-emerald-950 flex items-center justify-between">
+            <div className={`p-5 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${result.retailer ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${result.retailer ? 'bg-emerald-600 text-white' : 'bg-slate-600 text-white'}`}>
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-extrabold text-emerald-950">Clean Title Verified</h3>
-                  <p className="text-xs text-emerald-800 font-medium">No theft reports or active blacklists found for this device.</p>
+                  <h3 className="text-sm font-extrabold text-slate-900">
+                    {result.retailer ? `Verified Authentic Store Purchase` : 'Clean Title (No Theft Reports)'}
+                  </h3>
+                  <p className="text-xs text-slate-600 font-medium">
+                    {result.retailer
+                      ? `Registered and certified by ${result.retailer.name} (Authorized Dealer).`
+                      : 'No theft reports found. Not currently registered by any NoxGuarda merchant.'}
+                  </p>
                 </div>
               </div>
-              <span className="px-3 py-1 rounded-full bg-emerald-600 text-white font-extrabold text-[10px] uppercase tracking-wider">
-                CLEAN
+              <span className={`px-3 py-1 rounded-full text-white font-extrabold text-[10px] uppercase tracking-wider self-start sm:self-auto ${result.retailer ? 'bg-emerald-600' : 'bg-slate-600'}`}>
+                {result.retailer ? 'AUTHORIZED DEALER' : 'UNREGISTERED'}
               </span>
             </div>
           )}
@@ -180,13 +186,13 @@ export default function VerifyPhonePage() {
               </div>
 
               {result.retailer ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-50 border border-blue-200 text-blue-800 text-xs font-bold">
-                  <Building2 className="w-4 h-4 text-blue-600" />
-                  <span>Certified by {result.retailer.name}</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+                  <Building2 className="w-4 h-4 text-emerald-600" />
+                  <span>Purchased at {result.retailer.name} (Authorized Dealer)</span>
                 </div>
               ) : (
-                <div className="text-xs font-bold text-slate-500">
-                  Hardware Profile Verified
+                <div className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+                  No Store Provenance Record
                 </div>
               )}
             </div>

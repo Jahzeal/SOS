@@ -545,7 +545,9 @@ export default function InventoryPage() {
                         <Smartphone className="w-4 h-4" />
                       </div>
                       <div>
-                        <p className="font-extrabold text-slate-900 text-xs sm:text-sm">{item.model}</p>
+                        <Link href={`/dashboard/records/${item.id}`} className="hover:text-blue-600 transition block">
+                          <p className="font-extrabold text-slate-900 text-xs sm:text-sm hover:underline">{item.model}</p>
+                        </Link>
                         <p className="text-[11px] text-slate-500 font-medium">{item.brand}</p>
                       </div>
                     </div>
@@ -579,7 +581,7 @@ export default function InventoryPage() {
                   </td>
                   <td className="py-3.5 px-4 font-extrabold text-slate-900">{item.value}</td>
                   <td className="py-3.5 px-4 text-right">
-                    <Link href="/dashboard/records">
+                    <Link href={`/dashboard/records/${item.id}`}>
                       <Button variant="secondary" size="sm" className="text-[11px] font-bold">
                         View
                       </Button>

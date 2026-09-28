@@ -84,21 +84,6 @@ export default function PublicLandingPageV2() {
   const [showNotFoundModal, setShowNotFoundModal] = useState(false);
   const [notFoundTerm, setNotFoundTerm] = useState('');
 
-  const processVerificationResult = (data: any, searchedTerm: string) => {
-    const formatted = formatVerifiedPhoneResult(data);
-    if (formatted) {
-      setHeroVerifiedResult(formatted);
-      setShowNotFoundModal(false);
-    } else {
-      setHeroVerifiedResult({
-        found: false,
-        searchedTerm: searchedTerm || 'Searched Identifier',
-      });
-      setNotFoundTerm(searchedTerm || 'Searched Identifier');
-      setShowNotFoundModal(true);
-    }
-  };
-
   // Hero Verification Card Interactive State (Journey 1: Customer)
   const [activeHeroTab, setActiveHeroTab] = useState<'imei' | 'qr' | 'serial'>('imei');
   const [heroSearchInput, setHeroSearchInput] = useState('');
@@ -151,37 +136,68 @@ export default function PublicLandingPageV2() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const formatVerifiedPhoneResult = (data: any) => {
-    if (!data || !data.verified) {
+  const formatVerifiedPhoneResult = (data: any, cleanId?: string) => {
+    if (!data) {
       return null;
     }
 
+    const isRegistered = Boolean(data.isRegisteredInNetwork && (data.retailer?.name || data.business?.name));
     const device = data.deviceInfo || data;
     const retailer = data.retailer || data.business;
     const warranty = data.warranty || {};
 
+    // If not registered by an authorized retailer in the network, do NOT treat as found/authorized!
+    if (!isRegistered || !retailer?.name) {
+      return {
+        found: false,
+        searchedTerm: cleanId || device?.imei1 || device?.serialNumber || '',
+        isStolen: data.isStolen || false,
+        ownerMessage: data.ownerMessage || null,
+        contactPhone: data.contactPhone || null,
+      };
+    }
+
     const brandModel = [device.brand, device.model].filter(Boolean).join(' ').trim();
     const specs = [device.storageCapacity, device.color].filter(Boolean).join(' • ').trim();
 
-    let warrantyText = 'No Active Warranty';
+    let warrantyText = 'No Active Store Warranty';
     if (warranty.expiryDate) {
       warrantyText = `Active until ${new Date(warranty.expiryDate).toLocaleDateString()}`;
     } else if (warranty.warrantyDurationMonths && warranty.warrantyDurationMonths > 0) {
-      warrantyText = `${warranty.warrantyDurationMonths} Months Active Warranty`;
+      warrantyText = `${warranty.warrantyDurationMonths} Months Store Warranty`;
     } else if (device.warrantyExpiryDate) {
       warrantyText = `Active until ${new Date(device.warrantyExpiryDate).toLocaleDateString()}`;
     }
 
     return {
       found: true,
-      retailer: retailer?.name || 'Authorized Store',
+      retailer: retailer.name,
+      retailerSlug: retailer.slug,
       model: brandModel || 'Registered Mobile Device',
       storage: specs || 'Standard Specs',
       warranty: warrantyText,
       imei: device.imei1 || '',
       serial: device.serialNumber || '',
       status: device.status || 'VERIFIED',
+      isStolen: data.isStolen || false,
+      ownerMessage: data.ownerMessage || null,
+      contactPhone: data.contactPhone || null,
     };
+  };
+
+  const processVerificationResult = (data: any, identifier: string) => {
+    const formatted = formatVerifiedPhoneResult(data, identifier);
+    if (formatted && formatted.found) {
+      setHeroVerifiedResult(formatted);
+    } else {
+      setHeroVerifiedResult({
+        found: false,
+        searchedTerm: identifier,
+        isStolen: data?.isStolen || false,
+        ownerMessage: data?.ownerMessage || null,
+        contactPhone: data?.contactPhone || null,
+      });
+    }
   };
 
   const [isCameraFrozen, setIsCameraFrozen] = useState(false);
