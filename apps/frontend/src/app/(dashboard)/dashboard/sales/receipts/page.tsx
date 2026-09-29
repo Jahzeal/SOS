@@ -21,10 +21,11 @@ import {
   FileText,
   Loader2,
   QrCode,
+  Share2,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
+import { ShareDocumentModal } from '@/components/sharing/ShareDocumentModal';
 import { A4SalesReceipt } from '@/components/receipt/A4SalesReceipt';
 import { api } from '@/lib/api';
 import { useReceipts, useInventorySummary } from '@/hooks/useDashboardQueries';
@@ -34,7 +35,7 @@ export default function ReceiptsArchivePage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>('ALL');
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
-  const [receiptForEmailModal, setReceiptForEmailModal] = useState<any | null>(null);
+  const [receiptForShareModal, setReceiptForShareModal] = useState<any | null>(null);
   const [receiptToPrint, setReceiptToPrint] = useState<any | null>(null);
 
   // Debounce search
@@ -95,9 +96,9 @@ export default function ReceiptsArchivePage() {
     setReceiptToPrint(target);
   };
 
-  const handleEmailReceipt = (rcp: any) => {
+  const handleShareReceipt = (rcp: any) => {
     if (!rcp) return;
-    setReceiptForEmailModal(rcp);
+    setReceiptForShareModal(rcp);
   };
 
   return (
@@ -314,8 +315,8 @@ export default function ReceiptsArchivePage() {
                     <button onClick={() => handlePrintReceipt(rcp)} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1">
                       <Printer className="w-3.5 h-3.5" /> Print
                     </button>
-                    <button onClick={() => handleEmailReceipt(rcp)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1">
-                      <Mail className="w-3.5 h-3.5" /> Send
+                    <button onClick={() => handleShareReceipt(rcp)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1 shadow-xs" title="Share Receipt via WhatsApp, Email, or PDF">
+                      <Share2 className="w-3.5 h-3.5" /> Share
                     </button>
                   </div>
                 </div>
@@ -416,11 +417,11 @@ export default function ReceiptsArchivePage() {
                             <Printer className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={(e) => { e.stopPropagation(); handleEmailReceipt(rcp); }}
+                            onClick={(e) => { e.stopPropagation(); handleShareReceipt(rcp); }}
                             className="p-1.5 hover:text-blue-600 rounded"
-                            title="Email Receipt"
+                            title="Share Receipt via WhatsApp, Email, or PDF"
                           >
-                            <Mail className="w-3.5 h-3.5" />
+                            <Share2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -470,8 +471,8 @@ export default function ReceiptsArchivePage() {
                 <Button variant="primary" size="sm" onClick={() => handlePrintReceipt(selectedReceipt)} leftIcon={<Printer className="w-3.5 h-3.5" />}>
                   Print Receipt
                 </Button>
-                <Button variant="secondary" size="sm" onClick={() => handleEmailReceipt(selectedReceipt)} leftIcon={<Mail className="w-3.5 h-3.5" />}>
-                  Email
+                <Button variant="secondary" size="sm" onClick={() => handleShareReceipt(selectedReceipt)} leftIcon={<Share2 className="w-3.5 h-3.5" />}>
+                  Share
                 </Button>
                 <button
                   onClick={() => setSelectedReceipt(null)}
@@ -585,11 +586,33 @@ export default function ReceiptsArchivePage() {
         }
       `}</style>
 
-      {/* Email Receipt Modal */}
-      <EmailReceiptModal
-        isOpen={Boolean(receiptForEmailModal)}
-        onClose={() => setReceiptForEmailModal(null)}
-        receipt={receiptForEmailModal}
+      {/* Universal Share Document Modal (WhatsApp PDF, Chat, Email, Link, Download) */}
+      <ShareDocumentModal
+        isOpen={Boolean(receiptForShareModal)}
+        onClose={() => setReceiptForShareModal(null)}
+        document={
+          receiptForShareModal
+            ? {
+                id: receiptForShareModal.id,
+                type: 'RECEIPT',
+                docNumber:
+                  receiptForShareModal.receiptNumber ||
+                  receiptForShareModal.invoiceNumber ||
+                  receiptForShareModal.id,
+                customerName: receiptForShareModal.customer?.name,
+                customerPhone: receiptForShareModal.customer?.phone,
+                customerEmail: receiptForShareModal.customer?.email,
+                totalAmount: Number(receiptForShareModal.totalAmount || 0),
+                amountPaid: Number(receiptForShareModal.totalAmount || 0),
+                balanceDue: 0,
+                paymentStatus: receiptForShareModal.paymentStatus || 'PAID',
+                items: receiptForShareModal.items || [],
+                storeName:
+                  summaryData?.business?.name ||
+                  receiptForShareModal.business?.name,
+              }
+            : null
+        }
       />
 
     </div>

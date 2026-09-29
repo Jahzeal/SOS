@@ -341,6 +341,24 @@ class ApiClient {
     );
   }
 
+  getInvoicePdfDownloadUrl(id: string): string {
+    const token = this.getToken();
+    return `${API_BASE_URL}/sales/invoices/${id}/pdf${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+  }
+
+  async fetchPdfFile(url: string, filename: string): Promise<File> {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${this.getToken()}`,
+      },
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to generate PDF (${res.status} ${res.statusText})`);
+    }
+    const blob = await res.blob();
+    return new File([blob], filename, { type: 'application/pdf' });
+  }
+
   // --- Quotations & Estimates Endpoints ---
   async getQuotes(params?: { search?: string; status?: string }) {
     const query = new URLSearchParams();
@@ -460,6 +478,11 @@ class ApiClient {
         body: JSON.stringify({ email }),
       },
     );
+  }
+
+  getReceiptPdfDownloadUrl(id: string): string {
+    const token = this.getToken();
+    return `${API_BASE_URL}/sales/receipts/${id}/pdf${token ? `?token=${encodeURIComponent(token)}` : ''}`;
   }
 
   async sendSaleEmail(id: string, email?: string) {

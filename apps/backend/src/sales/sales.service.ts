@@ -764,4 +764,76 @@ export class SalesService {
       dispatched: result?.success ?? false,
     };
   }
+
+  async generatePdf(businessId: string, id: string): Promise<{ buffer: Buffer; filename: string }> {
+    const sale = await this.prisma.sale.findFirst({
+      where: {
+        id,
+        businessId,
+      },
+      include: {
+        customer: true,
+        items: {
+          include: {
+            phoneRecord: true,
+          },
+        },
+        business: true,
+      },
+    });
+
+    if (!sale) {
+      throw new NotFoundException('Transaction record not found.');
+    }
+
+    const isInvoice = (sale as any).type === 'INVOICE' || Boolean(sale.invoiceNumber);
+    const docNum = sale.invoiceNumber || sale.receiptNumber || `DOC-${sale.id.slice(-6)}`;
+    const storeName = sale.business?.name || 'NoxGuarda Retail Store';
+
+    const dateFormatted = new Date(sale.createdAt).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+
+    const dueMatch = sale.notes?.match(/\[DUE:([^\]]+)\]/);
+    const dueDate = dueMatch ? dueMatch[1] : dateFormatted;
+
+    const addrMatch = sale.notes?.match(/\[ADDR:([^\]]+)\]/);
+    const customerAddress = sale.customer?.address || (addrMatch ? addrMatch[1] : 'Client Billing Address');
+
+    const pdfBuffer = generateInvoicePdfBuffer({
+      invoiceNumber: sale.invoiceNumber,
+      receiptNumber: sale.receiptNumber,
+      isInvoice,
+      createdAt: sale.createdAt,
+      dueDate,
+      paymentStatus: sale.paymentStatus || 'PAID',
+      paymentMethod: sale.paymentMethod,
+      totalAmount: sale.totalAmount || 0,
+      customerName: sale.customer?.name,
+      customerEmail: sale.customer?.email,
+      customerPhone: sale.customer?.phone,
+      customerAddress,
+      storeName,
+      storeAddress: sale.business?.address,
+      storePhone: sale.business?.phone,
+      storeEmail: sale.business?.email,
+      logoUrl: sale.business?.logoUrl,
+      bankName: sale.business?.bankName,
+      accountNumber: sale.business?.accountNumber,
+      accountName: sale.business?.accountName,
+      notes: sale.notes,
+      items: sale.items.map((it: any) => ({
+        description: it.description,
+        imei: it.phoneRecord?.imei1,
+        quantity: it.quantity || 1,
+        unitPrice: it.unitPrice || 0,
+        totalPrice: it.totalPrice || (it.unitPrice * (it.quantity || 1)),
+      })),
+    });
+
+    const filename = `${isInvoice ? 'Invoice' : 'Receipt'}-${docNum}.pdf`;
+    return { buffer: pdfBuffer, filename };
+  }
 }

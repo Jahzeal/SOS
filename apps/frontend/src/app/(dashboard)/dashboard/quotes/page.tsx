@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { ShareDocumentModal } from '@/components/sharing/ShareDocumentModal';
 import { api } from '@/lib/api';
 import { useQuotes, useDashboardCacheUtils } from '@/hooks/useDashboardQueries';
 import { useQuery } from '@tanstack/react-query';
@@ -119,10 +120,7 @@ export default function QuotesRegistryPage() {
 
   const loading = loadingQuotes && rawQuotes.length === 0;
 
-  const [selectedQuoteForEmail, setSelectedQuoteForEmail] = useState<Quote | null>(null);
-  const [emailInput, setEmailInput] = useState('');
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [emailSuccessMessage, setEmailSuccessMessage] = useState<string | null>(null);
+  const [selectedQuoteForShare, setSelectedQuoteForShare] = useState<Quote | null>(null);
 
   // Payment Recording Modal State
   const [selectedQuoteForPayment, setSelectedQuoteForPayment] = useState<Quote | null>(null);
@@ -157,25 +155,6 @@ export default function QuotesRegistryPage() {
       alert(err.message || 'Failed to convert quotation to invoice.');
     } finally {
       setConvertingQuoteId(null);
-    }
-  };
-
-  const handleSendEmail = async () => {
-    if (!selectedQuoteForEmail) return;
-    setIsSendingEmail(true);
-    setEmailSuccessMessage(null);
-    try {
-      await api.sendQuoteEmail(selectedQuoteForEmail.id, emailInput.trim() || undefined);
-      setEmailSuccessMessage(`Quotation ${selectedQuoteForEmail.quoteNumber} successfully emailed with attached PDF!`);
-      setTimeout(() => {
-        setSelectedQuoteForEmail(null);
-        setEmailSuccessMessage(null);
-        loadQuotes();
-      }, 2000);
-    } catch (err: any) {
-      alert(err.message || 'Failed to send quotation email.');
-    } finally {
-      setIsSendingEmail(false);
     }
   };
 
@@ -554,14 +533,11 @@ export default function QuotesRegistryPage() {
                           </button>
                         )}
                         <button
-                          onClick={() => {
-                            setSelectedQuoteForEmail(quote);
-                            setEmailInput(quote.customer?.email || '');
-                          }}
+                          onClick={() => setSelectedQuoteForShare(quote)}
                           className="p-2 rounded-lg text-slate-500 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 transition"
-                          title="Email Quote"
+                          title="Share Quote via WhatsApp, Email, or PDF"
                         >
-                          <Mail className="w-3.5 h-3.5" />
+                          <Share2 className="w-3.5 h-3.5" />
                         </button>
                         <a
                           href={api.getQuotePdfDownloadUrl(quote.id)}
@@ -736,16 +712,13 @@ export default function QuotesRegistryPage() {
                               </button>
                             )}
 
-                            {/* Email Quote Button */}
+                            {/* Share Quote Button */}
                             <button
-                              onClick={() => {
-                                setSelectedQuoteForEmail(quote);
-                                setEmailInput(quote.customer?.email || '');
-                              }}
+                              onClick={() => setSelectedQuoteForShare(quote)}
                               className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition"
-                              title="Send Quote via Email"
+                              title="Share Quote via WhatsApp, Email, or PDF"
                             >
-                              <Mail className="w-4 h-4" />
+                              <Share2 className="w-4 h-4" />
                             </button>
 
                             {/* Download PDF */}
@@ -974,79 +947,29 @@ export default function QuotesRegistryPage() {
         </div>
       )}
 
-      {/* Email Dispatch Modal */}
-      {selectedQuoteForEmail && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-blue-600" /> Send Quotation via Email
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Quote #{selectedQuoteForEmail.quoteNumber} (₦{selectedQuoteForEmail.totalAmount.toLocaleString()})
-                </p>
-              </div>
-              <button
-                onClick={() => setSelectedQuoteForEmail(null)}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            {emailSuccessMessage ? (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-700 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                {emailSuccessMessage}
-              </div>
-            ) : (
-              <div className="space-y-4 text-xs">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700">Recipient Email Address *</label>
-                  <input
-                    type="email"
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
-                    placeholder="e.g. client@company.ng"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-blue-600"
-                  />
-                  <p className="text-[11px] text-slate-400">
-                    The formal A4 PDF quotation will be attached automatically.
-                  </p>
-                </div>
-
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1 text-[11px] text-slate-600">
-                  <p><strong>Customer:</strong> {selectedQuoteForEmail.customer?.name || 'General Client'}</p>
-                  <p><strong>Subject:</strong> {selectedQuoteForEmail.subject || selectedQuoteForEmail.items[0]?.description}</p>
-                  <p><strong>Total Amount:</strong> ₦{selectedQuoteForEmail.totalAmount.toLocaleString()}</p>
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setSelectedQuoteForEmail(null)}
-                    disabled={isSendingEmail}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleSendEmail}
-                    disabled={isSendingEmail || !emailInput.trim()}
-                    leftIcon={isSendingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                    className="bg-blue-600 hover:bg-blue-500 font-bold"
-                  >
-                    {isSendingEmail ? 'Sending Email...' : 'Send Quotation PDF'}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Universal Share Document Modal */}
+      <ShareDocumentModal
+        isOpen={Boolean(selectedQuoteForShare)}
+        onClose={() => setSelectedQuoteForShare(null)}
+        document={
+          selectedQuoteForShare
+            ? {
+                id: selectedQuoteForShare.id,
+                type: 'QUOTE',
+                docNumber: selectedQuoteForShare.quoteNumber,
+                customerName: selectedQuoteForShare.customer?.name,
+                customerPhone: selectedQuoteForShare.customer?.phone,
+                customerEmail: selectedQuoteForShare.customer?.email,
+                totalAmount: Number(selectedQuoteForShare.totalAmount || 0),
+                amountPaid: Number(selectedQuoteForShare.amountPaid || 0),
+                balanceDue: Number(selectedQuoteForShare.balanceDue || 0),
+                paymentStatus: selectedQuoteForShare.status,
+                items: selectedQuoteForShare.items || [],
+                storeName: 'NoxGuarda Retail Store',
+              }
+            : null
+        }
+      />
 
       {/* Delete Quote Confirmation Modal */}
       {quoteToDelete && (

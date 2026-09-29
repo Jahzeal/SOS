@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { ShareDocumentModal } from '@/components/sharing/ShareDocumentModal';
 import { api } from '@/lib/api';
 
 export default function QuoteDetailPage() {
@@ -40,11 +41,8 @@ export default function QuoteDetailPage() {
   const [isConverting, setIsConverting] = useState(false);
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
-  // Email Modal State
-  const [showEmailModal, setShowEmailModal] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
+  // Share Modal State
+  const [showShareModal, setShowShareModal] = useState(false);
 
   // Payment Modal State
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -64,7 +62,6 @@ export default function QuoteDetailPage() {
     try {
       const data = await api.getQuoteById(id);
       setQuote(data);
-      if (data?.customer?.email) setEmailInput(data.customer.email);
     } catch (err) {
       console.error('Failed to load quote details:', err);
     } finally {
@@ -148,28 +145,6 @@ export default function QuoteDetailPage() {
       alert(err.message || 'Failed to update status.');
     } finally {
       setIsUpdatingStatus(false);
-    }
-  };
-
-  const handleSendEmail = async () => {
-    if (!emailInput.trim()) {
-      alert('Please enter a valid email address.');
-      return;
-    }
-    setIsSendingEmail(true);
-    setEmailSuccess(null);
-    try {
-      await api.sendQuoteEmail(id, emailInput.trim());
-      setEmailSuccess(`Quotation successfully emailed to ${emailInput}!`);
-      setTimeout(() => {
-        setShowEmailModal(false);
-        setEmailSuccess(null);
-        loadQuote();
-      }, 2000);
-    } catch (err: any) {
-      alert(err.message || 'Failed to send email.');
-    } finally {
-      setIsSendingEmail(false);
     }
   };
 
@@ -293,11 +268,11 @@ export default function QuoteDetailPage() {
           <Button
             variant="secondary"
             size="md"
-            onClick={() => setShowEmailModal(true)}
-            leftIcon={<Mail className="w-4 h-4 text-blue-600" />}
+            onClick={() => setShowShareModal(true)}
+            leftIcon={<Share2 className="w-4 h-4 text-blue-600" />}
             className="font-bold border-slate-200"
           >
-            Email PDF
+            Share Quote
           </Button>
 
           <a
@@ -936,68 +911,29 @@ export default function QuoteDetailPage() {
         </div>
       )}
 
-      {/* Email Dispatch Modal */}
-      {showEmailModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6 space-y-4 text-left">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-blue-600" /> Send Quotation PDF via Email
-                </h3>
-                <p className="text-xs text-slate-500">Quote #{quote.quoteNumber}</p>
-              </div>
-              <button
-                onClick={() => setShowEmailModal(false)}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
-                ✕
-              </button>
-            </div>
-
-            {emailSuccess ? (
-              <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-xs font-bold text-emerald-700 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                {emailSuccess}
-              </div>
-            ) : (
-              <div className="space-y-4 text-xs">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-700">Client Email Address *</label>
-                  <input
-                    type="email"
-                    value={emailInput}
-                    onChange={(e) => setEmailInput(e.target.value)}
-                    placeholder="e.g. client@company.ng"
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-blue-600"
-                  />
-                </div>
-
-                <div className="flex items-center justify-end gap-2 pt-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setShowEmailModal(false)}
-                    disabled={isSendingEmail}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    onClick={handleSendEmail}
-                    disabled={isSendingEmail || !emailInput.trim()}
-                    leftIcon={isSendingEmail ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Send className="w-3.5 h-3.5" />}
-                    className="bg-blue-600 hover:bg-blue-500 font-bold"
-                  >
-                    {isSendingEmail ? 'Sending...' : 'Send Quotation Email'}
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Universal Share Document Modal (WhatsApp PDF, Chat, Email, Link, Download) */}
+      <ShareDocumentModal
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        document={
+          quote
+            ? {
+                id: quote.id,
+                type: 'QUOTE',
+                docNumber: quote.quoteNumber,
+                customerName: quote.customer?.name,
+                customerPhone: quote.customer?.phone,
+                customerEmail: quote.customer?.email,
+                totalAmount: Number(quote.totalAmount || 0),
+                amountPaid: Number(quote.amountPaid || 0),
+                balanceDue: Number(quote.balanceDue || 0),
+                paymentStatus: quote.status,
+                items: quote.items || [],
+                storeName: quote.business?.name || 'NoxGuarda Retail Store',
+              }
+            : null
+        }
+      />
 
     </div>
   );

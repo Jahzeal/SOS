@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request, Response } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CheckoutSaleDto } from './dto/checkout-sale.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -27,6 +27,20 @@ export class SalesController {
   async findOneInvoice(@Request() req, @Param('id') id: string) {
     const businessId = req.user.businessId;
     return this.salesService.findOneInvoice(businessId, id);
+  }
+
+  @Get('invoices/:id/pdf')
+  async downloadInvoicePdf(@Request() req, @Param('id') id: string, @Response() res) {
+    const businessId = req.user.businessId;
+    const { buffer, filename } = await this.salesService.generatePdf(businessId, id);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': buffer.length,
+    });
+
+    res.end(buffer);
   }
 
   @Post('invoices')
@@ -87,6 +101,20 @@ export class SalesController {
   async findOneReceipt(@Request() req, @Param('id') id: string) {
     const businessId = req.user.businessId;
     return this.salesService.findOneReceipt(businessId, id);
+  }
+
+  @Get('receipts/:id/pdf')
+  async downloadReceiptPdf(@Request() req, @Param('id') id: string, @Response() res) {
+    const businessId = req.user.businessId;
+    const { buffer, filename } = await this.salesService.generatePdf(businessId, id);
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Length': buffer.length,
+    });
+
+    res.end(buffer);
   }
 
   @Post('receipts')
