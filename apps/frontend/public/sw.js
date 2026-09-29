@@ -54,13 +54,15 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(async () => {
-        const cached = await caches.match(event.request);
-        if (cached) return cached;
-        return new Response('', {
-          status: 408,
-          statusText: 'Request Timeout Offline',
-        });
-      })
-  );
+// Message Event (Client-driven skipWaiting & cache clear)
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    caches.keys().then((keys) => {
+      return Promise.all(keys.map((k) => caches.delete(k)));
+    });
+  }
 });
+

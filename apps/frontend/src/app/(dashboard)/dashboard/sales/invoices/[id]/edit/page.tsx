@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useMemo, use } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import {
   FileText,
   Plus,
@@ -52,10 +52,10 @@ const formatNumberWithCommas = (val: string | number | null | undefined): string
   return parts.join('.');
 };
 
-export default function EditInvoicePage({ params }: { params: Promise<{ id: string }> | { id: string } }) {
-  const unwrappedParams = use(params as any) as { id: string };
-  const invoiceId = unwrappedParams.id;
+export default function EditInvoicePage({ params }: { params?: { id: string } }) {
   const router = useRouter();
+  const routeParams = useParams();
+  const invoiceId = (routeParams?.id as string) || params?.id || '';
   const queryClient = useQueryClient();
 
   // Loading & original data

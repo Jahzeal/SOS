@@ -179,11 +179,112 @@ export default function InvoicesRegistryPage() {
       .toUpperCase();
   };
 
+  const renderItemsSummary = (items?: any[], onOpenView?: () => void) => {
+    if (!items || items.length === 0) {
+      return <span className="text-slate-400 italic text-xs">No line items</span>;
+    }
+
+    // Aggregate counts by model/description
+    const countsMap = new Map<string, number>();
+    items.forEach((it) => {
+      const rawName =
+        it.description ||
+        (it.phoneRecord ? `${it.phoneRecord.brand} ${it.phoneRecord.model}` : 'Item');
+      const name = rawName.trim();
+      countsMap.set(name, (countsMap.get(name) || 0) + (it.quantity || 1));
+    });
+
+    const totalQty = items.reduce((sum, it) => sum + (it.quantity || 1), 0);
+    const grouped = Array.from(countsMap.entries());
+    const fullTooltip = grouped.map(([name, count]) => `${name} (×${count})`).join('\n');
+
+    // Case 1: Only 1 unique item
+    if (grouped.length === 1) {
+      const [name, count] = grouped[0];
+      return (
+        <div className="flex items-center gap-1.5 max-w-[280px]" title={fullTooltip}>
+          <span className="font-semibold text-slate-800 text-xs truncate">{name}</span>
+          {count > 1 && (
+            <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-extrabold text-[10px] border border-blue-100 font-mono">
+              ×{count}
+            </span>
+          )}
+        </div>
+      );
+    }
+
+    // Case 2: 2 unique items
+    if (grouped.length === 2) {
+      return (
+        <div className="space-y-0.5 max-w-[300px]" title={fullTooltip}>
+          <div className="flex items-center gap-1.5">
+            <span className="font-semibold text-slate-800 text-xs truncate">{grouped[0][0]}</span>
+            {grouped[0][1] > 1 && (
+              <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold text-[9px] font-mono">
+                ×{grouped[0][1]}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
+            <span className="truncate">{grouped[1][0]}</span>
+            {grouped[1][1] > 1 && (
+              <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold text-[9px] font-mono">
+                ×{grouped[1][1]}
+              </span>
+            )}
+          </div>
+        </div>
+      );
+    }
+
+    // Case 3: 3 or more unique items / bulk inventory (e.g. 38 devices)
+    const top1 = grouped[0];
+    const top2 = grouped[1];
+    const remainingCount = grouped.slice(2).reduce((sum, [, c]) => sum + c, 0);
+    const remainingTypes = grouped.length - 2;
+
+    return (
+      <div className="space-y-1 max-w-[320px]" title={fullTooltip}>
+        <div className="flex items-center gap-1.5">
+          <span className="font-bold text-slate-900 text-xs truncate">{top1[0]}</span>
+          <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-extrabold text-[10px] border border-blue-200/60 font-mono">
+            ×{top1[1]}
+          </span>
+        </div>
+        <div className="flex items-center gap-1.5 text-slate-600 text-[11px]">
+          <span className="truncate max-w-[140px]">{top2[0]}</span>
+          {top2[1] > 1 && (
+            <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold text-[9px] font-mono">
+              ×{top2[1]}
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={onOpenView}
+            className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 hover:bg-blue-100 hover:text-blue-700 text-slate-700 font-extrabold text-[10px] transition cursor-pointer border border-slate-200"
+            title="Click to view all itemized products in statement modal"
+          >
+            +{remainingCount} more
+          </button>
+        </div>
+      </div>
+    );
+  };
+
   const getItemsSummary = (items?: any[]) => {
     if (!items || items.length === 0) return 'Invoice Statement';
-    return items
-      .map((i) => i.description || (i.phoneRecord ? `${i.phoneRecord.brand} ${i.phoneRecord.model}` : 'Item'))
-      .join(', ');
+    const countsMap = new Map<string, number>();
+    items.forEach((it) => {
+      const name = (it.description || (it.phoneRecord ? `${it.phoneRecord.brand} ${it.phoneRecord.model}` : 'Item')).trim();
+      countsMap.set(name, (countsMap.get(name) || 0) + (it.quantity || 1));
+    });
+    const entries = Array.from(countsMap.entries());
+    if (entries.length <= 2) {
+      return entries.map(([name, count]) => (count > 1 ? `${name} (×${count})` : name)).join(', ');
+    }
+    const top2 = entries.slice(0, 2).map(([name, count]) => (count > 1 ? `${name} (×${count})` : name)).join(', ');
+    const remainingCount = entries.slice(2).reduce((sum, [, c]) => sum + c, 0);
+    return `${top2} + ${remainingCount} more items`;
   };
 
   const handlePrint = () => {
@@ -563,7 +664,7 @@ export default function InvoicesRegistryPage() {
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-600 font-medium leading-relaxed">{getItemsSummary(inv.items)}</p>
+                  <div className="pt-0.5">{renderItemsSummary(inv.items, () => setViewModalInvoice(inv))}</div>
 
                   <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
                     <div>
@@ -701,7 +802,7 @@ export default function InvoicesRegistryPage() {
                           <span className="font-extrabold text-slate-900">{custName}</span>
                         </div>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-600 font-medium">{getItemsSummary(inv.items)}</td>
+                      <td className="py-3.5 px-4">{renderItemsSummary(inv.items, () => setViewModalInvoice(inv))}</td>
                       <td className="py-3.5 px-4 text-slate-500 font-medium">{dateStr}</td>
                       <td className="py-3.5 px-4 text-right">
                         <div className="font-extrabold text-slate-900 text-[13px]">
