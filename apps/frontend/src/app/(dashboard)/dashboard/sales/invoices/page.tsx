@@ -79,11 +79,19 @@ export default function InvoicesRegistryPage() {
     if (invoiceToPrint) {
       const timer = setTimeout(() => {
         window.print();
-        setInvoiceToPrint(null);
-      }, 200);
+      }, 150);
       return () => clearTimeout(timer);
     }
   }, [invoiceToPrint]);
+
+  // Keep invoice mounted during print dialog and reset only after print finishes/cancels
+  useEffect(() => {
+    const handleAfterPrint = () => {
+      setInvoiceToPrint(null);
+    };
+    window.addEventListener('afterprint', handleAfterPrint);
+    return () => window.removeEventListener('afterprint', handleAfterPrint);
+  }, []);
 
   // Delete Modal State
   const [invoiceToDelete, setInvoiceToDelete] = useState<any | null>(null);
@@ -115,17 +123,6 @@ export default function InvoicesRegistryPage() {
   const [copiedLink, setCopiedLink] = useState(false);
   const [emailStatusMsg, setEmailStatusMsg] = useState<string | null>(null);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
-
-  // Record Payment Modal State
-  const [paymentModalInvoice, setPaymentModalInvoice] = useState<any | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<'BANK_TRANSFER' | 'CASH' | 'POS' | 'CARD' | 'SPLIT'>('BANK_TRANSFER');
-  const [paymentMode, setPaymentMode] = useState<'FULL' | 'PARTIAL'>('FULL');
-  const [customAmount, setCustomAmount] = useState<string>('');
-  const [paymentReference, setPaymentReference] = useState<string>('');
-  const [paymentNotes, setPaymentNotes] = useState<string>('');
-  const [isRecordingPayment, setIsRecordingPayment] = useState(false);
-  const [paymentError, setPaymentError] = useState<string | null>(null);
-  const [paymentSuccessMsg, setPaymentSuccessMsg] = useState<string | null>(null);
 
   // Status breakdown calculations
   const counts = useMemo(() => {
@@ -362,82 +359,6 @@ export default function InvoicesRegistryPage() {
     }
     setCopiedLink(true);
     setTimeout(() => setCopiedLink(false), 2500);
-  };
-
-  const handleOpenPaymentModal = (inv: any) => {
-    setPaymentModalInvoice(inv);
-    const total = Number(inv.totalAmount || 0);
-    const paid = Number(inv.amountPaid || 0);
-    const remaining = Math.max(0, total - paid) || total;
-    setPaymentMode('FULL');
-    setCustomAmount(remaining.toString());
-    setPaymentMethod('BANK_TRANSFER');
-    setPaymentReference('');
-    setPaymentNotes('');
-    setPaymentError(null);
-    setPaymentSuccessMsg(null);
-  };
-
-  const handleQuickPercent = (pct: number) => {
-    if (!paymentModalInvoice) return;
-    const total = Number(paymentModalInvoice.totalAmount || 0);
-    const paid = Number(paymentModalInvoice.amountPaid || 0);
-    const remaining = Math.max(0, total - paid) || total;
-    if (pct === 100) {
-      setPaymentMode('FULL');
-      setCustomAmount(remaining.toString());
-    } else {
-      setPaymentMode('PARTIAL');
-      setCustomAmount(Math.round(remaining * (pct / 100)).toString());
-    }
-  };
-
-  const handleSubmitPayment = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
-    if (!paymentModalInvoice) return;
-
-    const total = Number(paymentModalInvoice.totalAmount || 0);
-    const paid = Number(paymentModalInvoice.amountPaid || 0);
-    const remaining = Math.max(0, total - paid) || total;
-
-    const amountToPay = paymentMode === 'FULL' ? remaining : Number(customAmount);
-
-    if (isNaN(amountToPay) || amountToPay <= 0) {
-      setPaymentError('Please enter a valid payment amount greater than 0.');
-      return;
-    }
-    if (amountToPay > remaining && remaining > 0) {
-      setPaymentError(`Payment amount cannot exceed remaining balance (₦${remaining.toLocaleString()}).`);
-      return;
-    }
-
-    setIsRecordingPayment(true);
-    setPaymentError(null);
-
-    try {
-      await api.payInvoice(paymentModalInvoice.id, {
-        paymentMethod,
-        amount: amountToPay,
-        reference: paymentReference.trim() || undefined,
-        notes: paymentNotes.trim() || undefined,
-      });
-
-      const isFull = amountToPay >= remaining;
-      setPaymentSuccessMsg(
-        isFull
-          ? `₦${amountToPay.toLocaleString()} recorded! Invoice marked as fully PAID and Official Receipt generated.`
-          : `Partial payment of ₦${amountToPay.toLocaleString()} recorded! Remaining balance: ₦${(remaining - amountToPay).toLocaleString()}`
-      );
-
-      setTimeout(() => {
-        setPaymentModalInvoice(null);
-        window.location.reload();
-      }, 1200);
-    } catch (err: any) {
-      setPaymentError(err.message || 'Failed to record payment. Please try again.');
-    } finally {
-      setIsRecordingPayment(false);
-    }
   };
 
   return (
@@ -695,12 +616,12 @@ export default function InvoicesRegistryPage() {
                       </button>
                     )}
                     {status !== 'PAID' && status !== 'DRAFT' && (
-                      <button
-                        onClick={() => handleOpenPaymentModal(inv)}
+                      <Link
+                        href={`/dashboard/sales/invoices/${inv.id}/pay`}
                         className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition font-bold text-[11px] flex items-center gap-1 shadow-xs cursor-pointer"
                       >
                         <CreditCard className="w-3.5 h-3.5" /> Pay
-                      </button>
+                      </Link>
                     )}
                     <Link
                       href={`/dashboard/sales/invoices/${inv.id}/edit`}
@@ -834,14 +755,14 @@ export default function InvoicesRegistryPage() {
                             </button>
                           )}
                           {status !== 'PAID' && status !== 'DRAFT' && (
-                            <button
-                              onClick={() => handleOpenPaymentModal(inv)}
+                            <Link
+                              href={`/dashboard/sales/invoices/${inv.id}/pay`}
                               className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 border border-emerald-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-xs"
                               title="Record Payment & Settle Balance"
                             >
                               <CreditCard className="w-3.5 h-3.5 text-emerald-600" />
                               <span>Pay</span>
-                            </button>
+                            </Link>
                           )}
                           <Link
                             href={`/dashboard/sales/invoices/${inv.id}/edit`}
@@ -1040,238 +961,6 @@ export default function InvoicesRegistryPage() {
         </div>
       )}
 
-      {/* Record Payment Modal */}
-      {paymentModalInvoice && (() => {
-        const total = Number(paymentModalInvoice.totalAmount || 0);
-        const paid = Number(paymentModalInvoice.amountPaid || 0);
-        const remaining = Math.max(0, total - paid) || total;
-        const currentAmountToPay = paymentMode === 'FULL' ? remaining : (Number(customAmount) || 0);
-        const remainingAfterPay = Math.max(0, remaining - currentAmountToPay);
-        const isFullSettlement = currentAmountToPay >= remaining;
-
-        return (
-          <div className="fixed -inset-1 z-[100] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-scale-up">
-              {/* Modal Header */}
-              <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                    <CreditCard className="w-4 h-4" />
-                  </div>
-                  <div>
-                    <h3 className="font-extrabold text-base text-slate-900">Record Invoice Payment</h3>
-                    <p className="text-xs text-slate-500 font-medium font-mono">
-                      #{paymentModalInvoice.invoiceNumber || paymentModalInvoice.receiptNumber || paymentModalInvoice.id}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setPaymentModalInvoice(null)}
-                  className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition-colors cursor-pointer"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              {/* Modal Form */}
-              <form onSubmit={handleSubmitPayment} className="p-6 space-y-5">
-                {/* Invoice Summary Card */}
-                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-bold uppercase tracking-wider text-[10px]">Customer</span>
-                    <span className="font-extrabold text-slate-900">{paymentModalInvoice.customer?.name || 'Customer'}</span>
-                  </div>
-                  <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-200/60 text-xs">
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Total Invoice</span>
-                      <span className="font-extrabold text-slate-800">₦{total.toLocaleString()}</span>
-                    </div>
-                    <div>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Already Paid</span>
-                      <span className="font-extrabold text-emerald-700">₦{paid.toLocaleString()}</span>
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Remaining Balance</span>
-                      <span className="font-black text-rose-600 text-sm">₦{remaining.toLocaleString()}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Payment Amount & Type Selection */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 block">Payment Amount / Type</label>
-                  
-                  {/* Preset Buttons */}
-                  <div className="grid grid-cols-3 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleQuickPercent(100)}
-                      className={`py-2 px-3 rounded-xl text-xs font-extrabold border transition-all cursor-pointer text-center ${
-                        paymentMode === 'FULL'
-                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      Full (₦{remaining.toLocaleString()})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleQuickPercent(50)}
-                      className={`py-2 px-3 rounded-xl text-xs font-extrabold border transition-all cursor-pointer text-center ${
-                        paymentMode === 'PARTIAL' && Number(customAmount) === Math.round(remaining * 0.5)
-                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      50% Half (₦{Math.round(remaining * 0.5).toLocaleString()})
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMode('PARTIAL')}
-                      className={`py-2 px-3 rounded-xl text-xs font-extrabold border transition-all cursor-pointer text-center ${
-                        paymentMode === 'PARTIAL' && Number(customAmount) !== Math.round(remaining * 0.5)
-                          ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm shadow-emerald-600/20'
-                          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
-                      }`}
-                    >
-                      Custom Amount
-                    </button>
-                  </div>
-
-                  {/* Input Box (Editable for partial / custom) */}
-                  <div className="relative pt-1">
-                    <span className="absolute left-3.5 top-3.5 text-slate-400 font-extrabold text-sm">₦</span>
-                    <input
-                      type="number"
-                      min="1"
-                      max={remaining}
-                      step="any"
-                      value={paymentMode === 'FULL' ? remaining : customAmount}
-                      onChange={(e) => {
-                        setPaymentMode('PARTIAL');
-                        setCustomAmount(e.target.value);
-                      }}
-                      className="w-full pl-8 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-extrabold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-                      placeholder="Enter amount to pay"
-                      required
-                    />
-                  </div>
-
-                  {/* Live Calculation Feedback */}
-                  <div className="p-2.5 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-between text-xs">
-                    <span className="text-slate-500 font-medium">
-                      Balance after this payment:
-                    </span>
-                    <span className="font-extrabold text-slate-900">
-                      ₦{remainingAfterPay.toLocaleString()} ({isFullSettlement ? 'Fully PAID' : 'PARTIALLY PAID'})
-                    </span>
-                  </div>
-                </div>
-
-                {/* Payment Method Selection */}
-                <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-700 block">Payment Method</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                    {[
-                      { id: 'BANK_TRANSFER', label: 'Transfer', icon: Building2 },
-                      { id: 'CASH', label: 'Cash', icon: Wallet },
-                      { id: 'POS', label: 'POS Terminal', icon: CreditCard },
-                      { id: 'SPLIT', label: 'Split / Other', icon: DollarSign },
-                    ].map((m) => {
-                      const Icon = m.icon;
-                      const selected = paymentMethod === m.id;
-                      return (
-                        <button
-                          key={m.id}
-                          type="button"
-                          onClick={() => setPaymentMethod(m.id as any)}
-                          className={`p-2.5 rounded-xl border text-xs font-bold flex flex-col items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                            selected
-                              ? 'bg-blue-50/80 border-blue-600 text-blue-700 shadow-xs'
-                              : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
-                          }`}
-                        >
-                          <Icon className={`w-4 h-4 ${selected ? 'text-blue-600' : 'text-slate-500'}`} />
-                          <span>{m.label}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* Reference & Notes */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-600">Payment Reference (Optional)</label>
-                    <input
-                      type="text"
-                      value={paymentReference}
-                      onChange={(e) => setPaymentReference(e.target.value)}
-                      placeholder="e.g. Session ID / Ref #"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-[11px] font-bold text-slate-600">Notes (Optional)</label>
-                    <input
-                      type="text"
-                      value={paymentNotes}
-                      onChange={(e) => setPaymentNotes(e.target.value)}
-                      placeholder="e.g. Part payment deposited"
-                      className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500"
-                    />
-                  </div>
-                </div>
-
-                {/* Error Banner */}
-                {paymentError && (
-                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
-                    <span>{paymentError}</span>
-                  </div>
-                )}
-
-                {/* Success Banner */}
-                {paymentSuccessMsg && (
-                  <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 animate-in fade-in">
-                    <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
-                    <span>{paymentSuccessMsg}</span>
-                  </div>
-                )}
-
-                {/* Modal Footer Actions */}
-                <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
-                  <button
-                    type="button"
-                    onClick={() => setPaymentModalInvoice(null)}
-                    className="px-4 py-2.5 rounded-xl text-slate-600 hover:bg-slate-100 text-xs font-bold transition-colors cursor-pointer"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isRecordingPayment || !!paymentSuccessMsg}
-                    className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold transition-all shadow-md shadow-emerald-600/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-60"
-                  >
-                    {isRecordingPayment ? (
-                      <>
-                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>Processing...</span>
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5" />
-                        <span>Confirm ₦{currentAmountToPay.toLocaleString()} Payment</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              </form>
-            </div>
-          </div>
-        );
-      })()}
-
       {/* Full Commercial Invoice View & Print Modal */}
       {viewModalInvoice && (
         <div className="fixed -inset-1 z-[100] flex items-center justify-center p-2 sm:p-4 bg-slate-950/75 backdrop-blur-sm overflow-y-auto animate-fade-in">
@@ -1288,18 +977,13 @@ export default function InvoicesRegistryPage() {
               </div>
               <div className="flex items-center gap-2">
                 {(viewModalInvoice.paymentStatus || 'PAID').toUpperCase() !== 'PAID' && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const inv = viewModalInvoice;
-                      setViewModalInvoice(null);
-                      handleOpenPaymentModal(inv);
-                    }}
+                  <Link
+                    href={`/dashboard/sales/invoices/${viewModalInvoice.id}/pay`}
                     className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-emerald-600/20 cursor-pointer"
                   >
                     <CreditCard className="w-3.5 h-3.5" />
                     <span>Record Payment</span>
-                  </button>
+                  </Link>
                 )}
                 <Link
                   href={`/dashboard/sales/invoices/${viewModalInvoice.id}/edit`}
@@ -1658,7 +1342,7 @@ export default function InvoicesRegistryPage() {
         const bank = getInvoiceBankDetails(inv);
 
         return (
-          <div id="printable-a4-invoice" className="hidden">
+          <div id="printable-a4-invoice" className="hidden print:block">
             <A4CommercialInvoice
               id="printable-a4-invoice-content"
               data={{
@@ -1699,7 +1383,7 @@ export default function InvoicesRegistryPage() {
         @media print {
           @page {
             size: A4 portrait;
-            margin: 10mm 12mm;
+            margin: 8mm 10mm;
           }
           html, body {
             margin: 0 !important;
@@ -1719,7 +1403,7 @@ export default function InvoicesRegistryPage() {
           }
           #printable-a4-invoice {
             display: block !important;
-            position: fixed !important;
+            position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;

@@ -855,7 +855,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
       </div>
 
       {/* Hidden Printable Invoice for Standard Clean A4 Page Output */}
-      <div id="printable-a4-invoice" className="hidden">
+      <div id="printable-a4-invoice" className="hidden print:block">
         <A4CommercialInvoice
           id="printable-a4-invoice-content"
           data={{
@@ -898,7 +898,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
         @media print {
           @page {
             size: A4 portrait;
-            margin: 10mm 12mm;
+            margin: 8mm 10mm;
           }
           html, body {
             margin: 0 !important;
@@ -918,7 +918,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
           }
           #printable-a4-invoice {
             display: block !important;
-            position: fixed !important;
+            position: absolute !important;
             left: 0 !important;
             top: 0 !important;
             width: 100% !important;
