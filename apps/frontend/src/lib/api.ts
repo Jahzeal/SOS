@@ -318,6 +318,12 @@ class ApiClient {
     return this.markInvoicePaid(id, payload);
   }
 
+  async deleteInvoice(id: string) {
+    return this.request<{ success: boolean; message: string }>(`/sales/invoices/${id}`, {
+      method: 'DELETE',
+    });
+  }
+
   async sendInvoiceEmail(id: string, email?: string) {
     return this.request<{ success: boolean; message?: string; recipient?: string; dispatched?: boolean }>(
       `/sales/invoices/${id}/email`,

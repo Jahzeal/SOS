@@ -70,10 +70,19 @@ export function A4SalesReceipt({ data, id = 'printable-a4-receipt' }: { data: A4
       {/* Header: Store Name & Monogram Left, SALES RECEIPT Right */}
       <div className="flex items-start justify-between gap-4 border-b border-slate-200 pb-5">
         <div className="flex items-center gap-3">
-          {/* Branded Initials Box */}
-          <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-extrabold text-lg shadow-xs shrink-0">
-            {initials}
-          </div>
+          {data.business?.logoUrl ? (
+            <div className="h-12 max-w-[140px] flex items-center justify-start shrink-0">
+              <img
+                src={data.business.logoUrl}
+                alt={storeName}
+                className="max-h-12 max-w-full object-contain"
+              />
+            </div>
+          ) : (
+            <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-200 text-blue-600 flex items-center justify-center font-extrabold text-lg shadow-xs shrink-0">
+              {initials}
+            </div>
+          )}
           <div>
             <h2 className="text-base sm:text-lg font-extrabold text-slate-900 tracking-tight uppercase">
               {storeName}

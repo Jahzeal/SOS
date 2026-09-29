@@ -92,6 +92,14 @@ const WARRANTY_OPTIONS = [
   { value: 36, label: '36 Months (3 Years)' },
 ];
 
+const formatNumberWithCommas = (val: string | number | null | undefined): string => {
+  if (val === null || val === undefined || val === '' || val === 0) return '';
+  const str = val.toString().replace(/,/g, '');
+  const parts = str.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
+
 export default function PhoneRecordDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -622,17 +630,31 @@ export default function PhoneRecordDetailPage() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                 {/* Purchase Price */}
                 <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
-                    Purchase / Buyback Cost (₦)
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
+                      Purchase / Buyback Cost
+                    </label>
+                    {isEditing && formData.purchasePrice > 0 && (
+                      <span className="text-[10px] font-bold text-slate-400">
+                        ₦{Number(formData.purchasePrice).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
                   {isEditing ? (
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.purchasePrice === 0 ? '' : formData.purchasePrice}
-                      onChange={(e) => setFormData({ ...formData, purchasePrice: Number(e.target.value) || 0 })}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-teal-600 text-slate-900"
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400 font-extrabold text-xs">₦</span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={formatNumberWithCommas(formData.purchasePrice)}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/,/g, '').replace(/[^\d.]/g, '');
+                          setFormData({ ...formData, purchasePrice: Number(raw) || 0 });
+                        }}
+                        placeholder="0"
+                        className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-teal-600 text-slate-900 text-xs"
+                      />
+                    </div>
                   ) : (
                     <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono font-bold text-slate-800 text-sm">
                       ₦{record?.purchasePrice?.toLocaleString() || 0}
@@ -642,17 +664,31 @@ export default function PhoneRecordDetailPage() {
 
                 {/* Selling Price */}
                 <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
-                    Retail Selling Price (₦)
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
+                      Retail Selling Price
+                    </label>
+                    {isEditing && formData.sellingPrice > 0 && (
+                      <span className="text-[10px] font-bold text-teal-600">
+                        ₦{Number(formData.sellingPrice).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
                   {isEditing ? (
-                    <input
-                      type="number"
-                      min="0"
-                      value={formData.sellingPrice === 0 ? '' : formData.sellingPrice}
-                      onChange={(e) => setFormData({ ...formData, sellingPrice: Number(e.target.value) || 0 })}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-teal-600 text-slate-900"
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400 font-extrabold text-xs">₦</span>
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        value={formatNumberWithCommas(formData.sellingPrice)}
+                        onChange={(e) => {
+                          const raw = e.target.value.replace(/,/g, '').replace(/[^\d.]/g, '');
+                          setFormData({ ...formData, sellingPrice: Number(raw) || 0 });
+                        }}
+                        placeholder="0"
+                        className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-teal-600 text-slate-900 text-xs"
+                      />
+                    </div>
                   ) : (
                     <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono font-extrabold text-teal-700 text-sm">
                       ₦{record?.sellingPrice?.toLocaleString() || 0}

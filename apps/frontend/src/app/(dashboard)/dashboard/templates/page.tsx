@@ -95,6 +95,7 @@ export default function ReceiptInvoiceTemplatesPage() {
           if (data.bankName) setBankName(data.bankName);
           if (data.accountNumber) setAccountNumber(data.accountNumber);
           if (data.accountName) setAccountName(data.accountName);
+          if (data.taxId) setTaxId(data.taxId);
           if (data.receiptFooter) setReceiptFooter(data.receiptFooter);
           if (data.receiptTerms) setInvoiceTerms(data.receiptTerms);
 
@@ -160,6 +161,7 @@ export default function ReceiptInvoiceTemplatesPage() {
         bankName: bankName.trim(),
         accountNumber: accountNumber.trim(),
         accountName: accountName.trim(),
+        taxId: taxId.trim(),
         receiptFooter: receiptFooter.trim(),
         receiptTerms: invoiceTerms.trim(),
         quoteTitle: quoteTitle.trim(),
@@ -425,7 +427,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                   />
                 </div>
 
-                <div className="space-y-1 sm:col-span-2">
+                <div className="space-y-1">
                   <label className="font-bold text-slate-700">Support Email Address</label>
                   <input
                     type="email"
@@ -433,6 +435,17 @@ export default function ReceiptInvoiceTemplatesPage() {
                     onChange={(e) => setBusinessEmail(e.target.value)}
                     placeholder="e.g. ucollins2@gmail.com"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Tax Identification Number (TIN / Tax ID)</label>
+                  <input
+                    type="text"
+                    value={taxId}
+                    onChange={(e) => setTaxId(e.target.value)}
+                    placeholder="e.g. 23415678-0001 / RC-184920"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
               </div>
@@ -510,7 +523,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                 <div className="space-y-1">
                   <label className="font-bold text-slate-700">Company Support Phone</label>
                   <input
@@ -530,6 +543,17 @@ export default function ReceiptInvoiceTemplatesPage() {
                     onChange={(e) => setStoreAddress(e.target.value)}
                     placeholder="e.g. Computer Village, Ikeja, Lagos"
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-700">Tax Identification Number (TIN / Tax ID)</label>
+                  <input
+                    type="text"
+                    value={taxId}
+                    onChange={(e) => setTaxId(e.target.value)}
+                    placeholder="e.g. 23415678-0001 / RC-184920"
+                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                   />
                 </div>
               </div>

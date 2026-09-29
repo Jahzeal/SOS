@@ -22,6 +22,9 @@ import {
   AlertTriangle,
   Loader2,
   Check,
+  Building2,
+  CreditCard,
+  RefreshCw,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -36,6 +39,14 @@ interface LineItem {
   isDevice: boolean;
 }
 
+const formatNumberWithCommas = (val: string | number | null | undefined): string => {
+  if (val === null || val === undefined || val === '') return '';
+  const str = val.toString().replace(/,/g, '');
+  const parts = str.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
+
 export default function CreateInvoicePage() {
   const router = useRouter();
 
@@ -49,6 +60,14 @@ export default function CreateInvoicePage() {
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerPhone, setCustomerPhone] = useState('');
   const [billingAddress, setBillingAddress] = useState('');
+
+  // Bank Account State (Template or Custom)
+  const [templateBank, setTemplateBank] = useState<{ bankName: string; accountNumber: string; accountName: string } | null>(null);
+  const [useCustomBank, setUseCustomBank] = useState(false);
+  const [bankName, setBankName] = useState('');
+  const [accountNumber, setAccountNumber] = useState('');
+  const [accountName, setAccountName] = useState('');
+  const [isLoadingBankTemplate, setIsLoadingBankTemplate] = useState(false);
 
   // Line Items State (empty default)
   const [items, setItems] = useState<LineItem[]>([]);
@@ -70,6 +89,36 @@ export default function CreateInvoicePage() {
   const [createdInvoice, setCreatedInvoice] = useState<any>(null);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [mobileStep, setMobileStep] = useState(1);
+
+  // Load default template bank details from /dashboard/templates
+  useEffect(() => {
+    async function loadTemplateBank() {
+      setIsLoadingBankTemplate(true);
+      try {
+        const [tpl, prof] = await Promise.all([
+          api.getBusinessTemplates().catch(() => null),
+          api.getBusinessProfile().catch(() => null),
+        ]);
+        const data = tpl || prof;
+        if (data?.bankName || data?.accountNumber) {
+          const bData = {
+            bankName: data.bankName || '',
+            accountNumber: data.accountNumber || '',
+            accountName: data.accountName || data.name || '',
+          };
+          setTemplateBank(bData);
+          setBankName(bData.bankName);
+          setAccountNumber(bData.accountNumber);
+          setAccountName(bData.accountName);
+        }
+      } catch (err) {
+        console.error('Failed to load bank template:', err);
+      } finally {
+        setIsLoadingBankTemplate(false);
+      }
+    }
+    loadTemplateBank();
+  }, []);
 
   // Search available in-stock devices
   useEffect(() => {
@@ -137,7 +186,7 @@ export default function CreateInvoicePage() {
         description: newItemDesc.trim(),
         imei: newItemImei.trim() || 'N/A',
         quantity: parseInt(newItemQty, 10) || 1,
-        unitPrice: parseFloat(newItemPrice) || 0,
+        unitPrice: parseFloat(newItemPrice.toString().replace(/,/g, '')) || 0,
         isDevice: false,
       },
     ]);
@@ -228,6 +277,9 @@ export default function CreateInvoicePage() {
         dueDate,
         paymentTerms,
         billingAddress: billingAddress.trim() || undefined,
+        bankName: (useCustomBank ? bankName : (templateBank?.bankName || bankName))?.trim() || undefined,
+        accountNumber: (useCustomBank ? accountNumber : (templateBank?.accountNumber || accountNumber))?.trim() || undefined,
+        accountName: (useCustomBank ? accountName : (templateBank?.accountName || accountName))?.trim() || undefined,
         notes: notes.trim() || undefined,
         items: payloadItems,
       });
@@ -240,6 +292,9 @@ export default function CreateInvoicePage() {
         customerName: sale.customer?.name || customerName || 'Invoice Customer',
         totalAmount: sale.totalAmount || totalAmount,
         dueDate,
+        bankName: (useCustomBank ? bankName : (templateBank?.bankName || bankName))?.trim(),
+        accountNumber: (useCustomBank ? accountNumber : (templateBank?.accountNumber || accountNumber))?.trim(),
+        accountName: (useCustomBank ? accountName : (templateBank?.accountName || accountName))?.trim(),
         status,
       });
 
@@ -594,11 +649,14 @@ export default function CreateInvoicePage() {
                 </div>
                 <div className="sm:col-span-2">
                   <input
-                    type="number"
-                    step="0.01"
+                    type="text"
+                    inputMode="decimal"
                     required
-                    value={newItemPrice}
-                    onChange={(e) => setNewItemPrice(e.target.value)}
+                    value={formatNumberWithCommas(newItemPrice)}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/,/g, '').replace(/[^\d.]/g, '');
+                      setNewItemPrice(raw);
+                    }}
                     placeholder="Rate (₦)..."
                     className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-[10px]"
                   />
@@ -634,10 +692,188 @@ export default function CreateInvoicePage() {
             </div>
           </div>
 
+          {/* Remittance Bank Account Selection Card */}
+          <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                  <Building2 className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+                    Remittance Bank Account
+                  </h3>
+                  <p className="text-[11px] text-slate-500">
+                    Payment destination printed on this customer's invoice statement
+                  </p>
+                </div>
+              </div>
+
+              {/* Mode Toggle Pills */}
+              <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1 text-[11px] font-bold">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUseCustomBank(false);
+                    if (templateBank) {
+                      setBankName(templateBank.bankName);
+                      setAccountNumber(templateBank.accountNumber);
+                      setAccountName(templateBank.accountName);
+                    }
+                  }}
+                  className={`px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                    !useCustomBank
+                      ? 'bg-white text-blue-700 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <Building2 className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Use Templates Account</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUseCustomBank(true)}
+                  className={`px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                    useCustomBank
+                      ? 'bg-white text-blue-700 shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                >
+                  <CreditCard className="w-3.5 h-3.5 text-blue-600" />
+                  <span>Custom Account</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Template Bank Display */}
+            {!useCustomBank ? (
+              <div className="space-y-3">
+                {templateBank?.accountNumber ? (
+                  <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-extrabold text-blue-950 text-sm">{templateBank.bankName}</span>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                          Template Default
+                        </span>
+                      </div>
+                      <p className="text-slate-700 font-mono font-bold text-xs">
+                        Account #: <span className="text-blue-900">{templateBank.accountNumber}</span>
+                      </p>
+                      {templateBank.accountName && (
+                        <p className="text-slate-600 font-medium text-[11px]">
+                          Beneficiary: <strong className="text-slate-900">{templateBank.accountName}</strong>
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href="/dashboard/templates"
+                        target="_blank"
+                        className="px-3 py-1.5 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-blue-700 font-bold text-xs transition"
+                      >
+                        Edit in Templates →
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setUseCustomBank(true)}
+                        className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition cursor-pointer"
+                      >
+                        Override / Change
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <p className="font-bold">No Default Bank Account in Templates</p>
+                      <p className="text-[11px] text-amber-800">
+                        You have not configured store bank details in /dashboard/templates yet.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href="/dashboard/templates"
+                        className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition"
+                      >
+                        Set up in Templates
+                      </Link>
+                      <button
+                        type="button"
+                        onClick={() => setUseCustomBank(true)}
+                        className="px-3 py-1.5 rounded-lg border border-amber-300 bg-white hover:bg-amber-50 text-amber-900 font-bold text-xs transition cursor-pointer"
+                      >
+                        Enter Custom Account
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* Custom Bank Account Form */
+              <div className="space-y-3 bg-slate-50/70 p-4 rounded-xl border border-slate-200 animate-in fade-in duration-150">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                    Custom Remittance Account Details
+                  </span>
+                  {templateBank?.accountNumber && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setBankName(templateBank.bankName);
+                        setAccountNumber(templateBank.accountNumber);
+                        setAccountName(templateBank.accountName);
+                      }}
+                      className="text-[11px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
+                    >
+                      <RefreshCw className="w-3 h-3" />
+                      <span>Fill Template Values</span>
+                    </button>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-slate-700">Bank Name</label>
+                    <input
+                      type="text"
+                      value={bankName}
+                      onChange={(e) => setBankName(e.target.value)}
+                      placeholder="e.g. Access Bank / Zenith"
+                      className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-800 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-slate-700">Account Number</label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={accountNumber}
+                      onChange={(e) => setAccountNumber(e.target.value.replace(/[^\d]/g, ''))}
+                      placeholder="e.g. 0123456789"
+                      className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-bold text-slate-800 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <label className="block text-[11px] font-bold text-slate-700">Account / Beneficiary Name</label>
+                    <input
+                      type="text"
+                      value={accountName}
+                      onChange={(e) => setAccountName(e.target.value)}
+                      placeholder="e.g. Store Trade Ltd"
+                      className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-800 focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Notes & Terms Card */}
           <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3 ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
             <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
-              Payment Terms & Bank Wire Instructions
+              Payment Terms & Remittance Instructions
             </h3>
             <textarea
               rows={3}

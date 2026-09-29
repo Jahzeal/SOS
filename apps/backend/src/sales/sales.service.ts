@@ -79,16 +79,23 @@ export class SalesService {
     // Pack metadata into notes if invoice
     let combinedNotes = dto.notes?.trim() || '';
     if (isInvoice) {
+      const customBank = (dto as any).bankName ? `[BANK:${(dto as any).bankName}]` : '';
+      const customAcc = (dto as any).accountNumber ? `[ACC:${(dto as any).accountNumber}]` : '';
+      const customAccName = (dto as any).accountName ? `[ACCNAME:${(dto as any).accountName}]` : '';
+
       const metaTags = [
         '[TYPE:INVOICE]',
         dto.dueDate ? `[DUE:${dto.dueDate}]` : '',
         dto.paymentTerms ? `[TERMS:${dto.paymentTerms}]` : '',
         dto.billingAddress ? `[ADDR:${dto.billingAddress}]` : '',
+        customBank,
+        customAcc,
+        customAccName,
       ].filter(Boolean).join(' ');
       combinedNotes = `${metaTags} ${combinedNotes}`.trim();
     }
 
-    // 4. Run Prisma Transaction to create sale & mark any devices as SOLD
+    // 4. Run Prisma Transaction to create sale & mark any devices as SOLD if paid
     const sale = await this.prisma.$transaction(async (tx) => {
       // Create Sale Record
       const newSale = await tx.sale.create({
@@ -146,8 +153,9 @@ export class SalesService {
         },
       });
 
-      // Update phone statuses to SOLD & link customerId if any devices were included and not draft
-      if (deviceItemIds.length > 0 && dto.paymentStatus !== 'DRAFT') {
+      // Update phone statuses to SOLD ONLY if payment has been received (PAID or PARTIALLY_PAID)
+      const effectivePaymentStatus = dto.paymentStatus || (isInvoice ? 'PENDING' : 'PAID');
+      if (deviceItemIds.length > 0 && (effectivePaymentStatus === 'PAID' || effectivePaymentStatus === 'PARTIALLY_PAID')) {
         await tx.phoneRecord.updateMany({
           where: { id: { in: deviceItemIds } },
           data: {
@@ -252,6 +260,36 @@ export class SalesService {
     return invoice;
   }
 
+  async deleteInvoice(businessId: string, id: string) {
+    const invoice = await this.findOneInvoice(businessId, id);
+
+    const deviceItemIds = invoice.items
+      .filter((i) => i.phoneRecordId)
+      .map((i) => i.phoneRecordId as string);
+
+    await this.prisma.$transaction(async (tx) => {
+      // Return any linked devices back to IN_STOCK if they were marked SOLD
+      if (deviceItemIds.length > 0) {
+        await tx.phoneRecord.updateMany({
+          where: {
+            id: { in: deviceItemIds },
+            businessId,
+          },
+          data: {
+            status: PhoneStatus.IN_STOCK,
+          },
+        });
+      }
+
+      // Delete the invoice (sale) and cascading items/installments/payments
+      await tx.sale.delete({
+        where: { id: invoice.id },
+      });
+    });
+
+    return { success: true, message: `Invoice ${invoice.invoiceNumber} deleted successfully.` };
+  }
+
   async markInvoiceAsPaid(
     businessId: string,
     id: string,
@@ -335,7 +373,7 @@ export class SalesService {
         },
       });
 
-      if (newStatus === 'PAID' && deviceItemIds.length > 0) {
+      if ((newStatus === 'PAID' || newStatus === 'PARTIALLY_PAID') && deviceItemIds.length > 0) {
         await tx.phoneRecord.updateMany({
           where: { id: { in: deviceItemIds } },
           data: {

@@ -106,6 +106,7 @@ model Business {
   bankName                  String?
   accountNumber             String?
   accountName               String?
+  taxId                     String?
   publicVerificationEnabled Boolean        @default(true)
   customSuccessMessage      String?        @default("This phone is verified and authentic.")
   warrantyTerms             String?

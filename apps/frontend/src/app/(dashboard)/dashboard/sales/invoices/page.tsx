@@ -29,14 +29,30 @@ import {
   Building2,
   Wallet,
   ArrowRight,
-  Sparkles,
+  Trash2,
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { useInvoices, useInventorySummary } from '@/hooks/useDashboardQueries';
 
+const getInvoiceBankDetails = (inv: any) => {
+  if (!inv) return { bankName: '', accountNumber: '', accountName: '' };
+  const notes = inv.notes || '';
+  const bankMatch = notes.match(/\[BANK:([^\]]+)\]/);
+  const accMatch = notes.match(/\[ACC:([^\]]+)\]/);
+  const accNameMatch = notes.match(/\[ACCNAME:([^\]]+)\]/);
+
+  return {
+    bankName: bankMatch ? bankMatch[1].trim() : (inv.business?.bankName || ''),
+    accountNumber: accMatch ? accMatch[1].trim() : (inv.business?.accountNumber || ''),
+    accountName: accNameMatch ? accNameMatch[1].trim() : (inv.business?.accountName || inv.business?.name || ''),
+  };
+};
+
 export default function InvoicesRegistryPage() {
+  const queryClient = useQueryClient();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
@@ -53,6 +69,29 @@ export default function InvoicesRegistryPage() {
   const { data: summaryData } = useInventorySummary();
 
   const loading = loadingInvoices && invoices.length === 0;
+
+  // Delete Modal State
+  const [invoiceToDelete, setInvoiceToDelete] = useState<any | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  const handleDeleteInvoice = async () => {
+    if (!invoiceToDelete) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await api.deleteInvoice(invoiceToDelete.id);
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      setInvoiceToDelete(null);
+    } catch (err: any) {
+      setDeleteError(err.message || 'Failed to delete invoice.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // Email & View Modal State
   const [emailModalInvoice, setEmailModalInvoice] = useState<any | null>(null);
@@ -519,6 +558,13 @@ export default function InvoicesRegistryPage() {
                     <button onClick={() => handleOpenEmailModal(inv)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer">
                       <Mail className="w-3.5 h-3.5" /> Send
                     </button>
+                    <button
+                      onClick={() => setInvoiceToDelete(inv)}
+                      className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                      title="Delete Invoice"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
               );
@@ -645,6 +691,13 @@ export default function InvoicesRegistryPage() {
                             title="Send Invoice by Email"
                           >
                             <Mail className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setInvoiceToDelete(inv)}
+                            className="p-1 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer text-slate-400"
+                            title="Delete Invoice"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </td>
@@ -944,7 +997,7 @@ export default function InvoicesRegistryPage() {
                       { id: 'BANK_TRANSFER', label: 'Transfer', icon: Building2 },
                       { id: 'CASH', label: 'Cash', icon: Wallet },
                       { id: 'POS', label: 'POS Terminal', icon: CreditCard },
-                      { id: 'SPLIT', label: 'Split / Other', icon: Sparkles },
+                      { id: 'SPLIT', label: 'Split / Other', icon: DollarSign },
                     ].map((m) => {
                       const Icon = m.icon;
                       const selected = paymentMethod === m.id;
@@ -1069,6 +1122,19 @@ export default function InvoicesRegistryPage() {
                     <span>Record Payment</span>
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const inv = viewModalInvoice;
+                    setViewModalInvoice(null);
+                    setInvoiceToDelete(inv);
+                  }}
+                  className="px-3.5 py-2 rounded-xl border border-slate-200 text-slate-500 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                  title="Delete Invoice"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Delete</span>
+                </button>
                 <button
                   type="button"
                   onClick={() => window.print()}
@@ -1239,27 +1305,35 @@ export default function InvoicesRegistryPage() {
               {/* Subtotal, Total & Bank Remittance Box */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start pt-1">
                 {/* Bank Remittance Instructions on Left */}
-                {viewModalInvoice.business?.bankName && viewModalInvoice.business?.accountNumber ? (
-                  <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs space-y-1">
-                    <p className="font-extrabold text-blue-900 text-xs uppercase tracking-wide">
-                      Direct Bank Remittance / Payment Details:
-                    </p>
-                    <p className="text-blue-950 font-bold">
-                      Bank: <span className="font-normal">{viewModalInvoice.business.bankName}</span>
-                    </p>
-                    <p className="text-blue-950 font-bold">
-                      Account #: <span className="font-mono">{viewModalInvoice.business.accountNumber}</span>
-                    </p>
-                    <p className="text-blue-950 font-bold">
-                      Account Name: <span className="font-normal">{viewModalInvoice.business.accountName || viewModalInvoice.business.name}</span>
-                    </p>
-                    <p className="text-blue-700 text-[11px] pt-1">
-                      Payment Ref: <span className="font-mono font-bold">{viewModalInvoice.invoiceNumber || viewModalInvoice.id}</span>
-                    </p>
-                  </div>
-                ) : (
-                  <div />
-                )}
+                {(() => {
+                  const bank = getInvoiceBankDetails(viewModalInvoice);
+                  if (!bank.bankName && !bank.accountNumber) return <div />;
+                  return (
+                    <div className="p-3.5 rounded-xl bg-blue-50/80 border border-blue-200 text-xs space-y-1">
+                      <p className="font-extrabold text-blue-900 text-xs uppercase tracking-wide">
+                        Direct Bank Remittance / Payment Details:
+                      </p>
+                      {bank.bankName && (
+                        <p className="text-blue-950 font-bold">
+                          Bank: <span className="font-normal">{bank.bankName}</span>
+                        </p>
+                      )}
+                      {bank.accountNumber && (
+                        <p className="text-blue-950 font-bold">
+                          Account #: <span className="font-mono">{bank.accountNumber}</span>
+                        </p>
+                      )}
+                      {bank.accountName && (
+                        <p className="text-blue-950 font-bold">
+                          Account Name: <span className="font-normal">{bank.accountName}</span>
+                        </p>
+                      )}
+                      <p className="text-blue-700 text-[11px] pt-1">
+                        Payment Ref: <span className="font-mono font-bold">{viewModalInvoice.invoiceNumber || viewModalInvoice.id}</span>
+                      </p>
+                    </div>
+                  );
+                })()}
 
                 {/* Subtotal & Total Right Aligned */}
                 <div className="space-y-1 text-xs sm:ml-auto w-full sm:w-64">
@@ -1303,6 +1377,86 @@ export default function InvoicesRegistryPage() {
                 </div>
                 <div className="font-bold text-slate-600">Page: 1 / 1</div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {invoiceToDelete && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-slate-900 text-base">Delete Invoice</h3>
+                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-semibold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span>{deleteError}</span>
+              </div>
+            )}
+
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs text-slate-600">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-bold uppercase text-[10px]">Invoice #</span>
+                <span className="font-mono font-bold text-blue-600">
+                  {invoiceToDelete.invoiceNumber || invoiceToDelete.receiptNumber || invoiceToDelete.id}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-bold uppercase text-[10px]">Customer</span>
+                <span className="font-bold text-slate-800">{invoiceToDelete.customer?.name || 'Retail Customer'}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-bold uppercase text-[10px]">Total Amount</span>
+                <span className="font-extrabold text-slate-900">
+                  ₦{Number(invoiceToDelete.totalAmount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete this invoice? Any linked unsold devices will be returned to available inventory.
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={isDeleting}
+                onClick={() => {
+                  setInvoiceToDelete(null);
+                  setDeleteError(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <button
+                type="button"
+                disabled={isDeleting}
+                onClick={handleDeleteInvoice}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-sm shadow-rose-600/20 cursor-pointer"
+              >
+                {isDeleting ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Invoice</span>
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

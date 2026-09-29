@@ -40,6 +40,7 @@ export class BusinessService {
         bankName: data.bankName,
         accountNumber: data.accountNumber,
         accountName: data.accountName,
+        taxId: data.taxId,
         publicVerificationEnabled: data.publicVerificationEnabled,
         customSuccessMessage: data.customSuccessMessage,
         warrantyTerms: data.warrantyTerms,
@@ -84,6 +85,7 @@ export class BusinessService {
         bankName: true,
         accountNumber: true,
         accountName: true,
+        taxId: true,
         receiptFooter: true,
         receiptTerms: true,
         warrantyTerms: true,
@@ -115,6 +117,7 @@ export class BusinessService {
     if (data.bankName !== undefined) updateData.bankName = data.bankName;
     if (data.accountNumber !== undefined) updateData.accountNumber = data.accountNumber;
     if (data.accountName !== undefined) updateData.accountName = data.accountName;
+    if (data.taxId !== undefined) updateData.taxId = data.taxId;
     if (data.receiptFooter !== undefined) updateData.receiptFooter = data.receiptFooter;
     if (data.receiptTerms !== undefined) updateData.receiptTerms = data.receiptTerms;
     if (data.warrantyTerms !== undefined) updateData.warrantyTerms = data.warrantyTerms;

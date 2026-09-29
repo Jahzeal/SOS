@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { SalesService } from './sales.service';
 import { CheckoutSaleDto } from './dto/checkout-sale.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
@@ -38,6 +38,12 @@ export class SalesController {
       type: 'INVOICE',
       paymentStatus: dto.paymentStatus || 'PENDING',
     });
+  }
+
+  @Delete('invoices/:id')
+  async deleteInvoice(@Request() req, @Param('id') id: string) {
+    const businessId = req.user.businessId;
+    return this.salesService.deleteInvoice(businessId, id);
   }
 
   @Post('invoices/:id/pay')

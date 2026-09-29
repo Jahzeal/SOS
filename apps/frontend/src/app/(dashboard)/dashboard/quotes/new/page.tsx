@@ -51,6 +51,14 @@ interface InstallmentScheduleItem {
   notes?: string;
 }
 
+const formatNumberWithCommas = (val: string | number | null | undefined): string => {
+  if (val === null || val === undefined || val === '') return '';
+  const str = val.toString().replace(/,/g, '');
+  const parts = str.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
+
 export default function CreateQuotePage() {
   const router = useRouter();
   const { checkCanPerformAction } = useSubscriptionGuard();
@@ -167,13 +175,13 @@ export default function CreateQuotePage() {
     }, 0);
   }, [items]);
 
-  const numGlobalDiscount = parseFloat(globalDiscount) || 0;
+  const numGlobalDiscount = parseFloat(globalDiscount.toString().replace(/,/g, '')) || 0;
   const numTaxRate = parseFloat(taxRate) || 0;
   const discountedSubtotal = Math.max(0, subtotal - numGlobalDiscount);
   const taxAmount = (discountedSubtotal * numTaxRate) / 100;
   const grandTotal = discountedSubtotal + taxAmount;
 
-  const numAmountPaid = Math.min(grandTotal, Math.max(0, parseFloat(amountPaidInput) || 0));
+  const numAmountPaid = Math.min(grandTotal, Math.max(0, parseFloat(amountPaidInput.toString().replace(/,/g, '')) || 0));
   const remainingBalance = Math.max(0, grandTotal - numAmountPaid);
 
   // Auto-generate installment splits when total, deposit, split count, or interval changes
@@ -247,9 +255,9 @@ export default function CreateQuotePage() {
       alert('Please enter an item description.');
       return;
     }
-    const price = parseFloat(newItemPrice) || 0;
+    const price = parseFloat(newItemPrice.toString().replace(/,/g, '')) || 0;
     const qty = parseInt(newItemQty, 10) || 1;
-    const disc = parseFloat(newItemDiscount) || 0;
+    const disc = parseFloat(newItemDiscount.toString().replace(/,/g, '')) || 0;
 
     setItems((prev) => [
       ...prev,
@@ -645,9 +653,13 @@ export default function CreateQuotePage() {
                 </div>
                 <div className="sm:col-span-3">
                   <input
-                    type="number"
-                    value={newItemPrice}
-                    onChange={(e) => setNewItemPrice(e.target.value)}
+                    type="text"
+                    inputMode="decimal"
+                    value={formatNumberWithCommas(newItemPrice)}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/,/g, '').replace(/[^\d.]/g, '');
+                      setNewItemPrice(raw);
+                    }}
                     placeholder="Unit Price (₦)"
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-bold focus:outline-none focus:border-blue-600"
                   />
@@ -791,11 +803,13 @@ export default function CreateQuotePage() {
                       Initial Deposit Received Today (₦)
                     </label>
                     <input
-                      type="number"
-                      min="0"
-                      max={grandTotal}
-                      value={amountPaidInput}
-                      onChange={(e) => setAmountPaidInput(e.target.value)}
+                      type="text"
+                      inputMode="decimal"
+                      value={formatNumberWithCommas(amountPaidInput)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/,/g, '').replace(/[^\d.]/g, '');
+                        setAmountPaidInput(raw);
+                      }}
                       placeholder="0"
                       className="w-full px-3 py-2 bg-white border border-emerald-200 rounded-lg font-mono font-bold text-slate-900 text-xs focus:outline-none focus:border-emerald-600"
                     />

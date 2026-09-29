@@ -24,7 +24,6 @@ import {
   ArrowLeft,
   ArrowRight,
   Edit3,
-  Sparkles,
   Tag,
   Layers,
 } from 'lucide-react';
@@ -60,6 +59,14 @@ const ACCESSORY_BRANDS = [
   'Romoss', 'JBL', 'Sony', 'UGREEN', 'Zealot', 'Joyroom',
   'Remax', 'LDNIO', 'Xiaomi', 'HP', 'Dell', 'Lenovo', 'Generic / OEM',
 ];
+
+const formatNumberWithCommas = (val: string | number | null | undefined): string => {
+  if (val === null || val === undefined || val === '') return '';
+  const str = val.toString().replace(/,/g, '');
+  const parts = str.split('.');
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return parts.join('.');
+};
 
 export default function RegisterPhonePage() {
   const router = useRouter();
@@ -230,8 +237,8 @@ export default function RegisterPhonePage() {
         lockedCarrier: mode === 'PHONE' && carrierStatus === 'CARRIER_LOCKED' ? lockedCarrier.trim() : undefined,
         activationStatus: mode === 'PHONE' ? (activationStatus as any) : 'READY_FOR_SETUP',
         warrantyDurationMonths: warrantyMonths,
-        purchasePrice: purchasePrice ? parseFloat(purchasePrice) : undefined,
-        sellingPrice: sellingPrice ? parseFloat(sellingPrice) : undefined,
+        purchasePrice: purchasePrice ? parseFloat(purchasePrice.toString().replace(/,/g, '')) : undefined,
+        sellingPrice: sellingPrice ? parseFloat(sellingPrice.toString().replace(/,/g, '')) : undefined,
       });
 
       setRegisteredItem({
@@ -813,7 +820,7 @@ export default function RegisterPhonePage() {
                   <div className="md:col-span-2 p-3.5 rounded-2xl bg-teal-50 border border-teal-200/90 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs animate-in fade-in duration-150">
                     <div className="flex items-center gap-2.5 min-w-0">
                       <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                        <Sparkles className="w-4 h-4" />
+                        <Tag className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
@@ -844,29 +851,53 @@ export default function RegisterPhonePage() {
 
                 {/* Pricing Inputs: Purchase & Selling Price */}
                 <div className="space-y-1.5">
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider">Purchase Cost Price</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={purchasePrice}
-                    onChange={(e) => setPurchasePrice(e.target.value)}
-                    placeholder="e.g. 15000"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
-                  />
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider">Purchase Cost Price</label>
+                    {purchasePrice && (
+                      <span className="text-[11px] font-bold text-slate-400">
+                        ₦{Number(purchasePrice.replace(/,/g, '') || 0).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-3.5 text-slate-400 font-extrabold text-sm">₦</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formatNumberWithCommas(purchasePrice)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/,/g, '').replace(/[^\d.]/g, '');
+                        setPurchasePrice(raw);
+                      }}
+                      placeholder="e.g. 150,000"
+                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
+                    />
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider">Retail Selling Price</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={sellingPrice}
-                    onChange={(e) => setSellingPrice(e.target.value)}
-                    placeholder="e.g. 25000"
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
-                  />
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider">Retail Selling Price</label>
+                    {sellingPrice && (
+                      <span className="text-[11px] font-bold text-teal-600">
+                        ₦{Number(sellingPrice.replace(/,/g, '') || 0).toLocaleString()}
+                      </span>
+                    )}
+                  </div>
+                  <div className="relative">
+                    <span className="absolute left-3.5 top-3.5 text-slate-400 font-extrabold text-sm">₦</span>
+                    <input
+                      type="text"
+                      inputMode="decimal"
+                      value={formatNumberWithCommas(sellingPrice)}
+                      onChange={(e) => {
+                        const raw = e.target.value.replace(/,/g, '').replace(/[^\d.]/g, '');
+                        setSellingPrice(raw);
+                      }}
+                      placeholder="e.g. 250,000"
+                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
+                    />
+                  </div>
                 </div>
 
                 {/* Optional Notes */}
@@ -956,13 +987,13 @@ export default function RegisterPhonePage() {
                   <div>
                     <span className="text-slate-500 block uppercase font-bold text-[10px]">Cost Price</span>
                     <span className="font-bold text-slate-800 text-xs mt-0.5 block">
-                      {purchasePrice ? `₦${parseFloat(purchasePrice).toLocaleString()}` : '—'}
+                      {purchasePrice ? `₦${parseFloat(purchasePrice.toString().replace(/,/g, '')).toLocaleString()}` : '—'}
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-500 block uppercase font-bold text-[10px]">Selling Price</span>
                     <span className="font-extrabold text-emerald-700 text-sm mt-0.5 block">
-                      {sellingPrice ? `₦${parseFloat(sellingPrice).toLocaleString()}` : '—'}
+                      {sellingPrice ? `₦${parseFloat(sellingPrice.toString().replace(/,/g, '')).toLocaleString()}` : '—'}
                     </span>
                   </div>
                   <div>
