@@ -9,7 +9,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  Sparkles,
   Layers,
   ArrowRight,
   HelpCircle,
@@ -44,7 +43,19 @@ export default function BusinessSubscriptionPage() {
   const business = businessProfile || user?.business;
   const currentPlanCode = (business?.plan || 'STARTER101').toUpperCase();
   const subscriptionStatus = (business?.subscriptionStatus || 'TRIAL').toUpperCase();
-  const subscriptionPlan = business?.subscriptionPlan;
+
+  // Dynamically match active plan from database publicPlans or business profile
+  const activePlan = publicPlans.find((p: any) => 
+    (p.code || '').toUpperCase() === currentPlanCode || 
+    p.id === business?.planId
+  ) || business?.subscriptionPlan || publicPlans[0];
+
+  const planName = activePlan?.name || (currentPlanCode === 'STARTER101' ? 'Starter' : currentPlanCode);
+  const planDescription = activePlan?.description || `Dedicated retail inventory & verification plan for ${business?.name || 'your store'}.`;
+  const monthlyPrice = activePlan?.monthlyPriceNgn ?? 5000;
+  const annualPrice = activePlan?.annualPriceNgn ?? monthlyPrice * 10;
+  const maxDevices = activePlan?.maxDevices || 500;
+  const maxUsers = activePlan?.maxUsers || 3;
 
   // Calculate Trial Days Remaining
   const getTrialInfo = () => {
@@ -72,8 +83,6 @@ export default function BusinessSubscriptionPage() {
   const deviceCount = business?._count?.phoneRecords ?? 0;
   const staffCount = business?._count?.users ?? 1;
   const salesCount = business?._count?.sales ?? 0;
-  const maxDevices = subscriptionPlan?.maxDevices ?? 100;
-  const maxUsers = subscriptionPlan?.maxUsers ?? 3;
 
   const handleCheckoutSuccess = (updatedBusiness: any) => {
     invalidateBusinessProfile();
@@ -167,7 +176,7 @@ export default function BusinessSubscriptionPage() {
 
           <button
             onClick={() => {
-              const target = publicPlans.find((p: any) => p.code === currentPlanCode) || publicPlans[0];
+              const target = activePlan || publicPlans[0];
               if (target) setSelectedPlanForCheckout(target);
             }}
             className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold shadow-sm transition shrink-0 whitespace-nowrap"
@@ -198,16 +207,16 @@ export default function BusinessSubscriptionPage() {
                   </span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-900 mt-1">
-                  {subscriptionPlan?.name || currentPlanCode}
+                  {planName}
                 </h2>
                 <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-                  {subscriptionPlan?.description || `Dedicated retail inventory & verification plan for ${business?.name || 'your store'}.`}
+                  {planDescription}
                 </p>
               </div>
 
               <div className="text-right shrink-0">
                 <span className="text-xl sm:text-2xl font-black text-teal-600 block">
-                  {subscriptionPlan?.monthlyPriceNgn ? `₦${subscriptionPlan.monthlyPriceNgn.toLocaleString()}` : 'Free'}
+                  ₦{monthlyPrice.toLocaleString()}
                 </span>
                 <span className="text-[10px] text-slate-400 font-bold uppercase block">Per Month</span>
               </div>
@@ -221,15 +230,15 @@ export default function BusinessSubscriptionPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-700 font-medium">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
-                  <span>Up to <strong>{maxDevices}</strong> Registered Devices</span>
+                  <span>Up to <strong>{maxDevices > 0 ? maxDevices.toLocaleString() : 'Unlimited'}</strong> Registered Devices</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
-                  <span><strong>{maxUsers}</strong> Multi-Staff User Accounts</span>
+                  <span><strong>{maxUsers > 0 ? maxUsers : 'Unlimited'}</strong> Staff User Accounts</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
-                  <span>POS Checkout & Thermal Receipts</span>
+                  <span>Full POS Checkout & Receipts</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
@@ -241,7 +250,7 @@ export default function BusinessSubscriptionPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
-                  <span>Custom Store Logo & Warranty Terms</span>
+                  <span>Custom Store Logo & Branding</span>
                 </div>
               </div>
             </div>
@@ -262,12 +271,9 @@ export default function BusinessSubscriptionPage() {
         <div className="lg:col-span-5 bg-slate-900 text-white rounded-2xl p-6 sm:p-7 shadow-md flex flex-col justify-between space-y-6">
           <div>
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-teal-400" />
-                <h3 className="font-extrabold text-sm text-slate-200 uppercase tracking-wider">
-                  Store Capacity Usage
-                </h3>
-              </div>
+              <h3 className="font-extrabold text-sm text-slate-200 uppercase tracking-wider">
+                Store Capacity Usage
+              </h3>
               <Badge variant="new" size="sm" className="bg-teal-500/20 text-teal-300 border-teal-500/30">
                 Live Stats
               </Badge>

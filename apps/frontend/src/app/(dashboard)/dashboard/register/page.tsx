@@ -521,7 +521,7 @@ export default function RegisterPhonePage() {
                     value={imei}
                     onChange={(e) => setImei(e.target.value)}
                     placeholder={mode === 'PHONE' ? "Enter 15-digit IMEI" : "e.g. 693420849102 or scan box"}
-                    className="w-full text-sm px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 font-mono font-semibold text-slate-900 shadow-subtle"
+                    className="w-full text-xs sm:text-sm px-3.5 py-2.5 sm:px-4 sm:py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 font-mono font-semibold text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs shadow-xs"
                   />
                 </div>
 
@@ -534,7 +534,7 @@ export default function RegisterPhonePage() {
                     value={serialNumber}
                     onChange={(e) => setSerialNumber(e.target.value)}
                     placeholder="Enter SKU or barcode number"
-                    className="w-full text-sm px-4 py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 font-mono font-semibold text-slate-900 shadow-subtle"
+                    className="w-full text-xs sm:text-sm px-3.5 py-2.5 sm:px-4 sm:py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 font-mono font-semibold text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs shadow-xs"
                   />
                 </div>
               </div>
@@ -603,8 +603,8 @@ export default function RegisterPhonePage() {
 
               {/* Sub-Category Toggle for Serialized Mode: Phone/Tablet vs Laptop */}
               {mode === 'PHONE' && (
-                <div className="bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
-                  <div className="grid grid-cols-2 gap-1.5">
+                <div className="bg-slate-100 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-slate-200">
+                  <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
                     <button
                       type="button"
                       onClick={() => {
@@ -613,20 +613,20 @@ export default function RegisterPhonePage() {
                           setSpecs('128 GB');
                         }
                       }}
-                      className={`flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all ${
+                      className={`flex items-center justify-center gap-1.5 sm:gap-2.5 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-extrabold transition-all ${
                         deviceCategory === 'PHONE_TABLET'
-                          ? 'bg-white text-slate-950 shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
+                          ? 'bg-white text-slate-950 shadow-xs sm:shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
                           : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                       }`}
                     >
-                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                      <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 ${
                         deviceCategory === 'PHONE_TABLET' ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-500'
                       }`}>
-                        <Smartphone className="w-3.5 h-3.5" />
+                        <Smartphone className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </div>
                       <div className="text-left">
-                        <span className="block font-black">Phone / Tablet / iPad</span>
-                        <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">iPhones, Android, iPads, Tabs</span>
+                        <span className="block font-black truncate">Phone / Tablet</span>
+                        <span className="text-[10px] text-slate-400 font-medium hidden sm:block">iPhones, Android, iPads, Tabs</span>
                       </div>
                     </button>
 
@@ -638,20 +638,20 @@ export default function RegisterPhonePage() {
                           setSpecs('16GB RAM / 512GB SSD');
                         }
                       }}
-                      className={`flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all ${
+                      className={`flex items-center justify-center gap-1.5 sm:gap-2.5 py-1.5 sm:py-2.5 px-2 sm:px-3 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-extrabold transition-all ${
                         deviceCategory === 'LAPTOP'
-                          ? 'bg-white text-slate-950 shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
+                          ? 'bg-white text-slate-950 shadow-xs sm:shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
                           : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
                       }`}
                     >
-                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                      <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 ${
                         deviceCategory === 'LAPTOP' ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-500'
                       }`}>
-                        <Laptop className="w-3.5 h-3.5" />
+                        <Laptop className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                       </div>
                       <div className="text-left">
-                        <span className="block font-black">Laptop / MacBook / PC</span>
-                        <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">MacBooks, HP, Dell, ThinkPads</span>
+                        <span className="block font-black truncate">Laptop / PC</span>
+                        <span className="text-[10px] text-slate-400 font-medium hidden sm:block">MacBooks, HP, Dell, ThinkPads</span>
                       </div>
                     </button>
                   </div>
@@ -665,7 +665,6 @@ export default function RegisterPhonePage() {
                     <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
                       Item Category / Type *
                     </label>
-                    <span className="text-[11px] text-slate-500 font-medium hidden sm:inline">Select or type custom</span>
                   </div>
 
                   {/* Mobile Select Dropdown */}
@@ -679,7 +678,7 @@ export default function RegisterPhonePage() {
                           setItemType(e.target.value);
                         }
                       }}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-xs focus:outline-none focus:border-teal-600 shadow-subtle"
+                      className="w-full h-8 px-2.5 py-1 rounded-lg border border-slate-200 bg-white font-bold text-slate-800 text-[10px] focus:outline-none focus:border-teal-600 shadow-xs"
                     >
                       {POPULAR_ITEM_TYPES.map((type) => (
                         <option key={type} value={type}>
@@ -715,7 +714,7 @@ export default function RegisterPhonePage() {
                       value={itemType}
                       onChange={(e) => setItemType(e.target.value)}
                       placeholder="Specify custom category (e.g. Ring Light, Drone, Wireless Mic...)"
-                      className="w-full mt-1.5 px-3.5 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
+                      className="w-full mt-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white font-bold text-slate-900 text-xs placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
                       autoFocus={!POPULAR_ITEM_TYPES.includes(itemType)}
                     />
                   )}
@@ -727,7 +726,7 @@ export default function RegisterPhonePage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="block font-bold text-slate-700 uppercase tracking-wider">Brand *</label>
-                    <span className="text-[11px] text-slate-500 font-medium">Type custom brand or pick below</span>
+                    <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium">Type custom brand or pick below</span>
                   </div>
                   <input
                     type="text"
@@ -739,7 +738,7 @@ export default function RegisterPhonePage() {
                         ? (deviceCategory === 'LAPTOP' ? "e.g. Apple, HP, Dell, Lenovo, Asus, Custom..." : "e.g. Apple, Samsung, Google, Xiaomi, Custom...")
                         : "e.g. Oraimo, Anker, Baseus, Sony, Generic..."
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600 shadow-subtle text-xs"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs placeholder:font-normal focus:outline-none focus:border-teal-600 shadow-xs text-xs"
                   />
                   <datalist id="brand-suggestions">
                     {activeBrands.map((b) => (
@@ -780,26 +779,50 @@ export default function RegisterPhonePage() {
                             : 'e.g. iPhone 15 Pro Max, Galaxy S24 Ultra, iPad Pro 11"')
                         : 'e.g. Toast 10 Byte 20000mAh, FreePods 4 ANC, 65W GaN Charger'
                     }
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600 shadow-subtle text-xs"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs placeholder:font-normal focus:outline-none focus:border-teal-600 shadow-xs text-xs"
                   />
                 </div>
 
                 {/* Specifications / Storage / Capacity */}
-                <div className="space-y-2 md:col-span-2">
+                <div className="space-y-1.5 sm:space-y-2 md:col-span-2">
                   <div className="flex items-center justify-between">
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] sm:text-xs">
                       {mode === 'PHONE'
-                        ? (deviceCategory === 'LAPTOP' ? 'RAM, Storage & Hardware Specs' : 'Internal Storage Capacity')
+                        ? (deviceCategory === 'LAPTOP' ? 'RAM, Storage & Hardware Specs *' : 'Internal Storage Capacity *')
                         : 'Specifications / Capacity / Variant'}
                     </label>
                     {mode === 'PHONE' && (
-                      <span className="text-[11px] text-slate-500 font-medium">Pick preset or type custom below</span>
+                      <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium">Pick preset or type custom</span>
                     )}
                   </div>
 
+                  {/* Phone / Tablet Storage Selector */}
                   {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
                     <div className="space-y-2">
-                      <div className="flex flex-wrap gap-2">
+                      {/* Mobile Dropdown */}
+                      <div className="block sm:hidden">
+                        <select
+                          value={PHONE_SPECS_PRESETS.includes(specs || '128 GB') ? (specs || '128 GB') : 'CUSTOM'}
+                          onChange={(e) => {
+                            if (e.target.value === 'CUSTOM') {
+                              setSpecs('');
+                            } else {
+                              setSpecs(e.target.value);
+                            }
+                          }}
+                          className="w-full h-8 px-2.5 py-1 rounded-lg border border-slate-200 bg-white font-bold text-slate-800 text-[10px] focus:outline-none focus:border-teal-600 shadow-xs"
+                        >
+                          {PHONE_SPECS_PRESETS.map((st) => (
+                            <option key={st} value={st}>
+                              {st} Storage
+                            </option>
+                          ))}
+                          <option value="CUSTOM">Custom Storage / Specs...</option>
+                        </select>
+                      </div>
+
+                      {/* Desktop Chips */}
+                      <div className="hidden sm:flex flex-wrap gap-2">
                         {PHONE_SPECS_PRESETS.map((st) => (
                           <button
                             key={st}
@@ -815,19 +838,58 @@ export default function RegisterPhonePage() {
                           </button>
                         ))}
                       </div>
-                      <input
-                        type="text"
-                        value={specs}
-                        onChange={(e) => setSpecs(e.target.value)}
-                        placeholder="Or type custom storage/RAM (e.g. 128GB + 8GB RAM, 256GB Dual SIM...)"
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-900 text-xs focus:outline-none focus:border-teal-600"
-                      />
+
+                      {/* Custom Input for Phone */}
+                      {(!PHONE_SPECS_PRESETS.includes(specs) && specs !== '') && (
+                        <input
+                          type="text"
+                          value={specs}
+                          onChange={(e) => setSpecs(e.target.value)}
+                          placeholder="Specify custom storage/RAM (e.g. 128GB + 8GB RAM...)"
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium text-slate-900 text-xs placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
+                          autoFocus
+                        />
+                      )}
+                      {specs === '' && (
+                        <input
+                          type="text"
+                          value={specs}
+                          onChange={(e) => setSpecs(e.target.value)}
+                          placeholder="Type custom storage/specs (e.g. 128GB + 8GB RAM...)"
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium text-slate-900 text-xs placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
+                          autoFocus
+                        />
+                      )}
                     </div>
                   )}
 
+                  {/* Laptop RAM & Storage Specs Selector */}
                   {mode === 'PHONE' && deviceCategory === 'LAPTOP' && (
                     <div className="space-y-2">
-                      <div className="flex flex-wrap gap-2">
+                      {/* Mobile Dropdown */}
+                      <div className="block sm:hidden">
+                        <select
+                          value={LAPTOP_SPECS_PRESETS.includes(specs) ? specs : 'CUSTOM'}
+                          onChange={(e) => {
+                            if (e.target.value === 'CUSTOM') {
+                              setSpecs('');
+                            } else {
+                              setSpecs(e.target.value);
+                            }
+                          }}
+                          className="w-full h-8 px-2.5 py-1 rounded-lg border border-slate-200 bg-white font-bold text-slate-800 text-[10px] focus:outline-none focus:border-teal-600 shadow-xs"
+                        >
+                          {LAPTOP_SPECS_PRESETS.map((st) => (
+                            <option key={st} value={st}>
+                              {st}
+                            </option>
+                          ))}
+                          <option value="CUSTOM">Custom Specs / Processor...</option>
+                        </select>
+                      </div>
+
+                      {/* Desktop Chips */}
+                      <div className="hidden sm:flex flex-wrap gap-2">
                         {LAPTOP_SPECS_PRESETS.map((st) => (
                           <button
                             key={st}
@@ -843,13 +905,28 @@ export default function RegisterPhonePage() {
                           </button>
                         ))}
                       </div>
-                      <input
-                        type="text"
-                        value={specs}
-                        onChange={(e) => setSpecs(e.target.value)}
-                        placeholder="Or type custom specs (e.g. Intel Core i7 / 16GB RAM / 512GB SSD, M3 Pro / 18GB RAM...)"
-                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-900 text-xs focus:outline-none focus:border-teal-600"
-                      />
+
+                      {/* Custom Input for Laptop */}
+                      {(!LAPTOP_SPECS_PRESETS.includes(specs) && specs !== '') && (
+                        <input
+                          type="text"
+                          value={specs}
+                          onChange={(e) => setSpecs(e.target.value)}
+                          placeholder="Specify custom laptop specs (e.g. Core i7 / 16GB / 512GB SSD...)"
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium text-slate-900 text-xs placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
+                          autoFocus
+                        />
+                      )}
+                      {specs === '' && (
+                        <input
+                          type="text"
+                          value={specs}
+                          onChange={(e) => setSpecs(e.target.value)}
+                          placeholder="Type custom specs (e.g. Core i7 / 16GB RAM / 512GB SSD...)"
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium text-slate-900 text-xs placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
+                          autoFocus
+                        />
+                      )}
                     </div>
                   )}
 
@@ -859,7 +936,7 @@ export default function RegisterPhonePage() {
                       value={specs}
                       onChange={(e) => setSpecs(e.target.value)}
                       placeholder="e.g. 20,000mAh (22.5W Fast Charge), TWS Wireless ANC, 1.5m Black..."
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-medium text-slate-900 focus:outline-none focus:border-teal-600"
+                      className="w-full px-3.5 py-2.5 sm:px-4 sm:py-3 rounded-xl border border-slate-200 bg-white font-medium text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 text-xs"
                     />
                   )}
                 </div>
@@ -891,7 +968,7 @@ export default function RegisterPhonePage() {
                   <select
                     value={warrantyMonths}
                     onChange={(e) => setWarrantyMonths(Number(e.target.value))}
-                    className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-[11px] sm:text-xs focus:outline-none focus:border-teal-600 shadow-xs"
                   >
                     <option value={0}>No Warranty</option>
                     <option value={1}>1 Month Warranty</option>
@@ -937,7 +1014,7 @@ export default function RegisterPhonePage() {
                           value={lockedCarrier}
                           onChange={(e) => setLockedCarrier(e.target.value)}
                           placeholder="e.g. AT&T, Verizon, T-Mobile"
-                          className="w-full mt-1.5 px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50/50 font-bold text-slate-900 focus:outline-none text-xs"
+                          className="w-full mt-1.5 px-3.5 py-2 rounded-xl border border-amber-300 bg-amber-50/50 font-bold text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none text-xs"
                         />
                       )}
                     </div>
@@ -947,7 +1024,7 @@ export default function RegisterPhonePage() {
                       <select
                         value={activationStatus}
                         onChange={(e) => setActivationStatus(e.target.value as any)}
-                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
+                        className="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-[11px] sm:text-xs focus:outline-none focus:border-teal-600 shadow-xs"
                       >
                         <option value="READY_FOR_SETUP">Ready for Setup (iCloud/Google FRP Removed)</option>
                         <option value="ACTIVATED">Activated (Account Linked / In-Use)</option>
@@ -1002,7 +1079,7 @@ export default function RegisterPhonePage() {
                     )}
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-3.5 text-slate-400 font-extrabold text-sm">₦</span>
+                    <span className="absolute left-3.5 top-2.5 sm:top-3 text-slate-400 font-extrabold text-sm">₦</span>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -1012,7 +1089,7 @@ export default function RegisterPhonePage() {
                         setPurchasePrice(raw);
                       }}
                       placeholder="e.g. 150,000"
-                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
+                      className="w-full pl-8 pr-4 py-2 sm:py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-xs sm:text-sm placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 shadow-xs"
                     />
                   </div>
                 </div>
@@ -1027,7 +1104,7 @@ export default function RegisterPhonePage() {
                     )}
                   </div>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-3.5 text-slate-400 font-extrabold text-sm">₦</span>
+                    <span className="absolute left-3.5 top-2.5 sm:top-3 text-slate-400 font-extrabold text-sm">₦</span>
                     <input
                       type="text"
                       inputMode="decimal"
@@ -1037,7 +1114,7 @@ export default function RegisterPhonePage() {
                         setSellingPrice(raw);
                       }}
                       placeholder="e.g. 250,000"
-                      className="w-full pl-8 pr-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600"
+                      className="w-full pl-8 pr-4 py-2 sm:py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 text-xs sm:text-sm placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 shadow-xs"
                     />
                   </div>
                 </div>
@@ -1050,7 +1127,7 @@ export default function RegisterPhonePage() {
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     placeholder="Add details about packaging, color, battery health, or included cables..."
-                    className="w-full px-4 py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 focus:outline-none focus:border-teal-600 resize-none"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-medium text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 resize-none"
                   />
                 </div>
               </div>

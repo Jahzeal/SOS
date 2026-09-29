@@ -54,6 +54,12 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
+      .catch(() => {
+        return caches.match(event.request);
+      })
+  );
+});
+
 // Message Event (Client-driven skipWaiting & cache clear)
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
@@ -65,4 +71,3 @@ self.addEventListener('message', (event) => {
     });
   }
 });
-

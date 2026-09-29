@@ -41,8 +41,8 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-slate-50 text-slate-900 antialiased min-h-screen">
+    <html lang="en" suppressHydrationWarning>
+      <body className="bg-slate-50 text-slate-900 antialiased min-h-screen" suppressHydrationWarning>
         <NetworkStatusBanner />
         <PwaRegister />
         <Providers>{children}</Providers>
