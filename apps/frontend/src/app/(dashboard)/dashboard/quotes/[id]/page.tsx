@@ -421,7 +421,7 @@ export default function QuoteDetailPage() {
           </div>
 
           {/* Dual Metadata Boxes */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 print:grid-cols-2">
             {/* Customer Box */}
             <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
               <p className="font-black text-xs tracking-tight uppercase" style={{ color: accentColor }}>
@@ -607,7 +607,7 @@ export default function QuoteDetailPage() {
           )}
 
           {/* Totals & Remittance Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start pt-2">
+          <div className="grid grid-cols-2 gap-4 items-start pt-2 print:grid-cols-2">
             {/* Bank Remittance Instructions */}
             {quote.business?.bankName && quote.business?.accountNumber ? (
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-1 text-xs">

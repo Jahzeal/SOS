@@ -95,7 +95,7 @@ export function A4SalesReceipt({ data, id = 'printable-a4-receipt' }: { data: A4
       </div>
 
       {/* Dual Info Boxes: Store Details Left, Billed To Right */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-2 gap-4 print:grid-cols-2">
         {/* Left Box: Issued By */}
         <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block border-b border-slate-200/80 pb-1">
@@ -172,7 +172,7 @@ export function A4SalesReceipt({ data, id = 'printable-a4-receipt' }: { data: A4
       </div>
 
       {/* Bottom Summary: Policy Left, Financial Right */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2 items-start">
+      <div className="grid grid-cols-2 gap-6 pt-2 items-start print:grid-cols-2">
         {/* Policy Remarks */}
         <div className="space-y-1.5 text-[11px] text-slate-500">
           <p className="font-extrabold text-slate-900 text-xs">Policy Remarks & Guarantee:</p>

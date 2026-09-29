@@ -1126,7 +1126,7 @@ export default function InvoicesRegistryPage() {
               <div className="border-t border-slate-200" />
 
               {/* Dual Box Layout */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-stretch">
+              <div className="grid grid-cols-2 gap-4 items-stretch print:grid-cols-2">
                 {/* Left: Invoice To */}
                 <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
                   <p className="font-black text-blue-700 text-xs">Invoice To:</p>
