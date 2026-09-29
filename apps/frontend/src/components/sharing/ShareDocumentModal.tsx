@@ -54,15 +54,26 @@ export function ShareDocumentModal({ isOpen, onClose, document: doc }: ShareDocu
   
   const [isSharingFile, setIsSharingFile] = useState(false);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
-  const [copiedText, setCopiedText] = useState(false);
   const [emailSuccessMsg, setEmailSuccessMsg] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+
+  const [supportsNativeFileShare, setSupportsNativeFileShare] = useState(false);
+
+  useEffect(() => {
+    if (typeof navigator !== 'undefined' && navigator.canShare) {
+      try {
+        const testFile = new File([''], 'test.pdf', { type: 'application/pdf' });
+        setSupportsNativeFileShare(navigator.canShare({ files: [testFile] }));
+      } catch (e) {
+        setSupportsNativeFileShare(false);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     if (doc) {
       setPhoneInput(doc.customerPhone || '');
       setEmailInput(doc.customerEmail || '');
-      setCopiedText(false);
       setEmailSuccessMsg(null);
       setActionError(null);
     }
@@ -129,15 +140,16 @@ Thank you for your business!`;
       const filename = getPdfFilename();
       const file = await api.fetchPdfFile(downloadUrl, filename);
 
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      // On mobile browsers supporting file sharing, sharing files only (without conflicting text)
+      // allows WhatsApp to directly attach the PDF document into the chat.
+      if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: `${docLabel} #${doc.docNumber}`,
-          text: `Official ${docLabel} #${doc.docNumber} from ${storeName}`,
+          title: filename,
         });
       } else {
-        // Fallback for browsers that do not support files in navigator.share:
-        // Download PDF file & open WhatsApp Web/App
+        // Desktop / Browser fallback:
+        // Automatically download the PDF to PC and open WhatsApp Web with customer details
         const url = window.URL.createObjectURL(file);
         const a = document.createElement('a');
         a.href = url;
@@ -151,7 +163,7 @@ Thank you for your business!`;
       }
     } catch (err: any) {
       if (err.name !== 'AbortError') {
-        setActionError(err.message || 'Unable to share PDF file. Opening WhatsApp chat instead.');
+        setActionError(err.message || 'Unable to share PDF file directly. Opening WhatsApp chat.');
         handleOpenWhatsAppChat();
       }
     } finally {
@@ -197,15 +209,6 @@ Thank you for your business!`;
       setActionError(err.message || 'Failed to dispatch email statement.');
     } finally {
       setIsSendingEmail(false);
-    }
-  };
-
-  // 4. Copy Formatted Message to Clipboard
-  const handleCopyText = () => {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(whatsappMessageText);
-      setCopiedText(true);
-      setTimeout(() => setCopiedText(false), 2500);
     }
   };
 
@@ -309,34 +312,47 @@ Thank you for your business!`;
               </div>
 
               {/* Action Buttons */}
-              <div className="space-y-2 pt-1">
-                <button
-                  type="button"
-                  onClick={handleSharePdfFile}
-                  disabled={isSharingFile}
-                  className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-60"
-                >
-                  {isSharingFile ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Preparing PDF File...</span>
-                    </>
-                  ) : (
-                    <>
-                      <Share2 className="w-4 h-4" />
-                      <span>Share PDF File Directly to WhatsApp</span>
-                    </>
-                  )}
-                </button>
+              <div className="space-y-2.5 pt-1">
+                {supportsNativeFileShare ? (
+                  <button
+                    type="button"
+                    onClick={handleSharePdfFile}
+                    disabled={isSharingFile}
+                    className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    {isSharingFile ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Preparing PDF File...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Smartphone className="w-4 h-4" />
+                        <span>Share PDF File to WhatsApp</span>
+                      </>
+                    )}
+                  </button>
+                ) : (
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <a
+                      href={getPdfDownloadUrl()}
+                      download={getPdfFilename()}
+                      className="py-3 px-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition shadow-sm cursor-pointer"
+                    >
+                      <Download className="w-4 h-4" />
+                      <span>Save PDF to Device</span>
+                    </a>
 
-                <button
-                  type="button"
-                  onClick={handleOpenWhatsAppChat}
-                  className="w-full py-2.5 px-4 rounded-2xl border border-emerald-200 bg-emerald-50/50 hover:bg-emerald-50 text-emerald-800 font-bold text-xs flex items-center justify-center gap-2 transition cursor-pointer"
-                >
-                  <ExternalLink className="w-3.5 h-3.5" />
-                  <span>Open WhatsApp Chat with Statement Message</span>
-                </button>
+                    <button
+                      type="button"
+                      onClick={handleOpenWhatsAppChat}
+                      className="py-3 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm shadow-emerald-600/20 transition cursor-pointer"
+                    >
+                      <ExternalLink className="w-4 h-4" />
+                      <span>Open WhatsApp Web</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Message Preview */}
@@ -396,24 +412,14 @@ Thank you for your business!`;
             </div>
           )}
 
-          {/* Bottom Utility Bar (Copy & Download) */}
+          {/* Bottom Utility Bar */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
             <button
               type="button"
-              onClick={handleCopyText}
-              className="px-3 py-2 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-100 transition flex items-center gap-1.5 cursor-pointer"
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer"
             >
-              {copiedText ? (
-                <>
-                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                  <span className="text-emerald-700">Copied!</span>
-                </>
-              ) : (
-                <>
-                  <Copy className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Copy Text</span>
-                </>
-              )}
+              Close
             </button>
 
             <a
@@ -421,7 +427,7 @@ Thank you for your business!`;
               target="_blank"
               rel="noopener noreferrer"
               download={getPdfFilename()}
-              className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition flex items-center gap-1.5 cursor-pointer shadow-xs"
             >
               <Download className="w-3.5 h-3.5 text-slate-500" />
               <span>Download PDF</span>

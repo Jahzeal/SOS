@@ -96,9 +96,9 @@ const menuItems: MenuItem[] = [
     href: '/dashboard/templates',
   },
   {
-    name: 'Pricing & Plans',
+    name: 'Subscription & Plans',
     icon: CreditCard,
-    href: '/pricing',
+    href: '/dashboard/subscription',
   },
   {
     name: 'Settings',

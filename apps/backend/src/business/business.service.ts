@@ -9,6 +9,7 @@ export class BusinessService {
     const business = await this.prisma.business.findUnique({
       where: { id: businessId },
       include: {
+        subscriptionPlan: true,
         _count: {
           select: {
             users: true,

@@ -35,12 +35,12 @@ import { ImeiCameraScanner } from '@/components/scanner/ImeiCameraScanner';
 import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 type RegistrationMode = 'PHONE' | 'ITEM';
+type DeviceSubCategory = 'PHONE_TABLET' | 'LAPTOP';
 
 const POPULAR_ITEM_TYPES = [
   'Power Bank',
   'Earphones / AirPods / Audio',
   'Fast Charger & Adapter',
-  'Laptop & Tablet',
   'Charging Cable & Hub',
   'Case & Screen Guard',
   'Smartwatch & Wearable',
@@ -54,10 +54,28 @@ const PHONE_BRANDS = [
   'Nokia', 'Motorola', 'Sony', 'Honor',
 ];
 
+const LAPTOP_BRANDS = [
+  'Apple', 'HP', 'Dell', 'Lenovo', 'Asus', 'Acer',
+  'Microsoft', 'Toshiba', 'MSI', 'Samsung', 'Huawei', 'Razer',
+];
+
 const ACCESSORY_BRANDS = [
   'Oraimo', 'Anker', 'Apple', 'Samsung', 'Baseus', 'New-Age',
   'Romoss', 'JBL', 'Sony', 'UGREEN', 'Zealot', 'Joyroom',
-  'Remax', 'LDNIO', 'Xiaomi', 'HP', 'Dell', 'Lenovo', 'Generic / OEM',
+  'Remax', 'LDNIO', 'Xiaomi', 'Generic / OEM',
+];
+
+const PHONE_SPECS_PRESETS = ['32 GB', '64 GB', '128 GB', '256 GB', '512 GB', '1 TB'];
+
+const LAPTOP_SPECS_PRESETS = [
+  '8GB RAM / 256GB SSD',
+  '8GB RAM / 512GB SSD',
+  '16GB RAM / 256GB SSD',
+  '16GB RAM / 512GB SSD',
+  '16GB RAM / 1TB SSD',
+  '32GB RAM / 512GB SSD',
+  '32GB RAM / 1TB SSD',
+  '64GB RAM / 2TB SSD',
 ];
 
 const formatNumberWithCommas = (val: string | number | null | undefined): string => {
@@ -75,6 +93,9 @@ export default function RegisterPhonePage() {
 
   // Registration Mode: 'PHONE' or 'ITEM'
   const [mode, setMode] = useState<RegistrationMode>('PHONE');
+
+  // Device Sub-Category (when Mode is PHONE/SERIALIZED): 'PHONE_TABLET' or 'LAPTOP'
+  const [deviceCategory, setDeviceCategory] = useState<DeviceSubCategory>('PHONE_TABLET');
 
   // Page Step State: 1 = Identify, 2 = Specs & Details, 3 = Summary
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -149,10 +170,12 @@ export default function RegisterPhonePage() {
     return () => clearTimeout(timer);
   }, [brand, model, specs]);
 
-  const activeBrands = mode === 'PHONE' ? PHONE_BRANDS : ACCESSORY_BRANDS;
+  const activeBrands = mode === 'PHONE'
+    ? (deviceCategory === 'PHONE_TABLET' ? PHONE_BRANDS : LAPTOP_BRANDS)
+    : ACCESSORY_BRANDS;
 
   const generateSku = () => {
-    const prefix = mode === 'PHONE' ? 'PH' : 'SKU';
+    const prefix = mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'PC' : 'PH') : 'SKU';
     const randomCode = Math.floor(100000 + Math.random() * 900000);
     const sku = `${prefix}-${randomCode}`;
     setSerialNumber(sku);
@@ -163,14 +186,15 @@ export default function RegisterPhonePage() {
 
   const handleNextToStep2 = async () => {
     setErrorMessage(null);
-    if (mode === 'PHONE' && !imei.trim()) {
-      setErrorMessage('Please enter or scan a valid 15-digit IMEI for phones.');
+    if (mode === 'PHONE' && !imei.trim() && !serialNumber.trim()) {
+      setErrorMessage('Please enter or scan an IMEI or Serial Number.');
       return;
     }
 
-    if (imei.trim()) {
+    const checkId = imei.trim() || serialNumber.trim();
+    if (checkId) {
       try {
-        const checkResult = await api.checkImei(imei.trim());
+        const checkResult = await api.checkImei(checkId);
         if (checkResult.exists) {
           setShowDuplicateWarning(true);
           setDuplicateDetails(checkResult.record);
@@ -188,7 +212,7 @@ export default function RegisterPhonePage() {
   const handleNextToStep3 = () => {
     setErrorMessage(null);
     if (!brand.trim()) {
-      setErrorMessage('Please specify the brand.');
+      setErrorMessage('Please specify the brand (or type a custom brand).');
       return;
     }
     if (!model.trim()) {
@@ -222,7 +246,7 @@ export default function RegisterPhonePage() {
 
     // For general items, combine itemType and specs in storageCapacity for seamless POS & invoice display
     const finalSpecs = mode === 'PHONE'
-      ? (specs || '128 GB')
+      ? (specs || (deviceCategory === 'LAPTOP' ? '16GB RAM / 512GB SSD' : '128 GB'))
       : [itemType, specs].filter(Boolean).join(' • ');
 
     try {
@@ -233,9 +257,9 @@ export default function RegisterPhonePage() {
         model: model.trim(),
         storageCapacity: finalSpecs,
         condition: conditionMap[condition] || 'NEW',
-        carrierStatus: mode === 'PHONE' ? (carrierStatus as any) : 'UNLOCKED',
-        lockedCarrier: mode === 'PHONE' && carrierStatus === 'CARRIER_LOCKED' ? lockedCarrier.trim() : undefined,
-        activationStatus: mode === 'PHONE' ? (activationStatus as any) : 'READY_FOR_SETUP',
+        carrierStatus: mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' ? (carrierStatus as any) : 'UNLOCKED',
+        lockedCarrier: mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && carrierStatus === 'CARRIER_LOCKED' ? lockedCarrier.trim() : undefined,
+        activationStatus: mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' ? (activationStatus as any) : 'READY_FOR_SETUP',
         warrantyDurationMonths: warrantyMonths,
         purchasePrice: purchasePrice ? parseFloat(purchasePrice.toString().replace(/,/g, '')) : undefined,
         sellingPrice: sellingPrice ? parseFloat(sellingPrice.toString().replace(/,/g, '')) : undefined,
@@ -246,7 +270,9 @@ export default function RegisterPhonePage() {
         imei: registered.imei1 || registered.serialNumber || 'N/A',
         model: registered.model,
         brand: registered.brand,
-        modeName: mode === 'PHONE' ? 'Phone / Device' : itemType || 'General Item',
+        modeName: mode === 'PHONE'
+          ? (deviceCategory === 'LAPTOP' ? 'Laptop / Computer' : 'Phone / Tablet')
+          : itemType || 'General Item',
         specs: registered.storageCapacity || finalSpecs,
         condition: registered.condition || condition,
         sellingPrice: registered.sellingPrice || sellingPrice,
@@ -316,8 +342,8 @@ export default function RegisterPhonePage() {
               <Smartphone className="w-4 h-4" />
             </div>
             <div className="text-left">
-              <span className="block font-black">Phone / Cellular Device</span>
-              <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">15-Digit IMEI Tracked</span>
+              <span className="block font-black">Phone, Laptop & Serialized Device</span>
+              <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">Phones, Laptops, Tablets (IMEI & S/N Tracked)</span>
             </div>
           </button>
 
@@ -340,7 +366,7 @@ export default function RegisterPhonePage() {
             </div>
             <div className="text-left">
               <span className="block font-black">General Item / Accessory</span>
-              <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">Power banks, ear pieces, chargers, laptops...</span>
+              <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">Power banks, ear pieces, chargers, cables, cases...</span>
             </div>
           </button>
         </div>
@@ -550,14 +576,20 @@ export default function RegisterPhonePage() {
               <div className="flex items-center justify-between border-b border-slate-100 pb-4 gap-2">
                 <div className="flex items-center gap-2.5 sm:gap-3 justify-start text-left">
                   <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-200 flex items-center justify-center font-bold shadow-sm shrink-0">
-                    {mode === 'PHONE' ? <Smartphone className="w-4 h-4" /> : <Package className="w-4 h-4" />}
+                    {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? <Laptop className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />) : <Package className="w-4 h-4" />}
                   </div>
                   <div className="text-left">
                     <h2 className="text-base sm:text-xl font-extrabold text-slate-900 leading-tight">
-                      Step 2: {mode === 'PHONE' ? 'Phone Specifications' : 'Product Information & Pricing'}
+                      Step 2: {mode === 'PHONE'
+                        ? (deviceCategory === 'LAPTOP' ? 'Laptop & Computer Specifications' : 'Phone & Tablet Specifications')
+                        : 'Product Information & Pricing'}
                     </h2>
                     <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
-                      Configure category type, brand, model, specifications, and retail pricing
+                      {mode === 'PHONE'
+                        ? (deviceCategory === 'LAPTOP'
+                            ? 'Configure laptop brand, model, RAM/SSD specifications, condition, and retail pricing'
+                            : 'Configure brand, model, storage capacity, condition, and retail pricing')
+                        : 'Configure category type, brand, model, specifications, and retail pricing'}
                     </p>
                   </div>
                 </div>
@@ -568,6 +600,63 @@ export default function RegisterPhonePage() {
                   <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit Step 1</span>
                 </button>
               </div>
+
+              {/* Sub-Category Toggle for Serialized Mode: Phone/Tablet vs Laptop */}
+              {mode === 'PHONE' && (
+                <div className="bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeviceCategory('PHONE_TABLET');
+                        if (LAPTOP_SPECS_PRESETS.includes(specs)) {
+                          setSpecs('128 GB');
+                        }
+                      }}
+                      className={`flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all ${
+                        deviceCategory === 'PHONE_TABLET'
+                          ? 'bg-white text-slate-950 shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                      }`}
+                    >
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                        deviceCategory === 'PHONE_TABLET' ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        <Smartphone className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="text-left">
+                        <span className="block font-black">Phone / Tablet / iPad</span>
+                        <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">iPhones, Android, iPads, Tabs</span>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeviceCategory('LAPTOP');
+                        if (PHONE_SPECS_PRESETS.includes(specs) || !specs) {
+                          setSpecs('16GB RAM / 512GB SSD');
+                        }
+                      }}
+                      className={`flex items-center justify-center gap-2.5 py-2.5 px-3 rounded-xl text-xs font-extrabold transition-all ${
+                        deviceCategory === 'LAPTOP'
+                          ? 'bg-white text-slate-950 shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                      }`}
+                    >
+                      <div className={`w-6 h-6 rounded-lg flex items-center justify-center shrink-0 ${
+                        deviceCategory === 'LAPTOP' ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        <Laptop className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="text-left">
+                        <span className="block font-black">Laptop / MacBook / PC</span>
+                        <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">MacBooks, HP, Dell, ThinkPads</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* General Item Type Quick Selector */}
               {mode === 'ITEM' && (
@@ -638,14 +727,18 @@ export default function RegisterPhonePage() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <label className="block font-bold text-slate-700 uppercase tracking-wider">Brand *</label>
-                    <span className="text-[11px] text-slate-500 font-medium">Type any brand or pick below</span>
+                    <span className="text-[11px] text-slate-500 font-medium">Type custom brand or pick below</span>
                   </div>
                   <input
                     type="text"
                     list="brand-suggestions"
                     value={brand}
                     onChange={(e) => setBrand(e.target.value)}
-                    placeholder={mode === 'PHONE' ? "e.g. Apple, Samsung, Google, Xiaomi, Custom..." : "e.g. Oraimo, Anker, Baseus, Sony, Generic..."}
+                    placeholder={
+                      mode === 'PHONE'
+                        ? (deviceCategory === 'LAPTOP' ? "e.g. Apple, HP, Dell, Lenovo, Asus, Custom..." : "e.g. Apple, Samsung, Google, Xiaomi, Custom...")
+                        : "e.g. Oraimo, Anker, Baseus, Sony, Generic..."
+                    }
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600 shadow-subtle text-xs"
                   />
                   <datalist id="brand-suggestions">
@@ -671,7 +764,7 @@ export default function RegisterPhonePage() {
                   </div>
                 </div>
 
-                {/* Model / Title Input */}
+                {/* Model / Title Input (Allows Any Custom Name) */}
                 <div className="space-y-1.5">
                   <label className="block font-bold text-slate-700 uppercase tracking-wider">
                     {mode === 'PHONE' ? 'Model Name *' : 'Product Title / Model Name *'}
@@ -682,7 +775,9 @@ export default function RegisterPhonePage() {
                     onChange={(e) => setModel(e.target.value)}
                     placeholder={
                       mode === 'PHONE'
-                        ? 'e.g. iPhone 15 Pro Max, Galaxy S24 Ultra'
+                        ? (deviceCategory === 'LAPTOP'
+                            ? 'e.g. MacBook Pro M3 14", HP EliteBook 840 G8, ThinkPad X1'
+                            : 'e.g. iPhone 15 Pro Max, Galaxy S24 Ultra, iPad Pro 11"')
                         : 'e.g. Toast 10 Byte 20000mAh, FreePods 4 ANC, 65W GaN Charger'
                     }
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 focus:outline-none focus:border-teal-600 shadow-subtle text-xs"
@@ -690,33 +785,80 @@ export default function RegisterPhonePage() {
                 </div>
 
                 {/* Specifications / Storage / Capacity */}
-                <div className="space-y-1.5 md:col-span-2">
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider">
-                    {mode === 'PHONE' ? 'Internal Storage Capacity' : 'Specifications / Capacity / Variant'}
-                  </label>
-                  {mode === 'PHONE' ? (
-                    <div className="flex flex-wrap gap-2">
-                      {['32 GB', '64 GB', '128 GB', '256 GB', '512 GB', '1 TB'].map((st) => (
-                        <button
-                          key={st}
-                          type="button"
-                          onClick={() => setSpecs(st)}
-                          className={`px-3.5 py-2.5 rounded-xl text-xs font-bold transition ${
-                            (specs || '128 GB') === st
-                              ? 'bg-teal-50 text-teal-700 border-2 border-teal-600 shadow-xs'
-                              : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
-                          }`}
-                        >
-                          {st}
-                        </button>
-                      ))}
+                <div className="space-y-2 md:col-span-2">
+                  <div className="flex items-center justify-between">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider">
+                      {mode === 'PHONE'
+                        ? (deviceCategory === 'LAPTOP' ? 'RAM, Storage & Hardware Specs' : 'Internal Storage Capacity')
+                        : 'Specifications / Capacity / Variant'}
+                    </label>
+                    {mode === 'PHONE' && (
+                      <span className="text-[11px] text-slate-500 font-medium">Pick preset or type custom below</span>
+                    )}
+                  </div>
+
+                  {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {PHONE_SPECS_PRESETS.map((st) => (
+                          <button
+                            key={st}
+                            type="button"
+                            onClick={() => setSpecs(st)}
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                              (specs || '128 GB') === st
+                                ? 'bg-teal-50 text-teal-700 border-2 border-teal-600 shadow-xs'
+                                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            {st}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        type="text"
+                        value={specs}
+                        onChange={(e) => setSpecs(e.target.value)}
+                        placeholder="Or type custom storage/RAM (e.g. 128GB + 8GB RAM, 256GB Dual SIM...)"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-900 text-xs focus:outline-none focus:border-teal-600"
+                      />
                     </div>
-                  ) : (
+                  )}
+
+                  {mode === 'PHONE' && deviceCategory === 'LAPTOP' && (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {LAPTOP_SPECS_PRESETS.map((st) => (
+                          <button
+                            key={st}
+                            type="button"
+                            onClick={() => setSpecs(st)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                              specs === st
+                                ? 'bg-teal-50 text-teal-700 border-2 border-teal-600 shadow-xs'
+                                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                            }`}
+                          >
+                            {st}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        type="text"
+                        value={specs}
+                        onChange={(e) => setSpecs(e.target.value)}
+                        placeholder="Or type custom specs (e.g. Intel Core i7 / 16GB RAM / 512GB SSD, M3 Pro / 18GB RAM...)"
+                        className="w-full px-3.5 py-2 rounded-xl border border-slate-200 bg-white font-medium text-slate-900 text-xs focus:outline-none focus:border-teal-600"
+                      />
+                    </div>
+                  )}
+
+                  {mode === 'ITEM' && (
                     <input
                       type="text"
                       value={specs}
                       onChange={(e) => setSpecs(e.target.value)}
-                      placeholder="e.g. 20,000mAh (22.5W Fast Charge), TWS Wireless ANC, 512GB SSD / 16GB RAM, 1.5m Black..."
+                      placeholder="e.g. 20,000mAh (22.5W Fast Charge), TWS Wireless ANC, 1.5m Black..."
                       className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-white font-medium text-slate-900 focus:outline-none focus:border-teal-600"
                     />
                   )}
@@ -761,7 +903,7 @@ export default function RegisterPhonePage() {
                 </div>
 
                 {/* Phone-Specific Carrier & Activation Fields */}
-                {mode === 'PHONE' && (
+                {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
                   <>
                     <div className="space-y-1.5">
                       <label className="block font-bold text-slate-700 uppercase tracking-wider">Carrier Lock Status</label>
@@ -961,8 +1103,8 @@ export default function RegisterPhonePage() {
                   <div>
                     <span className="text-slate-500 block uppercase font-bold text-[10px]">Type</span>
                     <span className="font-extrabold text-teal-700 text-sm flex items-center gap-1.5 mt-0.5">
-                      {mode === 'PHONE' ? <Smartphone className="w-3.5 h-3.5" /> : <Package className="w-3.5 h-3.5" />}
-                      {mode === 'PHONE' ? 'Phone / Device' : itemType}
+                      {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? <Laptop className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />) : <Package className="w-3.5 h-3.5" />}
+                      {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'Laptop / PC' : 'Phone / Tablet') : itemType}
                     </span>
                   </div>
                   <div>
@@ -978,7 +1120,7 @@ export default function RegisterPhonePage() {
                   <div>
                     <span className="text-slate-500 block uppercase font-bold text-[10px]">Specifications</span>
                     <span className="font-bold text-slate-900 mt-0.5 block truncate">
-                      {mode === 'PHONE' ? (specs || '128 GB') : (specs || 'Standard')} • {condition}
+                      {mode === 'PHONE' ? (specs || (deviceCategory === 'LAPTOP' ? '16GB RAM / 512GB SSD' : '128 GB')) : (specs || 'Standard')} • {condition}
                     </span>
                   </div>
                 </div>
@@ -1044,7 +1186,7 @@ export default function RegisterPhonePage() {
               <div className="space-y-3 text-xs border-b border-slate-100 pb-4 font-medium">
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Item Type</span>
-                  <span className="font-bold text-teal-700">{mode === 'PHONE' ? 'Phone / Device' : itemType}</span>
+                  <span className="font-bold text-teal-700">{mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'Laptop / PC' : 'Phone / Tablet') : itemType}</span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-slate-500">Identifier / SKU</span>
