@@ -239,7 +239,7 @@ export default function BusinessDashboardPage() {
             </div>
           )}
           <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
-            <span className="px-1.5 py-0.2 bg-emerald-100 rounded text-[10px]">{metrics.profitMargin}% margin</span> Net profit realized
+            <span>{metrics.profitMargin}% margin</span> • <span>Net profit realized</span>
           </div>
         </div>
 
