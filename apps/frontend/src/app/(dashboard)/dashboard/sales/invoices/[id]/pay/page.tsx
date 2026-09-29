@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter, useParams } from 'next/navigation';
 import {
@@ -509,29 +510,32 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
         </div>
       )}
 
-      {/* Hidden Printable Invoice for Standard Clean A4 Page Output */}
-      <div id="printable-a4-invoice" className="hidden print:block">
-        <A4CommercialInvoice
-          id="printable-a4-invoice-content"
-          data={{
-            invoiceNumber: invoiceNum,
-            id: invoice.id,
-            createdAt: invoice.createdAt,
-            dueDate: invoice.dueDate,
-            paymentStatus: isSuccess ? (amountToPay >= remaining ? 'PAID' : 'PARTIALLY_PAID') : status,
-            paymentTerms: invoice.paymentTerms,
-            notes: invoice.notes,
-            totalAmount: total,
-            amountPaid: isSuccess ? paid + amountToPay : paid,
-            customerName: invoice.customer?.name,
-            customerPhone: invoice.customer?.phone,
-            customerEmail: invoice.customer?.email,
-            customerAddress: invoice.customer?.address,
-            business: invoice.business,
-            items: invoice.items || [],
-          }}
-        />
-      </div>
+      {/* Hidden Printable Invoice Portaled Directly to document.body for Guaranteed Clean A4 Output */}
+      {typeof document !== 'undefined' && createPortal(
+        <div id="printable-portal" className="hidden print:block">
+          <A4CommercialInvoice
+            id="printable-a4-invoice-content"
+            data={{
+              invoiceNumber: invoiceNum,
+              id: invoice.id,
+              createdAt: invoice.createdAt,
+              dueDate: invoice.dueDate,
+              paymentStatus: isSuccess ? (amountToPay >= remaining ? 'PAID' : 'PARTIALLY_PAID') : status,
+              paymentTerms: invoice.paymentTerms,
+              notes: invoice.notes,
+              totalAmount: total,
+              amountPaid: isSuccess ? paid + amountToPay : paid,
+              customerName: invoice.customer?.name,
+              customerPhone: invoice.customer?.phone,
+              customerEmail: invoice.customer?.email,
+              customerAddress: invoice.customer?.address,
+              business: invoice.business,
+              items: invoice.items || [],
+            }}
+          />
+        </div>,
+        document.body
+      )}
 
       {/* Global Print Styling */}
       <style jsx global>{`
@@ -547,28 +551,25 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
             height: auto !important;
             overflow: visible !important;
           }
-          body * {
-            visibility: hidden !important;
+          body > *:not(#printable-portal) {
+            display: none !important;
           }
-          #printable-a4-invoice,
-          #printable-a4-invoice * {
+          body > #printable-portal {
+            display: block !important;
+            position: static !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
             visibility: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          #printable-a4-invoice {
-            display: block !important;
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            border: none !important;
-            background: #ffffff !important;
-            z-index: 999999 !important;
+          body > #printable-portal * {
+            visibility: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>

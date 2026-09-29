@@ -581,15 +581,13 @@ export default function QuotesRegistryPage() {
                         >
                           View Details →
                         </Link>
-                        {!isConverted && (
-                          <button
-                            onClick={() => setQuoteToDelete(quote)}
-                            className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                            title="Delete Quote"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        )}
+                        <button
+                          onClick={() => setQuoteToDelete(quote)}
+                          className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition cursor-pointer"
+                          title="Delete Quotation"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -770,16 +768,14 @@ export default function QuotesRegistryPage() {
                               <Eye className="w-4 h-4" />
                             </Link>
 
-                            {/* Delete if not converted */}
-                            {!isConverted && (
-                              <button
-                                onClick={() => setQuoteToDelete(quote)}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                                title="Delete Quote"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            )}
+                            {/* Delete Button */}
+                            <button
+                              onClick={() => setQuoteToDelete(quote)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                              title="Delete Quotation"
+                            >
+                              <Trash2 className="w-4 h-4 text-slate-400 hover:text-rose-600" />
+                            </button>
                           </div>
                         </td>
                       </tr>

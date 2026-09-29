@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import {
   FileText,
@@ -1334,15 +1335,15 @@ export default function InvoicesRegistryPage() {
         </div>
       )}
 
-      {/* Hidden Printable Commercial Invoice for Standard Clean A4 Page Output */}
+      {/* Hidden Printable Commercial Invoice Portaled Directly to document.body for Guaranteed Clean A4 Output */}
       {(() => {
         const inv = invoiceToPrint || viewModalInvoice;
-        if (!inv) return null;
+        if (!inv || typeof document === 'undefined') return null;
 
         const bank = getInvoiceBankDetails(inv);
 
-        return (
-          <div id="printable-a4-invoice" className="hidden print:block">
+        return createPortal(
+          <div id="printable-portal" className="hidden print:block">
             <A4CommercialInvoice
               id="printable-a4-invoice-content"
               data={{
@@ -1374,7 +1375,8 @@ export default function InvoicesRegistryPage() {
                 items: inv.items || [],
               }}
             />
-          </div>
+          </div>,
+          document.body
         );
       })()}
 
@@ -1392,28 +1394,25 @@ export default function InvoicesRegistryPage() {
             height: auto !important;
             overflow: visible !important;
           }
-          body * {
-            visibility: hidden !important;
+          body > *:not(#printable-portal) {
+            display: none !important;
           }
-          #printable-a4-invoice,
-          #printable-a4-invoice * {
+          body > #printable-portal {
+            display: block !important;
+            position: static !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
             visibility: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          #printable-a4-invoice {
-            display: block !important;
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            border: none !important;
-            background: #ffffff !important;
-            z-index: 999999 !important;
+          body > #printable-portal * {
+            visibility: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>

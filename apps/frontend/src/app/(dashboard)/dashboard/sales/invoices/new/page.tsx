@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -1139,46 +1140,49 @@ export default function CreateInvoicePage() {
         </div>
       )}
 
-      {/* Hidden Printable Invoice for Standard Clean A4 Page Output */}
-      <div id="printable-a4-invoice" className="hidden print:block">
-        <A4CommercialInvoice
-          id="printable-a4-invoice-content"
-          data={{
-            invoiceNumber: createdInvoice?.invoiceNumber || 'INV/DRAFT',
-            id: createdInvoice?.id,
-            createdAt: issueDate,
-            dueDate: dueDate,
-            paymentStatus: invoicePaymentStatus,
-            paymentTerms:
-              paymentTerms === 'NET_7'
-                ? 'Net 7 Days'
-                : paymentTerms === 'NET_15'
-                ? 'Net 15 Days'
-                : paymentTerms === 'NET_30'
-                ? 'Net 30 Days'
-                : 'Due on Receipt',
-            notes: notes,
-            totalAmount: totalAmount,
-            customerName: customerName || 'Valued Customer',
-            customerPhone: customerPhone,
-            customerEmail: customerEmail,
-            customerAddress: billingAddress,
-            business: {
-              name: templateBank?.accountName || 'NoxGuarda Retail Store',
-              bankName: useCustomBank ? bankName : templateBank?.bankName || bankName,
-              accountNumber: useCustomBank ? accountNumber : templateBank?.accountNumber || accountNumber,
-              accountName: useCustomBank ? accountName : templateBank?.accountName || accountName,
-            },
-            items: items.map((it) => ({
-              description: it.description,
-              imei: it.imei,
-              quantity: it.quantity,
-              unitPrice: it.unitPrice,
-              totalPrice: it.unitPrice * it.quantity,
-            })),
-          }}
-        />
-      </div>
+      {/* Hidden Printable Invoice Portaled Directly to document.body for Guaranteed Clean A4 Output */}
+      {typeof document !== 'undefined' && createPortal(
+        <div id="printable-portal" className="hidden print:block">
+          <A4CommercialInvoice
+            id="printable-a4-invoice-content"
+            data={{
+              invoiceNumber: createdInvoice?.invoiceNumber || 'INV/DRAFT',
+              id: createdInvoice?.id,
+              createdAt: issueDate,
+              dueDate: dueDate,
+              paymentStatus: invoicePaymentStatus,
+              paymentTerms:
+                paymentTerms === 'NET_7'
+                  ? 'Net 7 Days'
+                  : paymentTerms === 'NET_15'
+                  ? 'Net 15 Days'
+                  : paymentTerms === 'NET_30'
+                  ? 'Net 30 Days'
+                  : 'Due on Receipt',
+              notes: notes,
+              totalAmount: totalAmount,
+              customerName: customerName || 'Valued Customer',
+              customerPhone: customerPhone,
+              customerEmail: customerEmail,
+              customerAddress: billingAddress,
+              business: {
+                name: templateBank?.accountName || 'NoxGuarda Retail Store',
+                bankName: useCustomBank ? bankName : templateBank?.bankName || bankName,
+                accountNumber: useCustomBank ? accountNumber : templateBank?.accountNumber || accountNumber,
+                accountName: useCustomBank ? accountName : templateBank?.accountName || accountName,
+              },
+              items: items.map((it) => ({
+                description: it.description,
+                imei: it.imei,
+                quantity: it.quantity,
+                unitPrice: it.unitPrice,
+                totalPrice: it.unitPrice * it.quantity,
+              })),
+            }}
+          />
+        </div>,
+        document.body
+      )}
 
       {/* Global Print Styling for Clean A4 Page Output */}
       <style jsx global>{`
@@ -1194,28 +1198,25 @@ export default function CreateInvoicePage() {
             height: auto !important;
             overflow: visible !important;
           }
-          body * {
-            visibility: hidden !important;
+          body > *:not(#printable-portal) {
+            display: none !important;
           }
-          #printable-a4-invoice,
-          #printable-a4-invoice * {
+          body > #printable-portal {
+            display: block !important;
+            position: static !important;
+            width: 100% !important;
+            height: auto !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
             visibility: visible !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          #printable-a4-invoice {
-            display: block !important;
-            position: absolute !important;
-            left: 0 !important;
-            top: 0 !important;
-            width: 100% !important;
-            max-width: 100% !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-shadow: none !important;
-            border: none !important;
-            background: #ffffff !important;
-            z-index: 999999 !important;
+          body > #printable-portal * {
+            visibility: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
         }
       `}</style>
