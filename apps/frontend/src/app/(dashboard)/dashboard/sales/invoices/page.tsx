@@ -30,12 +30,14 @@ import {
   Wallet,
   ArrowRight,
   Trash2,
+  Pencil,
 } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { useInvoices, useInventorySummary } from '@/hooks/useDashboardQueries';
+import { A4CommercialInvoice } from '@/components/invoice/A4CommercialInvoice';
 
 const getInvoiceBankDetails = (inv: any) => {
   if (!inv) return { bankName: '', accountNumber: '', accountName: '' };
@@ -69,6 +71,19 @@ export default function InvoicesRegistryPage() {
   const { data: summaryData } = useInventorySummary();
 
   const loading = loadingInvoices && invoices.length === 0;
+
+  // Print Isolated Invoice State
+  const [invoiceToPrint, setInvoiceToPrint] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (invoiceToPrint) {
+      const timer = setTimeout(() => {
+        window.print();
+        setInvoiceToPrint(null);
+      }, 200);
+      return () => clearTimeout(timer);
+    }
+  }, [invoiceToPrint]);
 
   // Delete Modal State
   const [invoiceToDelete, setInvoiceToDelete] = useState<any | null>(null);
@@ -175,6 +190,20 @@ export default function InvoicesRegistryPage() {
     window.print();
   };
 
+  const handlePrintInvoice = (inv: any) => {
+    setInvoiceToPrint(inv);
+  };
+
+  const handleQuickIssueDraft = async (inv: any) => {
+    try {
+      await api.updateInvoice(inv.id, { paymentStatus: 'PENDING' });
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+    } catch (err: any) {
+      alert(err.message || 'Failed to issue invoice.');
+    }
+  };
+
   const handleOpenEmailModal = (inv: any) => {
     setEmailModalInvoice(inv);
     setRecipientEmail(inv.customer?.email || '');
@@ -192,6 +221,17 @@ export default function InvoicesRegistryPage() {
 
     setIsSendingEmail(true);
     setEmailStatusMsg(null);
+
+    // If invoice is currently DRAFT, automatically activate it so customer doesn't see DRAFT
+    if (emailModalInvoice.paymentStatus === 'DRAFT') {
+      try {
+        await api.updateInvoice(emailModalInvoice.id, { paymentStatus: 'PENDING' });
+        queryClient.invalidateQueries({ queryKey: ['invoices'] });
+        queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
+      } catch (e) {
+        console.warn('Failed to activate draft status before sending:', e);
+      }
+    }
 
     const name = emailModalInvoice.customer?.name || 'Valued Customer';
     const invNum = emailModalInvoice.invoiceNumber || emailModalInvoice.receiptNumber || emailModalInvoice.id;
@@ -543,8 +583,17 @@ export default function InvoicesRegistryPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 text-xs">
-                    {status !== 'PAID' && (
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 text-xs flex-wrap">
+                    {status === 'DRAFT' && (
+                      <button
+                        onClick={() => handleQuickIssueDraft(inv)}
+                        className="px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition font-bold text-[11px] flex items-center gap-1 shadow-xs cursor-pointer"
+                        title="Issue Invoice"
+                      >
+                        <Share2 className="w-3.5 h-3.5 text-blue-600" /> Issue
+                      </button>
+                    )}
+                    {status !== 'PAID' && status !== 'DRAFT' && (
                       <button
                         onClick={() => handleOpenPaymentModal(inv)}
                         className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition font-bold text-[11px] flex items-center gap-1 shadow-xs cursor-pointer"
@@ -552,10 +601,22 @@ export default function InvoicesRegistryPage() {
                         <CreditCard className="w-3.5 h-3.5" /> Pay
                       </button>
                     )}
-                    <button onClick={handlePrint} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+                    <Link
+                      href={`/dashboard/sales/invoices/${inv.id}/edit`}
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5 text-slate-500" /> Edit
+                    </Link>
+                    <button
+                      onClick={() => handlePrintInvoice(inv)}
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    >
                       <Printer className="w-3.5 h-3.5" /> Print
                     </button>
-                    <button onClick={() => handleOpenEmailModal(inv)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer">
+                    <button
+                      onClick={() => handleOpenEmailModal(inv)}
+                      className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                    >
                       <Mail className="w-3.5 h-3.5" /> Send
                     </button>
                     <button
@@ -661,7 +722,17 @@ export default function InvoicesRegistryPage() {
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <div className="flex items-center justify-center gap-1.5 text-slate-400">
-                          {status !== 'PAID' && (
+                          {status === 'DRAFT' && (
+                            <button
+                              onClick={() => handleQuickIssueDraft(inv)}
+                              className="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300 border border-blue-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-xs"
+                              title="Issue Active Invoice"
+                            >
+                              <Share2 className="w-3.5 h-3.5 text-blue-600" />
+                              <span>Issue</span>
+                            </button>
+                          )}
+                          {status !== 'PAID' && status !== 'DRAFT' && (
                             <button
                               onClick={() => handleOpenPaymentModal(inv)}
                               className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 hover:border-emerald-300 border border-emerald-200 text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-xs"
@@ -671,6 +742,13 @@ export default function InvoicesRegistryPage() {
                               <span>Pay</span>
                             </button>
                           )}
+                          <Link
+                            href={`/dashboard/sales/invoices/${inv.id}/edit`}
+                            className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded transition cursor-pointer"
+                            title="Edit Invoice"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </Link>
                           <button
                             onClick={() => setViewModalInvoice(inv)}
                             className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded transition cursor-pointer"
@@ -679,9 +757,9 @@ export default function InvoicesRegistryPage() {
                             <Eye className="w-3.5 h-3.5" />
                           </button>
                           <button
-                            onClick={() => setViewModalInvoice(inv)}
+                            onClick={() => handlePrintInvoice(inv)}
                             className="p-1 hover:text-blue-600 hover:bg-blue-50 rounded transition cursor-pointer"
-                            title="Print Statement"
+                            title="Print Isolated Statement"
                           >
                             <Printer className="w-3.5 h-3.5" />
                           </button>
@@ -1122,6 +1200,13 @@ export default function InvoicesRegistryPage() {
                     <span>Record Payment</span>
                   </button>
                 )}
+                <Link
+                  href={`/dashboard/sales/invoices/${viewModalInvoice.id}/edit`}
+                  className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center gap-1.5 transition"
+                >
+                  <Pencil className="w-3.5 h-3.5 text-slate-600" />
+                  <span>Edit</span>
+                </Link>
                 <button
                   type="button"
                   onClick={() => {
@@ -1137,7 +1222,7 @@ export default function InvoicesRegistryPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => handlePrintInvoice(viewModalInvoice)}
                   className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm shadow-blue-500/20"
                 >
                   <Printer className="w-3.5 h-3.5" />
@@ -1157,12 +1242,14 @@ export default function InvoicesRegistryPage() {
             <div id="odoo-printable-invoice" className="p-6 sm:p-10 bg-white text-slate-900 font-sans space-y-6 text-xs">
               {/* Header Top: Store Details on Left, Logo on Right */}
               <div className="flex justify-between items-start gap-4">
-                <div className="space-y-0.5 text-slate-600 text-xs">
-                  <h2 className="font-black text-base text-slate-950">
+                <div className="space-y-0.5 text-slate-600 text-xs min-w-0">
+                  <h2 className="font-black text-base text-slate-950 break-words">
                     {viewModalInvoice.business?.name || 'Verified Retail Store'}
                   </h2>
-                  {viewModalInvoice.business?.address && <p>{viewModalInvoice.business.address}</p>}
-                  <p>
+                  {viewModalInvoice.business?.address && (
+                    <p className="break-words whitespace-normal">{viewModalInvoice.business.address}</p>
+                  )}
+                  <p className="break-words">
                     {viewModalInvoice.business?.phone ? `Mobile: ${viewModalInvoice.business.phone}` : ''}
                     {viewModalInvoice.business?.phone && viewModalInvoice.business?.email ? ' • ' : ''}
                     {viewModalInvoice.business?.email ? `Email: ${viewModalInvoice.business.email}` : ''}
@@ -1170,7 +1257,7 @@ export default function InvoicesRegistryPage() {
                 </div>
 
                 {viewModalInvoice.business?.logoUrl ? (
-                  <div className="h-12 max-w-[140px] flex items-center justify-end">
+                  <div className="h-12 max-w-[140px] flex items-center justify-end shrink-0">
                     <img
                       src={viewModalInvoice.business.logoUrl}
                       alt="Store Logo"
@@ -1178,7 +1265,7 @@ export default function InvoicesRegistryPage() {
                     />
                   </div>
                 ) : (
-                  <div className="text-right flex items-center gap-1.5 justify-end">
+                  <div className="text-right flex items-center gap-1.5 justify-end shrink-0">
                     <div className="w-8 h-8 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs">
                       {(viewModalInvoice.business?.name || 'NG').slice(0, 2).toUpperCase()}
                     </div>
@@ -1194,18 +1281,18 @@ export default function InvoicesRegistryPage() {
               {/* Dual Box Layout */}
               <div className="grid grid-cols-2 gap-4 items-stretch print:grid-cols-2">
                 {/* Left: Invoice To */}
-                <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1">
+                <div className="p-4 rounded-xl bg-slate-50/80 border border-slate-200 space-y-1 min-w-0 overflow-hidden">
                   <p className="font-black text-blue-700 text-xs">Invoice To:</p>
-                  <p className="font-extrabold text-slate-900 text-sm">
+                  <p className="font-extrabold text-slate-900 text-sm break-words">
                     {viewModalInvoice.customer?.name || 'Valued Store Customer'}
                   </p>
-                  <p className="text-slate-600 text-xs">
+                  <p className="text-slate-600 text-xs break-words whitespace-normal leading-relaxed">
                     {viewModalInvoice.customer?.address || 'Retail Customer Address'}
                   </p>
-                  <p className="text-slate-600 text-xs">
+                  <p className="text-slate-600 text-xs break-all">
                     Email: {viewModalInvoice.customer?.email || 'customer@example.com'}
                   </p>
-                  <p className="text-slate-600 text-xs">
+                  <p className="text-slate-600 text-xs break-words">
                     Phone: {viewModalInvoice.customer?.phone || 'N/A'}
                   </p>
                 </div>
@@ -1461,6 +1548,90 @@ export default function InvoicesRegistryPage() {
           </div>
         </div>
       )}
+
+      {/* Hidden Printable Commercial Invoice for Standard Clean A4 Page Output */}
+      {(() => {
+        const inv = invoiceToPrint || viewModalInvoice;
+        if (!inv) return null;
+
+        const bank = getInvoiceBankDetails(inv);
+
+        return (
+          <div id="printable-a4-invoice" className="hidden">
+            <A4CommercialInvoice
+              id="printable-a4-invoice-content"
+              data={{
+                invoiceNumber: inv.invoiceNumber || inv.receiptNumber,
+                id: inv.id,
+                createdAt: inv.createdAt,
+                dueDate: inv.dueDate,
+                paymentStatus: inv.paymentStatus,
+                paymentMethod: inv.paymentMethod,
+                paymentTerms: inv.paymentTerms,
+                notes: inv.notes,
+                totalAmount: inv.totalAmount || 0,
+                amountPaid: inv.amountPaid || 0,
+                customerName: inv.customer?.name,
+                customerPhone: inv.customer?.phone,
+                customerEmail: inv.customer?.email,
+                customerAddress: inv.customer?.address || inv.billingAddress,
+                business: {
+                  name: inv.business?.name || summaryData?.business?.name,
+                  address: inv.business?.address || summaryData?.business?.address,
+                  phone: inv.business?.phone || summaryData?.business?.phone,
+                  email: inv.business?.email || summaryData?.business?.email,
+                  logoUrl: inv.business?.logoUrl || summaryData?.business?.logoUrl,
+                  bankName: bank.bankName || inv.business?.bankName,
+                  accountNumber: bank.accountNumber || inv.business?.accountNumber,
+                  accountName: bank.accountName || inv.business?.accountName,
+                  warrantyTerms: inv.business?.warrantyTerms,
+                },
+                items: inv.items || [],
+              }}
+            />
+          </div>
+        );
+      })()}
+
+      {/* Global Print Styling for Clean A4 Page Output */}
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 10mm 12mm;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-a4-invoice,
+          #printable-a4-invoice * {
+            visibility: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #printable-a4-invoice {
+            display: block !important;
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: #ffffff !important;
+            z-index: 999999 !important;
+          }
+        }
+      `}</style>
 
     </div>
   );

@@ -300,6 +300,13 @@ class ApiClient {
     });
   }
 
+  async updateInvoice(id: string, payload: any) {
+    return this.request<any>(`/sales/invoices/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
   async markInvoicePaid(
     id: string,
     payload?: { paymentMethod?: string; amount?: number; reference?: string; notes?: string } | string,

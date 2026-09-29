@@ -290,6 +290,149 @@ export class SalesService {
     return { success: true, message: `Invoice ${invoice.invoiceNumber} deleted successfully.` };
   }
 
+  async updateInvoice(businessId: string, id: string, dto: any) {
+    const existing = await this.findOneInvoice(businessId, id);
+
+    let customerId = existing.customerId;
+    if (dto.customerName) {
+      if (dto.customerPhone) {
+        let customer = await this.prisma.customer.findFirst({
+          where: { businessId, phone: dto.customerPhone.trim() },
+        });
+        if (!customer) {
+          customer = await this.prisma.customer.create({
+            data: {
+              businessId,
+              name: dto.customerName.trim(),
+              phone: dto.customerPhone.trim(),
+              email: dto.customerEmail?.trim(),
+              address: dto.billingAddress?.trim(),
+            },
+          });
+        } else {
+          customer = await this.prisma.customer.update({
+            where: { id: customer.id },
+            data: {
+              name: dto.customerName.trim(),
+              email: dto.customerEmail?.trim() || customer.email,
+              address: dto.billingAddress?.trim() || customer.address,
+            },
+          });
+        }
+        customerId = customer.id;
+      } else if (existing.customer) {
+        await this.prisma.customer.update({
+          where: { id: existing.customer.id },
+          data: {
+            name: dto.customerName.trim(),
+            email: dto.customerEmail?.trim() || existing.customer.email,
+            address: dto.billingAddress?.trim() || existing.customer.address,
+          },
+        });
+      }
+    }
+
+    // Process updated items if provided
+    let updatedTotalAmount = existing.totalAmount;
+    const oldDeviceIds = existing.items
+      .filter((i) => i.phoneRecordId)
+      .map((i) => i.phoneRecordId as string);
+    let newDeviceIds: string[] = [];
+
+    const itemsToCreate = dto.items && Array.isArray(dto.items) ? dto.items : null;
+
+    if (itemsToCreate) {
+      updatedTotalAmount = itemsToCreate.reduce(
+        (sum: number, it: any) => sum + (Number(it.price || it.unitPrice || 0) * (Number(it.quantity) || 1)),
+        0,
+      );
+      newDeviceIds = itemsToCreate
+        .filter((it: any) => it.phoneRecordId)
+        .map((it: any) => it.phoneRecordId as string);
+    }
+
+    // Build notes metadata if custom terms/bank/due date provided
+    let combinedNotes = dto.notes !== undefined ? dto.notes : (existing.notes || '');
+    const metaTags = [
+      '[TYPE:INVOICE]',
+      dto.billingAddress ? `[ADDR:${dto.billingAddress}]` : '',
+      dto.paymentTerms ? `[TERMS:${dto.paymentTerms}]` : '',
+      dto.dueDate ? `[DUE:${dto.dueDate}]` : '',
+      dto.bankName ? `[BANK:${dto.bankName}]` : '',
+      dto.accountNumber ? `[ACC:${dto.accountNumber}]` : '',
+      dto.accountName ? `[NAME:${dto.accountName}]` : '',
+    ]
+      .filter(Boolean)
+      .join(' ');
+    
+    if (metaTags) {
+      const rawUserNotes = (dto.notes || existing.notes || '').replace(/\[TYPE:.*?\]|\[ADDR:.*?\]|\[TERMS:.*?\]|\[DUE:.*?\]|\[BANK:.*?\]|\[ACC:.*?\]|\[NAME:.*?\]/g, '').trim();
+      combinedNotes = `${metaTags} ${rawUserNotes}`.trim();
+    }
+
+    const currentPaid = Number(existing.amountPaid || 0);
+    const newBalanceDue = Math.max(0, updatedTotalAmount - currentPaid);
+    const updatedPaymentStatus = dto.paymentStatus || (newBalanceDue <= 0 && updatedTotalAmount > 0 ? 'PAID' : (currentPaid > 0 ? 'PARTIALLY_PAID' : existing.paymentStatus));
+
+    return this.prisma.$transaction(async (tx) => {
+      // Manage device inventory statuses
+      if (itemsToCreate) {
+        // Devices removed from invoice -> return to IN_STOCK
+        const removedDeviceIds = oldDeviceIds.filter((dId) => !newDeviceIds.includes(dId));
+        if (removedDeviceIds.length > 0) {
+          await tx.phoneRecord.updateMany({
+            where: { id: { in: removedDeviceIds }, businessId },
+            data: { status: PhoneStatus.IN_STOCK },
+          });
+        }
+
+        // Newly added devices: if invoice is PAID/PARTIALLY_PAID, mark SOLD; else remain IN_STOCK
+        const addedDeviceIds = newDeviceIds.filter((dId) => !oldDeviceIds.includes(dId));
+        if (addedDeviceIds.length > 0 && (updatedPaymentStatus === 'PAID' || updatedPaymentStatus === 'PARTIALLY_PAID')) {
+          await tx.phoneRecord.updateMany({
+            where: { id: { in: addedDeviceIds }, businessId },
+            data: { status: PhoneStatus.SOLD, customerId },
+          });
+        }
+
+        // Delete old items and insert updated items
+        await tx.saleItem.deleteMany({ where: { saleId: existing.id } });
+        await tx.saleItem.createMany({
+          data: itemsToCreate.map((it: any) => ({
+            saleId: existing.id,
+            phoneRecordId: it.phoneRecordId || null,
+            description: it.description || 'Invoice Item',
+            unitPrice: Number(it.price || it.unitPrice || 0),
+            quantity: Number(it.quantity) || 1,
+            totalPrice: (Number(it.price || it.unitPrice || 0)) * (Number(it.quantity) || 1),
+          })),
+        });
+      }
+
+      // Update sale record
+      const updated = await tx.sale.update({
+        where: { id: existing.id },
+        data: {
+          customerId,
+          totalAmount: updatedTotalAmount,
+          paymentStatus: updatedPaymentStatus,
+          notes: combinedNotes,
+        },
+        include: {
+          customer: true,
+          items: {
+            include: {
+              phoneRecord: true,
+            },
+          },
+          business: true,
+        },
+      });
+
+      return updated;
+    });
+  }
+
   async markInvoiceAsPaid(
     businessId: string,
     id: string,

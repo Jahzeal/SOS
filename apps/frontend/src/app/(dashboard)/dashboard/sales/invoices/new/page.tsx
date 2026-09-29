@@ -31,6 +31,7 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { A4CommercialInvoice } from '@/components/invoice/A4CommercialInvoice';
 
 interface LineItem {
   id: string; // phoneRecord.id or custom item ID
@@ -1137,6 +1138,87 @@ export default function CreateInvoicePage() {
           </div>
         </div>
       )}
+
+      {/* Hidden Printable Invoice for Standard Clean A4 Page Output */}
+      <div id="printable-a4-invoice" className="hidden">
+        <A4CommercialInvoice
+          id="printable-a4-invoice-content"
+          data={{
+            invoiceNumber: createdInvoice?.invoiceNumber || 'INV/DRAFT',
+            id: createdInvoice?.id,
+            createdAt: issueDate,
+            dueDate: dueDate,
+            paymentStatus: invoicePaymentStatus,
+            paymentTerms:
+              paymentTerms === 'NET_7'
+                ? 'Net 7 Days'
+                : paymentTerms === 'NET_15'
+                ? 'Net 15 Days'
+                : paymentTerms === 'NET_30'
+                ? 'Net 30 Days'
+                : 'Due on Receipt',
+            notes: notes,
+            totalAmount: totalAmount,
+            customerName: customerName || 'Valued Customer',
+            customerPhone: customerPhone,
+            customerEmail: customerEmail,
+            customerAddress: billingAddress,
+            business: {
+              name: templateBank?.accountName || 'NoxGuarda Retail Store',
+              bankName: useCustomBank ? bankName : templateBank?.bankName || bankName,
+              accountNumber: useCustomBank ? accountNumber : templateBank?.accountNumber || accountNumber,
+              accountName: useCustomBank ? accountName : templateBank?.accountName || accountName,
+            },
+            items: items.map((it) => ({
+              description: it.description,
+              imei: it.imei,
+              quantity: it.quantity,
+              unitPrice: it.unitPrice,
+              totalPrice: it.unitPrice * it.quantity,
+            })),
+          }}
+        />
+      </div>
+
+      {/* Global Print Styling for Clean A4 Page Output */}
+      <style jsx global>{`
+        @media print {
+          @page {
+            size: A4 portrait;
+            margin: 10mm 12mm;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #ffffff !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          body * {
+            visibility: hidden !important;
+          }
+          #printable-a4-invoice,
+          #printable-a4-invoice * {
+            visibility: visible !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          #printable-a4-invoice {
+            display: block !important;
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-shadow: none !important;
+            border: none !important;
+            background: #ffffff !important;
+            z-index: 999999 !important;
+          }
+        }
+      `}</style>
 
     </div>
   );

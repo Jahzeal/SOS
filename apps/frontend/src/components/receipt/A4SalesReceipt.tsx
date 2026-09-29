@@ -106,24 +106,24 @@ export function A4SalesReceipt({ data, id = 'printable-a4-receipt' }: { data: A4
       {/* Dual Info Boxes: Store Details Left, Billed To Right */}
       <div className="grid grid-cols-2 gap-4 print:grid-cols-2">
         {/* Left Box: Issued By */}
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs">
+        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs min-w-0 overflow-hidden">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block border-b border-slate-200/80 pb-1">
             ISSUED BY / STORE DETAILS
           </span>
-          <p className="font-extrabold text-slate-900 text-sm">{storeName}</p>
-          <p className="text-slate-600 font-medium">{storeAddress}</p>
-          <p className="text-slate-600 font-medium">Phone: {storePhone}</p>
-          <p className="text-slate-600 font-medium">Email: {storeEmail}</p>
+          <p className="font-extrabold text-slate-900 text-sm break-words">{storeName}</p>
+          <p className="text-slate-600 font-medium break-words whitespace-normal">{storeAddress}</p>
+          <p className="text-slate-600 font-medium break-words">Phone: {storePhone}</p>
+          <p className="text-slate-600 font-medium break-all">Email: {storeEmail}</p>
         </div>
 
         {/* Right Box: Billed To */}
-        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs">
+        <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-1.5 text-xs min-w-0 overflow-hidden">
           <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 block border-b border-slate-200/80 pb-1">
             BILLED TO / STATEMENT DETAILS
           </span>
-          <p className="font-extrabold text-slate-900 text-sm">{customerName}</p>
-          <p className="text-slate-600 font-medium">Address: {customerAddress}</p>
-          <p className="text-slate-600 font-medium">Contact: {customerContact}</p>
+          <p className="font-extrabold text-slate-900 text-sm break-words">{customerName}</p>
+          <p className="text-slate-600 font-medium break-words whitespace-normal leading-relaxed">Address: {customerAddress}</p>
+          <p className="text-slate-600 font-medium break-words">Contact: {customerContact}</p>
           <p className="text-slate-600 font-medium">
             Issue Date: {dateFormatted} • Status:{' '}
             <span className="font-bold text-emerald-600">PAID</span>
