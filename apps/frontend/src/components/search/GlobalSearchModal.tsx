@@ -92,6 +92,13 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
     return () => clearTimeout(timer);
   }, [query]);
 
+  useEffect(() => {
+    if (!isOpen) {
+      setQuery('');
+      setResults([]);
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const handleSelect = (item: SearchResultItem) => {
@@ -102,13 +109,16 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
   };
 
   return (
-    <div className="fixed -inset-1 z-[100] bg-slate-950/75 backdrop-blur-sm flex items-start justify-center pt-16 sm:pt-24 p-4 animate-in fade-in duration-150">
+    <div
+      onClick={onClose}
+      className="fixed -inset-1 z-[100] bg-slate-950/75 backdrop-blur-sm flex items-start justify-center pt-16 sm:pt-24 p-4 animate-in fade-in duration-150"
+    >
       <div
         className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Header Input */}
-        <div className="p-4 border-b border-slate-200 flex items-center gap-3">
+        <div className="p-4 border-b border-slate-200 flex items-center gap-2 sm:gap-3">
           <Search className="w-5 h-5 text-teal-600 shrink-0" />
           <input
             autoFocus
@@ -121,12 +131,23 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
           {loading && <Loader2 className="w-4 h-4 text-teal-600 animate-spin shrink-0" />}
           {query && (
             <button
+              type="button"
               onClick={() => setQuery('')}
-              className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 cursor-pointer"
+              className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 transition cursor-pointer shrink-0 font-medium"
+              title="Clear search text"
             >
-              <X className="w-4 h-4" />
+              Clear
             </button>
           )}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close search modal"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer shrink-0 flex items-center justify-center"
+            title="Close modal (Esc)"
+          >
+            <X className="w-5 h-5" />
+          </button>
           <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-500">
             ESC
           </span>

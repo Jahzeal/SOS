@@ -25,6 +25,8 @@ import {
   Building2,
   CreditCard,
   RefreshCw,
+  Copy,
+  Clock,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -199,6 +201,17 @@ export default function CreateInvoicePage() {
 
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailNotice, setEmailNotice] = useState<string | null>(null);
+  const [copiedLink, setCopiedLink] = useState(false);
+
+  const handleCopyLink = () => {
+    if (!createdInvoice) return;
+    const link = `${window.location.origin}/dashboard/sales/receipt/${createdInvoice.rawId || createdInvoice.id}`;
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(link);
+    }
+    setCopiedLink(true);
+    setTimeout(() => setCopiedLink(false), 2500);
+  };
 
   const handlePrintPDF = () => {
     window.print();
@@ -284,6 +297,11 @@ export default function CreateInvoicePage() {
         items: payloadItems,
       });
 
+      if (status === 'DRAFT') {
+        router.push('/dashboard/sales/invoices');
+        return;
+      }
+
       setCreatedInvoice({
         rawId: sale.id,
         id: sale.invoiceNumber || sale.id,
@@ -359,10 +377,10 @@ export default function CreateInvoicePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
 
         {/* LEFT 8 COLUMNS: INVOICE FORM & ITEMS */}
-        <div className="lg:col-span-8 space-y-6">
+        <div className="lg:col-span-8 space-y-6 min-w-0 w-full">
 
           {/* Customer & Meta Card */}
-          <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 ${mobileStep === 1 ? 'block' : 'hidden sm:block'}`}>
+          <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 overflow-hidden ${mobileStep === 1 ? 'block' : 'hidden sm:block'}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Customer / Business Name *</label>
@@ -427,7 +445,7 @@ export default function CreateInvoicePage() {
           </div>
 
           {/* In-Stock Device Picker Section */}
-          <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 ${mobileStep === 2 ? 'block' : 'hidden sm:block'}`}>
+          <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 overflow-hidden ${mobileStep === 2 ? 'block' : 'hidden sm:block'}`}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <Smartphone className="w-4 h-4 text-blue-600" /> Select In-Stock Device from Inventory
@@ -500,7 +518,7 @@ export default function CreateInvoicePage() {
           </div>
 
           {/* Line Items Table & Custom Add Item Form */}
-          <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 ${mobileStep === 2 ? 'block' : 'hidden sm:block'}`}>
+          <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 overflow-hidden ${mobileStep === 2 ? 'block' : 'hidden sm:block'}`}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <FileText className="w-4 h-4 text-blue-600" /> Invoice Line Items & Services
@@ -693,13 +711,13 @@ export default function CreateInvoicePage() {
           </div>
 
           {/* Remittance Bank Account Selection Card */}
-          <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 overflow-hidden ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100">
+                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
                   <Building2 className="w-4 h-4" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
                     Remittance Bank Account
                   </h3>
@@ -710,7 +728,7 @@ export default function CreateInvoicePage() {
               </div>
 
               {/* Mode Toggle Pills */}
-              <div className="flex items-center bg-slate-100 p-1 rounded-xl gap-1 text-[11px] font-bold">
+              <div className="grid grid-cols-2 sm:flex sm:items-center bg-slate-100 p-1 rounded-xl gap-1 text-[11px] font-bold w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => {
@@ -721,26 +739,26 @@ export default function CreateInvoicePage() {
                       setAccountName(templateBank.accountName);
                     }
                   }}
-                  className={`px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 text-center ${
                     !useCustomBank
                       ? 'bg-white text-blue-700 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Building2 className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Use Templates Account</span>
+                  <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span className="truncate">Template Account</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setUseCustomBank(true)}
-                  className={`px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5 ${
+                  className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 text-center ${
                     useCustomBank
                       ? 'bg-white text-blue-700 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <CreditCard className="w-3.5 h-3.5 text-blue-600" />
-                  <span>Custom Account</span>
+                  <CreditCard className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span className="truncate">Custom Account</span>
                 </button>
               </div>
             </div>
@@ -750,8 +768,8 @@ export default function CreateInvoicePage() {
               <div className="space-y-3">
                 {templateBank?.accountNumber ? (
                   <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-extrabold text-blue-950 text-sm">{templateBank.bankName}</span>
                         <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
                           Template Default
@@ -761,13 +779,13 @@ export default function CreateInvoicePage() {
                         Account #: <span className="text-blue-900">{templateBank.accountNumber}</span>
                       </p>
                       {templateBank.accountName && (
-                        <p className="text-slate-600 font-medium text-[11px]">
+                        <p className="text-slate-600 font-medium text-[11px] truncate">
                           Beneficiary: <strong className="text-slate-900">{templateBank.accountName}</strong>
                         </p>
                       )}
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href="/dashboard/templates"
                         target="_blank"
@@ -792,7 +810,7 @@ export default function CreateInvoicePage() {
                         You have not configured store bank details in /dashboard/templates yet.
                       </p>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href="/dashboard/templates"
                         className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition"
@@ -871,7 +889,7 @@ export default function CreateInvoicePage() {
           </div>
 
           {/* Notes & Terms Card */}
-          <div className={`p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3 ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
+          <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-3 overflow-hidden ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
             <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
               Payment Terms & Remittance Instructions
             </h3>
@@ -886,9 +904,9 @@ export default function CreateInvoicePage() {
         </div>
 
         {/* RIGHT 4 COLUMNS: INVOICE TERMS, SUMMARY & SHARE ACTIONS */}
-        <div className={`lg:col-span-4 space-y-5 ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
+        <div className={`lg:col-span-4 space-y-5 min-w-0 w-full ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
 
-          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5">
+          <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-5 overflow-hidden">
             <h3 className="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3">
               Billing Summary & Terms
             </h3>
@@ -918,20 +936,46 @@ export default function CreateInvoicePage() {
                 </select>
               </div>
 
-              <div className="space-y-1">
-                <label className="font-bold text-slate-700">Payment Status</label>
-                <select
-                  value={invoicePaymentStatus}
-                  onChange={(e) => setInvoicePaymentStatus(e.target.value as any)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900"
-                >
-                  <option value="PENDING">PENDING (Awaiting Payment)</option>
-                  <option value="PAID">PAID (Settled Immediately)</option>
-                  <option value="DRAFT">DRAFT (Draft State)</option>
-                </select>
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-700 flex items-center justify-between text-xs">
+                  <span>Payment Status</span>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    invoicePaymentStatus === 'PAID'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-amber-100 text-amber-800'
+                  }`}>
+                    {invoicePaymentStatus === 'PAID' ? 'PAID (Settled)' : 'PENDING (Unpaid)'}
+                  </span>
+                </label>
+                <div className="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-xl">
+                  <button
+                    type="button"
+                    onClick={() => setInvoicePaymentStatus('PENDING')}
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      invoicePaymentStatus === 'PENDING'
+                        ? 'bg-white text-amber-700 shadow-xs border border-amber-200'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <span>Pending</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setInvoicePaymentStatus('PAID')}
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
+                      invoicePaymentStatus === 'PAID'
+                        ? 'bg-white text-emerald-700 shadow-xs border border-emerald-200'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <span>Paid</span>
+                  </button>
+                </div>
               </div>
 
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 font-bold flex justify-between items-center">
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 font-bold flex flex-wrap justify-between items-center gap-1">
                 <span>Calculated Due Date:</span>
                 <span className="font-extrabold">{dueDate}</span>
               </div>
@@ -1034,6 +1078,16 @@ export default function CreateInvoicePage() {
                 <span>Billed Customer</span>
                 <span className="font-bold text-slate-900">{createdInvoice.customerName}</span>
               </div>
+              <div className="flex justify-between border-b border-slate-200 pb-2">
+                <span>Payment Status</span>
+                <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${
+                  invoicePaymentStatus === 'PAID'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-amber-100 text-amber-800'
+                }`}>
+                  {invoicePaymentStatus === 'PAID' ? 'PAID' : 'PENDING'}
+                </span>
+              </div>
               <div className="flex justify-between font-bold text-slate-900 text-sm pt-1">
                 <span>Total Amount Owed</span>
                 <span className="text-blue-600 font-extrabold">₦{Number(createdInvoice.totalAmount || 0).toLocaleString()}</span>
@@ -1047,6 +1101,24 @@ export default function CreateInvoicePage() {
             )}
 
             <div className="space-y-2 pt-2">
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 font-bold text-xs text-slate-700 transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
+              >
+                {copiedLink ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-600" />
+                    <span className="text-emerald-700">Link Copied to Clipboard!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 text-slate-500" />
+                    <span>Copy Shareable Invoice Link</span>
+                  </>
+                )}
+              </button>
+
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="primary" size="md" onClick={handlePrintPDF} leftIcon={<Printer className="w-4 h-4" />}>
                   Print PDF

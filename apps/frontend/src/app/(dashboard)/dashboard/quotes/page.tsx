@@ -22,6 +22,7 @@ import {
   Receipt,
   FileText,
   AlertCircle,
+  AlertTriangle,
   XCircle,
   Loader2,
   Mail,
@@ -223,15 +224,23 @@ export default function QuotesRegistryPage() {
     }
   };
 
-  const handleDelete = async (quote: Quote) => {
-    if (!confirm(`Are you sure you want to delete quotation ${quote.quoteNumber}? This cannot be undone.`)) {
-      return;
-    }
+  // Delete Quote Modal State
+  const [quoteToDelete, setQuoteToDelete] = useState<Quote | null>(null);
+  const [isDeletingQuote, setIsDeletingQuote] = useState(false);
+  const [deleteQuoteError, setDeleteQuoteError] = useState<string | null>(null);
+
+  const handleConfirmDelete = async () => {
+    if (!quoteToDelete) return;
+    setIsDeletingQuote(true);
+    setDeleteQuoteError(null);
     try {
-      await api.deleteQuote(quote.id);
+      await api.deleteQuote(quoteToDelete.id);
+      setQuoteToDelete(null);
       invalidateQuotes();
     } catch (err: any) {
-      alert(err.message || 'Failed to delete quotation.');
+      setDeleteQuoteError(err.message || 'Failed to delete quotation.');
+    } finally {
+      setIsDeletingQuote(false);
     }
   };
 
@@ -574,7 +583,7 @@ export default function QuotesRegistryPage() {
                         </Link>
                         {!isConverted && (
                           <button
-                            onClick={() => handleDelete(quote)}
+                            onClick={() => setQuoteToDelete(quote)}
                             className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
                             title="Delete Quote"
                           >
@@ -764,7 +773,7 @@ export default function QuotesRegistryPage() {
                             {/* Delete if not converted */}
                             {!isConverted && (
                               <button
-                                onClick={() => handleDelete(quote)}
+                                onClick={() => setQuoteToDelete(quote)}
                                 className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
                                 title="Delete Quote"
                               >
@@ -1039,6 +1048,88 @@ export default function QuotesRegistryPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Delete Quote Confirmation Modal */}
+      {quoteToDelete && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150 overflow-hidden">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <Trash2 className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h3 className="font-extrabold text-slate-900 text-base">Delete Quotation</h3>
+                <p className="text-xs text-slate-500">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            {deleteQuoteError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-semibold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+                <span className="truncate">{deleteQuoteError}</span>
+              </div>
+            )}
+
+            <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs text-slate-600">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-bold uppercase text-[10px]">Quote #</span>
+                <span className="font-mono font-bold text-blue-600 truncate ml-2">
+                  {quoteToDelete.quoteNumber}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-bold uppercase text-[10px]">Customer</span>
+                <span className="font-bold text-slate-800 truncate ml-2">
+                  {quoteToDelete.customer?.name || 'General Client'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-slate-400 font-bold uppercase text-[10px]">Total Amount</span>
+                <span className="font-extrabold text-slate-900">
+                  ₦{Number(quoteToDelete.totalAmount || 0).toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Are you sure you want to permanently delete quotation <strong>#{quoteToDelete.quoteNumber}</strong>?
+            </p>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                disabled={isDeletingQuote}
+                onClick={() => {
+                  setQuoteToDelete(null);
+                  setDeleteQuoteError(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <button
+                type="button"
+                disabled={isDeletingQuote}
+                onClick={handleConfirmDelete}
+                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-sm shadow-rose-600/20 cursor-pointer"
+              >
+                {isDeletingQuote ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Deleting...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete Quote</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}
