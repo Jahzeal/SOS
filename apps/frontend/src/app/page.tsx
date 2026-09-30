@@ -38,7 +38,8 @@ import {
   Upload,
   Phone,
   Camera,
-  Laptop, } from 'lucide-react';
+  Laptop,
+} from 'lucide-react';
 import {
   extractValidIMEI,
   extractAllValidIMEIs,
@@ -120,7 +121,7 @@ export default function PublicLandingPageV2() {
             setDashboardUrl('/dashboard');
           }
         }
-      } catch {}
+      } catch { }
     }
   }, []);
 
@@ -390,7 +391,7 @@ export default function PublicLandingPageV2() {
                   });
                 }
               }
-            } catch (e) {}
+            } catch (e) { }
           }, 600);
 
           try {
@@ -423,7 +424,7 @@ export default function PublicLandingPageV2() {
                 if (!rawText) return;
 
                 const parsed = extractImeiOrSerial(rawText);
-                
+
                 // Ignore 12/13-digit EAN product barcodes — continue live scanning for IMEI/Serial barcode
                 if (!parsed || !parsed.value) {
                   return;
@@ -436,11 +437,11 @@ export default function PublicLandingPageV2() {
                 lastScanTimeRef.current = Date.now();
 
                 const formatName = result.getBarcodeFormat ? `FORMAT_${result.getBarcodeFormat()}` : 'BARCODE';
-                
+
                 // Snapshot & Freeze Camera Feed immediately
                 try {
                   videoElement.pause();
-                } catch (e) {}
+                } catch (e) { }
                 setIsCameraFrozen(true);
                 setScannedFormat(formatName);
                 setHeroSearchInput(cleanIdentifier);
@@ -474,7 +475,7 @@ export default function PublicLandingPageV2() {
       if (controls) {
         try {
           controls.stop();
-        } catch (e) {}
+        } catch (e) { }
       }
     };
   }, [activeHeroTab]);
@@ -486,7 +487,7 @@ export default function PublicLandingPageV2() {
     setScannedRawText(null);
     setGoogleLensPills([]);
     lastScanTimeRef.current = Date.now();
-    
+
     // Allow a 1.2s positioning buffer before re-enabling automatic barcode detection
     setTimeout(() => {
       hasScannedRef.current = false;
@@ -495,7 +496,7 @@ export default function PublicLandingPageV2() {
 
     const videoElement = document.getElementById('zxing-hero-video') as HTMLVideoElement;
     if (videoElement) {
-      videoElement.play().catch(() => {});
+      videoElement.play().catch(() => { });
     }
   };
 
@@ -841,11 +842,10 @@ export default function PublicLandingPageV2() {
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans antialiased selection:bg-blue-600 selection:text-white">
       {/* SECTION 1 — Sticky Navigation */}
       <header
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${
-          isScrolled
-            ? 'h-14 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-subtle'
-            : 'h-20 bg-transparent'
-        }`}
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-200 ${isScrolled
+          ? 'h-14 bg-white/90 backdrop-blur-md border-b border-slate-200/80 shadow-subtle'
+          : 'h-20 bg-transparent'
+          }`}
       >
         <div className="max-w-7xl mx-auto h-full px-6 flex items-center justify-between">
           {/* Left: Logo & Product Name */}
@@ -1037,27 +1037,24 @@ export default function PublicLandingPageV2() {
               <button
                 type="button"
                 onClick={() => setActiveHeroTab('imei')}
-                className={`flex-1 py-1.5 rounded-lg transition-all ${
-                  activeHeroTab === 'imei' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
-                }`}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${activeHeroTab === 'imei' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
+                  }`}
               >
                 IMEI Number
               </button>
               <button
                 type="button"
                 onClick={() => setActiveHeroTab('serial')}
-                className={`flex-1 py-1.5 rounded-lg transition-all ${
-                  activeHeroTab === 'serial' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
-                }`}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${activeHeroTab === 'serial' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
+                  }`}
               >
                 Serial Number
               </button>
               <button
                 type="button"
                 onClick={() => setActiveHeroTab('qr')}
-                className={`flex-1 py-1.5 rounded-lg transition-all ${
-                  activeHeroTab === 'qr' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
-                }`}
+                className={`flex-1 py-1.5 rounded-lg transition-all ${activeHeroTab === 'qr' ? 'bg-white text-slate-900 shadow-subtle' : 'hover:text-slate-900'
+                  }`}
               >
                 Barcode Scanner
               </button>
@@ -1099,15 +1096,14 @@ export default function PublicLandingPageV2() {
                       {!isCameraFrozen && (
                         <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-max max-w-[90%]">
                           <div
-                            className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-1.5 ${
-                              cameraGuidance.type === 'dark'
-                                ? 'bg-amber-500 text-slate-950 animate-pulse border border-amber-300'
-                                : cameraGuidance.type === 'warning'
+                            className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-1.5 ${cameraGuidance.type === 'dark'
+                              ? 'bg-amber-500 text-slate-950 animate-pulse border border-amber-300'
+                              : cameraGuidance.type === 'warning'
                                 ? 'bg-slate-900/90 text-amber-400 border border-amber-500/40'
                                 : cameraGuidance.type === 'success'
-                                ? 'bg-emerald-600 text-white border border-emerald-300'
-                                : 'bg-slate-900/80 text-white border border-slate-700'
-                            }`}
+                                  ? 'bg-emerald-600 text-white border border-emerald-300'
+                                  : 'bg-slate-900/80 text-white border border-slate-700'
+                              }`}
                           >
                             {cameraGuidance.message}
                           </div>
@@ -1149,13 +1145,12 @@ export default function PublicLandingPageV2() {
                                 left: `${pill.leftPct}%`,
                                 top: `${pill.topPct}%`,
                               }}
-                              className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full transition-all duration-200 transform hover:scale-110 flex items-center gap-1 text-[11px] font-mono font-black border shadow-2xl ${
-                                pill.type === 'IMEI'
-                                  ? 'bg-emerald-600 text-white border-emerald-300 ring-4 ring-emerald-400/70 shadow-emerald-600/60 animate-bounce z-40'
-                                  : pill.type === 'SERIAL'
+                              className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full transition-all duration-200 transform hover:scale-110 flex items-center gap-1 text-[11px] font-mono font-black border shadow-2xl ${pill.type === 'IMEI'
+                                ? 'bg-emerald-600 text-white border-emerald-300 ring-4 ring-emerald-400/70 shadow-emerald-600/60 animate-bounce z-40'
+                                : pill.type === 'SERIAL'
                                   ? 'bg-blue-600 text-white border-blue-300 ring-4 ring-blue-400/70 shadow-blue-600/50 z-30'
                                   : 'bg-slate-900/90 text-slate-100 border-slate-500 hover:bg-blue-600 hover:border-blue-300 z-20'
-                              }`}
+                                }`}
                             >
                               {pill.type === 'IMEI' && <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />}
                               <span className="truncate max-w-[150px]">{pill.value}</span>
@@ -1208,11 +1203,10 @@ export default function PublicLandingPageV2() {
                                 key={pill.id}
                                 type="button"
                                 onClick={() => handleSelectLensPill(pill)}
-                                className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 border shadow-sm ${
-                                  pill.type === 'IMEI'
-                                    ? 'bg-emerald-600 text-white border-emerald-400 ring-2 ring-emerald-400/40 shadow-emerald-600/30'
-                                    : 'bg-blue-600 text-white border-blue-400 ring-2 ring-blue-400/40 shadow-blue-600/30'
-                                }`}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold transition-all flex items-center gap-1.5 border shadow-sm ${pill.type === 'IMEI'
+                                  ? 'bg-emerald-600 text-white border-emerald-400 ring-2 ring-emerald-400/40 shadow-emerald-600/30'
+                                  : 'bg-blue-600 text-white border-blue-400 ring-2 ring-blue-400/40 shadow-blue-600/30'
+                                  }`}
                               >
                                 {pill.type === 'IMEI' && <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />}
                                 <span>{pill.label}: {pill.value}</span>
@@ -1425,7 +1419,7 @@ export default function PublicLandingPageV2() {
         <div className="max-w-7xl mx-auto text-center space-y-10">
           <div className="max-w-3xl mx-auto space-y-4">
             <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              Meet NoxGuarda: The Complete Phone Retail OS
+              Meet NoxGuarda: The Complete Phone & Laptop Retail OS
             </h2>
             <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed">
               One unified workspace to register IMEI stock, process express POS checkouts, issue digital thermal receipts, track warranties, and handle repairs.
@@ -1439,7 +1433,7 @@ export default function PublicLandingPageV2() {
               alt="Professional phone retailer operating NoxGuarda retail software at store counter"
               className="w-full h-auto max-h-[480px] object-cover object-center transform group-hover:scale-[1.01] transition-transform duration-500"
             />
-            
+
             {/* Overlay Ambient Gradients */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent pointer-events-none" />
 
@@ -1552,21 +1546,21 @@ export default function PublicLandingPageV2() {
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-{/* Card 7 – Laptop Support */}
-<div className="vf-card vf-card-interactive p-6 space-y-3">
-  <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 text-gray-600 flex items-center justify-center">
-    <Laptop className="w-5 h-5" />
-  </div>
-  <h3 className="text-base font-bold text-slate-900">Laptop Registration & Management</h3>
-  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-    Seamlessly register, track, and service laptops – from serial numbers to warranty periods,
-    inventory specs, and on‑demand diagnostics. All the same fast workflow you love for phones,
-    now powered for laptops.
-  </p>
-  <Link href="/features#laptops" className="inline-flex items-center gap-1 text-xs font-bold text-gray-600 pt-2 hover:underline">
-    Learn More <ArrowRight className="w-3 h-3" />
-  </Link>
-</div>
+          {/* Card 7 – Laptop Support */}
+          <div className="vf-card vf-card-interactive p-6 space-y-3">
+            <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 text-gray-600 flex items-center justify-center">
+              <Laptop className="w-5 h-5" />
+            </div>
+            <h3 className="text-base font-bold text-slate-900">Laptop Registration & Management</h3>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              Seamlessly register, track, and service laptops – from serial numbers to warranty periods,
+              inventory specs, and on‑demand diagnostics. All the same fast workflow you love for phones,
+              now powered for laptops.
+            </p>
+            <Link href="/features#laptops" className="inline-flex items-center gap-1 text-xs font-bold text-gray-600 pt-2 hover:underline">
+              Learn More <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
         </div>
 
         <div className="text-center pt-4">
@@ -1672,11 +1666,10 @@ export default function PublicLandingPageV2() {
             <button
               key={tab.id}
               onClick={() => setShowcaseTab(tab.id as any)}
-              className={`px-4 py-2 rounded-xl transition-all ${
-                showcaseTab === tab.id
-                  ? 'bg-slate-900 text-white shadow-md'
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-4 py-2 rounded-xl transition-all ${showcaseTab === tab.id
+                ? 'bg-slate-900 text-white shadow-md'
+                : 'text-slate-600 hover:text-slate-900'
+                }`}
             >
               {tab.label}
             </button>
@@ -1731,7 +1724,7 @@ export default function PublicLandingPageV2() {
 
               {/* Detailed Inventory Ledger Table Container */}
               <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 space-y-3">
-                
+
                 {/* Single Detailed Device Row Example */}
                 <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-blue-300 transition space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -1756,7 +1749,7 @@ export default function PublicLandingPageV2() {
                     <div><span className="font-extrabold text-slate-900 font-sans">Primary IMEI:</span> 354892019283741</div>
                     <div><span className="font-extrabold text-slate-900 font-sans">Serial No:</span> SN-IP16P-908123</div>
                   </div>
-                  
+
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-semibold pt-1">
                     <span>Stock Allocation: 12 Downtown Flagship • 6 Eastside Mall</span>
                     <span className="text-blue-600 font-extrabold flex items-center gap-1">
@@ -1772,10 +1765,10 @@ export default function PublicLandingPageV2() {
           {showcaseTab === 'sales' && (
             <div className="space-y-4 animate-in fade-in duration-150">
               <h4 className="text-base font-bold text-slate-900">Thermal POS Receipt Generation</h4>
-              
+
               {/* Photo-Realistic 80mm Thermal Receipt Container */}
               <div className="max-w-md bg-white border border-slate-300 shadow-2xl rounded-2xl p-6 font-mono text-xs text-slate-900 space-y-4 relative overflow-hidden">
-                
+
                 {/* Store Header */}
                 <div className="text-center space-y-1">
                   <div className="flex items-center justify-center gap-1.5 font-black text-slate-900 text-sm tracking-tight">
@@ -1868,7 +1861,7 @@ export default function PublicLandingPageV2() {
 
               {/* Multi-Branch Performance Cards Grid */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-                
+
                 {/* Branch 1 */}
                 <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
                   <div className="flex items-center justify-between">
@@ -1921,7 +1914,7 @@ export default function PublicLandingPageV2() {
 
               {/* AI Insights & Revenue Bar Visual */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-                
+
                 {/* AI Automated Insight Pill */}
                 <div className="p-4 rounded-2xl bg-slate-900 text-white space-y-2 shadow-md border border-slate-800">
                   <div className="flex items-center gap-1.5 text-xs font-extrabold text-amber-400">
@@ -1938,7 +1931,7 @@ export default function PublicLandingPageV2() {
                     <span>Gross Sales Volume Trend</span>
                     <span className="text-[10px] font-mono text-blue-600">30-Day Aggregated</span>
                   </div>
-                  
+
                   <div className="h-10 w-full flex items-end gap-1.5 pt-1">
                     <div className="flex-1 bg-blue-100 hover:bg-blue-200 h-[40%] rounded-t-md transition" />
                     <div className="flex-1 bg-blue-200 hover:bg-blue-300 h-[60%] rounded-t-md transition" />
@@ -2107,9 +2100,8 @@ export default function PublicLandingPageV2() {
               >
                 <span>{item.q}</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-slate-400 transition-transform ${
-                    openFaqIndex === idx ? 'rotate-180' : ''
-                  }`}
+                  className={`w-4 h-4 text-slate-400 transition-transform ${openFaqIndex === idx ? 'rotate-180' : ''
+                    }`}
                 />
               </button>
               {openFaqIndex === idx && (
@@ -2314,22 +2306,20 @@ export default function PublicLandingPageV2() {
                       <button
                         type="button"
                         onClick={() => setDemoFormData({ ...demoFormData, preferredContact: 'phone' })}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                          demoFormData.preferredContact === 'phone'
-                            ? 'bg-teal-50 border-teal-500 text-teal-800'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
+                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${demoFormData.preferredContact === 'phone'
+                          ? 'bg-teal-50 border-teal-500 text-teal-800'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                          }`}
                       >
                         <Phone className="w-3.5 h-3.5 text-teal-600" /> Phone Call
                       </button>
                       <button
                         type="button"
                         onClick={() => setDemoFormData({ ...demoFormData, preferredContact: 'email' })}
-                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${
-                          demoFormData.preferredContact === 'email'
-                            ? 'bg-teal-50 border-teal-500 text-teal-800'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
-                        }`}
+                        className={`p-2.5 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 transition-all ${demoFormData.preferredContact === 'email'
+                          ? 'bg-teal-50 border-teal-500 text-teal-800'
+                          : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100'
+                          }`}
                       >
                         <Mail className="w-3.5 h-3.5 text-teal-600" /> Email Message
                       </button>
