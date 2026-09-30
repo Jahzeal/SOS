@@ -1346,7 +1346,7 @@ export default function PublicLandingPageV2() {
       <section className="py-6 sm:py-10 bg-white border-y border-slate-200/80 px-6">
         <div className="max-w-7xl mx-auto text-center space-y-4">
           <p className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">
-            Trusted by phone retailers & electronics businesses worldwide
+            Trusted by phone & laptop retailers & electronics businesses worldwide
           </p>
 
           {/* Animated Infinite Scrolling Logo Marquee Ticker */}

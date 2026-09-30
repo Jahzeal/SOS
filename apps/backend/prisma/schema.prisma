@@ -205,7 +205,69 @@ model RefreshToken {
   createdAt DateTime @default(now())
 }
 
+// DeviceCategory enum added
+enum DeviceCategory {
+  PHONE
+  LAPTOP
+}
+
+// Update PhoneRecord model
+@@
 model PhoneRecord {
+  id                     String         @id @default(uuid())
+  businessId             String
+  business               Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  imei1                  String
+  imei2                  String?
+  serialNumber           String?
+  brand                  String
+  model                  String
+  color                  String?
+  storageCapacity        String?
+  condition              PhoneCondition @default(NEW)
+  status                 PhoneStatus    @default(IN_STOCK)
++  deviceCategory         DeviceCategory @default(PHONE)
+
+  purchasePrice          Float?
+  sellingPrice           Float?
+
+  warrantyDurationMonths Int            @default(0)
+  warrantyExpiryDate     DateTime?
+  qrCodeUrl              String?
+
+  carrierStatus          CarrierLockStatus?
+  lockedCarrier          String?
+  activationStatus       DeviceActivationStatus?
+
+  isStolen               Boolean                @default(false)
+  theftStatus            TheftStatus            @default(CLEAN)
+  stolenAt               DateTime?
+  theftReason            String?
+  theftReportedBy        String?
+  lostNote               String?
+  contactPhone           String?
+
+  registeredById         String?
+  registeredBy           User?          @relation(fields: [registeredById], references: [id], onDelete: SetNull)
+
+  customerId             String?
+  customer               Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  repairs                RepairTicket[]
+  saleItems              SaleItem[]
+  quoteItems             QuoteItem[]
+
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
+
+  @@index([businessId, status])
+  @@index([businessId, createdAt])
+  @@index([businessId, brand])
+  @@index([isStolen])
+  @@index([theftStatus])
+  @@index([imei1])
+
   id                     String         @id @default(uuid())
   businessId             String
   business               Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
