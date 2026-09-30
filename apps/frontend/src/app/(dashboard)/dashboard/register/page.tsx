@@ -322,27 +322,30 @@ export default function RegisterPhonePage() {
       </div>
 
       {/* Primary 2-Mode Switcher */}
-      <div className="bg-slate-100 p-1.5 rounded-2xl border border-slate-200 max-w-2xl">
-        <div className="grid grid-cols-2 gap-1.5">
+      <div className="bg-slate-100 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-slate-200 max-w-2xl">
+        <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
           <button
             type="button"
             onClick={() => {
               setMode('PHONE');
               setErrorMessage(null);
             }}
-            className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-xs font-extrabold transition-all ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2.5 py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-extrabold transition-all ${
               mode === 'PHONE'
-                ? 'bg-white text-slate-950 shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
+                ? 'bg-white text-slate-950 shadow-xs sm:shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+            <div className={`w-5 h-5 sm:w-7 sm:h-7 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 ${
               mode === 'PHONE' ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-500'
             }`}>
-              <Smartphone className="w-4 h-4" />
+              <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
-            <div className="text-left">
-              <span className="block font-black">Phone, Laptop & Serialized Device</span>
+            <div className="text-left min-w-0">
+              <span className="block font-black truncate">
+                <span className="sm:hidden">Phone / Laptop</span>
+                <span className="hidden sm:inline">Phone, Laptop & Serialized Device</span>
+              </span>
               <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">Phones, Laptops, Tablets (IMEI & S/N Tracked)</span>
             </div>
           </button>
@@ -353,19 +356,22 @@ export default function RegisterPhonePage() {
               setMode('ITEM');
               setErrorMessage(null);
             }}
-            className={`flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl text-xs font-extrabold transition-all ${
+            className={`flex items-center justify-center gap-1.5 sm:gap-2.5 py-2 sm:py-3 px-2 sm:px-4 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-extrabold transition-all ${
               mode === 'ITEM'
-                ? 'bg-white text-slate-950 shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
+                ? 'bg-white text-slate-950 shadow-xs sm:shadow-sm border border-slate-200 ring-2 ring-teal-500/20'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${
+            <div className={`w-5 h-5 sm:w-7 sm:h-7 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 ${
               mode === 'ITEM' ? 'bg-teal-50 text-teal-700' : 'bg-slate-200 text-slate-500'
             }`}>
-              <Package className="w-4 h-4" />
+              <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </div>
-            <div className="text-left">
-              <span className="block font-black">General Item / Accessory</span>
+            <div className="text-left min-w-0">
+              <span className="block font-black truncate">
+                <span className="sm:hidden">General Item</span>
+                <span className="hidden sm:inline">General Item / Accessory</span>
+              </span>
               <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">Power banks, ear pieces, chargers, cables, cases...</span>
             </div>
           </button>
@@ -373,8 +379,8 @@ export default function RegisterPhonePage() {
       </div>
 
       {/* Stepper Navigation Indicator Bar */}
-      <div className="flex items-center justify-start sm:justify-between border-b border-slate-200 pb-3 gap-2">
-        <div className="flex items-center gap-1 sm:gap-4 overflow-x-auto pb-1 scrollbar-none justify-start">
+      <div className="flex items-center justify-between border-b border-slate-200 pb-2.5 sm:pb-3 gap-1.5 sm:gap-2">
+        <div className="flex items-center gap-1 sm:gap-3 md:gap-4 overflow-x-auto pb-0.5 scrollbar-none justify-start min-w-0">
           {/* Step 1 Indicator */}
           <button
             onClick={() => setStep(1)}
@@ -383,14 +389,17 @@ export default function RegisterPhonePage() {
             }`}
           >
             <span className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-[10px] sm:text-xs shrink-0 ${
-              step === 1 ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-sm' : 'border-slate-300 bg-white text-slate-500'
+              step === 1 ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-xs sm:shadow-sm' : 'border-slate-300 bg-white text-slate-500'
             }`}>
               1
             </span>
-            <span className="text-[9px] sm:text-xs font-bold whitespace-nowrap">1. Identification</span>
+            <span className="text-[10px] sm:text-xs font-bold whitespace-nowrap">
+              <span className="hidden sm:inline">1. Identification</span>
+              <span className="sm:hidden">1. Identify</span>
+            </span>
           </button>
 
-          <div className="w-2 sm:w-12 h-px bg-slate-200 shrink-0" />
+          <div className="w-1.5 sm:w-6 md:w-10 h-px bg-slate-200 shrink-0" />
 
           {/* Step 2 Indicator */}
           <button
@@ -400,14 +409,17 @@ export default function RegisterPhonePage() {
             }`}
           >
             <span className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-[10px] sm:text-xs shrink-0 ${
-              step === 2 ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-sm' : 'border-slate-300 bg-white text-slate-500'
+              step === 2 ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-xs sm:shadow-sm' : 'border-slate-300 bg-white text-slate-500'
             }`}>
               2
             </span>
-            <span className="text-[9px] sm:text-xs font-bold whitespace-nowrap">2. Specs & Pricing</span>
+            <span className="text-[10px] sm:text-xs font-bold whitespace-nowrap">
+              <span className="hidden sm:inline">2. Specs & Pricing</span>
+              <span className="sm:hidden">2. Specs</span>
+            </span>
           </button>
 
-          <div className="w-2 sm:w-12 h-px bg-slate-200 shrink-0" />
+          <div className="w-1.5 sm:w-6 md:w-10 h-px bg-slate-200 shrink-0" />
 
           {/* Step 3 Indicator */}
           <button
@@ -417,20 +429,23 @@ export default function RegisterPhonePage() {
             }`}
           >
             <span className={`w-5 h-5 sm:w-7 sm:h-7 rounded-full border-2 flex items-center justify-center text-[10px] sm:text-xs shrink-0 ${
-              step === 3 ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-sm' : 'border-slate-300 bg-white text-slate-500'
+              step === 3 ? 'border-teal-600 bg-teal-50 text-teal-700 shadow-xs sm:shadow-sm' : 'border-slate-300 bg-white text-slate-500'
             }`}>
               3
             </span>
-            <span className="text-[9px] sm:text-xs font-bold whitespace-nowrap">3. Review & Save</span>
+            <span className="text-[10px] sm:text-xs font-bold whitespace-nowrap">
+              <span className="hidden sm:inline">3. Review & Save</span>
+              <span className="sm:hidden">3. Review</span>
+            </span>
           </button>
         </div>
 
         {step > 1 && (
           <button
             onClick={handleBack}
-            className="flex items-center gap-1 text-[10px] sm:text-xs font-extrabold text-slate-600 hover:text-slate-900 transition shrink-0 ml-auto"
+            className="flex items-center gap-1 text-[10px] sm:text-xs font-extrabold text-slate-600 hover:text-slate-900 transition shrink-0 ml-auto pl-1"
           >
-            <ArrowLeft className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Back to Step {step - 1}</span><span className="inline sm:hidden">Back</span>
+            <ArrowLeft className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">Back to Step {step - 1}</span><span className="inline sm:hidden">Back</span>
           </button>
         )}
       </div>
@@ -572,32 +587,35 @@ export default function RegisterPhonePage() {
 
           {/* PAGE VIEW 2 — STEP 2: ITEM SPECIFICATIONS & PRICING */}
           {step === 2 && (
-            <section className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-6 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 gap-2">
-                <div className="flex items-center gap-2.5 sm:gap-3 justify-start text-left">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-teal-50 text-teal-600 border border-teal-200 flex items-center justify-center font-bold shadow-sm shrink-0">
-                    {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? <Laptop className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />) : <Package className="w-4 h-4" />}
+            <section className="p-4 sm:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 sm:pb-4 gap-2">
+                <div className="flex items-center gap-2 sm:gap-3 justify-start text-left min-w-0">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-teal-50 text-teal-600 border border-teal-200 flex items-center justify-center font-bold shadow-xs sm:shadow-sm shrink-0">
+                    {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? <Laptop className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4" />) : <Package className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
                   </div>
-                  <div className="text-left">
-                    <h2 className="text-base sm:text-xl font-extrabold text-slate-900 leading-tight">
-                      Step 2: {mode === 'PHONE'
-                        ? (deviceCategory === 'LAPTOP' ? 'Laptop & Computer Specifications' : 'Phone & Tablet Specifications')
-                        : 'Product Information & Pricing'}
+                  <div className="text-left min-w-0">
+                    <h2 className="text-sm sm:text-xl font-extrabold text-slate-900 leading-tight truncate">
+                      <span className="sm:hidden">Step 2: Specifications & Pricing</span>
+                      <span className="hidden sm:inline">
+                        Step 2: {mode === 'PHONE'
+                          ? (deviceCategory === 'LAPTOP' ? 'Laptop & Computer Specifications' : 'Phone & Tablet Specifications')
+                          : 'Product Information & Pricing'}
+                      </span>
                     </h2>
-                    <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
+                    <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate sm:whitespace-normal">
                       {mode === 'PHONE'
                         ? (deviceCategory === 'LAPTOP'
-                            ? 'Configure laptop brand, model, RAM/SSD specifications, condition, and retail pricing'
-                            : 'Configure brand, model, storage capacity, condition, and retail pricing')
-                        : 'Configure category type, brand, model, specifications, and retail pricing'}
+                            ? 'Configure laptop brand, model, RAM/SSD specs & retail pricing'
+                            : 'Configure brand, model, storage capacity & retail pricing')
+                        : 'Configure category, brand, model, specs & retail pricing'}
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setStep(1)}
-                  className="text-[11px] sm:text-xs font-extrabold text-teal-600 hover:underline flex items-center gap-1 shrink-0 ml-auto"
+                  className="text-[10px] sm:text-xs font-extrabold text-teal-600 hover:underline flex items-center gap-1 shrink-0 ml-auto"
                 >
-                  <Edit3 className="w-3.5 h-3.5" /> <span className="hidden sm:inline">Edit Step 1</span>
+                  <Edit3 className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">Edit Step 1</span><span className="inline sm:hidden">Edit</span>
                 </button>
               </div>
 
@@ -1152,10 +1170,10 @@ export default function RegisterPhonePage() {
 
           {/* PAGE VIEW 3 — STEP 3: REGISTRATION SUMMARY */}
           {step === 3 && (
-            <section className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-6 animate-in fade-in duration-200">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4 gap-2">
+            <section className="p-4 sm:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-4 sm:space-y-6 animate-in fade-in duration-200">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3 sm:pb-4 gap-2">
                 <div className="flex items-center gap-2 sm:gap-3 justify-start text-left min-w-0">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold shadow-sm shrink-0">
+                  <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold shadow-xs sm:shadow-sm shrink-0">
                     <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                   </div>
                   <div className="text-left min-w-0">
@@ -1163,7 +1181,7 @@ export default function RegisterPhonePage() {
                       Step 3: Registration Summary
                     </h2>
                     <p className="text-[10px] sm:text-xs text-slate-500 font-medium truncate">
-                      Review {mode === 'PHONE' ? 'phone' : itemType.toLowerCase()} metadata before adding to inventory
+                      Review {mode === 'PHONE' ? 'device' : itemType.toLowerCase()} metadata before adding to inventory
                     </p>
                   </div>
                 </div>
@@ -1175,48 +1193,48 @@ export default function RegisterPhonePage() {
               </div>
 
               {/* Summary Card Grid */}
-              <div className="p-5 rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-4">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-3.5 sm:p-5 rounded-xl sm:rounded-2xl bg-slate-50 border border-slate-200 text-xs space-y-3 sm:space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Type</span>
-                    <span className="font-extrabold text-teal-700 text-sm flex items-center gap-1.5 mt-0.5">
+                    <span className="text-slate-500 block uppercase font-bold text-[9px] sm:text-[10px]">Type</span>
+                    <span className="font-extrabold text-teal-700 text-xs sm:text-sm flex items-center gap-1.5 mt-0.5 truncate">
                       {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? <Laptop className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />) : <Package className="w-3.5 h-3.5" />}
                       {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'Laptop / PC' : 'Phone / Tablet') : itemType}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Brand & Product</span>
-                    <span className="font-extrabold text-slate-900 text-sm mt-0.5 block truncate">{brand} {model}</span>
+                    <span className="text-slate-500 block uppercase font-bold text-[9px] sm:text-[10px]">Brand & Product</span>
+                    <span className="font-extrabold text-slate-900 text-xs sm:text-sm mt-0.5 block truncate">{brand} {model}</span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Identifier / SKU</span>
-                    <span className="font-mono font-bold text-teal-700 text-sm mt-0.5 block truncate">
+                    <span className="text-slate-500 block uppercase font-bold text-[9px] sm:text-[10px]">Identifier / SKU</span>
+                    <span className="font-mono font-bold text-teal-700 text-xs sm:text-sm mt-0.5 block truncate">
                       {imei || serialNumber || 'Auto SKU Assigned'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Specifications</span>
-                    <span className="font-bold text-slate-900 mt-0.5 block truncate">
+                    <span className="text-slate-500 block uppercase font-bold text-[9px] sm:text-[10px]">Specifications</span>
+                    <span className="font-bold text-slate-900 text-xs sm:text-sm mt-0.5 block truncate">
                       {mode === 'PHONE' ? (specs || (deviceCategory === 'LAPTOP' ? '16GB RAM / 512GB SSD' : '128 GB')) : (specs || 'Standard')} • {condition}
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 pt-3 border-t border-slate-200">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-4 pt-3 border-t border-slate-200">
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Cost Price</span>
+                    <span className="text-slate-500 block uppercase font-bold text-[9px] sm:text-[10px]">Cost Price</span>
                     <span className="font-bold text-slate-800 text-xs mt-0.5 block">
                       {purchasePrice ? `₦${parseFloat(purchasePrice.toString().replace(/,/g, '')).toLocaleString()}` : '—'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Selling Price</span>
-                    <span className="font-extrabold text-emerald-700 text-sm mt-0.5 block">
+                    <span className="text-slate-500 block uppercase font-bold text-[9px] sm:text-[10px]">Selling Price</span>
+                    <span className="font-extrabold text-emerald-700 text-xs sm:text-sm mt-0.5 block">
                       {sellingPrice ? `₦${parseFloat(sellingPrice.toString().replace(/,/g, '')).toLocaleString()}` : '—'}
                     </span>
                   </div>
                   <div>
-                    <span className="text-slate-500 block uppercase font-bold text-[10px]">Warranty</span>
+                    <span className="text-slate-500 block uppercase font-bold text-[9px] sm:text-[10px]">Warranty</span>
                     <span className="font-bold text-slate-800 text-xs mt-0.5 block">
                       {warrantyMonths > 0 ? `${warrantyMonths} Months Active` : 'No Warranty'}
                     </span>
@@ -1225,7 +1243,7 @@ export default function RegisterPhonePage() {
               </div>
 
               {/* Step 3 Action Bar */}
-              <div className="flex items-center justify-between gap-2 pt-4 border-t border-slate-100 flex-col-reverse sm:flex-row">
+              <div className="flex items-center justify-between gap-2 pt-3 sm:pt-4 border-t border-slate-100 flex-col-reverse sm:flex-row">
                 <Button variant="secondary" size="sm" onClick={handleBack} leftIcon={<ArrowLeft className="w-3.5 h-3.5" />} className="text-xs font-bold w-full sm:w-auto">
                   Back to Step 2
                 </Button>
@@ -1246,9 +1264,9 @@ export default function RegisterPhonePage() {
         </div>
 
         {/* ========================================================================= */}
-        {/* RIGHT 4 COLUMNS: SUMMARY STICKY SIDEBAR & GUIDANCE                        */}
+        {/* RIGHT 4 COLUMNS: SUMMARY STICKY SIDEBAR & GUIDANCE (DESKTOP ONLY)          */}
         {/* ========================================================================= */}
-        <aside className="lg:col-span-4 space-y-5">
+        <aside className="hidden lg:block lg:col-span-4 space-y-5">
           
           {/* DURING STEP 3: SHOW SUMMARY CARD */}
           {step === 3 ? (
