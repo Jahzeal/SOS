@@ -38,7 +38,7 @@ import {
   Upload,
   Phone,
   Camera,
-} from 'lucide-react';
+  Laptop, } from 'lucide-react';
 import {
   extractValidIMEI,
   extractAllValidIMEIs,
@@ -1461,10 +1461,10 @@ export default function PublicLandingPageV2() {
       <section id="features" className="py-20 px-6 max-w-7xl mx-auto w-full space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Designed Exclusively for Phone Businesses
+            Designed Exclusively for Phone & Laptop Businesses
           </h2>
           <p className="text-xs sm:text-sm text-slate-500">
-            Every feature is purpose-built for smartphones, tablets, and electronics retail workflows.
+            Every feature is purpose-built for smartphones, tablets, laptops, and electronics retail workflows.
           </p>
         </div>
 
@@ -1552,6 +1552,21 @@ export default function PublicLandingPageV2() {
               Learn More <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
+{/* Card 7 – Laptop Support */}
+<div className="vf-card vf-card-interactive p-6 space-y-3">
+  <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 text-gray-600 flex items-center justify-center">
+    <Laptop className="w-5 h-5" />
+  </div>
+  <h3 className="text-base font-bold text-slate-900">Laptop Registration & Management</h3>
+  <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+    Seamlessly register, track, and service laptops – from serial numbers to warranty periods,
+    inventory specs, and on‑demand diagnostics. All the same fast workflow you love for phones,
+    now powered for laptops.
+  </p>
+  <Link href="/features#laptops" className="inline-flex items-center gap-1 text-xs font-bold text-gray-600 pt-2 hover:underline">
+    Learn More <ArrowRight className="w-3 h-3" />
+  </Link>
+</div>
         </div>
 
         <div className="text-center pt-4">
@@ -1944,7 +1959,7 @@ export default function PublicLandingPageV2() {
       <section className="py-20 bg-slate-100/70 border-y border-slate-200 px-6">
         <div className="max-w-5xl mx-auto space-y-10">
           <div className="text-center space-y-2">
-            <h2 className="text-3xl font-extrabold text-slate-900">Why Phone Retailers Choose NoxGuarda</h2>
+            <h2 className="text-3xl font-extrabold text-slate-900">Why Phone &amp; Laptop Retailers Choose NoxGuarda</h2>
             <p className="text-xs sm:text-sm text-slate-500">Direct comparison with legacy spreadsheets & generic POS software.</p>
           </div>
 

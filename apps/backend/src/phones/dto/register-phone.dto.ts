@@ -1,4 +1,5 @@
 import { IsString, IsNotEmpty, IsOptional, IsEnum, IsNumber, Min } from 'class-validator';
+import { DeviceCategory } from '../enums/device-category.enum';
 import { PhoneCondition } from '@prisma/client';
 
 export class RegisterPhoneDto {
