@@ -76,14 +76,14 @@ export default function FeaturesPage() {
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
-            Everything your phone store needs. <br className="hidden sm:inline" />
+            Everything your phone & laptop store needs. <br className="hidden sm:inline" />
             <span className="text-teal-600">
               Without the clutter.
             </span>
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
-            NoxGuarda replaces disconnected spreadsheets and generic tools with a single hardware-aware operating system: IMEI-level verification, POS receipts, corporate commercial invoices, live repair tickets, and digital warranty passports.
+            NoxGuarda replaces disconnected spreadsheets and generic tools with a single hardware-aware operating system: IMEI-level verification, POS receipts, corporate commercial invoices, live repair tickets, digital warranty passports, and comprehensive laptop inventory management.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">

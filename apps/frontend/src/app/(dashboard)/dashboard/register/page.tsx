@@ -86,16 +86,16 @@ const formatNumberWithCommas = (val: string | number | null | undefined): string
   return parts.join('.');
 };
 
-export default function RegisterPhonePage() {
+export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLET', defaultMode = 'PHONE' }: { defaultDeviceCategory?: 'PHONE_TABLET' | 'LAPTOP'; defaultMode?: 'PHONE' | 'ITEM' } = {}) {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { checkCanPerformAction } = useSubscriptionGuard();
 
   // Registration Mode: 'PHONE' or 'ITEM'
-  const [mode, setMode] = useState<RegistrationMode>('PHONE');
+  const [mode, setMode] = useState<RegistrationMode>(defaultMode);
 
   // Device Sub-Category (when Mode is PHONE/SERIALIZED): 'PHONE_TABLET' or 'LAPTOP'
-  const [deviceCategory, setDeviceCategory] = useState<DeviceSubCategory>('PHONE_TABLET');
+  const [deviceCategory, setDeviceCategory] = useState<DeviceSubCategory>(defaultDeviceCategory);
 
   // Page Step State: 1 = Identify, 2 = Specs & Details, 3 = Summary
   const [step, setStep] = useState<1 | 2 | 3>(1);
