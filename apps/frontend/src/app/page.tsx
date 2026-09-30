@@ -986,14 +986,14 @@ export default function PublicLandingPageV2() {
         {/* Left Side: Business Owner Journey */}
         <div className="lg:w-1/2 space-y-6 text-left">
           <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl font-normal text-zinc-900 tracking-tight leading-[1.05]">
-            Know Every Phone.{' '}
+            Know Every Device.{' '}
             <span className="text-teal-600 font-editorial italic font-normal">
               Verify Every Sale.
             </span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-xl">
-            NoxGuarda empowers phone retailers, distributors, and electronics stores to register devices via QR code, IMEI, or Serial Number. Protect your business from fake warranty claims while providing buyers instant proof of origin.
+            NoxGuarda empowers phone and laptop retailers, distributors, and electronics stores to register devices via QR code, IMEI, or Serial Number. Protect your business from fake warranty claims while providing buyers instant proof of origin.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -1010,7 +1010,7 @@ export default function PublicLandingPageV2() {
           </div>
 
           <p className="text-xs text-slate-500 font-medium pt-1">
-            For phone retailers, distributors, wholesalers & electronics businesses.
+            For phone and laptop retailers, distributors, wholesalers & electronics businesses.
           </p>
 
         </div>
@@ -1577,7 +1577,7 @@ export default function PublicLandingPageV2() {
           {/* Workflow 1: For Businesses */}
           <div className="space-y-6">
             <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <Building className="w-5 h-5 text-blue-600" /> For Phone Retailers & Businesses
+              <Building className="w-5 h-5 text-blue-600" /> For Phone & Laptop Retailers & Businesses
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="vf-card p-5 space-y-2 relative">

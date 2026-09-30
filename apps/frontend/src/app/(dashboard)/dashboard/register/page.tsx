@@ -303,7 +303,7 @@ export default function RegisterPhonePage() {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-              Register Phone or Item
+              Register Phones & Laptops or Item
             </h1>
             <Badge variant="new" size="sm" className="hidden sm:inline-flex">
               Stock Ingestion
@@ -343,7 +343,7 @@ export default function RegisterPhonePage() {
             </div>
             <div className="text-left min-w-0">
               <span className="block font-black truncate">
-                <span className="sm:hidden">Phone / Laptop</span>
+                <span className="sm:hidden">Phones & Laptops</span>
                 <span className="hidden sm:inline">Phone, Laptop & Serialized Device</span>
               </span>
               <span className="block text-[10px] text-slate-400 font-medium hidden sm:block">Phones, Laptops, Tablets (IMEI & S/N Tracked)</span>
