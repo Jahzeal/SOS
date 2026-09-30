@@ -826,7 +826,7 @@ export default function OnboardingPage() {
                         {[
                           { id: 'retailer', label: 'Phone Retailer', desc: 'Single/multi shop' },
                           { id: 'wholesaler', label: 'Wholesaler', desc: 'Bulk serial supplier' },
-                          { id: 'distributor', label: 'Distributor', desc: 'Brand importer' },
+                          { id: 'laptop', label: 'Laptop Retailer', desc: 'Dedicated laptop shop' },
                           { id: 'electronics', label: 'General Electronics', desc: 'Gadgets & phones' },
                         ].map((cat) => (
                           <button
