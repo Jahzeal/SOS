@@ -212,7 +212,7 @@ enum DeviceCategory {
 }
 
 // Update PhoneRecord model
-@@
+
 model PhoneRecord {
   id                     String         @id @default(uuid())
   businessId             String
@@ -227,7 +227,7 @@ model PhoneRecord {
   storageCapacity        String?
   condition              PhoneCondition @default(NEW)
   status                 PhoneStatus    @default(IN_STOCK)
-+  deviceCategory         DeviceCategory @default(PHONE)
+  deviceCategory         DeviceCategory @default(PHONE)
 
   purchasePrice          Float?
   sellingPrice           Float?
@@ -268,7 +268,7 @@ model PhoneRecord {
   @@index([theftStatus])
   @@index([imei1])
 
-  id                     String         @id @default(uuid())
+/* Duplicate PhoneRecord block removed */
   businessId             String
   business               Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
   
