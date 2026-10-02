@@ -136,6 +136,64 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
   } | null>(null);
   const [isLoadingSuggestion, setIsLoadingSuggestion] = useState(false);
 
+  // Live Cloud / Manufacturer Device Auto-Detection State
+  const [autoDetectedInfo, setAutoDetectedInfo] = useState<{
+    found: boolean;
+    brand?: string;
+    model?: string;
+    specs?: string;
+    deviceCategory?: 'PHONE_TABLET' | 'LAPTOP' | 'ACCESSORY';
+    confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
+    source?: string;
+  } | null>(null);
+  const [isLookingUpDevice, setIsLookingUpDevice] = useState(false);
+
+  // Auto-lookup device information from serial number / service tag / barcode
+  React.useEffect(() => {
+    const rawIdentifier = (imei || serialNumber || '').trim();
+    if (
+      rawIdentifier.length < 4 ||
+      rawIdentifier.startsWith('PH-') ||
+      rawIdentifier.startsWith('PC-') ||
+      rawIdentifier.startsWith('SKU-')
+    ) {
+      setAutoDetectedInfo(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setIsLookingUpDevice(true);
+        const cat = mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'LAPTOP' : 'PHONE') : 'ITEM';
+        const res = await api.lookupDevice(rawIdentifier, cat);
+
+        if (res && res.found) {
+          setAutoDetectedInfo(res);
+          if (res.brand) {
+            setBrand(res.brand);
+          }
+          if (res.model) {
+            setModel(res.model);
+          }
+          if (res.specs) {
+            setSpecs(res.specs);
+          }
+          if (res.deviceCategory === 'LAPTOP' && mode === 'PHONE') {
+            setDeviceCategory('LAPTOP');
+          }
+        } else {
+          setAutoDetectedInfo(null);
+        }
+      } catch (err) {
+        console.warn('Live device lookup skipped/offline:', err);
+      } finally {
+        setIsLookingUpDevice(false);
+      }
+    }, 380);
+
+    return () => clearTimeout(timer);
+  }, [imei, serialNumber, mode, deviceCategory]);
+
   // Auto-query 1:1 store price memory when model/specs change
   React.useEffect(() => {
     if (!brand.trim() || !model.trim()) {
@@ -599,6 +657,32 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                 </div>
               </div>
 
+              {/* Live Device Auto-Detection Status (No sparkle icons) */}
+              {isLookingUpDevice && (
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium flex items-center gap-2 animate-pulse">
+                  <div className="w-3.5 h-3.5 border-2 border-teal-600 border-t-transparent rounded-full animate-spin shrink-0" />
+                  <span>Looking up device specifications from manufacturer & retail registry...</span>
+                </div>
+              )}
+
+              {autoDetectedInfo?.found && !isLookingUpDevice && (
+                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200/90 text-emerald-950 text-xs flex items-center justify-between animate-in fade-in duration-200 shadow-xs">
+                  <div className="flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <span className="font-extrabold text-emerald-950">Auto-detected: </span>
+                      <span className="font-bold text-slate-900">{autoDetectedInfo.brand} {autoDetectedInfo.model}</span>
+                      {autoDetectedInfo.specs && (
+                        <span className="text-emerald-800 font-semibold"> • {autoDetectedInfo.specs}</span>
+                      )}
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-200 shrink-0">
+                    {autoDetectedInfo.source || 'Auto-Resolved'}
+                  </span>
+                </div>
+              )}
+
               {mode === 'ITEM' && !imei && !serialNumber && (
                 <div className="p-3.5 rounded-xl bg-teal-50/60 border border-teal-200/80 flex items-center justify-between text-xs">
                   <div className="flex items-center gap-2 text-teal-800 font-medium">
@@ -781,6 +865,25 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                       autoFocus={!POPULAR_ITEM_TYPES.includes(itemType)}
                     />
                   )}
+                </div>
+              )}
+
+              {/* Step 2 Auto-Detection Banner (No sparkle icons) */}
+              {autoDetectedInfo?.found && (
+                <div className="p-3 sm:p-3.5 rounded-xl bg-emerald-50 border border-emerald-200/90 flex items-center justify-between text-xs text-emerald-950 shadow-xs">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <span className="font-extrabold text-emerald-950">Auto-filled: </span>
+                      <span className="font-semibold text-slate-800">
+                        {autoDetectedInfo.brand} {autoDetectedInfo.model}
+                        {autoDetectedInfo.specs ? ` (${autoDetectedInfo.specs})` : ''}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-200 shrink-0">
+                    {autoDetectedInfo.source || 'Auto-Detected'}
+                  </span>
                 </div>
               )}
 
@@ -1468,9 +1571,12 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                   setSerialNumber('');
                   setModel('');
                   setBrand('');
+                  setSpecs('');
                   setPurchasePrice('');
                   setSellingPrice('');
                   setNotes('');
+                  setAutoDetectedInfo(null);
+                  setIsLookingUpDevice(false);
                   setStep(1);
                 }}
               >

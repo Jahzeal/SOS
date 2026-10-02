@@ -1,5 +1,6 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Request } from '@nestjs/common';
 import { PhonesService } from './phones.service';
+import { DeviceLookupService } from './device-lookup.service';
 import { RegisterPhoneDto } from './dto/register-phone.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { PhoneStatus } from '@prisma/client';
@@ -7,7 +8,19 @@ import { PhoneStatus } from '@prisma/client';
 @Controller('phones')
 @UseGuards(JwtAuthGuard)
 export class PhonesController {
-  constructor(private readonly phonesService: PhonesService) {}
+  constructor(
+    private readonly phonesService: PhonesService,
+    private readonly deviceLookupService: DeviceLookupService,
+  ) {}
+
+  @Get('lookup-device')
+  async lookupDevice(
+    @Request() req,
+    @Query('identifier') identifier: string,
+    @Query('category') category?: 'LAPTOP' | 'PHONE' | 'ITEM',
+  ) {
+    return this.deviceLookupService.lookup(identifier || '', category || 'LAPTOP');
+  }
 
   @Get('check-imei')
   async checkImei(@Request() req, @Query('imei') imei: string) {

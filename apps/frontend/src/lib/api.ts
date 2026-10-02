@@ -209,6 +209,18 @@ class ApiClient {
     return this.request<{ exists: boolean; record: any; message: string }>(`/phones/check-imei?imei=${encodeURIComponent(imei)}`);
   }
 
+  async lookupDevice(identifier: string, category: 'LAPTOP' | 'PHONE' | 'ITEM' = 'LAPTOP') {
+    return this.request<{
+      found: boolean;
+      brand?: string;
+      model?: string;
+      specs?: string;
+      deviceCategory?: 'PHONE_TABLET' | 'LAPTOP' | 'ACCESSORY';
+      confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
+      source?: string;
+    }>(`/phones/lookup-device?identifier=${encodeURIComponent(identifier)}&category=${category}`);
+  }
+
   async getPriceSuggestion(params: { brand: string; model: string; storageCapacity?: string; condition?: string }) {
     const query = new URLSearchParams();
     if (params.brand) query.append('brand', params.brand);
