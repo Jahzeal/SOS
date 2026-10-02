@@ -434,7 +434,7 @@ export default function BusinessSubscriptionPage() {
                   <div className="mt-5 space-y-2.5 text-xs text-slate-700 font-medium">
                     <div className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-teal-600 shrink-0" />
-                      <span><strong>{plan.maxDevices || 100}</strong> Device Stock Ingestion</span>
+                      <span><strong>{plan.maxDevices || 100}</strong> Device Intake & Registration</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Check className="w-4 h-4 text-teal-600 shrink-0" />

@@ -118,32 +118,47 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
     }
   };
 
+  // Keyboard shortcut: close on Escape
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200 font-sans">
-      <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 animate-in zoom-in duration-200">
+    <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200 font-sans"
+    >
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 animate-in zoom-in duration-200 flex flex-col max-h-[90vh]">
         
-        {/* Header */}
-        <div className="p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white relative">
+        {/* Header - Fixed Top */}
+        <div className="p-5 sm:p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white relative shrink-0">
           <button
             onClick={onClose}
-            className="absolute top-5 right-5 p-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 transition cursor-pointer"
+            aria-label="Close modal"
+            className="absolute top-4 right-4 sm:top-5 sm:right-5 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 transition cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2.5 text-blue-400 font-bold text-xs uppercase tracking-wider mb-2">
+          <div className="flex items-center gap-2 text-teal-400 font-bold text-xs uppercase tracking-wider mb-1.5">
             <CreditCard className="w-4 h-4" />
             <span>Upgrade Store Subscription</span>
           </div>
 
           <h2 className="text-xl sm:text-2xl font-black text-white">{plan.name} Tier</h2>
-          <p className="text-xs text-slate-300 font-medium mt-1">
+          <p className="text-xs text-slate-300 font-medium mt-1 leading-relaxed">
             {plan.description || 'Unlock advanced inventory capacities, receipts, and platform features.'}
           </p>
         </div>
 
-        {/* Content Body */}
-        <div className="p-6 space-y-6">
+        {/* Content Body - Scrollable */}
+        <div className="p-5 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1">
 
           {/* Success State */}
           {successData ? (
@@ -209,23 +224,24 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                  <div className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
                     {plan.maxDevices ? `${plan.maxDevices.toLocaleString()} Devices Limit` : 'Unlimited Devices'}
                   </div>
                 </div>
               </div>
 
-              {/* Feature Checklist */}
+              {/* Feature Checklist - Constrained Scroll Container */}
               {Array.isArray(plan.features) && plan.features.length > 0 && (
-                <div className="space-y-2">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    Included Benefits:
-                  </span>
-                  <div className="grid grid-cols-1 gap-1.5 text-xs text-slate-700">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span>Included Benefits ({plan.features.length})</span>
+                    <span className="text-[9px] font-medium lowercase text-slate-400">scroll to view all</span>
+                  </div>
+                  <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1.5 border border-slate-100 p-2.5 rounded-xl bg-slate-50/60 divide-y divide-slate-100/80">
                     {plan.features.map((feat, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
+                      <div key={idx} className="flex items-center gap-2 text-xs text-slate-700 pt-1.5 first:pt-0">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-                        <span className="font-medium text-slate-700">{feat}</span>
+                        <span className="font-medium text-slate-700 leading-snug">{feat}</span>
                       </div>
                     ))}
                   </div>
@@ -236,12 +252,14 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
               {errorMessage && (
                 <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-xl flex items-center justify-between">
                   <span>{errorMessage}</span>
-                  <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800"></button>
+                  <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 p-1">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               )}
 
               {/* Payment CTA */}
-              <div className="space-y-2.5 pt-2">
+              <div className="space-y-2.5 pt-1">
                 <button
                   onClick={handlePayWithPaystack}
                   disabled={isInitializing || isVerifying}

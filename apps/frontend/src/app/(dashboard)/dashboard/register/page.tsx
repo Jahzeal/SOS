@@ -186,9 +186,28 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
 
   const handleNextToStep2 = async () => {
     setErrorMessage(null);
-    if (mode === 'PHONE' && !imei.trim() && !serialNumber.trim()) {
-      setErrorMessage('Please enter or scan an IMEI or Serial Number.');
-      return;
+    if (mode === 'PHONE') {
+      if (deviceCategory === 'PHONE_TABLET') {
+        const cleanImei = imei.trim();
+        if (!cleanImei) {
+          setErrorMessage('Please enter or scan a 15-digit IMEI.');
+          return;
+        }
+        if (cleanImei.length !== 15 || !/^\d{15}$/.test(cleanImei)) {
+          setErrorMessage(`IMEI must be exactly 15 numeric digits (currently ${cleanImei.length} digits).`);
+          return;
+        }
+      } else {
+        if (!imei.trim() && !serialNumber.trim()) {
+          setErrorMessage('Please enter or scan a Serial Number or Device ID.');
+          return;
+        }
+      }
+    } else {
+      if (!imei.trim() && !serialNumber.trim()) {
+        setErrorMessage('Please enter a barcode, SKU, or click "Generate SKU".');
+        return;
+      }
     }
 
     const checkId = imei.trim() || serialNumber.trim();
@@ -306,11 +325,11 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
               Register Phones & Laptops or Item
             </h1>
             <Badge variant="new" size="sm" className="hidden sm:inline-flex">
-              Stock Ingestion
+              Add New Stock
             </Badge>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 font-medium max-w-2xl mt-1 leading-relaxed">
-            Add phones, power banks, audio gadgets, chargers, laptops, and accessories into inventory with instant barcode & QR traceability.
+            Product Intake: Add phones, laptops, and accessories into inventory with instant barcode & QR traceability.
           </p>
         </div>
 
@@ -528,15 +547,41 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
               {/* Inputs Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
                 <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    {mode === 'PHONE' ? 'IMEI Number *' : 'Barcode / EAN / S/N (Optional)'}
-                  </label>
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                      {mode === 'PHONE' ? 'IMEI Number *' : 'Barcode / EAN / S/N (Optional)'}
+                    </label>
+                    {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
+                      <span className={`text-[11px] font-bold ${
+                        imei.length === 15 
+                          ? 'text-emerald-600 flex items-center gap-1' 
+                          : imei.length > 0 
+                            ? 'text-amber-600' 
+                            : 'text-slate-400'
+                      }`}>
+                        {imei.length === 15 ? '✓ 15 / 15 digits (Valid)' : `(${imei.length}/15 digits)`}
+                      </span>
+                    )}
+                  </div>
                   <input
                     type="text"
                     value={imei}
-                    onChange={(e) => setImei(e.target.value)}
+                    maxLength={mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' ? 15 : undefined}
+                    onChange={(e) => {
+                      let val = e.target.value;
+                      if (mode === 'PHONE' && deviceCategory === 'PHONE_TABLET') {
+                        val = val.replace(/\D/g, '').slice(0, 15);
+                      }
+                      setImei(val);
+                    }}
                     placeholder={mode === 'PHONE' ? "Enter 15-digit IMEI" : "e.g. 693420849102 or scan box"}
-                    className="w-full text-xs sm:text-sm px-3.5 py-2.5 sm:px-4 sm:py-3 bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 font-mono font-semibold text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs shadow-xs"
+                    className={`w-full text-xs sm:text-sm px-3.5 py-2.5 sm:px-4 sm:py-3 bg-white border rounded-xl focus:outline-none font-mono font-semibold text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs shadow-xs transition-colors ${
+                      mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && imei.length === 15
+                        ? 'border-emerald-500 focus:border-emerald-600 bg-emerald-50/20'
+                        : mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && imei.length > 0 && imei.length < 15
+                        ? 'border-amber-400 focus:border-amber-500'
+                        : 'border-slate-200 focus:border-teal-600'
+                    }`}
                   />
                 </div>
 
@@ -1402,7 +1447,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
               <CheckCircle2 className="w-8 h-8" />
             </div>
             <div>
-              <h3 className="text-xl font-extrabold text-slate-900">Stock Ingestion Complete!</h3>
+              <h3 className="text-xl font-extrabold text-slate-900">Product Intake Complete!</h3>
               <p className="text-xs text-slate-600 font-medium mt-1">
                 <strong>{registeredItem.brand} {registeredItem.model}</strong> ({registeredItem.imei}) has been added to your inventory.
               </p>
@@ -1442,7 +1487,13 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
         isOpen={showCameraScanner}
         onClose={() => setShowCameraScanner(false)}
         onDetected={(result) => {
-          if (result.imei) setImei(result.imei);
+          if (result.imei) {
+            let clean = result.imei.trim();
+            if (mode === 'PHONE' && deviceCategory === 'PHONE_TABLET') {
+              clean = clean.replace(/\D/g, '').slice(0, 15);
+            }
+            setImei(clean);
+          }
           if (result.serial) setSerialNumber(result.serial);
         }}
         title={`Scan ${mode === 'PHONE' ? 'Phone Box / IMEI' : 'Product Barcode / SKU'}`}

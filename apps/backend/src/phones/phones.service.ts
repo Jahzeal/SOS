@@ -128,6 +128,10 @@ export class PhonesService {
 
     // 1. If IMEI provided, check duplicate
     if (finalImei) {
+      // Auto-sanitize numeric IMEI if typed with extra digits or whitespace
+      if (/^\d+$/.test(finalImei) && finalImei.length > 15) {
+        finalImei = finalImei.slice(0, 15);
+      }
       const imeiCheck = await this.checkImei(businessId, finalImei);
       if (imeiCheck.exists) {
         throw new ConflictException(imeiCheck.message);
