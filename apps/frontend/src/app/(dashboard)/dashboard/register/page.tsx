@@ -340,6 +340,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
         warrantyDurationMonths: warrantyMonths,
         purchasePrice: purchasePrice ? parseFloat(purchasePrice.toString().replace(/,/g, '')) : undefined,
         sellingPrice: sellingPrice ? parseFloat(sellingPrice.toString().replace(/,/g, '')) : undefined,
+        deviceCategory: mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'LAPTOP' : 'PHONE') : 'PHONE',
       });
 
       setRegisteredItem({

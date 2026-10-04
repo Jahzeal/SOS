@@ -1,7 +1,7 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterPhoneDto } from './dto/register-phone.dto';
-import { PhoneStatus } from '@prisma/client';
+import { PhoneStatus, DeviceCategory } from '@prisma/client';
 import * as QRCode from 'qrcode';
 
 @Injectable()
@@ -172,6 +172,10 @@ export class PhonesService {
       : null;
 
     // 4. Create Item Record
+    const category = (dto.deviceCategory === 'LAPTOP' || (dto.deviceCategory as any) === DeviceCategory.LAPTOP)
+      ? DeviceCategory.LAPTOP
+      : DeviceCategory.PHONE;
+
     const phoneRecord = await this.prisma.phoneRecord.create({
       data: {
         businessId,
@@ -183,6 +187,7 @@ export class PhonesService {
         color: dto.color?.trim() || null,
         storageCapacity: dto.storageCapacity?.trim() || null,
         condition: dto.condition,
+        deviceCategory: category,
         status: PhoneStatus.IN_STOCK,
         purchasePrice: dto.purchasePrice,
         sellingPrice: dto.sellingPrice,

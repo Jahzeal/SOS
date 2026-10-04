@@ -6,7 +6,7 @@ const API_BASE_URL = rawUrl.startsWith('http://') || rawUrl.startsWith('https://
   : `https://${rawUrl.replace(/\/$/, '')}`;
 
 export interface RegisterPhonePayload {
-  imei1: string;
+  imei1?: string;
   imei2?: string;
   serialNumber?: string;
   brand: string;
@@ -23,6 +23,7 @@ export interface RegisterPhonePayload {
   customerName?: string;
   customerPhone?: string;
   customerEmail?: string;
+  deviceCategory?: 'PHONE' | 'LAPTOP' | 'PHONE_TABLET' | 'ACCESSORY';
 }
 
 class ApiClient {

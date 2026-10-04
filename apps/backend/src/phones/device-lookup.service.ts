@@ -324,9 +324,9 @@ export class DeviceLookupService {
 
   private isMsiFormat(id: string): boolean {
     return (
-      /^9S7[A-Z0-9]{10,14}$/i.test(id) ||
+      /^9S7[A-Z0-9]{8,15}$/i.test(id) ||
       /^K[0-9]{6,12}$/i.test(id) ||
-      (/^[A-Z0-9]{14,18}$/i.test(id) && /^(MS|MSI)/i.test(id))
+      (/^[A-Z0-9]{12,20}$/i.test(id) && /^(MS|MSI)/i.test(id))
     );
   }
 

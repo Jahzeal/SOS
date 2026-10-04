@@ -72,8 +72,8 @@ export class RegisterPhoneDto {
   @IsOptional()
   activationStatus?: any;
 
-  @IsEnum(DeviceCategory)
-  deviceCategory: DeviceCategory;
+  @IsOptional()
+  deviceCategory?: any;
 }
 
 export class FlagStolenPhoneDto {
