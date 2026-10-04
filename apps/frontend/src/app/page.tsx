@@ -147,8 +147,28 @@ export default function PublicLandingPageV2() {
     const retailer = data.retailer || data.business;
     const warranty = data.warranty || {};
 
-    // If not registered by an authorized retailer in the network, do NOT treat as found/authorized!
+    // If not registered by an authorized retailer in the network, check if hardware profile was detected
     if (!isRegistered || !retailer?.name) {
+      if (device?.brand && device?.model && device.brand !== 'Smartphone Device' && device.brand !== 'Hardware Device') {
+        const brandModel = [device.brand, device.model].filter(Boolean).join(' ').trim();
+        const specs = [device.storageCapacity, device.color].filter(Boolean).join(' • ').trim();
+
+        return {
+          found: true,
+          retailer: 'Hardware Registry Profile (Unregistered Store Ledger)',
+          retailerSlug: '#',
+          model: brandModel,
+          storage: specs || 'Factory Hardware Architecture',
+          warranty: 'Clean in Global Theft Registry',
+          imei: device.imei1 || '',
+          serial: device.serialNumber || cleanId || '',
+          status: 'CLEAN_UNREGISTERED',
+          isStolen: data.isStolen || false,
+          ownerMessage: data.ownerMessage || null,
+          contactPhone: data.contactPhone || null,
+        };
+      }
+
       return {
         found: false,
         searchedTerm: cleanId || device?.imei1 || device?.serialNumber || '',

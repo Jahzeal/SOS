@@ -2,6 +2,7 @@ import { Injectable, NotFoundException, ConflictException } from '@nestjs/common
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterPhoneDto } from './dto/phone-record.dto';
 import { DeviceIntelligenceService } from './device-intelligence.service';
+import { DeviceLookupService } from '../phones/device-lookup.service';
 import * as QRCode from 'qrcode';
 
 @Injectable()
@@ -9,6 +10,7 @@ export class VerificationService {
   constructor(
     private prisma: PrismaService,
     private deviceIntel: DeviceIntelligenceService,
+    private deviceLookup: DeviceLookupService,
   ) {}
 
   async registerPhone(businessId: string, userId: string, dto: RegisterPhoneDto) {
@@ -58,80 +60,126 @@ export class VerificationService {
     try {
       qrCodeUrl = await QRCode.toDataURL(verificationUrl);
     } catch (e) {
-      console.error('Failed to generate QR code:', e);
+      // Non-blocking if QR generation fails
     }
 
-    if (qrCodeUrl) {
-      return this.prisma.phoneRecord.update({
-        where: { id: record.id },
-        data: { qrCodeUrl },
-        include: { registeredBy: { select: { firstName: true, lastName: true, email: true } }, customer: true },
-      });
-    }
-
-    return record;
+    // Update with QR code URL
+    return this.prisma.phoneRecord.update({
+      where: { id: record.id },
+      data: { qrCodeUrl },
+    });
   }
 
-  async getPhones(businessId: string, query?: string) {
+  async getPhones(businessId: string, search?: string) {
     const where: any = { businessId };
-    if (query) {
+    if (search && search.trim()) {
+      const q = search.trim();
       where.OR = [
-        { imei1: { contains: query, mode: 'insensitive' } },
-        { imei2: { contains: query, mode: 'insensitive' } },
-        { serialNumber: { contains: query, mode: 'insensitive' } },
-        { brand: { contains: query, mode: 'insensitive' } },
-        { model: { contains: query, mode: 'insensitive' } },
+        { brand: { contains: q, mode: 'insensitive' } },
+        { model: { contains: q, mode: 'insensitive' } },
+        { imei1: { contains: q, mode: 'insensitive' } },
+        { imei2: { contains: q, mode: 'insensitive' } },
+        { serialNumber: { contains: q, mode: 'insensitive' } },
       ];
     }
-
     return this.prisma.phoneRecord.findMany({
       where,
       orderBy: { createdAt: 'desc' },
-      include: {
-        registeredBy: { select: { firstName: true, lastName: true } },
-        customer: true,
-      },
+      include: { customer: true },
     });
   }
 
   async getPhoneDetails(businessId: string, id: string) {
-    const phone = await this.prisma.phoneRecord.findFirst({
+    const record = await this.prisma.phoneRecord.findFirst({
       where: { id, businessId },
-      include: {
-        registeredBy: { select: { firstName: true, lastName: true, email: true } },
-        customer: true,
-        repairs: true,
-      },
+      include: { customer: true },
     });
-
-    if (!phone) {
-      throw new NotFoundException('Phone record not found');
+    if (!record) {
+      throw new NotFoundException('Device record not found');
     }
-
-    return phone;
+    return record;
   }
 
   async searchByImei(businessId: string, imei: string) {
-    const phones = await this.prisma.phoneRecord.findMany({
+    return this.verifyPhone(businessId, imei);
+  }
+
+  async searchBySerial(businessId: string, serial: string) {
+    return this.verifyPhone(businessId, serial);
+  }
+
+  async verifyPhone(businessId: string, query: string) {
+    const clean = query.trim();
+
+    const record = await this.prisma.phoneRecord.findFirst({
       where: {
         businessId,
         OR: [
-          { imei1: { equals: imei } },
-          { imei2: { equals: imei } },
+          { imei1: clean },
+          { imei2: clean },
+          { serialNumber: { equals: clean, mode: 'insensitive' } },
         ],
       },
       include: { customer: true },
     });
 
-    return phones;
+    if (!record) {
+      throw new NotFoundException(`No device found with IMEI/Serial: ${query}`);
+    }
+
+    // Check if warranty is still active
+    const now = new Date();
+    const isWarrantyValid = record.warrantyExpiryDate ? now <= record.warrantyExpiryDate : false;
+
+    // Log verification check
+    await this.prisma.verificationLog.create({
+      data: {
+        identifier: clean.slice(0, 50),
+        status: isWarrantyValid ? 'VERIFIED' : 'EXPIRED',
+        businessId,
+      },
+    });
+
+    return {
+      ...record,
+      isWarrantyValid,
+      daysRemaining: record.warrantyExpiryDate
+        ? Math.max(0, Math.ceil((record.warrantyExpiryDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
+        : 0,
+    };
   }
 
-  async searchBySerial(businessId: string, serial: string) {
-    return this.prisma.phoneRecord.findMany({
-      where: {
-        businessId,
-        serialNumber: { equals: serial, mode: 'insensitive' },
+  async reportStolen(businessId: string, phoneId: string, note?: string) {
+    const record = await this.prisma.phoneRecord.findFirst({
+      where: { id: phoneId, businessId },
+    });
+
+    if (!record) {
+      throw new NotFoundException('Device not found');
+    }
+
+    return this.prisma.phoneRecord.update({
+      where: { id: phoneId },
+      data: {
+        theftStatus: 'STOLEN',
+        isStolen: true,
+        lostNote: note || 'Reported stolen by merchant',
+        stolenAt: new Date(),
       },
+    });
+  }
+
+  async getVerificationLogs(businessId: string) {
+    return this.prisma.verificationLog.findMany({
+      where: { businessId },
+      orderBy: { createdAt: 'desc' },
+      take: 50,
+    });
+  }
+
+  async getPhoneRecord(businessId: string, id: string) {
+    return this.prisma.phoneRecord.findFirst({
+      where: { id, businessId },
       include: { customer: true },
     });
   }
@@ -177,8 +225,14 @@ export class VerificationService {
       },
     });
 
-    // 3. Fallback TAC / Hardware Profile
+    // 3. Fallback TAC / Hardware Registry Profile
     const tacProfile = this.deviceIntel.parseTac(cleanId);
+    let hardwareLookup: any = null;
+    try {
+      hardwareLookup = await this.deviceLookup.lookup(cleanId, 'LAPTOP');
+    } catch (e) {
+      // Non-blocking
+    }
 
     const isStolen = !!activeTheftReport || phone?.isStolen || phone?.theftStatus === 'STOLEN';
     const theftStatus = isStolen ? 'STOLEN' : 'CLEAN';
@@ -196,7 +250,7 @@ export class VerificationService {
     this.prisma.verificationLog.create({
       data: {
         identifier: cleanId.slice(0, 50),
-        status: isStolen ? 'FLAGGED_STOLEN' : (phone ? 'VERIFIED' : 'NOT_FOUND'),
+        status: isStolen ? 'FLAGGED_STOLEN' : (phone ? 'VERIFIED' : (hardwareLookup?.found ? 'VERIFIED' : 'NOT_FOUND')),
         businessId: phone?.businessId || null,
       },
     }).catch(() => {});
@@ -239,10 +293,16 @@ export class VerificationService {
       };
     }
 
-    // If not registered by a merchant, return TAC profile + theft status
+    // Determine detected hardware details
+    const detectedBrand = activeTheftReport?.brand || (hardwareLookup?.found ? hardwareLookup.brand : null) || tacProfile.brand || (cleanId.length >= 8 ? 'Hardware Device' : 'Smartphone Device');
+    const detectedModel = activeTheftReport?.model || (hardwareLookup?.found ? hardwareLookup.model : null) || tacProfile.model || 'Mobile / PC Device';
+    const detectedSpecs = (hardwareLookup?.found ? hardwareLookup.specs : null) || tacProfile.hardwareVariant || null;
+
+    // If not registered by a merchant, return hardware profile + theft status
     return {
       verified: !isStolen,
       isRegisteredInNetwork: false,
+      hardwareDetected: Boolean(hardwareLookup?.found || tacProfile.isValidImei),
       theftStatus,
       isStolen,
       ownerMessage,
@@ -253,20 +313,19 @@ export class VerificationService {
       lockedCarrier,
       activationStatus,
       deviceInfo: {
-        brand: activeTheftReport?.brand || tacProfile.brand || 'Smartphone Device',
-        model: activeTheftReport?.model || tacProfile.model || 'Mobile Device',
+        brand: detectedBrand,
+        model: detectedModel,
         color: activeTheftReport?.color || null,
-        storageCapacity: null,
+        storageCapacity: detectedSpecs,
         condition: null,
-        serialNumber: activeTheftReport?.serialNumber ? `${activeTheftReport.serialNumber.slice(0, 3)}****` : null,
+        serialNumber: cleanId,
         registeredAt: activeTheftReport?.createdAt || null,
       },
       warranty: null,
       retailer: null,
       message: isStolen
         ? '🚨 WARNING: This device has been reported as STOLEN in the registry.'
-        : 'Device verified clean in global theft registry.',
+        : (hardwareLookup?.found ? `Hardware recognized (${hardwareLookup.brand} System). Device is clean in global anti-theft registry.` : 'Device verified clean in global theft registry.'),
     };
   }
 }
-
