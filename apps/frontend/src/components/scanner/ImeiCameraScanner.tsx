@@ -32,8 +32,8 @@ export function ImeiCameraScanner({
   isOpen = true,
   onClose,
   onDetected,
-  title = 'Scan Phone Box / IMEI',
-  subtitle = 'Align phone box IMEI or Serial Number barcode inside green box',
+  title = 'Scan Device / Barcode / Serial',
+  subtitle = 'Align product box barcode, 15-digit IMEI, or PC Serial Number (S/N) inside scanner frame',
   className = '',
 }: ImeiCameraScannerProps) {
   const [cameraError, setCameraError] = useState<string | null>(null);
@@ -47,7 +47,7 @@ export function ImeiCameraScanner({
     message: string;
     type: 'success' | 'warning' | 'dark' | 'info';
   }>({
-    message: 'Align IMEI / Serial barcode inside reticle',
+    message: 'Align IMEI, Serial Number (S/N), or Barcode inside reticle',
     type: 'info',
   });
 
@@ -78,7 +78,7 @@ export function ImeiCameraScanner({
     hasScannedRef.current = false;
     isProcessingRef.current = false;
     lastDetectionTimeRef.current = Date.now();
-    setCameraGuidance({ message: 'Align IMEI / Serial barcode inside reticle', type: 'info' });
+    setCameraGuidance({ message: 'Align IMEI, Serial Number (S/N), or Barcode inside reticle', type: 'info' });
 
     Promise.all([
       import('@zxing/browser'),
@@ -234,7 +234,7 @@ export function ImeiCameraScanner({
 
     setIsOcrProcessing(true);
     setCameraGuidance({
-      message: 'Looking for IMEI...',
+      message: 'Reading IMEI / Serial number...',
       type: 'info',
     });
 
@@ -275,19 +275,20 @@ export function ImeiCameraScanner({
 
       // Extract and validate 15-digit IMEI candidate using Luhn Checksum
       const validImeiCandidate = extractValidIMEI(ocrText);
+      const generalParsed = extractImeiOrSerial(ocrText);
 
-      // Generate selection pills
+      // Generate selection pills for both IMEIs and Serial Numbers
       const pills: any[] = [];
       activeWords.forEach((w: any, idx: number) => {
         const rawW = w.text ? w.text.trim() : '';
-        const candidate = extractValidIMEI(rawW);
+        const parsedWord = extractImeiOrSerial(rawW);
         const bbox = w.bbox;
 
-        if (bbox && candidate) {
+        if (bbox && parsedWord && parsedWord.value) {
           pills.push({
             id: `lens-pill-${idx}-${bbox.x0}`,
-            type: 'IMEI',
-            value: candidate,
+            type: parsedWord.type,
+            value: parsedWord.value,
             rawText: rawW,
             leftPct: Math.max(0, Math.min(95, (bbox.x0 / cropCanvas.width) * 100)),
             topPct: Math.max(0, Math.min(95, (bbox.y0 / cropCanvas.height) * 100)),
@@ -308,22 +309,19 @@ export function ImeiCameraScanner({
           type: 'success',
         });
         onDetected({ imei: validImeiCandidate, format: 'IMEI_LUHN_VALIDATED', rawText: ocrText });
+      } else if (generalParsed.type === 'SERIAL' && generalParsed.value) {
+        setScannedSerial(generalParsed.value);
+        setScannedFormat('SERIAL_OCR');
+        setCameraGuidance({
+          message: `Serial Number detected: ${generalParsed.value}`,
+          type: 'success',
+        });
+        onDetected({ serial: generalParsed.value, format: 'SERIAL_OCR', rawText: ocrText });
       } else {
-        const parsed = extractImeiOrSerial(ocrText);
-        if (parsed.type === 'SERIAL' && parsed.value) {
-          setScannedSerial(parsed.value);
-          setScannedFormat('SERIAL_OCR');
-          setCameraGuidance({
-            message: `Serial detected: ${parsed.value}`,
-            type: 'success',
-          });
-          onDetected({ serial: parsed.value, format: 'SERIAL_OCR', rawText: ocrText });
-        } else {
-          setCameraGuidance({
-            message: 'No valid IMEI detected. Align box inside frame or tap bubbles.',
-            type: 'warning',
-          });
-        }
+        setCameraGuidance({
+          message: 'No valid IMEI or Serial detected. Align barcode inside frame or tap bubbles.',
+          type: 'warning',
+        });
       }
     } catch (err) {
       console.error('Snap OCR error:', err);
@@ -356,7 +354,7 @@ export function ImeiCameraScanner({
     setGoogleLensPills([]);
     setScannedFormat(null);
     lastScanTimeRef.current = Date.now();
-    setCameraGuidance({ message: 'Align IMEI / Serial barcode inside reticle', type: 'info' });
+    setCameraGuidance({ message: 'Align IMEI, Serial Number (S/N), or Barcode inside reticle', type: 'info' });
 
     setTimeout(() => {
       hasScannedRef.current = false;
@@ -424,10 +422,10 @@ export function ImeiCameraScanner({
             {/* SCANNER OVERLAY RETICLE FRAME */}
             <div ref={reticleRef} className="scanner-overlay-reticle flex flex-col items-center justify-between p-2">
               <span className="text-[10px] uppercase tracking-widest font-extrabold text-emerald-400 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shadow-sm">
-                Scan Box Barcode
+                Scan Barcode / Label
               </span>
               <span className="text-[9px] font-semibold text-slate-200 bg-slate-950/70 px-2 py-0.5 rounded-full">
-                PLACE 15-DIGIT IMEI BARCODE HERE
+                ALIGN 15-DIGIT IMEI OR SERIAL NUMBER (S/N)
               </span>
               {!isCameraFrozen && <div className="scanner-overlay-laser" />}
             </div>
@@ -439,10 +437,10 @@ export function ImeiCameraScanner({
                   type="button"
                   onClick={handleSnapAndScanText}
                   disabled={isOcrProcessing}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30 disabled:opacity-50"
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30 disabled:opacity-50 cursor-pointer"
                 >
                   <Camera className="w-3.5 h-3.5" />
-                  {isOcrProcessing ? 'Scanning...' : 'Scan IMEI Frame'}
+                  {isOcrProcessing ? 'Reading Text...' : 'Capture & Read Frame'}
                 </button>
               </div>
             )}
@@ -480,7 +478,7 @@ export function ImeiCameraScanner({
                 <button
                   type="button"
                   onClick={resumeCameraScanning}
-                  className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
+                  className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                 >
                   <RefreshCw className="w-3.5 h-3.5" /> Scan Another
                 </button>
@@ -488,7 +486,7 @@ export function ImeiCameraScanner({
                   <button
                     type="button"
                     onClick={onClose}
-                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-sm"
+                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
                   >
                     <Check className="w-3.5 h-3.5" /> Use Scanned
                   </button>
@@ -496,7 +494,7 @@ export function ImeiCameraScanner({
               </div>
             ) : (
               <span className="text-slate-400 text-center w-full">
-                Point camera at barcode or tap <strong className="text-slate-200">Scan IMEI Frame</strong>
+                Point camera at barcode or tap <strong className="text-slate-200">Capture & Read Frame</strong>
               </span>
             )}
           </div>
