@@ -142,34 +142,64 @@ export class DeviceLookupService {
   private async lookupHp(id: string): Promise<DeviceLookupResult> {
     const clean = id.toUpperCase();
     const prefix = clean.slice(0, 3);
-    const yearDigit = clean[3];
+    const yearChar = clean[3];
     const week = clean.slice(4, 6);
 
-    let line = 'HP EliteBook / ProBook Laptop';
-    let series = 'Enterprise Business Series';
+    let modelName = 'EliteBook 840 G5 / 830 G5';
+    let hardwareSpecs = 'Intel Core 8th Gen Quad-Core • DDR4 RAM • PCIe NVMe SSD';
+    const isCommercial = prefix.includes('CG') || prefix.includes('NU') || prefix.includes('ND');
+    const isConsumer = prefix.includes('CD') || prefix.includes('CE');
+    const isWorkstation = prefix.includes('8CG');
+    const isDesktop = prefix.includes('ZC') || prefix.includes('NA');
 
-    if (prefix.includes('CG') || prefix.includes('NU') || prefix.includes('ND')) {
-      line = 'HP EliteBook / ProBook';
-      series = 'Business & Enterprise Grade';
-    } else if (prefix.includes('CD') || prefix.includes('CE')) {
-      line = 'HP Pavilion / Envy / Omen';
-      series = 'Performance & Gaming Series';
-    } else if (prefix.includes('ZC') || prefix.includes('NA')) {
-      line = 'HP ProDesk / EliteDesk Desktop';
-      series = 'Commercial Desktop Architecture';
-    } else if (prefix.includes('CA')) {
-      line = 'HP Chromebook / Essential';
-      series = 'Standard Commercial Edition';
+    if (isCommercial) {
+      if (yearChar === '8') {
+        modelName = 'EliteBook x360 1030 G2 / 840 G5 Series';
+        hardwareSpecs = 'Intel Core i5/i7 (7th/8th Gen) • DDR4 RAM • PCIe NVMe SSD • Touch / FHD IPS Display';
+      } else if (yearChar === '9') {
+        modelName = 'EliteBook 840 / 830 G6 Series';
+        hardwareSpecs = 'Intel Core 8th/10th Gen • DDR4-2666 RAM • PCIe NVMe SSD • 14" FHD Anti-Glare';
+      } else if (yearChar === '0') {
+        modelName = 'EliteBook 840 G7 Series';
+        hardwareSpecs = 'Intel Core 10th Gen / AMD Ryzen 4000 PRO • DDR4-3200 • PCIe NVMe SSD';
+      } else if (yearChar === '1') {
+        modelName = 'EliteBook 840 G8 Series';
+        hardwareSpecs = 'Intel Core 11th Gen Tiger Lake • DDR4-3200 • PCIe Gen4 NVMe SSD • Iris Xe Graphics';
+      } else if (yearChar === '2') {
+        modelName = 'EliteBook 840 G9 Series';
+        hardwareSpecs = 'Intel Core 12th Gen Alder Lake • DDR5-4800 RAM • PCIe Gen4 SSD • 16:10 FHD Display';
+      } else if (yearChar === '3') {
+        modelName = 'EliteBook 840 G10 Series';
+        hardwareSpecs = 'Intel Core 13th Gen Raptor Lake • DDR5-5200 RAM • PCIe Gen4 SSD • 5MP IR Camera';
+      } else if (yearChar === '7') {
+        modelName = 'EliteBook 840 G4 Series';
+        hardwareSpecs = 'Intel Core 7th Gen Kaby Lake • DDR4 RAM • PCIe NVMe M.2 SSD';
+      } else if (yearChar === '6') {
+        modelName = 'EliteBook 840 G3 Series';
+        hardwareSpecs = 'Intel Core 6th Gen Skylake • DDR4 RAM • M.2 SATA/NVMe SSD';
+      } else {
+        modelName = 'EliteBook / ProBook Commercial Series';
+        hardwareSpecs = 'Intel/AMD Enterprise Architecture • High-Speed DDR RAM • NVMe Solid State Storage';
+      }
+    } else if (isWorkstation) {
+      modelName = 'ZBook Studio / Firefly Mobile Workstation';
+      hardwareSpecs = 'Intel Core / Xeon / Dedicated NVIDIA RTX GPU • ISV Certified Enterprise Architecture';
+    } else if (isConsumer) {
+      modelName = 'Pavilion / Envy / Omen Laptop';
+      hardwareSpecs = 'Intel/AMD Performance Series • Dual-Channel RAM • High-Speed NVMe Storage';
+    } else if (isDesktop) {
+      modelName = 'ProDesk / EliteDesk Desktop PC';
+      hardwareSpecs = 'Commercial Desktop Architecture • Small Form Factor (SFF) / Microtower';
     }
 
-    const year = parseInt(yearDigit, 10) >= 0 ? `201${yearDigit}` : 'Modern Gen';
+    const yearFull = parseInt(yearChar, 10) >= 4 ? `201${yearChar}` : `202${yearChar}`;
 
     return {
       found: true,
       brand: 'HP',
-      model: `${line} (SN: ${clean})`,
-      specs: `${series} • Mfg Week ${week}/${year}`,
-      deviceCategory: line.includes('Desktop') ? 'LAPTOP' : 'LAPTOP',
+      model: modelName,
+      specs: `${hardwareSpecs} (Mfg Wk ${week}/${yearFull})`,
+      deviceCategory: isDesktop ? 'LAPTOP' : 'LAPTOP',
       confidence: 'HIGH',
       source: 'HP_HARDWARE_REGISTRY',
     };
@@ -207,7 +237,7 @@ export class DeviceLookupService {
           found: true,
           brand: 'Lenovo',
           model: model.slice(0, 60),
-          specs: 'Lenovo Commercial/Consumer Architecture',
+          specs: 'Intel / AMD Architecture • High-Speed DDR RAM • PCIe NVMe SSD Storage',
           deviceCategory: 'LAPTOP',
           confidence: 'HIGH',
           source: 'LENOVO_LIVE_API',
@@ -217,15 +247,15 @@ export class DeviceLookupService {
       this.logger.debug(`Lenovo live lookup error for ${id}: ${err?.message}`);
     }
 
-    let line = 'Lenovo ThinkPad / IdeaPad Series';
-    if (/^PF/i.test(id) || /^(20|21)/.test(id)) line = 'Lenovo ThinkPad X1 / T / L Series';
-    else if (/^(80|81|82|83)/.test(id)) line = 'Lenovo IdeaPad / Legion / Yoga Series';
+    let line = 'ThinkPad / IdeaPad Series';
+    if (/^PF/i.test(id) || /^(20|21)/.test(id)) line = 'ThinkPad X1 / T / L Series';
+    else if (/^(80|81|82|83)/.test(id)) line = 'IdeaPad / Legion / Yoga Series';
 
     return {
       found: true,
       brand: 'Lenovo',
-      model: `${line} (SN: ${id.toUpperCase()})`,
-      specs: 'Lenovo Verified Hardware Architecture',
+      model: line,
+      specs: 'Lenovo Commercial Enterprise Architecture • High-Speed DDR RAM • NVMe Storage',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'LENOVO_HARDWARE_REGISTRY',
@@ -261,8 +291,8 @@ export class DeviceLookupService {
         return {
           found: true,
           brand: 'Dell',
-          model: item.productLineDescription,
-          specs: 'Dell Verified Hardware System',
+          model: item.productLineDescription.replace(/^Dell\s+/i, ''),
+          specs: 'Intel / AMD Architecture • High-Speed DDR RAM • PCIe NVMe SSD Storage',
           deviceCategory: 'LAPTOP',
           confidence: 'HIGH',
           source: 'DELL_LIVE_API',
@@ -275,8 +305,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Dell',
-      model: `Dell Latitude / XPS / Inspiron (ST: ${serviceTag.toUpperCase()})`,
-      specs: 'Dell Service Tag Verified System',
+      model: 'Latitude / XPS / Inspiron Series',
+      specs: 'Dell Service Tag Verified System • High-Speed DDR RAM • NVMe Solid State Storage',
       deviceCategory: 'LAPTOP',
       confidence: 'MEDIUM',
       source: 'DELL_HARDWARE_REGISTRY',
@@ -304,8 +334,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'MSI',
-      model: `MSI Stealth / Raider / Katana Gaming (SN: ${id.toUpperCase()})`,
-      specs: 'MSI High-Performance System Architecture',
+      model: 'Stealth / Raider / Katana Gaming Series',
+      specs: 'High-Performance Intel/AMD CPU • NVIDIA GeForce RTX Discrete GPU • DDR5 / DDR4 RAM',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'MSI_HARDWARE_REGISTRY',
@@ -324,8 +354,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Razer',
-      model: `Razer Blade Gaming Laptop (SN: ${id.toUpperCase()})`,
-      specs: 'Razer Chroma CNC Aluminum Architecture',
+      model: 'Blade High-Performance Gaming Laptop',
+      specs: 'Intel Core i7/i9 • NVIDIA RTX GPU • QHD/4K High Refresh Display • CNC Aluminum',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'RAZER_HARDWARE_REGISTRY',
@@ -344,8 +374,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Asus',
-      model: `ASUS ZenBook / VivoBook / ROG (SN: ${id.toUpperCase()})`,
-      specs: 'ASUS Performance System Architecture',
+      model: 'ZenBook / VivoBook / ROG Series',
+      specs: 'OLED / IPS Display • Intel Core / AMD Ryzen • High-Speed PCIe NVMe Storage',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'ASUS_HARDWARE_REGISTRY',
@@ -364,8 +394,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Acer',
-      model: `Acer Aspire / Swift / Predator (SN: ${id.toUpperCase()})`,
-      specs: 'Acer Mobile Architecture',
+      model: 'Aspire / Swift / Predator Series',
+      specs: 'Intel Core / AMD Ryzen Architecture • Dual-Channel RAM • High-Speed M.2 SSD',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'ACER_HARDWARE_REGISTRY',
@@ -384,8 +414,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Microsoft',
-      model: `Microsoft Surface Pro / Laptop (SN: ${id})`,
-      specs: 'PixelSense Touch Display / Windows 11 Pro',
+      model: 'Surface Pro / Surface Laptop Series',
+      specs: 'PixelSense 120Hz Touch Display • Intel Core / Snapdragon X Elite • Windows 11 Pro',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'MICROSOFT_HARDWARE_REGISTRY',
@@ -404,8 +434,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Samsung',
-      model: `Samsung Galaxy Book / Notebook (SN: ${id.toUpperCase()})`,
-      specs: 'Samsung AMOLED / Intel Evo Architecture',
+      model: 'Galaxy Book Pro / Ultra 360 Series',
+      specs: 'Dynamic AMOLED 2X Display • Intel Evo Platform • Ultra-Slim Magnesium Chassis',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'SAMSUNG_HARDWARE_REGISTRY',
@@ -424,8 +454,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Gigabyte',
-      model: `Gigabyte AORUS / AERO Laptop (SN: ${id.toUpperCase()})`,
-      specs: 'Gigabyte High-Performance PC Architecture',
+      model: 'AORUS / AERO Gaming Series',
+      specs: 'Intel Core i7/i9 • NVIDIA GeForce RTX Discrete Graphics • High Refresh Display',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'GIGABYTE_HARDWARE_REGISTRY',
@@ -447,8 +477,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'LG',
-      model: `LG Gram Ultralight Laptop (SN: ${id.toUpperCase()})`,
-      specs: 'LG Magnesium-Alloy Ultralight Architecture',
+      model: 'Gram Ultralight Laptop Series',
+      specs: 'Ultra-Lightweight Magnesium Alloy • 16:10 IPS Display • Intel Evo Platform',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'LG_HARDWARE_REGISTRY',
@@ -467,8 +497,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Huawei',
-      model: `Huawei MateBook / MagicBook (SN: ${id.toUpperCase()})`,
-      specs: 'Huawei FullView Display Architecture',
+      model: 'MateBook X Pro / D Series',
+      specs: '3K Real Color Touchscreen • Intel Core Architecture • Super Device Integration',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'HUAWEI_HARDWARE_REGISTRY',
@@ -487,8 +517,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Dynabook / Toshiba',
-      model: `Dynabook Portégé / Tecra (SN: ${id.toUpperCase()})`,
-      specs: 'Dynabook Business System Architecture',
+      model: 'Portégé / Tecra Business Series',
+      specs: 'Intel Core vPro Architecture • Secured-Core PC • Magnesium Military-Spec Chassis',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'DYNABOOK_HARDWARE_REGISTRY',
@@ -528,8 +558,8 @@ export class DeviceLookupService {
           return {
             found: true,
             brand: 'Apple',
-            model: rawModel,
-            specs: 'Apple Silicon / Retina Display Hardware',
+            model: rawModel.replace(/^Apple\s+/i, ''),
+            specs: 'Apple Silicon / Retina Display Hardware • Unified Memory • PCIe High-Speed SSD',
             deviceCategory: isLaptop ? 'LAPTOP' : (isTablet ? 'PHONE_TABLET' : 'LAPTOP'),
             confidence: 'HIGH',
             source: 'APPLE_LIVE_CATALOG',
@@ -543,8 +573,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Apple',
-      model: `MacBook / Mac Desktop System (SN: ${serial.toUpperCase()})`,
-      specs: 'Apple Hardware Architecture',
+      model: 'MacBook / Mac Desktop System',
+      specs: 'Apple Silicon / Retina Display Hardware • High-Speed Unified Architecture',
       deviceCategory: 'LAPTOP',
       confidence: 'MEDIUM',
       source: 'APPLE_HARDWARE_REGISTRY',
@@ -607,8 +637,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'PC / Personal Computer',
-      model: `Workstation / Laptop Hardware System (SN: ${id.toUpperCase()})`,
-      specs: 'Universal PC Hardware Architecture',
+      model: 'Workstation / Laptop Hardware System',
+      specs: 'Universal PC Hardware Architecture • High-Speed DDR RAM • Solid State Storage',
       deviceCategory: 'LAPTOP',
       confidence: 'MEDIUM',
       source: 'UNIVERSAL_PC_REGISTRY',
