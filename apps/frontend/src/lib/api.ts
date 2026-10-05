@@ -215,6 +215,7 @@ class ApiClient {
       found: boolean;
       brand?: string;
       model?: string;
+      suggestedModels?: string[];
       specs?: string;
       deviceCategory?: 'PHONE_TABLET' | 'LAPTOP' | 'ACCESSORY';
       confidence?: 'HIGH' | 'MEDIUM' | 'LOW';

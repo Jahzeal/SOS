@@ -5,6 +5,7 @@ export interface DeviceLookupResult {
   found: boolean;
   brand?: string;
   model?: string;
+  suggestedModels?: string[];
   specs?: string;
   deviceCategory?: 'PHONE_TABLET' | 'LAPTOP' | 'ACCESSORY';
   source?: string;
@@ -150,7 +151,8 @@ export class DeviceLookupService {
     const yearChar = clean[3];
     const week = clean.slice(4, 6);
 
-    let modelName = 'EliteBook 840 G5 / 830 G5';
+    let modelName = 'EliteBook 840 G5';
+    let suggestedModels: string[] = ['EliteBook 840 G5', 'EliteBook x360 1030 G2', 'EliteBook 830 G5'];
     let hardwareSpecs = 'Intel Core 8th Gen Quad-Core • DDR4 RAM • PCIe NVMe SSD';
     const isCommercial = prefix.includes('CG') || prefix.includes('NU') || prefix.includes('ND');
     const isConsumer = prefix.includes('CD') || prefix.includes('CE');
@@ -159,41 +161,53 @@ export class DeviceLookupService {
 
     if (isCommercial) {
       if (yearChar === '8') {
-        modelName = 'EliteBook x360 1030 G2 / 840 G5 Series';
+        modelName = 'EliteBook x360 1030 G2';
+        suggestedModels = ['EliteBook x360 1030 G2', 'EliteBook 840 G5', 'EliteBook 830 G5'];
         hardwareSpecs = 'Intel Core i5/i7 (7th/8th Gen) • DDR4 RAM • PCIe NVMe SSD • Touch / FHD IPS Display';
       } else if (yearChar === '9') {
-        modelName = 'EliteBook 840 / 830 G6 Series';
+        modelName = 'EliteBook 840 G6';
+        suggestedModels = ['EliteBook 840 G6', 'EliteBook 830 G6', 'EliteBook x360 1030 G3'];
         hardwareSpecs = 'Intel Core 8th/10th Gen • DDR4-2666 RAM • PCIe NVMe SSD • 14" FHD Anti-Glare';
       } else if (yearChar === '0') {
-        modelName = 'EliteBook 840 G7 Series';
+        modelName = 'EliteBook 840 G7';
+        suggestedModels = ['EliteBook 840 G7', 'EliteBook 830 G7', 'EliteBook 845 G7'];
         hardwareSpecs = 'Intel Core 10th Gen / AMD Ryzen 4000 PRO • DDR4-3200 • PCIe NVMe SSD';
       } else if (yearChar === '1') {
-        modelName = 'EliteBook 840 G8 Series';
+        modelName = 'EliteBook 840 G8';
+        suggestedModels = ['EliteBook 840 G8', 'EliteBook 830 G8', 'EliteBook 845 G8'];
         hardwareSpecs = 'Intel Core 11th Gen Tiger Lake • DDR4-3200 • PCIe Gen4 NVMe SSD • Iris Xe Graphics';
       } else if (yearChar === '2') {
-        modelName = 'EliteBook 840 G9 Series';
+        modelName = 'EliteBook 840 G9';
+        suggestedModels = ['EliteBook 840 G9', 'EliteBook 860 G9', 'EliteBook 830 G9'];
         hardwareSpecs = 'Intel Core 12th Gen Alder Lake • DDR5-4800 RAM • PCIe Gen4 SSD • 16:10 FHD Display';
       } else if (yearChar === '3') {
-        modelName = 'EliteBook 840 G10 Series';
+        modelName = 'EliteBook 840 G10';
+        suggestedModels = ['EliteBook 840 G10', 'EliteBook 860 G10', 'EliteBook 830 G10'];
         hardwareSpecs = 'Intel Core 13th Gen Raptor Lake • DDR5-5200 RAM • PCIe Gen4 SSD • 5MP IR Camera';
       } else if (yearChar === '7') {
-        modelName = 'EliteBook 840 G4 Series';
+        modelName = 'EliteBook 840 G4';
+        suggestedModels = ['EliteBook 840 G4', 'EliteBook 820 G4', 'EliteBook 1040 G4'];
         hardwareSpecs = 'Intel Core 7th Gen Kaby Lake • DDR4 RAM • PCIe NVMe M.2 SSD';
       } else if (yearChar === '6') {
-        modelName = 'EliteBook 840 G3 Series';
+        modelName = 'EliteBook 840 G3';
+        suggestedModels = ['EliteBook 840 G3', 'EliteBook 820 G3'];
         hardwareSpecs = 'Intel Core 6th Gen Skylake • DDR4 RAM • M.2 SATA/NVMe SSD';
       } else {
-        modelName = 'EliteBook / ProBook Commercial Series';
+        modelName = 'EliteBook 840';
+        suggestedModels = ['EliteBook 840', 'ProBook 450', 'ProBook 440'];
         hardwareSpecs = 'Intel/AMD Enterprise Architecture • High-Speed DDR RAM • NVMe Solid State Storage';
       }
     } else if (isWorkstation) {
-      modelName = 'ZBook Studio / Firefly Mobile Workstation';
+      modelName = 'ZBook Studio G5';
+      suggestedModels = ['ZBook Studio G5', 'ZBook Firefly 14', 'ZBook 15 G5'];
       hardwareSpecs = 'Intel Core / Xeon / Dedicated NVIDIA RTX GPU • ISV Certified Enterprise Architecture';
     } else if (isConsumer) {
-      modelName = 'Pavilion / Envy / Omen Laptop';
+      modelName = 'Pavilion 15';
+      suggestedModels = ['Pavilion 15', 'Envy x360', 'Omen 15', 'Victus 15'];
       hardwareSpecs = 'Intel/AMD Performance Series • Dual-Channel RAM • High-Speed NVMe Storage';
     } else if (isDesktop) {
-      modelName = 'ProDesk / EliteDesk Desktop PC';
+      modelName = 'EliteDesk 800';
+      suggestedModels = ['EliteDesk 800', 'ProDesk 400', 'ProDesk 600'];
       hardwareSpecs = 'Commercial Desktop Architecture • Small Form Factor (SFF) / Microtower';
     }
 
@@ -203,8 +217,9 @@ export class DeviceLookupService {
       found: true,
       brand: 'HP',
       model: modelName,
+      suggestedModels,
       specs: `${hardwareSpecs} (Mfg Wk ${week}/${yearFull})`,
-      deviceCategory: isDesktop ? 'LAPTOP' : 'LAPTOP',
+      deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
       source: 'HP_HARDWARE_REGISTRY',
     };
@@ -252,14 +267,21 @@ export class DeviceLookupService {
       this.logger.debug(`Lenovo live lookup error for ${id}: ${err?.message}`);
     }
 
-    let line = 'ThinkPad / IdeaPad Series';
-    if (/^PF/i.test(id) || /^(20|21)/.test(id)) line = 'ThinkPad X1 / T / L Series';
-    else if (/^(80|81|82|83)/.test(id)) line = 'IdeaPad / Legion / Yoga Series';
+    let line = 'ThinkPad T480';
+    let suggestedModels = ['ThinkPad T480', 'ThinkPad X1 Carbon', 'ThinkPad L480'];
+    if (/^PF/i.test(id) || /^(20|21)/.test(id)) {
+      line = 'ThinkPad X1 Carbon';
+      suggestedModels = ['ThinkPad X1 Carbon', 'ThinkPad T14', 'ThinkPad L14'];
+    } else if (/^(80|81|82|83)/.test(id)) {
+      line = 'IdeaPad 5';
+      suggestedModels = ['IdeaPad 5', 'Legion 5', 'Yoga 7'];
+    }
 
     return {
       found: true,
       brand: 'Lenovo',
       model: line,
+      suggestedModels,
       specs: 'Lenovo Commercial Enterprise Architecture • High-Speed DDR RAM • NVMe Storage',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',
@@ -310,7 +332,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'Dell',
-      model: 'Latitude / XPS / Inspiron Series',
+      model: 'Latitude 7490',
+      suggestedModels: ['Latitude 7490', 'Latitude 5490', 'XPS 13', 'Inspiron 15'],
       specs: 'Dell Service Tag Verified System • High-Speed DDR RAM • NVMe Solid State Storage',
       deviceCategory: 'LAPTOP',
       confidence: 'MEDIUM',
@@ -339,7 +362,8 @@ export class DeviceLookupService {
     return {
       found: true,
       brand: 'MSI',
-      model: 'Stealth / Raider / Katana Gaming Series',
+      model: 'Katana 15',
+      suggestedModels: ['Katana 15', 'Stealth 16', 'Raider GE78', 'Thin GF63'],
       specs: 'High-Performance Intel/AMD CPU • NVIDIA GeForce RTX Discrete GPU • DDR5 / DDR4 RAM',
       deviceCategory: 'LAPTOP',
       confidence: 'HIGH',

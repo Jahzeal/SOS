@@ -142,6 +142,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
     found: boolean;
     brand?: string;
     model?: string;
+    suggestedModels?: string[];
     specs?: string;
     deviceCategory?: 'PHONE_TABLET' | 'LAPTOP' | 'ACCESSORY';
     confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
@@ -152,15 +153,16 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
   const [isLookingUpDevice, setIsLookingUpDevice] = useState(false);
 
   // Apply auto-detected hardware match into the registration form
-  const handleApplyDetectedMatch = (matchToApply?: typeof detectedMatch) => {
-    const match = matchToApply || detectedMatch;
+  const handleApplyDetectedMatch = (modelOverride?: string) => {
+    const match = detectedMatch;
     if (!match || !match.found) return;
 
     if (match.brand) {
       setBrand(match.brand);
     }
-    if (match.model) {
-      setModel(match.model);
+    const chosenModel = modelOverride || match.model;
+    if (chosenModel) {
+      setModel(chosenModel);
     }
     if (match.deviceCategory === 'LAPTOP' && mode === 'PHONE') {
       setDeviceCategory('LAPTOP');
@@ -712,13 +714,13 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-black text-teal-950 dark:text-teal-200 uppercase tracking-wider">Device Detected</span>
                           <span className="text-[10px] font-bold bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-300 px-2 py-0.5 rounded-md border border-teal-200 dark:border-teal-800">
-                            {detectedMatch.source || 'GSMA TAC Registry'}
+                            {detectedMatch.source || 'Hardware Registry'}
                           </span>
                         </div>
                         <div className="text-sm font-black text-slate-900 dark:text-white mt-0.5">
                           {detectedMatch.brand} {detectedMatch.model} {detectedMatch.specs ? `• ${detectedMatch.specs}` : ''}
                         </div>
-                        {mode === 'PHONE' && (
+                        {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
                           <div className="text-xs text-amber-700 dark:text-amber-400 font-semibold mt-0.5 flex items-center gap-1">
                             <Info className="w-3.5 h-3.5 shrink-0" />
                             <span>(Please select the device storage in step 2)</span>
@@ -745,6 +747,31 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                       </button>
                     </div>
                   </div>
+
+                  {/* 1-Click Exact Sub-Model Selection Chips */}
+                  {detectedMatch.suggestedModels && detectedMatch.suggestedModels.length > 1 && (
+                    <div className="pt-2.5 border-t border-teal-200/70 dark:border-teal-900/60 space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-black text-teal-950 dark:text-teal-200 uppercase tracking-wide">
+                          Select Exact Model:
+                        </span>
+                        <span className="text-[10px] font-medium text-teal-800 dark:text-teal-300">Click to auto-fill</span>
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {detectedMatch.suggestedModels.map((m) => (
+                          <button
+                            key={m}
+                            type="button"
+                            onClick={() => handleApplyDetectedMatch(m)}
+                            className="px-2.5 py-1 rounded-lg text-xs font-bold bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-200 border border-teal-300 dark:border-teal-700 hover:bg-teal-600 hover:text-white hover:border-teal-600 transition-all shadow-2xs flex items-center gap-1 cursor-pointer"
+                          >
+                            <Check className="w-3 h-3 text-teal-600 group-hover:text-white" />
+                            <span>{m}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

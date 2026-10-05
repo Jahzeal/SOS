@@ -1037,7 +1037,7 @@ export default function PublicLandingPageV2() {
 
         {/* Right Side: Live Customer Verification Scanner Widget Card */}
         <div id="verify-widget" className="lg:w-1/2 w-full max-w-xl">
-          <div className="vf-card border-2 border-slate-200 shadow-card-hover p-5 sm:p-6 rounded-2xl bg-white space-y-4">
+          <div className="border-2 border-slate-200/90 shadow-xl p-5 sm:p-6 rounded-2xl bg-white space-y-4">
             <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
               <div>
                 <h3 className="text-base font-extrabold text-slate-900">Verify Phone Record</h3>
@@ -1414,19 +1414,19 @@ export default function PublicLandingPageV2() {
 
           {/* 4 Stat Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 max-w-5xl mx-auto">
-            <div className="vf-card p-4 text-center">
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 text-center">
               <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">500+</div>
               <div className="text-xs text-slate-500 font-medium mt-1">Businesses Registered</div>
             </div>
-            <div className="vf-card p-4 text-center">
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 text-center">
               <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600">1.2M+</div>
               <div className="text-xs text-slate-500 font-medium mt-1">Phones Verified</div>
             </div>
-            <div className="vf-card p-4 text-center">
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 text-center">
               <div className="text-2xl sm:text-3xl font-extrabold text-blue-600">450K+</div>
               <div className="text-xs text-slate-500 font-medium mt-1">Monthly Searches</div>
             </div>
-            <div className="vf-card p-4 text-center">
+            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 text-center">
               <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">99.4%</div>
               <div className="text-xs text-slate-500 font-medium mt-1">Customer Satisfaction</div>
             </div>
@@ -1484,7 +1484,7 @@ export default function PublicLandingPageV2() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Card 1 */}
-          <div className="vf-card vf-card-interactive p-6 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all p-6 space-y-3">
             <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center">
               <ShieldCheck className="w-5 h-5" />
             </div>
@@ -1498,7 +1498,7 @@ export default function PublicLandingPageV2() {
           </div>
 
           {/* Card 2 */}
-          <div className="vf-card vf-card-interactive p-6 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all p-6 space-y-3">
             <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center">
               <Smartphone className="w-5 h-5" />
             </div>
@@ -1512,7 +1512,7 @@ export default function PublicLandingPageV2() {
           </div>
 
           {/* Card 3 */}
-          <div className="vf-card vf-card-interactive p-6 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all p-6 space-y-3">
             <div className="w-10 h-10 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
               <Receipt className="w-5 h-5" />
             </div>
@@ -1526,7 +1526,7 @@ export default function PublicLandingPageV2() {
           </div>
 
           {/* Card 4 */}
-          <div className="vf-card vf-card-interactive p-6 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all p-6 space-y-3">
             <div className="w-10 h-10 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center">
               <Lock className="w-5 h-5" />
             </div>
@@ -1540,7 +1540,7 @@ export default function PublicLandingPageV2() {
           </div>
 
           {/* Card 5 */}
-          <div className="vf-card vf-card-interactive p-6 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all p-6 space-y-3">
             <div className="w-10 h-10 rounded-xl bg-purple-50 border border-purple-100 text-purple-600 flex items-center justify-center">
               <QrCode className="w-5 h-5" />
             </div>
@@ -1554,7 +1554,7 @@ export default function PublicLandingPageV2() {
           </div>
 
           {/* Card 6 */}
-          <div className="vf-card vf-card-interactive p-6 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all p-6 space-y-3">
             <div className="w-10 h-10 rounded-xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center">
               <BarChart3 className="w-5 h-5" />
             </div>
@@ -1567,7 +1567,7 @@ export default function PublicLandingPageV2() {
             </Link>
           </div>
           {/* Card 7 – Laptop Support */}
-          <div className="vf-card vf-card-interactive p-6 space-y-3">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-sm hover:shadow-md hover:-translate-y-1 transition-all p-6 space-y-3">
             <div className="w-10 h-10 rounded-xl bg-gray-50 border border-gray-100 text-gray-600 flex items-center justify-center">
               <Laptop className="w-5 h-5" />
             </div>
@@ -1609,25 +1609,25 @@ export default function PublicLandingPageV2() {
               <Building className="w-5 h-5 text-blue-600" /> For Phone & Laptop Retailers & Businesses
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="vf-card p-5 space-y-2 relative">
+              <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-2 relative">
                 <div className="text-xs font-bold text-blue-600">STEP 01</div>
                 <h4 className="text-sm font-bold text-slate-900">Create Workspace</h4>
                 <p className="text-xs text-slate-500">Register your business & invite branch staff in 60 seconds.</p>
               </div>
 
-              <div className="vf-card p-5 space-y-2 relative">
+              <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-2 relative">
                 <div className="text-xs font-bold text-blue-600">STEP 02</div>
                 <h4 className="text-sm font-bold text-slate-900">Register Phones</h4>
                 <p className="text-xs text-slate-500">Log stock using QR scanner, IMEI, or Serial Number.</p>
               </div>
 
-              <div className="vf-card p-5 space-y-2 relative">
+              <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-2 relative">
                 <div className="text-xs font-bold text-blue-600">STEP 03</div>
                 <h4 className="text-sm font-bold text-slate-900">Manage Sales</h4>
                 <p className="text-xs text-slate-500">Checkout buyers and print QR-embedded digital receipts.</p>
               </div>
 
-              <div className="vf-card p-5 space-y-2 relative">
+              <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-2 relative">
                 <div className="text-xs font-bold text-blue-600">STEP 04</div>
                 <h4 className="text-sm font-bold text-slate-900">Grow Your Business</h4>
                 <p className="text-xs text-slate-500">Track multi-branch analytics and eliminate warranty fraud.</p>
@@ -1641,19 +1641,19 @@ export default function PublicLandingPageV2() {
               <Users className="w-5 h-5 text-emerald-600" /> For Phone Buyers & Customers
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="vf-card p-5 space-y-2 bg-emerald-50/30 border-emerald-200/80">
+              <div className="bg-white border border-emerald-200/80 shadow-sm rounded-2xl p-5 space-y-2 bg-emerald-50/30">
                 <div className="text-xs font-bold text-emerald-700">STEP 01</div>
                 <h4 className="text-sm font-bold text-slate-900">Scan QR Code or Enter IMEI</h4>
                 <p className="text-xs text-slate-600">Scan the receipt QR code or enter phone IMEI on store link.</p>
               </div>
 
-              <div className="vf-card p-5 space-y-2 bg-emerald-50/30 border-emerald-200/80">
+              <div className="bg-white border border-emerald-200/80 shadow-sm rounded-2xl p-5 space-y-2 bg-emerald-50/30">
                 <div className="text-xs font-bold text-emerald-700">STEP 02</div>
                 <h4 className="text-sm font-bold text-slate-900">Instant Verification</h4>
                 <p className="text-xs text-slate-600">NoxGuarda queries the retailer's official cloud ledger in 1 second.</p>
               </div>
 
-              <div className="vf-card p-5 space-y-2 bg-emerald-50/30 border-emerald-200/80">
+              <div className="bg-white border border-emerald-200/80 shadow-sm rounded-2xl p-5 space-y-2 bg-emerald-50/30">
                 <div className="text-xs font-bold text-emerald-700">STEP 03</div>
                 <h4 className="text-sm font-bold text-slate-900">Know Your Phone's Origin</h4>
                 <p className="text-xs text-slate-600">Get immediate proof of purchase, warranty dates, and genuine seal.</p>
@@ -1697,7 +1697,7 @@ export default function PublicLandingPageV2() {
         </div>
 
         {/* Dynamic Screen Mockup */}
-        <div className="vf-card border-slate-200 shadow-card-hover p-6 rounded-2xl bg-white max-w-5xl mx-auto">
+        <div className="border border-slate-200 shadow-xl p-6 rounded-2xl bg-white max-w-5xl mx-auto">
           {showcaseTab === 'dashboard' && (
             <div className="space-y-4 animate-in fade-in duration-150">
               <h4 className="text-base font-bold text-slate-900">Live Executive Store Dashboard</h4>
@@ -1978,7 +1978,7 @@ export default function PublicLandingPageV2() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs sm:text-sm">
             {/* Traditional Method */}
-            <div className="vf-card p-6 border-rose-200 bg-rose-50/30 space-y-4">
+            <div className="p-6 rounded-2xl border border-rose-200 bg-rose-50/30 space-y-4">
               <div className="font-bold text-rose-900 text-base">Traditional Method (Paper & Excel)</div>
               <ul className="space-y-3 text-slate-700">
                 <li className="flex items-center gap-2">
@@ -1997,7 +1997,7 @@ export default function PublicLandingPageV2() {
             </div>
 
             {/* NoxGuarda */}
-            <div className="vf-card p-6 border-emerald-300 bg-emerald-50/40 space-y-4 shadow-card">
+            <div className="p-6 rounded-2xl border-2 border-emerald-300 bg-emerald-50/40 space-y-4 shadow-sm">
               <div className="font-bold text-emerald-950 text-base flex items-center justify-between">
                 <span>NoxGuarda Platform</span>
                 <Badge variant="verified" size="sm">RECOMMENDED</Badge>
@@ -2030,7 +2030,7 @@ export default function PublicLandingPageV2() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="vf-card p-6 space-y-4">
+          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
             <div className="flex text-amber-400 gap-1 text-sm"></div>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
               "NoxGuarda stopped customer warranty swaps completely. Now every phone we sell has a scanned QR receipt linked to its IMEI."
@@ -2046,7 +2046,7 @@ export default function PublicLandingPageV2() {
             </div>
           </div>
 
-          <div className="vf-card p-6 space-y-4">
+          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
             <div className="flex text-amber-400 gap-1 text-sm"></div>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
               "Managing 4 store branches used to require constant phone calls. With NoxGuarda, serial stock transfers take 10 seconds."
@@ -2062,7 +2062,7 @@ export default function PublicLandingPageV2() {
             </div>
           </div>
 
-          <div className="vf-card p-6 space-y-4">
+          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
             <div className="flex text-amber-400 gap-1 text-sm"></div>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
               "Our buyers love scanning the QR receipt on their phone to verify warranty expiration. It makes us look extremely professional."
@@ -2113,7 +2113,7 @@ export default function PublicLandingPageV2() {
               a: 'Yes, our built-in QR scanner reads standard manufacturer box barcodes instantly.',
             },
           ].map((item, idx) => (
-            <div key={idx} className="vf-card overflow-hidden">
+            <div key={idx} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
               <button
                 onClick={() => toggleFaq(idx)}
                 className="w-full p-4 text-left font-bold text-xs sm:text-sm text-slate-900 flex items-center justify-between hover:bg-slate-50 transition-colors"

@@ -372,7 +372,7 @@ export default function ReportStolenPage() {
 
         {/* STEP 1: GOOGLE AUTH GATEWAY */}
         {!googleUser ? (
-          <div className="vf-card border-2 border-slate-200 shadow-card-hover rounded-3xl p-6 sm:p-10 bg-white space-y-6 text-center max-w-md mx-auto">
+          <div className="border-2 border-slate-200/90 shadow-xl rounded-3xl p-6 sm:p-10 bg-white space-y-6 text-center max-w-md mx-auto">
             <div className="w-14 h-14 rounded-2xl bg-slate-50 border border-slate-200 flex items-center justify-center mx-auto shadow-sm">
               <svg className="w-7 h-7" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
@@ -448,7 +448,7 @@ export default function ReportStolenPage() {
           <div className="space-y-6">
 
             {/* User Session Bar & Navigation Tabs */}
-            <div className="vf-card border-2 border-slate-200 shadow-sm p-4 rounded-2xl bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+            <div className="border-2 border-slate-200/90 shadow-sm p-4 rounded-2xl bg-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center font-extrabold text-sm shadow-2xs">
                   {googleUser.name.charAt(0)}
@@ -604,7 +604,7 @@ export default function ReportStolenPage() {
                 </div>
 
                 {/* REPORT FORM */}
-                <form onSubmit={handleSubmitReport} className="vf-card border-2 border-slate-200 shadow-card-hover rounded-3xl p-5 sm:p-8 space-y-6 bg-white">
+                <form onSubmit={handleSubmitReport} className="border-2 border-slate-200/90 shadow-xl rounded-3xl p-5 sm:p-8 space-y-6 bg-white">
                   {errorMessage && (
                     <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
                       <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
@@ -777,7 +777,7 @@ export default function ReportStolenPage() {
 
             {/* TAB 2: MY REPORTED DEVICES */}
             {activeTab === 'MY_REPORTS' && (
-              <div className="vf-card border-2 border-slate-200 shadow-card-hover rounded-3xl p-5 sm:p-8 space-y-4 bg-white">
+              <div className="border-2 border-slate-200/90 shadow-xl rounded-3xl p-5 sm:p-8 space-y-4 bg-white">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                   <div>
                     <h3 className="text-base sm:text-lg font-extrabold text-slate-900">Your Reported Devices</h3>
