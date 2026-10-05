@@ -1,7 +1,7 @@
 import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterPhoneDto } from './dto/register-phone.dto';
-import { PhoneStatus, DeviceCategory } from '@prisma/client';
+import { PhoneStatus, DeviceCategory, PhoneCondition } from '@prisma/client';
 import * as QRCode from 'qrcode';
 
 @Injectable()
@@ -176,52 +176,65 @@ export class PhonesService {
       ? DeviceCategory.LAPTOP
       : DeviceCategory.PHONE;
 
-    const phoneRecord = await this.prisma.phoneRecord.create({
-      data: {
-        businessId,
-        imei1: finalImei,
-        imei2: dto.imei2?.trim() || null,
-        serialNumber: dto.serialNumber?.trim() || null,
-        brand: dto.brand.trim(),
-        model: dto.model.trim(),
-        color: dto.color?.trim() || null,
-        storageCapacity: dto.storageCapacity?.trim() || null,
-        condition: dto.condition,
-        deviceCategory: category,
-        status: PhoneStatus.IN_STOCK,
-        purchasePrice: dto.purchasePrice,
-        sellingPrice: dto.sellingPrice,
-        carrierStatus: dto.carrierStatus || undefined,
-        lockedCarrier: dto.lockedCarrier?.trim() || null,
-        activationStatus: dto.activationStatus || undefined,
-        warrantyDurationMonths: warrantyMonths,
-        warrantyExpiryDate,
-        registeredById: userId,
-        customerId,
-      },
-      include: {
-        customer: true,
-        business: {
-          select: { name: true, slug: true },
+    try {
+      const phoneRecord = await this.prisma.phoneRecord.create({
+        data: {
+          businessId,
+          imei1: finalImei,
+          imei2: dto.imei2?.trim() || null,
+          serialNumber: dto.serialNumber?.trim() || null,
+          brand: dto.brand.trim(),
+          model: dto.model.trim(),
+          color: dto.color?.trim() || null,
+          storageCapacity: dto.storageCapacity?.trim() || null,
+          condition: dto.condition || PhoneCondition.NEW,
+          deviceCategory: category,
+          status: PhoneStatus.IN_STOCK,
+          purchasePrice: dto.purchasePrice != null ? Number(dto.purchasePrice) : null,
+          sellingPrice: dto.sellingPrice != null ? Number(dto.sellingPrice) : null,
+          carrierStatus: dto.carrierStatus || undefined,
+          lockedCarrier: dto.lockedCarrier?.trim() || null,
+          activationStatus: dto.activationStatus || undefined,
+          warrantyDurationMonths: warrantyMonths,
+          warrantyExpiryDate,
+          registeredById: userId || undefined,
+          customerId,
         },
-      },
-    });
+        include: {
+          customer: true,
+          business: {
+            select: { name: true, slug: true, logoUrl: true },
+          },
+        },
+      });
 
-    const frontendUrl = process.env.FRONTEND_URL || 'https://sos-frontend-indol.vercel.app';
-    const verificationUrl = `${frontendUrl}/verify?imei=${phoneRecord.imei1}`;
-    const qrCodeUrl = await QRCode.toDataURL(verificationUrl);
+      const frontendUrl = process.env.FRONTEND_URL || 'https://sos-frontend-indol.vercel.app';
+      const verificationUrl = `${frontendUrl}/verify?imei=${encodeURIComponent(phoneRecord.imei1)}`;
+      const qrCodeUrl = await QRCode.toDataURL(verificationUrl).catch(() => null);
 
-    // Save QR Code URL back to record
-    const updatedRecord = await this.prisma.phoneRecord.update({
-      where: { id: phoneRecord.id },
-      data: { qrCodeUrl },
-      include: {
-        customer: true,
-        business: true,
-      },
-    });
+      if (qrCodeUrl) {
+        // Save QR Code URL back to record
+        const updatedRecord = await this.prisma.phoneRecord.update({
+          where: { id: phoneRecord.id },
+          data: { qrCodeUrl },
+          include: {
+            customer: true,
+            business: {
+              select: { name: true, slug: true, logoUrl: true },
+            },
+          },
+        }).catch(() => phoneRecord);
 
-    return updatedRecord;
+        return updatedRecord;
+      }
+
+      return phoneRecord;
+    } catch (err: any) {
+      if (err.code === 'P2002') {
+        throw new ConflictException(`An item with identifier ${finalImei} is already registered in your database.`);
+      }
+      throw err;
+    }
   }
 
   async findAll(businessId: string, query?: { search?: string; status?: PhoneStatus; brand?: string }) {

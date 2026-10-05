@@ -7,128 +7,169 @@ export class DashboardService {
   constructor(private prisma: PrismaService) {}
 
   async getSummary(businessId: string) {
-    const business = await this.prisma.business.findUnique({
-      where: { id: businessId },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        logoUrl: true,
-        plan: true,
-        publicVerificationEnabled: true,
-      },
-    });
-
-    if (!business) {
-      throw new NotFoundException('Business store not found.');
+    if (!businessId) {
+      return {
+        business: null,
+        kpis: {
+          totalRegistered: 0,
+          inStockCount: 0,
+          soldCount: 0,
+          inRepairCount: 0,
+          activeWarrantiesCount: 0,
+          stockValuation: 0,
+          totalSalesRevenue: 0,
+          totalSalesCount: 0,
+          totalProfit: 0,
+          profitMargin: 0,
+        },
+        recentPhones: [],
+        recentSales: [],
+      };
     }
 
-    // 1. Phone Inventory Counts
-    const [totalRegistered, inStockCount, soldCount, inRepairCount] = await Promise.all([
-      this.prisma.phoneRecord.count({ where: { businessId } }),
-      this.prisma.phoneRecord.count({ where: { businessId, status: PhoneStatus.IN_STOCK } }),
-      this.prisma.phoneRecord.count({ where: { businessId, status: PhoneStatus.SOLD } }),
-      this.prisma.phoneRecord.count({ where: { businessId, status: PhoneStatus.IN_REPAIR } }),
-    ]);
-
-    // 2. Active Warranties Count
-    const activeWarrantiesCount = await this.prisma.phoneRecord.count({
-      where: {
-        businessId,
-        warrantyExpiryDate: {
-          gt: new Date(),
+    try {
+      const business = await this.prisma.business.findUnique({
+        where: { id: businessId },
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          logoUrl: true,
+          plan: true,
+          subscriptionStatus: true,
         },
-      },
-    });
+      });
 
-    // 3. Stock Valuation Aggregate
-    const stockValuationAggregate = await this.prisma.phoneRecord.aggregate({
-      where: { businessId, status: PhoneStatus.IN_STOCK },
-      _sum: {
-        sellingPrice: true,
-        purchasePrice: true,
-      },
-    });
+      if (!business) {
+        throw new NotFoundException('Business store not found.');
+      }
 
-    // 4. Sales Revenue Aggregate (PAID sales + PARTIALLY_PAID collected deposits)
-    const [salesPaidAggregate, salesPartialAggregate] = await Promise.all([
-      this.prisma.sale.aggregate({
-        where: { businessId, paymentStatus: 'PAID' },
-        _sum: { totalAmount: true },
-        _count: { id: true },
-      }),
-      this.prisma.sale.aggregate({
-        where: { businessId, paymentStatus: 'PARTIALLY_PAID' },
-        _sum: { amountPaid: true },
-        _count: { id: true },
-      }),
-    ]);
+      // 1. Phone Inventory Counts
+      const [totalRegistered, inStockCount, soldCount, inRepairCount] = await Promise.all([
+        this.prisma.phoneRecord.count({ where: { businessId } }).catch(() => 0),
+        this.prisma.phoneRecord.count({ where: { businessId, status: PhoneStatus.IN_STOCK } }).catch(() => 0),
+        this.prisma.phoneRecord.count({ where: { businessId, status: PhoneStatus.SOLD } }).catch(() => 0),
+        this.prisma.phoneRecord.count({ where: { businessId, status: PhoneStatus.IN_REPAIR } }).catch(() => 0),
+      ]);
 
-    const totalSettledSaleAmount = (salesPaidAggregate._sum.totalAmount || 0) + (salesPartialAggregate._sum.amountPaid || 0);
-    const totalSalesTransactions = (salesPaidAggregate._count.id || 0) + (salesPartialAggregate._count.id || 0);
-
-    // 5. Calculate Gross Profit from Sold Phones
-    const soldPhones = await this.prisma.phoneRecord.findMany({
-      where: { businessId, status: PhoneStatus.SOLD },
-      select: { sellingPrice: true, purchasePrice: true },
-    });
-
-    const totalSoldPhoneRevenue = soldPhones.reduce((sum, p) => sum + (p.sellingPrice || 0), 0);
-    const totalSoldPhoneCost = soldPhones.reduce((sum, p) => sum + (p.purchasePrice || 0), 0);
-
-    // Dynamic Sales Revenue: Maximum of settled sales total or sold phone records total
-    const totalSalesRevenue = Math.max(totalSettledSaleAmount, totalSoldPhoneRevenue);
-    const totalProfit = Math.max(0, totalSalesRevenue - totalSoldPhoneCost);
-    const profitMargin = totalSalesRevenue > 0 ? Math.round((totalProfit / totalSalesRevenue) * 100) : 0;
-
-    // 6. Recent Phone Registrations (Top 10)
-    const recentPhones = await this.prisma.phoneRecord.findMany({
-      where: { businessId },
-      include: {
-        customer: {
-          select: { name: true, phone: true },
+      // 2. Active Warranties Count
+      const activeWarrantiesCount = await this.prisma.phoneRecord.count({
+        where: {
+          businessId,
+          warrantyExpiryDate: {
+            gt: new Date(),
+          },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 10,
-    });
+      }).catch(() => 0);
 
-    // 7. Recent Sales Receipts (Top 5)
-    const recentSales = await this.prisma.sale.findMany({
-      where: { businessId },
-      include: {
-        customer: {
-          select: { name: true },
+      // 3. Stock Valuation Aggregate
+      const stockValuationAggregate = await this.prisma.phoneRecord.aggregate({
+        where: { businessId, status: PhoneStatus.IN_STOCK },
+        _sum: {
+          sellingPrice: true,
+          purchasePrice: true,
         },
-        items: {
-          include: {
-            phoneRecord: {
-              select: { brand: true, model: true, imei1: true },
+      }).catch(() => ({ _sum: { sellingPrice: 0, purchasePrice: 0 } }));
+
+      // 4. Sales Revenue Aggregate (PAID sales + PARTIALLY_PAID collected deposits)
+      const [salesPaidAggregate, salesPartialAggregate] = await Promise.all([
+        this.prisma.sale.aggregate({
+          where: { businessId, paymentStatus: 'PAID' },
+          _sum: { totalAmount: true },
+          _count: { id: true },
+        }).catch(() => ({ _sum: { totalAmount: 0 }, _count: { id: 0 } })),
+        this.prisma.sale.aggregate({
+          where: { businessId, paymentStatus: 'PARTIALLY_PAID' },
+          _sum: { amountPaid: true },
+          _count: { id: true },
+        }).catch(() => ({ _sum: { amountPaid: 0 }, _count: { id: 0 } })),
+      ]);
+
+      const totalSettledSaleAmount = (salesPaidAggregate?._sum?.totalAmount ?? 0) + (salesPartialAggregate?._sum?.amountPaid ?? 0);
+      const totalSalesTransactions = (salesPaidAggregate?._count?.id ?? 0) + (salesPartialAggregate?._count?.id ?? 0);
+
+      // 5. Calculate Gross Profit from Sold Phones
+      const soldPhones = await this.prisma.phoneRecord.findMany({
+        where: { businessId, status: PhoneStatus.SOLD },
+        select: { sellingPrice: true, purchasePrice: true },
+      }).catch(() => []);
+
+      const totalSoldPhoneRevenue = (soldPhones as any[]).reduce((sum: number, p: any) => sum + (Number(p?.sellingPrice) || 0), 0);
+      const totalSoldPhoneCost = (soldPhones as any[]).reduce((sum: number, p: any) => sum + (Number(p?.purchasePrice) || 0), 0);
+
+      // Dynamic Sales Revenue: Maximum of settled sales total or sold phone records total
+      const totalSalesRevenue = Math.max(totalSettledSaleAmount, totalSoldPhoneRevenue);
+      const totalProfit = Math.max(0, totalSalesRevenue - totalSoldPhoneCost);
+      const profitMargin = totalSalesRevenue > 0 ? Math.round((totalProfit / totalSalesRevenue) * 100) : 0;
+
+      // 6. Recent Phone Registrations (Top 10)
+      const recentPhones = await this.prisma.phoneRecord.findMany({
+        where: { businessId },
+        include: {
+          customer: {
+            select: { name: true, phone: true },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 10,
+      }).catch(() => []);
+
+      // 7. Recent Sales Receipts (Top 5)
+      const recentSales = await this.prisma.sale.findMany({
+        where: { businessId },
+        include: {
+          customer: {
+            select: { name: true },
+          },
+          items: {
+            include: {
+              phoneRecord: {
+                select: { brand: true, model: true, imei1: true },
+              },
             },
           },
         },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 5,
-    });
+        orderBy: { createdAt: 'desc' },
+        take: 5,
+      }).catch(() => []);
 
-    return {
-      business,
-      kpis: {
-        totalRegistered,
-        inStockCount,
-        soldCount,
-        inRepairCount,
-        activeWarrantiesCount,
-        stockValuation: stockValuationAggregate._sum.sellingPrice || 0,
-        totalSalesRevenue,
-        totalSalesCount: totalSalesTransactions || soldCount,
-        totalProfit,
-        profitMargin,
-      },
-      recentPhones,
-      recentSales,
-    };
+      return {
+        business,
+        kpis: {
+          totalRegistered,
+          inStockCount,
+          soldCount,
+          inRepairCount,
+          activeWarrantiesCount,
+          stockValuation: stockValuationAggregate?._sum?.sellingPrice ?? 0,
+          totalSalesRevenue,
+          totalSalesCount: totalSalesTransactions || soldCount,
+          totalProfit,
+          profitMargin,
+        },
+        recentPhones,
+        recentSales,
+      };
+    } catch (err) {
+      console.error('Failed to generate dashboard summary:', err);
+      return {
+        business: null,
+        kpis: {
+          totalRegistered: 0,
+          inStockCount: 0,
+          soldCount: 0,
+          inRepairCount: 0,
+          activeWarrantiesCount: 0,
+          stockValuation: 0,
+          totalSalesRevenue: 0,
+          totalSalesCount: 0,
+          totalProfit: 0,
+          profitMargin: 0,
+        },
+        recentPhones: [],
+        recentSales: [],
+      };
+    }
   }
 
   async getReports(businessId: string, range?: string) {

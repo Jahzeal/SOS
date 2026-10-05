@@ -26,6 +26,7 @@ import {
   Shield,
   Activity,
   ListChecks,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface NavItem {
@@ -43,6 +44,7 @@ const mainNavItems: NavItem[] = [
 ];
 
 const bottomNavItems: NavItem[] = [
+  { name: 'Error Logs', href: '/admin/errors', icon: AlertTriangle },
   { name: 'Notifications', href: '/admin/notifications', icon: Bell, badge: '4' },
   { name: 'Support', href: '/admin/support', icon: HelpCircle },
   { name: 'Settings', href: '/admin/settings', icon: Settings },

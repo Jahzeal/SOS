@@ -642,5 +642,19 @@ model DeviceCheckCache {
   @@index([imei])
 }
 
+model ErrorLog {
+  id          String   @id @default(uuid())
+  endpoint    String?
+  method      String?
+  statusCode  Int?
+  errorType   String   // e.g. "PrismaClientKnownRequestError", "TypeError", "HttpException"
+  message     String   // Error description
+  stack       String?  // Code stack trace
+  businessId  String?
+  userEmail   String?
+  createdAt   DateTime @default(now())
 
-
+  @@index([errorType])
+  @@index([statusCode])
+  @@index([createdAt])
+}

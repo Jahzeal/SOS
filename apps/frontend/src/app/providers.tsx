@@ -60,6 +60,8 @@ function NetworkStatusListener() {
   return null;
 }
 
+import { ThemeProvider } from '@/lib/theme-context';
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
@@ -91,24 +93,28 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   if (!persister) {
     return (
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <NetworkStatusListener />
-          {children}
-        </AuthProvider>
-      </QueryClientProvider>
+      <ThemeProvider>
+        <QueryClientProvider client={queryClient}>
+          <AuthProvider>
+            <NetworkStatusListener />
+            {children}
+          </AuthProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
     );
   }
   
   return (
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 }}
-    >
-      <AuthProvider>
-        <NetworkStatusListener />
-        {children}
-      </AuthProvider>
-    </PersistQueryClientProvider>
+    <ThemeProvider>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{ persister, maxAge: 1000 * 60 * 60 * 24 }}
+      >
+        <AuthProvider>
+          <NetworkStatusListener />
+          {children}
+        </AuthProvider>
+      </PersistQueryClientProvider>
+    </ThemeProvider>
   );
 }

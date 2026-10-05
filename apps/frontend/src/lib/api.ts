@@ -869,6 +869,35 @@ class ApiClient {
   async publicVerifyDevice(identifier: string) {
     return this.request<any>(`/verification/verify/${encodeURIComponent(identifier)}`);
   }
+
+  // --- Admin Error Logs Endpoints ---
+  async getErrorLogs(params?: { search?: string; statusCode?: number; errorType?: string; limit?: number; page?: number }) {
+    const query = new URLSearchParams();
+    if (params?.search) query.append('search', params.search);
+    if (params?.statusCode) query.append('statusCode', params.statusCode.toString());
+    if (params?.errorType) query.append('errorType', params.errorType);
+    if (params?.limit) query.append('limit', params.limit.toString());
+    if (params?.page) query.append('page', params.page.toString());
+
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request<{
+      logs: any[];
+      pagination: { total: number; page: number; limit: number; totalPages: number };
+      stats: { totalErrors: number; serverErrors500: number; clientErrors400: number };
+    }>(`/admin/errors${qs}`);
+  }
+
+  async getErrorById(id: string) {
+    return this.request<any>(`/admin/errors/${id}`);
+  }
+
+  async deleteErrorLog(id: string) {
+    return this.request<any>(`/admin/errors/${id}`, { method: 'DELETE' });
+  }
+
+  async clearAllErrorLogs() {
+    return this.request<any>('/admin/errors', { method: 'DELETE' });
+  }
 }
 
 export const api = new ApiClient();

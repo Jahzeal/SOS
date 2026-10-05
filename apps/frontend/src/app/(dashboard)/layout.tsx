@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/search/GlobalSearchModal';
 import { BrandLogo } from '@/components/brand/BrandLogo';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { SubscriptionGuardProvider } from '@/hooks/useSubscriptionGuard';
 import { SubscriptionStatusBanner } from '@/components/subscription/SubscriptionStatusBanner';
 import { SubscriptionPaywallModal } from '@/components/subscription/SubscriptionPaywallModal';
@@ -206,26 +207,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <SubscriptionGuardProvider>
-      <div className="min-h-screen flex bg-slate-50 text-slate-900 pb-16 lg:pb-0">
+      <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-200">
         {/* Responsive Sidebar (Desktop Persistent + Mobile Drawer) */}
         <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
         {/* Main Workspace */}
         <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
           {/* Top Navigation Header */}
-          <header className="h-16 border-b border-slate-200/80 px-4 sm:px-6 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md z-20 shadow-subtle">
+          <header className="h-16 border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md z-20 shadow-subtle transition-colors duration-200">
             <div className="flex items-center gap-3">
               {/* Mobile Hamburger Trigger */}
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
-                className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition border border-slate-200"
+                className="lg:hidden p-2 rounded-xl text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition border border-slate-200 dark:border-slate-700 cursor-pointer"
                 title="Open menu"
               >
                 <Menu className="w-5 h-5" />
               </button>
 
               <Link href="/dashboard" className="flex items-center">
-                <BrandLogo size="sm" showText={true} textClassName="text-slate-900 text-xs font-black tracking-[0.18em]" />
+                <BrandLogo size="sm" showText={true} textClassName="text-slate-900 dark:text-white text-xs font-black tracking-[0.18em]" />
               </Link>
             </div>
 
@@ -234,29 +235,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               {/* Global Search Shortcut Trigger */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-100/80 hover:bg-slate-100 border border-slate-200 rounded-lg text-xs text-slate-500 transition shadow-subtle min-w-0 sm:min-w-[220px] justify-between"
+                className="flex items-center gap-2 px-3 py-1.5 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-500 dark:text-slate-400 transition shadow-subtle min-w-0 sm:min-w-[220px] justify-between cursor-pointer"
               >
                 <span className="flex items-center gap-2 truncate">
                   <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                   <span className="hidden sm:inline">Search IMEI / Serial...</span>
                   <span className="sm:hidden">Search...</span>
                 </span>
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono bg-white border border-slate-200 rounded text-slate-400 font-semibold shadow-subtle">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-400 font-semibold shadow-subtle">
                   Ctrl+K
                 </kbd>
               </button>
+
+              {/* Theme Toggle (Light / Dark / Auto) */}
+              <ThemeToggle variant="dropdown" />
 
               {/* Notification Bell Dropdown */}
               <div className="relative">
                 <button
                   onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
-                  className="w-9 h-9 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition relative shadow-subtle cursor-pointer"
+                  className="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition relative shadow-subtle cursor-pointer"
                   title="Store Notifications & Alerts"
                   aria-label="Open notifications"
                 >
                   <Bell className="w-4 h-4" />
                   {unreadCount > 0 && (
-                    <span className="w-2 h-2 rounded-full bg-teal-600 absolute top-2 right-2 ring-2 ring-white animate-pulse" />
+                    <span className="w-2 h-2 rounded-full bg-teal-600 absolute top-2 right-2 ring-2 ring-white dark:ring-slate-900 animate-pulse" />
                   )}
                 </button>
 
@@ -361,59 +365,65 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <div className="relative">
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 transition border border-slate-200/60"
+                  className="flex items-center gap-2 p-1 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 transition border border-slate-200/60 dark:border-slate-700/60 cursor-pointer"
                   title="Account Settings & Store Details"
                 >
-                  <div className="w-8 h-8 rounded-lg bg-slate-900 text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                  <div className="w-8 h-8 rounded-lg bg-slate-900 dark:bg-teal-600 text-white flex items-center justify-center font-bold text-xs shadow-sm">
                     {user?.firstName?.[0] || 'U'}
                   </div>
-                  <span className="hidden md:inline font-bold text-xs text-slate-800 max-w-[100px] truncate">
+                  <span className="hidden md:inline font-bold text-xs text-slate-800 dark:text-slate-200 max-w-[100px] truncate">
                     {user?.firstName || 'Account'}
                   </span>
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-slate-200 shadow-2xl p-2.5 z-50 animate-in fade-in duration-150 text-xs space-y-2">
+                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-2.5 z-50 animate-in fade-in duration-150 text-xs space-y-2">
                     {/* User & Store Details Card */}
-                    <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-2">
                       <div>
-                        <div className="font-extrabold text-slate-900 truncate text-sm">
+                        <div className="font-extrabold text-slate-900 dark:text-white truncate text-sm">
                           {user?.firstName || 'Store'} {user?.lastName || 'Owner'}
                         </div>
-                        <div className="text-[11px] text-slate-500 truncate font-medium">{user?.email || ''}</div>
+                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-medium">{user?.email || ''}</div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-200/80 space-y-1 text-[11px]">
+                      <div className="pt-2 border-t border-slate-200/80 dark:border-slate-700/80 space-y-1 text-[11px]">
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-500 font-medium">Store:</span>
-                          <span className="font-bold text-teal-700 truncate max-w-[130px]">{user?.business?.name || 'TechWorld Mobile'}</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Store:</span>
+                          <span className="font-bold text-teal-700 dark:text-teal-400 truncate max-w-[130px]">{user?.business?.name || 'TechWorld Mobile'}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-slate-500 font-medium">Branch:</span>
-                          <span className="font-bold text-slate-800">Ikeja Main Branch</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Branch:</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">Ikeja Main Branch</span>
                         </div>
                         <div className="flex items-center justify-between pt-1">
-                          <span className="text-slate-500 font-medium">Plan:</span>
-                          <span className="font-extrabold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">PRO PLAN</span>
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Plan:</span>
+                          <span className="font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/50 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-800">PRO PLAN</span>
                         </div>
                       </div>
+                    </div>
+
+                    {/* Quick Appearance Switcher */}
+                    <div className="px-1 py-1 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
+                      <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Theme</span>
+                      <ThemeToggle variant="compact" />
                     </div>
 
                     <div className="space-y-0.5">
                       <Link
                         href="/dashboard/settings"
                         onClick={() => setIsUserMenuOpen(false)}
-                        className="flex items-center gap-2 p-2 rounded-xl text-slate-700 hover:bg-slate-100 font-bold transition"
+                        className="flex items-center gap-2 p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 font-bold transition"
                       >
                         <UserCircle className="w-4 h-4 text-slate-500" />
                         <span>Account & Store Settings</span>
                       </Link>
                     </div>
 
-                    <div className="pt-1 border-t border-slate-100">
+                    <div className="pt-1 border-t border-slate-100 dark:border-slate-800">
                       <button
                         onClick={handleLogout}
-                        className="w-full flex items-center gap-2 p-2 rounded-xl text-rose-600 hover:bg-rose-50 font-bold transition text-left"
+                        className="w-full flex items-center gap-2 p-2 rounded-xl text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 font-bold transition text-left cursor-pointer"
                       >
                         <LogOut className="w-4 h-4 text-rose-600" />
                         <span>Log Out of Store</span>
@@ -436,12 +446,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* ========================================================================= */}
         {/* MOBILE BOTTOM NAVIGATION BAR (Fixed on Mobile Viewports)                 */}
         {/* ========================================================================= */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 px-4 py-2 flex items-center justify-around shadow-2xl">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-around shadow-2xl">
           <Link
             href="/dashboard"
-            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-teal-600 transition"
+            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition"
           >
-            <LayoutDashboard className="w-5 h-5 text-slate-700" />
+            <LayoutDashboard className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             <span>Home</span>
           </Link>
 

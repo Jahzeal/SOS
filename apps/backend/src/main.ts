@@ -1,9 +1,14 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import { PrismaService } from './prisma/prisma.service';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  const prismaService = app.get(PrismaService);
+  app.useGlobalFilters(new AllExceptionsFilter(prismaService));
 
   app.useGlobalPipes(
     new ValidationPipe({

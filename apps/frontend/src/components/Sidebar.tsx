@@ -137,16 +137,16 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   };
 
   const sidebarContent = (
-    <div className="w-64 bg-white border-r border-slate-200 text-slate-700 flex flex-col h-full shrink-0 shadow-subtle">
+    <div className="w-64 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 flex flex-col h-full shrink-0 shadow-subtle">
       {/* Brand Header */}
-      <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between">
         <div onClick={onClose}>
           <Logo size="md" href="/dashboard" />
         </div>
         {onClose && (
           <button
             onClick={onClose}
-            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition"
+            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer"
             title="Close menu"
           >
             <X className="w-4 h-4" />
@@ -155,10 +155,10 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       </div>
 
       {/* Store Plan Badge */}
-      <div className="mx-3.5 my-3 p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-center justify-between">
+      <div className="mx-3.5 my-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
         <div className="flex flex-col min-w-0">
-          <span className="text-xs font-bold text-slate-900 truncate">{user?.business?.name || 'Store Account'}</span>
-          <span className="text-[10px] text-slate-500 font-medium">Main Branch</span>
+          <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.business?.name || 'Store Account'}</span>
+          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Main Branch</span>
         </div>
         <Badge
           variant="business"
@@ -183,17 +183,17 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                 <div>
                   <button
                     onClick={() => toggleSubmenu(item.name)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold hover:bg-slate-100 text-slate-700 transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors cursor-pointer"
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon className="w-4 h-4 text-slate-500" />
+                      <Icon className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                       <span>{item.name}</span>
                     </div>
                     {isOpen ? <ChevronDown className="w-3.5 h-3.5 text-slate-400" /> : <ChevronRight className="w-3.5 h-3.5 text-slate-400" />}
                   </button>
 
                   {isOpen && (
-                    <div className="ml-6 mt-1 space-y-1 border-l border-slate-200 pl-2">
+                    <div className="ml-6 mt-1 space-y-1 border-l border-slate-200 dark:border-slate-800 pl-2">
                       {item.children?.map((child) => {
                         const isChildActive = pathname === child.href;
                         const ChildIcon = child.icon;
@@ -204,8 +204,8 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                             onClick={onClose}
                             className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                               isChildActive
-                                ? 'bg-teal-50 text-teal-700 font-semibold border border-teal-200/80 shadow-subtle'
-                                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                                ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 font-semibold border border-teal-200/80 dark:border-teal-800/80 shadow-subtle'
+                                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60'
                             }`}
                           >
                             <ChildIcon className="w-3.5 h-3.5 shrink-0" />
@@ -223,13 +223,13 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
                     isActive
                       ? 'bg-teal-600 text-white shadow-md shadow-teal-600/20 font-bold'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
                   {item.name === 'Templates' && (
-                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 text-teal-700">
+                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300">
                       NEW
                     </span>
                   )}
@@ -246,22 +246,22 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       </div>
 
       {/* User Footer with Log Out */}
-      <div className="p-3.5 border-t border-slate-100 flex items-center justify-between text-xs bg-slate-50/50">
+      <div className="p-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs bg-slate-50/50 dark:bg-slate-950/40">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="w-8 h-8 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-xs shadow-sm shrink-0">
+          <div className="w-8 h-8 rounded-full bg-zinc-900 dark:bg-teal-600 text-white flex items-center justify-center font-bold text-xs shadow-sm shrink-0">
             {user?.firstName?.[0] || 'U'}
           </div>
           <div className="min-w-0">
-            <div className="font-bold text-slate-900 truncate max-w-[110px]">
+            <div className="font-bold text-slate-900 dark:text-white truncate max-w-[110px]">
               {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Store Owner'}
             </div>
-            <div className="text-[10px] text-slate-500 font-medium truncate">{user?.role || 'OWNER'}</div>
+            <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{user?.role || 'OWNER'}</div>
           </div>
         </div>
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition border border-transparent hover:border-rose-200 font-bold text-[11px]"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition border border-transparent hover:border-rose-200 dark:hover:border-rose-900/50 font-bold text-[11px] cursor-pointer"
           title="Sign out of store session"
         >
           <LogOut className="w-3.5 h-3.5" />
@@ -282,7 +282,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       {isOpen && (
         <div className="lg:hidden fixed inset-0 z-50 flex">
           <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm transition-opacity" onClick={onClose} />
-          <div className="relative flex-1 max-w-xs w-full bg-white h-full shadow-2xl z-10 animate-in slide-in-from-left duration-200">
+          <div className="relative flex-1 max-w-xs w-full bg-white dark:bg-slate-900 h-full shadow-2xl z-10 animate-in slide-in-from-left duration-200">
             {sidebarContent}
           </div>
         </div>

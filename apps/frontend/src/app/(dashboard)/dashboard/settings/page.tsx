@@ -28,6 +28,8 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModal';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { Sun, Moon, Monitor } from 'lucide-react';
 
 export default function RebuiltSettingsPage() {
   const { user, setAuth } = useAuthStore();
@@ -517,29 +519,48 @@ export default function RebuiltSettingsPage() {
 
           {/* Right Operator Summary Card */}
           <div className="space-y-4">
-            <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4 text-center">
-              <div className="w-16 h-16 rounded-full bg-slate-900 text-white flex items-center justify-center font-extrabold text-xl mx-auto shadow-md">
+            <div className="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-4 text-center">
+              <div className="w-16 h-16 rounded-full bg-slate-900 dark:bg-teal-600 text-white flex items-center justify-center font-extrabold text-xl mx-auto shadow-md">
                 {operatorForm.firstName?.[0] || 'U'}
               </div>
               <div>
-                <h4 className="font-extrabold text-slate-900 text-base">
+                <h4 className="font-extrabold text-slate-900 dark:text-white text-base">
                   {operatorForm.firstName || 'Store'} {operatorForm.lastName || 'Owner'}
                 </h4>
-                <p className="text-xs text-slate-500 font-medium">{operatorForm.email}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{operatorForm.email}</p>
               </div>
-              <div className="pt-3 border-t border-slate-100 text-xs text-left space-y-2">
-                <div className="flex items-center justify-between text-slate-600">
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-left space-y-2">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span className="font-medium">Account Role:</span>
-                  <span className="font-bold text-slate-900">{user?.role || 'STORE OWNER'}</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-200">{user?.role || 'STORE OWNER'}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-600">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span className="font-medium">Primary Store:</span>
-                  <span className="font-bold text-teal-700 truncate max-w-[130px]">{user?.business?.name || 'My Store'}</span>
+                  <span className="font-bold text-teal-700 dark:text-teal-400 truncate max-w-[130px]">{user?.business?.name || 'My Store'}</span>
                 </div>
-                <div className="flex items-center justify-between text-slate-600">
+                <div className="flex items-center justify-between text-slate-600 dark:text-slate-400">
                   <span className="font-medium">Branch Access:</span>
-                  <span className="font-bold text-slate-900">All Branches</span>
+                  <span className="font-bold text-slate-900 dark:text-slate-200">All Branches</span>
                 </div>
+              </div>
+            </div>
+
+            {/* Appearance & Theme Preferences */}
+            <div className="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm space-y-3">
+              <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2.5">
+                <h4 className="font-extrabold text-slate-900 dark:text-white text-xs uppercase tracking-wider flex items-center gap-2">
+                  <Sun className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Theme & Appearance</span>
+                </h4>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 border border-teal-200/60 dark:border-teal-800/40">
+                  Instant Switch
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                Choose how NOXGUARDA looks on your display. Supports Light, Dark, and automatic system detection.
+              </p>
+              <div className="pt-1 flex justify-center">
+                <ThemeToggle variant="compact" />
               </div>
             </div>
           </div>

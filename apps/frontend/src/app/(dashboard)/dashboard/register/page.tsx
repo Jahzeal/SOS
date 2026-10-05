@@ -162,17 +162,32 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
     if (match.model) {
       setModel(match.model);
     }
-    if (match.specs) {
-      setSpecs(match.specs);
-    }
     if (match.deviceCategory === 'LAPTOP' && mode === 'PHONE') {
       setDeviceCategory('LAPTOP');
-    } else if (match.deviceCategory === 'PHONE_TABLET' && mode === 'PHONE') {
+      if (match.specs) {
+        setSpecs(match.specs);
+      }
+    } else if ((match.deviceCategory === 'PHONE_TABLET' || !match.deviceCategory) && mode === 'PHONE') {
       setDeviceCategory('PHONE_TABLET');
+      // For phones, set a sensible default storage if not already selected
+      if (!specs || !PHONE_SPECS_PRESETS.includes(specs)) {
+        setSpecs('128 GB');
+      }
+    } else if (match.specs) {
+      setSpecs(match.specs);
     }
 
     setIsDetectedApplied(true);
     setIsDetectedDismissed(false);
+  };
+
+  // Cancel / Reset auto-detected match
+  const handleCancelDetectedMatch = () => {
+    setIsDetectedApplied(false);
+    setIsDetectedDismissed(true);
+    setBrand('');
+    setModel('');
+    setSpecs(deviceCategory === 'LAPTOP' ? '16GB RAM / 512GB SSD' : '128 GB');
   };
 
   // Auto-lookup device information from serial number / service tag / barcode
@@ -680,14 +695,14 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
 
               {/* Interactive Device Detection Smart Card (Option B) */}
               {isLookingUpDevice && (
-                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-600 text-xs font-medium flex items-center gap-2.5 animate-pulse">
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium flex items-center gap-2.5 animate-pulse">
                   <div className="w-4 h-4 border-2 border-teal-600 border-t-transparent rounded-full animate-spin shrink-0" />
                   <span>Looking up device specifications from manufacturer & global TAC registry...</span>
                 </div>
               )}
 
               {detectedMatch?.found && !isDetectedDismissed && !isDetectedApplied && !isLookingUpDevice && (
-                <div className="p-4 rounded-2xl bg-gradient-to-r from-teal-50/95 via-emerald-50/90 to-cyan-50/90 border-2 border-teal-500/80 shadow-md animate-in fade-in zoom-in-95 duration-200 space-y-3">
+                <div className="p-4 rounded-2xl bg-gradient-to-r from-teal-50/95 via-emerald-50/90 to-cyan-50/90 dark:from-teal-950/40 dark:via-slate-900 dark:to-cyan-950/30 border-2 border-teal-500/80 shadow-md animate-in fade-in zoom-in-95 duration-200 space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-start sm:items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-xs shrink-0 mt-0.5 sm:mt-0">
@@ -695,17 +710,18 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-teal-950 uppercase tracking-wider">Hardware Match Found</span>
-                          <span className="text-[10px] font-bold bg-teal-100 text-teal-800 px-2 py-0.5 rounded-md border border-teal-200">
-                            {detectedMatch.source || 'Hardware Registry'}
+                          <span className="text-xs font-black text-teal-950 dark:text-teal-200 uppercase tracking-wider">Device Detected</span>
+                          <span className="text-[10px] font-bold bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-300 px-2 py-0.5 rounded-md border border-teal-200 dark:border-teal-800">
+                            {detectedMatch.source || 'GSMA TAC Registry'}
                           </span>
                         </div>
-                        <div className="text-sm font-bold text-slate-900 mt-0.5">
-                          {detectedMatch.brand} {detectedMatch.model}
+                        <div className="text-sm font-black text-slate-900 dark:text-white mt-0.5">
+                          {detectedMatch.brand} {detectedMatch.model} {detectedMatch.specs ? `• ${detectedMatch.specs}` : ''}
                         </div>
-                        {detectedMatch.specs && (
-                          <div className="text-xs text-slate-600 font-medium mt-0.5">
-                            {detectedMatch.specs}
+                        {mode === 'PHONE' && (
+                          <div className="text-xs text-amber-700 dark:text-amber-400 font-semibold mt-0.5 flex items-center gap-1">
+                            <Info className="w-3.5 h-3.5 shrink-0" />
+                            <span>(Please select the device storage in step 2)</span>
                           </div>
                         )}
                       </div>
@@ -716,15 +732,16 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                         onClick={() => handleApplyDetectedMatch()}
                         className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-black rounded-xl shadow-md transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
                       >
-                        <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                        <Check className="w-3.5 h-3.5 text-white" />
                         <span>Apply Auto-Fill</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => setIsDetectedDismissed(true)}
-                        className="px-3 py-2 bg-white hover:bg-slate-100 text-slate-700 text-xs font-bold rounded-xl border border-slate-300/80 transition-colors cursor-pointer"
+                        className="px-3 py-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-xl border border-slate-300/80 dark:border-slate-700 transition-colors cursor-pointer flex items-center gap-1"
                       >
-                        <span>Dismiss</span>
+                        <X className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Cancel / Dismiss</span>
                       </button>
                     </div>
                   </div>
@@ -732,17 +749,24 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
               )}
 
               {isDetectedApplied && (
-                <div className="p-3.5 rounded-xl bg-emerald-50/90 border border-emerald-300 text-xs flex items-center justify-between shadow-xs animate-in fade-in duration-200">
-                  <div className="flex items-center gap-2 text-emerald-950 font-bold">
+                <div className="p-3.5 rounded-xl bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-xs flex items-center justify-between shadow-xs animate-in fade-in duration-200">
+                  <div className="flex items-center gap-2 text-emerald-950 dark:text-emerald-200 font-bold">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                    <span>Applied hardware specs: <span className="text-slate-900">{brand} {model}</span>{specs ? ` • ${specs}` : ''}</span>
+                    <span>
+                      Auto-filled: <span className="text-slate-900 dark:text-white">{brand} {model}</span>
+                      {detectedMatch?.specs ? ` • ${detectedMatch.specs}` : ''}
+                      {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
+                        <span className="text-amber-700 dark:text-amber-400 font-medium ml-1.5">(Please select storage in step 2)</span>
+                      )}
+                    </span>
                   </div>
                   <button
                     type="button"
-                    onClick={() => { setIsDetectedApplied(false); setIsDetectedDismissed(true); }}
-                    className="text-[11px] font-bold text-slate-500 hover:text-slate-700 underline cursor-pointer"
+                    onClick={handleCancelDetectedMatch}
+                    className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 flex items-center gap-1 cursor-pointer ml-3 shrink-0"
                   >
-                    Edit / Clear
+                    <X className="w-3.5 h-3.5" />
+                    <span>Cancel / Reset</span>
                   </button>
                 </div>
               )}
@@ -934,20 +958,34 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
 
               {/* Step 2 Auto-Detection Banner */}
               {isDetectedApplied && detectedMatch?.found && (
-                <div className="p-3 sm:p-3.5 rounded-xl bg-emerald-50 border border-emerald-200/90 flex items-center justify-between text-xs text-emerald-950 shadow-xs">
+                <div className="p-3 sm:p-3.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/90 dark:border-emerald-800 flex items-center justify-between text-xs text-emerald-950 dark:text-emerald-200 shadow-xs">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <div>
-                      <span className="font-extrabold text-emerald-950">Auto-filled: </span>
-                      <span className="font-semibold text-slate-800">
-                        {detectedMatch.brand} {detectedMatch.model}
-                        {detectedMatch.specs ? ` (${detectedMatch.specs})` : ''}
+                      <span className="font-extrabold text-emerald-950 dark:text-emerald-200">Auto-filled: </span>
+                      <span className="font-semibold text-slate-800 dark:text-slate-200">
+                        {detectedMatch.brand} {detectedMatch.model} {detectedMatch.specs ? `• ${detectedMatch.specs}` : ''}
                       </span>
+                      {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
+                        <span className="text-amber-700 dark:text-amber-400 font-bold ml-1.5">
+                          (Please select the device storage below)
+                        </span>
+                      )}
                     </div>
                   </div>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100/90 px-2 py-0.5 rounded-md border border-emerald-200 shrink-0">
-                    {detectedMatch.source || 'Auto-Detected'}
-                  </span>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[10px] font-bold text-emerald-800 dark:text-emerald-300 bg-emerald-100/90 dark:bg-emerald-900/60 px-2 py-0.5 rounded-md border border-emerald-200 dark:border-emerald-800">
+                      {detectedMatch.source || 'Auto-Detected'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCancelDetectedMatch}
+                      className="text-[11px] font-bold text-slate-500 hover:text-rose-600 dark:text-slate-400 dark:hover:text-rose-400 flex items-center gap-1 cursor-pointer bg-white dark:bg-slate-800 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 shadow-2xs"
+                    >
+                      <X className="w-3 h-3" />
+                      <span>Cancel / Reset</span>
+                    </button>
+                  </div>
                 </div>
               )}
 
@@ -955,8 +993,8 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                 {/* Brand Input (Freely Type Any Brand + Quick Suggestions) */}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider">Brand *</label>
-                    <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium">Type custom brand or pick below</span>
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">Brand *</label>
+                    <span className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 font-medium">Type custom brand or pick below</span>
                   </div>
                   <input
                     type="text"
@@ -968,7 +1006,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                         ? (deviceCategory === 'LAPTOP' ? "e.g. Apple, HP, Dell, Lenovo, Asus, Custom..." : "e.g. Apple, Samsung, Google, Xiaomi, Custom...")
                         : "e.g. Oraimo, Anker, Baseus, Sony, Generic..."
                     }
-                    className="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs placeholder:font-normal focus:outline-none focus:border-teal-600 shadow-xs text-xs"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-slate-900 dark:text-white placeholder:text-[10px] sm:placeholder:text-xs placeholder:font-normal focus:outline-none focus:border-teal-600 shadow-xs text-xs"
                   />
                   <datalist id="brand-suggestions">
                     {activeBrands.map((b) => (
@@ -984,7 +1022,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                         className={`px-2 py-1 rounded-lg text-[11px] font-bold transition ${
                           brand.toLowerCase() === b.toLowerCase()
                             ? 'bg-teal-600 text-white'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700'
                         }`}
                       >
                         {b}
@@ -995,7 +1033,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
 
                 {/* Model / Title Input (Allows Any Custom Name) */}
                 <div className="space-y-1.5">
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider">
+                  <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
                     {mode === 'PHONE' ? 'Model Name *' : 'Product Title / Model Name *'}
                   </label>
                   <input
@@ -1009,20 +1047,22 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                             : 'e.g. iPhone 15 Pro Max, Galaxy S24 Ultra, iPad Pro 11"')
                         : 'e.g. Toast 10 Byte 20000mAh, FreePods 4 ANC, 65W GaN Charger'
                     }
-                    className="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-slate-900 placeholder:text-[10px] sm:placeholder:text-xs placeholder:font-normal focus:outline-none focus:border-teal-600 shadow-xs text-xs"
+                    className="w-full px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-slate-900 dark:text-white placeholder:text-[10px] sm:placeholder:text-xs placeholder:font-normal focus:outline-none focus:border-teal-600 shadow-xs text-xs"
                   />
                 </div>
 
                 {/* Specifications / Storage / Capacity */}
                 <div className="space-y-1.5 sm:space-y-2 md:col-span-2">
                   <div className="flex items-center justify-between">
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-[11px] sm:text-xs">
+                    <label className="block font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider text-[11px] sm:text-xs">
                       {mode === 'PHONE'
                         ? (deviceCategory === 'LAPTOP' ? 'RAM, Storage & Hardware Specs *' : 'Internal Storage Capacity *')
                         : 'Specifications / Capacity / Variant'}
                     </label>
                     {mode === 'PHONE' && (
-                      <span className="text-[10px] sm:text-[11px] text-slate-500 font-medium">Pick preset or type custom</span>
+                      <span className="text-[10px] sm:text-[11px] text-amber-700 dark:text-amber-400 font-bold">
+                        {deviceCategory === 'PHONE_TABLET' ? 'Please select device storage below' : 'Pick preset or type custom'}
+                      </span>
                     )}
                   </div>
 
@@ -1040,7 +1080,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                               setSpecs(e.target.value);
                             }
                           }}
-                          className="w-full h-8 px-2.5 py-1 rounded-lg border border-slate-200 bg-white font-bold text-slate-800 text-[10px] focus:outline-none focus:border-teal-600 shadow-xs"
+                          className="w-full h-8 px-2.5 py-1 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-bold text-slate-800 dark:text-slate-200 text-[10px] focus:outline-none focus:border-teal-600 shadow-xs"
                         >
                           {PHONE_SPECS_PRESETS.map((st) => (
                             <option key={st} value={st}>
@@ -1058,13 +1098,14 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                             key={st}
                             type="button"
                             onClick={() => setSpecs(st)}
-                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                            className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                               (specs || '128 GB') === st
-                                ? 'bg-teal-50 text-teal-700 border-2 border-teal-600 shadow-xs'
-                                : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+                                ? 'bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border-2 border-teal-600 shadow-xs'
+                                : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                             }`}
                           >
-                            {st}
+                            {(specs || '128 GB') === st && <Check className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400" />}
+                            <span>{st}</span>
                           </button>
                         ))}
                       </div>
@@ -1076,7 +1117,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                           value={specs}
                           onChange={(e) => setSpecs(e.target.value)}
                           placeholder="Specify custom storage/RAM (e.g. 128GB + 8GB RAM...)"
-                          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium text-slate-900 text-xs placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium text-slate-900 dark:text-white text-xs placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
                           autoFocus
                         />
                       )}
@@ -1086,7 +1127,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                           value={specs}
                           onChange={(e) => setSpecs(e.target.value)}
                           placeholder="Type custom storage/specs (e.g. 128GB + 8GB RAM...)"
-                          className="w-full px-3 py-2 rounded-lg border border-slate-200 bg-white font-medium text-slate-900 text-xs placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
+                          className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-medium text-slate-900 dark:text-white text-xs placeholder:text-[10px] sm:placeholder:text-xs focus:outline-none focus:border-teal-600 animate-in fade-in duration-150"
                           autoFocus
                         />
                       )}
