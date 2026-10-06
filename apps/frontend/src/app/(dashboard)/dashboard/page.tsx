@@ -98,28 +98,28 @@ export default function BusinessDashboardPage() {
       {/* ========================================================================= */}
       {/* 1. WELCOME BANNER (Executive Header)                                     */}
       {/* ========================================================================= */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200/80 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden">
+      <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden transition-colors duration-200">
         {/* Background Subtle Gradient Glow */}
-        <div className="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/5 dark:bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="space-y-2 relative z-10">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-slate-500 text-xs font-semibold">
+            <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">
               <span className="hidden sm:inline">• </span>Main Downtown Branch
             </span>
             <button
               onClick={() => setShowOnboardingModal(true)}
-              className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold border border-emerald-200 transition flex items-center gap-1 cursor-pointer shadow-subtle"
+              className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-xs font-bold border border-emerald-200 dark:border-emerald-800 transition flex items-center gap-1 cursor-pointer shadow-subtle"
             >
               <span>Setup Progress {livePhones.length > 0 ? '75%' : '50%'}</span>
               <ChevronDown className="w-3.5 h-3.5" />
             </button>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
             {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening'}, {userName} 
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium max-w-xl leading-relaxed">
             Welcome back to NoxGuarda. Here's a real-time summary of your store's inventory, phone registrations, sales, and warranty activity today.
           </p>
         </div>
@@ -127,138 +127,136 @@ export default function BusinessDashboardPage() {
         {/* Action Buttons */}
         <div className="flex flex-row items-center gap-2 sm:gap-2.5 relative z-10 shrink-0 w-full sm:w-auto">
           <Link href="/dashboard/register" className="flex-1 sm:flex-none">
-            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-blue-600/30 text-blue-700 bg-blue-50/30 hover:bg-blue-50 sm:bg-blue-600 sm:text-white sm:border-blue-600 sm:hover:bg-blue-700 shadow-xs sm:shadow-md sm:shadow-blue-600/10">
-              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 sm:text-white" />
+            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-teal-600/30 text-teal-700 dark:text-teal-300 bg-teal-50/30 dark:bg-teal-950/40 hover:bg-teal-50 dark:hover:bg-teal-900/40 sm:bg-teal-600 sm:text-white sm:border-teal-600 sm:hover:bg-teal-700 shadow-xs sm:shadow-md sm:shadow-teal-600/10">
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600 dark:text-teal-400 sm:text-white" />
               <span className="hidden sm:inline">Register Phone / Item</span>
               <span className="inline sm:hidden">Register Item</span>
             </button>
           </Link>
           <Link href="/dashboard/verify" className="flex-1 sm:flex-none">
-            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-slate-200 text-slate-700 bg-transparent hover:bg-slate-50 shadow-xs">
-              <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 sm:text-blue-600" />
+            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs">
+              <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-400 sm:text-teal-600 dark:sm:text-teal-400" />
               <span>Record Sale</span>
             </button>
           </Link>
         </div>
-      </div>
-
-      {/* ========================================================================= */}
+      </div>      {/* ========================================================================= */}
       {/* 2. EXECUTIVE KPI STAT CARDS GRID (6 Cards with Profit Made)               */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         
         {/* Card 1: Phones Registered */}
-        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Registered</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Registered</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <Smartphone className="w-4 h-4" />
             </div>
           </div>
           {isDataLoading ? (
-            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+            <div className="h-8 w-16 bg-slate-200/60 dark:bg-slate-800 rounded-lg animate-pulse my-0.5" />
           ) : (
-            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">{metrics.totalRegistered.toLocaleString()}</div>
+            <div className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{metrics.totalRegistered.toLocaleString()}</div>
           )}
-          <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
             <ArrowUpRight className="w-3.5 h-3.5" /> Real-time database ledger
           </div>
         </div>
 
         {/* Card 2: Phones Sold */}
-        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Phones Sold</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phones Sold</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
           {isDataLoading ? (
-            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+            <div className="h-8 w-16 bg-slate-200/60 dark:bg-slate-800 rounded-lg animate-pulse my-0.5" />
           ) : (
-            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            <div className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {metrics.sold.toLocaleString()}
             </div>
           )}
-          <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
             <ArrowUpRight className="w-3.5 h-3.5" /> Completed transactions
           </div>
         </div>
 
         {/* Card 3: In Stock Units */}
-        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">In-Stock</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">In-Stock</span>
+            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
               <Package className="w-4 h-4" />
             </div>
           </div>
           {isDataLoading ? (
-            <div className="h-8 w-16 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+            <div className="h-8 w-16 bg-slate-200/60 dark:bg-slate-800 rounded-lg animate-pulse my-0.5" />
           ) : (
-            <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            <div className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               {metrics.inStock.toLocaleString()}
             </div>
           )}
-          <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600">
+          <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
             <TrendingUp className="w-3.5 h-3.5" /> Ready for POS checkout
           </div>
         </div>
 
         {/* Card 4: Total Revenue */}
-        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Revenue</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Revenue</span>
+            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
           {isDataLoading ? (
-            <div className="h-8 w-24 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+            <div className="h-8 w-24 bg-slate-200/60 dark:bg-slate-800 rounded-lg animate-pulse my-0.5" />
           ) : (
-            <div className="text-xl font-extrabold text-slate-900 tracking-tight">
+            <div className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               ₦{metrics.revenue.toLocaleString()}
             </div>
           )}
-          <div className="text-[11px] font-bold text-blue-600">Total settled sales</div>
+          <div className="text-[11px] font-bold text-blue-600 dark:text-blue-400">Total settled sales</div>
         </div>
 
         {/* Card 5: Profit Made */}
-        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-emerald-200 shadow-sm space-y-2 relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/30">
+        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800/80 shadow-sm space-y-2 relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/30 dark:from-slate-900 dark:to-emerald-950/20 transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Profit Made</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 border border-emerald-200 text-emerald-700 flex items-center justify-center">
+            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Profit Made</span>
+            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
           {isDataLoading ? (
-            <div className="h-8 w-24 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+            <div className="h-8 w-24 bg-slate-200/60 dark:bg-slate-800 rounded-lg animate-pulse my-0.5" />
           ) : (
-            <div className="text-xl font-extrabold text-emerald-700 tracking-tight">
+            <div className="text-xl font-extrabold text-emerald-700 dark:text-emerald-400 tracking-tight">
               ₦{metrics.totalProfit.toLocaleString()}
             </div>
           )}
-          <div className="text-[11px] font-bold text-emerald-700 flex items-center gap-1">
+          <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
             <span>{metrics.profitMargin}% margin</span> • <span>Net profit realized</span>
           </div>
         </div>
 
         {/* Card 6: Stock Valuation */}
-        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
+        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Stock Value</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center">
+            <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Stock Value</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-100 dark:border-rose-900 text-rose-600 dark:text-rose-400 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
           {isDataLoading ? (
-            <div className="h-8 w-24 bg-slate-200/60 rounded-lg animate-pulse my-0.5" />
+            <div className="h-8 w-24 bg-slate-200/60 dark:bg-slate-800 rounded-lg animate-pulse my-0.5" />
           ) : (
-            <div className="text-xl font-extrabold text-slate-900 tracking-tight">
+            <div className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               ₦{metrics.valuation.toLocaleString()}
             </div>
           )}
-          <div className="text-[11px] font-bold text-slate-500">Live inventory valuation</div>
+          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Live inventory valuation</div>
         </div>
       </div>
 
@@ -266,88 +264,88 @@ export default function BusinessDashboardPage() {
       {/* 3. QUICK ACTIONS TOOLBAR                                                  */}
       {/* ========================================================================= */}
       <div className="space-y-3">
-        <h3 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider">Quick Actions Toolbar</h3>
+        <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Quick Actions Toolbar</h3>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <Link
             href="/dashboard/register"
-            className="p-4 rounded-xl vf-card bg-white border border-slate-200 hover:border-blue-500 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
           >
-            <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition">
+            <div className="w-9 h-9 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition">
               <Plus className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-extrabold text-xs text-slate-900">Register Phone / Item</div>
-              <div className="text-[10px] text-slate-500 font-medium">Add serial / IMEI</div>
+              <div className="font-extrabold text-xs text-slate-900 dark:text-white">Register Phone / Item</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Add serial / IMEI</div>
             </div>
           </Link>
 
           <Link
             href="/dashboard/verify"
-            className="p-4 rounded-xl vf-card bg-white border border-slate-200 hover:border-blue-500 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
           >
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition">
+            <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-extrabold text-xs text-slate-900">Verify Device</div>
-              <div className="text-[10px] text-slate-500 font-medium">Lookup IMEI or QR</div>
+              <div className="font-extrabold text-xs text-slate-900 dark:text-white">Verify Device</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Lookup IMEI or QR</div>
             </div>
           </Link>
 
           <Link
             href="/dashboard/records"
-            className="p-4 rounded-xl vf-card bg-white border border-slate-200 hover:border-blue-500 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
           >
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition">
+            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition">
               <Receipt className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-extrabold text-xs text-slate-900">Issue Receipt</div>
-              <div className="text-[10px] text-slate-500 font-medium">80mm POS format</div>
+              <div className="font-extrabold text-xs text-slate-900 dark:text-white">Issue Receipt</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">80mm POS format</div>
             </div>
           </Link>
 
           <Link
             href="/dashboard/records"
-            className="p-4 rounded-xl vf-card bg-white border border-slate-200 hover:border-blue-500 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
           >
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition">
+            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition">
               <Users className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-extrabold text-xs text-slate-900">Add Customer</div>
-              <div className="text-[10px] text-slate-500 font-medium">Link buyer profile</div>
+              <div className="font-extrabold text-xs text-slate-900 dark:text-white">Add Customer</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Link buyer profile</div>
             </div>
           </Link>
 
           <Link
             href="/dashboard/records"
-            className="p-4 rounded-xl vf-card bg-white border border-slate-200 hover:border-blue-500 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
           >
-            <div className="w-9 h-9 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition">
+            <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition">
               <BarChart3 className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-extrabold text-xs text-slate-900">View Reports</div>
-              <div className="text-[10px] text-slate-500 font-medium">Sales & analytics</div>
+              <div className="font-extrabold text-xs text-slate-900 dark:text-white">View Reports</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Sales & analytics</div>
             </div>
           </Link>
 
           <Link
             href="/dashboard/settings"
-            className="p-4 rounded-xl vf-card bg-white border border-slate-200 hover:border-blue-500 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
           >
-            <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center group-hover:bg-slate-900 group-hover:text-white transition">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition">
               <Sliders className="w-4 h-4" />
             </div>
             <div>
-              <div className="font-extrabold text-xs text-slate-900">Store Settings</div>
-              <div className="text-[10px] text-slate-500 font-medium">Branches & branding</div>
+              <div className="font-extrabold text-xs text-slate-900 dark:text-white">Store Settings</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Branches & branding</div>
             </div>
           </Link>
         </div>
-      </div>
+      </div>    </div>
 
       {/* ========================================================================= */}
       {/* 6. OPERATIONAL SUMMARY SNAPSHOT GRID (Inventory, Sales, Warranties)     */}
@@ -356,33 +354,33 @@ export default function BusinessDashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         
         {/* Module 1: Inventory Status */}
-        <div className="vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-              <Package className="w-4 h-4 text-blue-600" /> Inventory Status
+        <div className="vf-card bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+              <Package className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Inventory Status
             </h4>
-            <Link href="/dashboard/inventory" className="text-xs text-blue-600 font-bold hover:underline">
+            <Link href="/dashboard/inventory" className="text-xs text-teal-600 dark:text-teal-400 font-bold hover:underline">
               Manage →
             </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
-              <div className="text-slate-500 font-semibold">In Stock</div>
+            <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
+              <div className="text-slate-500 dark:text-slate-400 font-semibold">In Stock</div>
               {isDataLoading ? (
-                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse mt-1" />
+                <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse mt-1" />
               ) : (
-                <div className="text-xl font-extrabold text-slate-900 mt-1">
+                <div className="text-xl font-extrabold text-slate-900 dark:text-white mt-1">
                   {metrics.inStock.toLocaleString()} Units
                 </div>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200">
-              <div className="text-emerald-800 font-semibold">Sold Devices</div>
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
+              <div className="text-emerald-800 dark:text-emerald-300 font-semibold">Sold Devices</div>
               {isDataLoading ? (
-                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse mt-1" />
+                <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse mt-1" />
               ) : (
-                <div className="text-xl font-extrabold text-emerald-950 mt-1">
+                <div className="text-xl font-extrabold text-emerald-950 dark:text-emerald-200 mt-1">
                   {metrics.sold.toLocaleString()} Units
                 </div>
               )}
@@ -391,21 +389,21 @@ export default function BusinessDashboardPage() {
         </div>
 
         {/* Module 2: Sales & Profit Snapshot */}
-        <div className="vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-emerald-600" /> Sales & Profit
+        <div className="vf-card bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+              <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Sales & Profit
             </h4>
-            <div className="flex bg-slate-100 p-0.5 rounded-lg text-[10px] font-bold">
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-[10px] font-bold">
               <button
                 onClick={() => setSalesTimeframe('daily')}
-                className={`px-2 py-0.5 rounded ${salesTimeframe === 'daily' ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}
+                className={`px-2 py-0.5 rounded ${salesTimeframe === 'daily' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow' : 'text-slate-500 dark:text-slate-400'}`}
               >
                 Daily
               </button>
               <button
                 onClick={() => setSalesTimeframe('weekly')}
-                className={`px-2 py-0.5 rounded ${salesTimeframe === 'weekly' ? 'bg-white text-slate-900 shadow' : 'text-slate-500'}`}
+                className={`px-2 py-0.5 rounded ${salesTimeframe === 'weekly' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow' : 'text-slate-500 dark:text-slate-400'}`}
               >
                 Weekly
               </button>
@@ -413,57 +411,57 @@ export default function BusinessDashboardPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-200 space-y-0.5">
-              <div className="text-[11px] font-bold text-blue-900">Revenue</div>
+            <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 space-y-0.5">
+              <div className="text-[11px] font-bold text-blue-900 dark:text-blue-300">Revenue</div>
               {isDataLoading ? (
-                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse my-0.5" />
+                <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse my-0.5" />
               ) : (
-                <div className="text-lg font-extrabold text-blue-950">
+                <div className="text-lg font-extrabold text-blue-950 dark:text-blue-200">
                   ₦{metrics.revenue.toLocaleString()}
                 </div>
               )}
-              <div className="text-[9px] text-blue-700 font-semibold">Gross sales</div>
+              <div className="text-[9px] text-blue-700 dark:text-blue-400 font-semibold">Gross sales</div>
             </div>
 
-            <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200 space-y-0.5">
-              <div className="text-[11px] font-bold text-emerald-900">Profit Made</div>
+            <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-0.5">
+              <div className="text-[11px] font-bold text-emerald-900 dark:text-emerald-300">Profit Made</div>
               {isDataLoading ? (
-                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse my-0.5" />
+                <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse my-0.5" />
               ) : (
-                <div className="text-lg font-extrabold text-emerald-950">
+                <div className="text-lg font-extrabold text-emerald-950 dark:text-emerald-200">
                   ₦{metrics.totalProfit.toLocaleString()}
                 </div>
               )}
-              <div className="text-[9px] text-emerald-700 font-semibold">{metrics.profitMargin}% margin</div>
+              <div className="text-[9px] text-emerald-700 dark:text-emerald-400 font-semibold">{metrics.profitMargin}% margin</div>
             </div>
           </div>
         </div>
 
         {/* Module 3: Warranty Overview */}
-        <div className="vf-card bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <h4 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-              <Lock className="w-4 h-4 text-amber-600" /> Warranty Tracking
+        <div className="vf-card bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
+          <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+            <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+              <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400" /> Warranty Tracking
             </h4>
-            <Link href="/dashboard/records" className="text-xs text-blue-600 font-bold hover:underline">
+            <Link href="/dashboard/records" className="text-xs text-teal-600 dark:text-teal-400 font-bold hover:underline">
               View All →
             </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200">
-              <div className="text-amber-800 font-semibold">Active Guarantees</div>
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
+              <div className="text-amber-800 dark:text-amber-300 font-semibold">Active Guarantees</div>
               {isDataLoading ? (
-                <div className="h-6 w-16 bg-slate-200/60 rounded animate-pulse mt-1" />
+                <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse mt-1" />
               ) : (
-                <div className="text-xl font-extrabold text-amber-950 mt-1">
+                <div className="text-xl font-extrabold text-amber-950 dark:text-amber-200 mt-1">
                   {metrics.warranties.toLocaleString()} Units
                 </div>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200">
-              <div className="text-rose-800 font-semibold">Expiring Soon</div>
-              <div className="text-xl font-extrabold text-rose-950 mt-1">0 Devices</div>
+            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800">
+              <div className="text-rose-800 dark:text-rose-300 font-semibold">Expiring Soon</div>
+              <div className="text-xl font-extrabold text-rose-950 dark:text-rose-200 mt-1">0 Devices</div>
             </div>
           </div>
         </div>

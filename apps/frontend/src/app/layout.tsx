@@ -42,6 +42,31 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var path = window.location.pathname || '';
+                  var isInternal = path.startsWith('/dashboard') || path.startsWith('/admin');
+                  if (isInternal) {
+                    var saved = localStorage.getItem('noxguarda_theme_mode');
+                    var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    if (saved === 'dark' || (saved === 'system' && prefersDark)) {
+                      document.documentElement.classList.add('dark');
+                      document.documentElement.style.colorScheme = 'dark';
+                      return;
+                    }
+                  }
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.style.colorScheme = 'light';
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
       <body className="bg-slate-50 text-slate-900 antialiased min-h-screen" suppressHydrationWarning>
         <NetworkStatusBanner />
         <PwaRegister />

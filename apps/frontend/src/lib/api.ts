@@ -223,6 +223,38 @@ class ApiClient {
     }>(`/phones/lookup-device?identifier=${encodeURIComponent(identifier)}&category=${category}`);
   }
 
+  async identifyDevice(payload: {
+    identifier: string;
+    deviceType?: 'laptop' | 'phone' | 'item' | 'accessory';
+    identifierType?: 'serial' | 'imei' | 'barcode' | 'sku';
+    productNumber?: string;
+    brandHint?: string;
+  }) {
+    return this.request<{
+      status: 'identified' | 'additional_information_required' | 'not_found' | 'provider_unavailable';
+      device?: {
+        deviceType: 'laptop' | 'phone' | 'item' | 'accessory';
+        manufacturer: string;
+        productName: string;
+        modelNumber?: string | null;
+        productNumber?: string | null;
+        serialNumber: string;
+        specs?: string | null;
+        warrantyStatus?: 'active' | 'expired' | 'unknown' | null;
+        warrantyStartDate?: string | null;
+        warrantyEndDate?: string | null;
+        suggestedModels?: string[];
+      } | null;
+      requiredFields?: string[];
+      message?: string;
+      source: string;
+      confidence: 'high' | 'medium' | 'low';
+    }>('/devices/lookup', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
   async getPriceSuggestion(params: { brand: string; model: string; storageCapacity?: string; condition?: string }) {
     const query = new URLSearchParams();
     if (params.brand) query.append('brand', params.brand);

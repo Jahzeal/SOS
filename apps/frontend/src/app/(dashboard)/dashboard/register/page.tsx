@@ -26,7 +26,6 @@ import {
   Edit3,
   Tag,
   Layers,
-  Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -139,15 +138,22 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
 
   // Live Cloud / Manufacturer Device Auto-Detection State
   const [detectedMatch, setDetectedMatch] = useState<{
-    found: boolean;
+    status: 'identified' | 'additional_information_required' | 'not_found' | 'provider_unavailable';
+    found?: boolean;
     brand?: string;
     model?: string;
+    productNumber?: string | null;
+    modelNumber?: string | null;
     suggestedModels?: string[];
-    specs?: string;
+    specs?: string | null;
+    warrantyStatus?: string | null;
     deviceCategory?: 'PHONE_TABLET' | 'LAPTOP' | 'ACCESSORY';
-    confidence?: 'HIGH' | 'MEDIUM' | 'LOW';
+    confidence?: 'high' | 'medium' | 'low';
     source?: string;
+    message?: string;
+    requiredFields?: string[];
   } | null>(null);
+  const [productNumberInput, setProductNumberInput] = useState('');
   const [isDetectedApplied, setIsDetectedApplied] = useState(false);
   const [isDetectedDismissed, setIsDetectedDismissed] = useState(false);
   const [isLookingUpDevice, setIsLookingUpDevice] = useState(false);
@@ -155,7 +161,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
   // Apply auto-detected hardware match into the registration form
   const handleApplyDetectedMatch = (modelOverride?: string) => {
     const match = detectedMatch;
-    if (!match || !match.found) return;
+    if (!match || match.status !== 'identified') return;
 
     if (match.brand) {
       setBrand(match.brand);
@@ -192,6 +198,55 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
     setSpecs(deviceCategory === 'LAPTOP' ? '16GB RAM / 512GB SSD' : '128 GB');
   };
 
+  // Perform device identification with optional product number
+  const executeDeviceIdentification = async (rawIdentifier: string, prodNumber?: string) => {
+    if (!rawIdentifier || rawIdentifier.length < 3) return;
+    try {
+      setIsLookingUpDevice(true);
+      const devType = mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'laptop' : 'phone') : 'item';
+      const res = await api.identifyDevice({
+        identifier: rawIdentifier,
+        deviceType: devType as any,
+        productNumber: prodNumber || undefined,
+        brandHint: brand.trim() || undefined,
+      });
+
+      if (res && res.status) {
+        setDetectedMatch({
+          status: res.status,
+          found: res.status === 'identified',
+          brand: res.device?.manufacturer,
+          model: res.device?.productName,
+          modelNumber: res.device?.modelNumber,
+          productNumber: res.device?.productNumber,
+          suggestedModels: res.device?.suggestedModels,
+          specs: res.device?.specs,
+          warrantyStatus: res.device?.warrantyStatus,
+          deviceCategory: res.device?.deviceType === 'laptop' ? 'LAPTOP' : 'PHONE_TABLET',
+          confidence: res.confidence,
+          source: res.source,
+          message: res.message,
+          requiredFields: res.requiredFields,
+        });
+        setIsDetectedApplied(false);
+        setIsDetectedDismissed(false);
+      } else {
+        setDetectedMatch(null);
+        setIsDetectedApplied(false);
+      }
+    } catch (err) {
+      console.warn('Live device lookup offline:', err);
+      setDetectedMatch({
+        status: 'provider_unavailable',
+        message: 'Device lookup is temporarily unavailable. You can enter details manually.',
+        source: 'system',
+        confidence: 'low',
+      });
+    } finally {
+      setIsLookingUpDevice(false);
+    }
+  };
+
   // Auto-lookup device information from serial number / service tag / barcode
   React.useEffect(() => {
     const rawIdentifier = (imei || serialNumber || '').trim();
@@ -207,26 +262,9 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
       return;
     }
 
-    const timer = setTimeout(async () => {
-      try {
-        setIsLookingUpDevice(true);
-        const cat = mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'LAPTOP' : 'PHONE') : 'ITEM';
-        const res = await api.lookupDevice(rawIdentifier, cat);
-
-        if (res && res.found) {
-          setDetectedMatch(res);
-          setIsDetectedApplied(false);
-          setIsDetectedDismissed(false);
-        } else {
-          setDetectedMatch(null);
-          setIsDetectedApplied(false);
-        }
-      } catch (err) {
-        console.warn('Live device lookup skipped/offline:', err);
-      } finally {
-        setIsLookingUpDevice(false);
-      }
-    }, 380);
+    const timer = setTimeout(() => {
+      executeDeviceIdentification(rawIdentifier);
+    }, 400);
 
     return () => clearTimeout(timer);
   }, [imei, serialNumber, mode, deviceCategory]);
@@ -695,31 +733,42 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                 </div>
               </div>
 
-              {/* Interactive Device Detection Smart Card (Option B) */}
+              {/* 1. Looking Up State */}
               {isLookingUpDevice && (
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium flex items-center gap-2.5 animate-pulse">
                   <div className="w-4 h-4 border-2 border-teal-600 border-t-transparent rounded-full animate-spin shrink-0" />
-                  <span>Looking up device specifications from manufacturer & global TAC registry...</span>
+                  <span>Looking up device specifications from manufacturer & hardware registry...</span>
                 </div>
               )}
 
-              {detectedMatch?.found && !isDetectedDismissed && !isDetectedApplied && !isLookingUpDevice && (
+              {/* 2. Device Found State (Identified) */}
+              {detectedMatch?.status === 'identified' && !isDetectedDismissed && !isDetectedApplied && !isLookingUpDevice && (
                 <div className="p-4 rounded-2xl bg-gradient-to-r from-teal-50/95 via-emerald-50/90 to-cyan-50/90 dark:from-teal-950/40 dark:via-slate-900 dark:to-cyan-950/30 border-2 border-teal-500/80 shadow-md animate-in fade-in zoom-in-95 duration-200 space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex items-start sm:items-center gap-3">
                       <div className="w-9 h-9 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-xs shrink-0 mt-0.5 sm:mt-0">
-                        <Sparkles className="w-5 h-5 text-amber-300" />
+                        <CheckCircle2 className="w-5 h-5 text-white" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-teal-950 dark:text-teal-200 uppercase tracking-wider">Device Detected</span>
+                          <span className="text-xs font-black text-teal-950 dark:text-teal-200 uppercase tracking-wider">Device Found ✓</span>
                           <span className="text-[10px] font-bold bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-300 px-2 py-0.5 rounded-md border border-teal-200 dark:border-teal-800">
                             {detectedMatch.source || 'Hardware Registry'}
                           </span>
+                          {detectedMatch.warrantyStatus && detectedMatch.warrantyStatus !== 'unknown' && (
+                            <span className="text-[10px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">
+                              Warranty: {detectedMatch.warrantyStatus.toUpperCase()}
+                            </span>
+                          )}
                         </div>
                         <div className="text-sm font-black text-slate-900 dark:text-white mt-0.5">
                           {detectedMatch.brand} {detectedMatch.model} {detectedMatch.specs ? `• ${detectedMatch.specs}` : ''}
                         </div>
+                        {detectedMatch.productNumber && (
+                          <div className="text-[11px] font-mono text-slate-600 dark:text-slate-400 mt-0.5">
+                            Product Number: <span className="font-bold text-slate-900 dark:text-slate-200">{detectedMatch.productNumber}</span>
+                          </div>
+                        )}
                         {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
                           <div className="text-xs text-amber-700 dark:text-amber-400 font-semibold mt-0.5 flex items-center gap-1">
                             <Info className="w-3.5 h-3.5 shrink-0" />
@@ -735,7 +784,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                         className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-black rounded-xl shadow-md transition-all flex items-center gap-1.5 active:scale-95 cursor-pointer"
                       >
                         <Check className="w-3.5 h-3.5 text-white" />
-                        <span>Apply Auto-Fill</span>
+                        <span>Use This Device</span>
                       </button>
                       <button
                         type="button"
@@ -755,7 +804,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                         <span className="text-[11px] font-black text-teal-950 dark:text-teal-200 uppercase tracking-wide">
                           Select Exact Model:
                         </span>
-                        <span className="text-[10px] font-medium text-teal-800 dark:text-teal-300">Click to auto-fill</span>
+                        <span className="text-[10px] font-medium text-teal-800 dark:text-teal-300">Click to use</span>
                       </div>
                       <div className="flex flex-wrap gap-1.5">
                         {detectedMatch.suggestedModels.map((m) => (
@@ -775,12 +824,98 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                 </div>
               )}
 
+              {/* 3. Additional Information Required State (e.g. HP Product Number) */}
+              {detectedMatch?.status === 'additional_information_required' && !isDetectedDismissed && !isLookingUpDevice && (
+                <div className="p-4 rounded-2xl bg-amber-50/90 dark:bg-amber-950/30 border-2 border-amber-400/80 shadow-md animate-in fade-in space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Info className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="space-y-1 flex-1">
+                      <p className="text-xs font-black text-amber-950 dark:text-amber-200">
+                        Additional Information Required for Identification
+                      </p>
+                      <p className="text-[11px] text-amber-800 dark:text-amber-300 leading-relaxed">
+                        {detectedMatch.message || 'HP requires the Product Number (ProdID / P/N) to pinpoint this exact model.'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1">
+                    <input
+                      type="text"
+                      placeholder="Enter Product Number (e.g. 1EP08EA or Z2W72EA)"
+                      value={productNumberInput}
+                      onChange={(e) => setProductNumberInput(e.target.value)}
+                      className="text-xs px-3.5 py-2 rounded-xl border border-amber-300 bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-mono flex-1 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => executeDeviceIdentification((imei || serialNumber).trim(), productNumberInput.trim())}
+                      className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold rounded-xl transition cursor-pointer shrink-0"
+                    >
+                      Identify Device
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsDetectedDismissed(true)}
+                      className="px-3 py-2 text-xs font-bold text-slate-600 hover:text-slate-900 cursor-pointer"
+                    >
+                      Enter Manually
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 4. Device Not Found State */}
+              {detectedMatch?.status === 'not_found' && !isDetectedDismissed && !isLookingUpDevice && (
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 animate-in fade-in">
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium">
+                    <Info className="w-4 h-4 text-slate-400 shrink-0" />
+                    <span>We couldn't identify this device automatically. You can enter details manually.</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => executeDeviceIdentification((imei || serialNumber).trim())}
+                      className="text-[11px] font-bold text-teal-600 hover:underline cursor-pointer"
+                    >
+                      Try Again
+                    </button>
+                    <span className="text-slate-300">|</span>
+                    <button
+                      type="button"
+                      onClick={() => setIsDetectedDismissed(true)}
+                      className="text-[11px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* 5. Provider Unavailable State */}
+              {detectedMatch?.status === 'provider_unavailable' && !isDetectedDismissed && !isLookingUpDevice && (
+                <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs flex items-center justify-between gap-2.5 animate-in fade-in">
+                  <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium">
+                    <Info className="w-4 h-4 text-slate-400 shrink-0" />
+                    <span>Device lookup is temporarily unavailable. You can continue by entering the device information manually.</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setIsDetectedDismissed(true)}
+                    className="text-[11px] font-bold text-slate-500 hover:text-slate-800 cursor-pointer shrink-0"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              )}
+
+              {/* Confirmation Banner When Pre-Filled */}
               {isDetectedApplied && (
                 <div className="p-3.5 rounded-xl bg-emerald-50/90 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 text-xs flex items-center justify-between shadow-xs animate-in fade-in duration-200">
                   <div className="flex items-center gap-2 text-emerald-950 dark:text-emerald-200 font-bold">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>
-                      Auto-filled: <span className="text-slate-900 dark:text-white">{brand} {model}</span>
+                      Pre-filled: <span className="text-slate-900 dark:text-white">{brand} {model}</span>
                       {detectedMatch?.specs ? ` • ${detectedMatch.specs}` : ''}
                       {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
                         <span className="text-amber-700 dark:text-amber-400 font-medium ml-1.5">(Please select storage in step 2)</span>
@@ -793,7 +928,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                     className="text-xs font-bold text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 flex items-center gap-1 cursor-pointer ml-3 shrink-0"
                   >
                     <X className="w-3.5 h-3.5" />
-                    <span>Cancel / Reset</span>
+                    <span>Reset</span>
                   </button>
                 </div>
               )}
