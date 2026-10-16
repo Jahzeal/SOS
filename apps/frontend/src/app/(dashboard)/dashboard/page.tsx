@@ -345,7 +345,7 @@ export default function BusinessDashboardPage() {
             </div>
           </Link>
         </div>
-      </div>    </div>
+      </div>
 
       {/* ========================================================================= */}
       {/* 6. OPERATIONAL SUMMARY SNAPSHOT GRID (Inventory, Sales, Warranties)     */}

@@ -92,9 +92,10 @@ body {
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dark .vf-card {
+.dark .vf-card:not(.bg-white) {
   background: #0f172a;
   border-color: #1e293b;
+  color: #f8fafc;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
 }
 

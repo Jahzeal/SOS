@@ -28,11 +28,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Determine if current route is an internal app/dashboard/admin page
   const isInternalRoute = useMemo(() => {
     if (!pathname) return false;
-    return (
-      pathname.startsWith('/dashboard') ||
-      pathname.startsWith('/admin') ||
-      pathname.startsWith('/onboarding') === false && (pathname.includes('/dashboard/') || pathname.includes('/admin/'))
-    );
+    return pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
   }, [pathname]);
 
   // Helper to determine system preference
