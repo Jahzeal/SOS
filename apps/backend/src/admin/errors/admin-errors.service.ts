@@ -37,32 +37,49 @@ export class AdminErrorsService {
       ];
     }
 
-    const [logs, totalCount, total500s, total400s] = await Promise.all([
-      this.prisma.errorLog.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      this.prisma.errorLog.count({ where }),
-      this.prisma.errorLog.count({ where: { statusCode: { gte: 500 } } }),
-      this.prisma.errorLog.count({ where: { statusCode: { gte: 400, lt: 500 } } }),
-    ]);
+    try {
+      const [logs, totalCount, total500s, total400s] = await Promise.all([
+        this.prisma.errorLog.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          skip,
+          take: limit,
+        }),
+        this.prisma.errorLog.count({ where }),
+        this.prisma.errorLog.count({ where: { statusCode: { gte: 500 } } }),
+        this.prisma.errorLog.count({ where: { statusCode: { gte: 400, lt: 500 } } }),
+      ]);
 
-    return {
-      logs,
-      pagination: {
-        total: totalCount,
-        page,
-        limit,
-        totalPages: Math.ceil(totalCount / limit) || 1,
-      },
-      stats: {
-        totalErrors: totalCount,
-        serverErrors500: total500s,
-        clientErrors400: total400s,
-      },
-    };
+      return {
+        logs,
+        pagination: {
+          total: totalCount,
+          page,
+          limit,
+          totalPages: Math.ceil(totalCount / limit) || 1,
+        },
+        stats: {
+          totalErrors: totalCount,
+          serverErrors500: total500s,
+          clientErrors400: total400s,
+        },
+      };
+    } catch (err: any) {
+      return {
+        logs: [],
+        pagination: {
+          total: 0,
+          page,
+          limit,
+          totalPages: 1,
+        },
+        stats: {
+          totalErrors: 0,
+          serverErrors500: 0,
+          clientErrors400: 0,
+        },
+      };
+    }
   }
 
   async getErrorById(id: string) {

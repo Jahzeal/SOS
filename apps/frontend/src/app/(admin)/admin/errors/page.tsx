@@ -33,9 +33,11 @@ export default function AdminErrorsPage() {
   const [selectedLog, setSelectedLog] = useState<any | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const fetchLogs = async () => {
     setLoading(true);
+    setFetchError(null);
     try {
       const res = await api.getErrorLogs({
         search: searchQuery.trim() || undefined,
@@ -52,6 +54,7 @@ export default function AdminErrorsPage() {
       }
     } catch (err: any) {
       console.error('Failed to fetch error logs:', err);
+      setFetchError(err?.message || 'Failed to load error logs');
     } finally {
       setLoading(false);
     }
@@ -164,6 +167,21 @@ ${log.stack || 'No stack trace captured'}
         <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 animate-in fade-in">
           <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
           <span>{actionSuccess}</span>
+        </div>
+      )}
+
+      {fetchError && (
+        <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center justify-between gap-3 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>Failed to load error logs: {fetchError}</span>
+          </div>
+          <button
+            onClick={fetchLogs}
+            className="px-3 py-1 bg-white hover:bg-rose-100 text-rose-700 font-bold border border-rose-300 rounded-lg transition shrink-0"
+          >
+            Retry
+          </button>
         </div>
       )}
 

@@ -57,10 +57,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
       stack || '',
     );
 
-    // 3. Asynchronously persist to database ErrorLog (only 4xx and 5xx errors)
+    // 3. Persist to database ErrorLog (only 4xx and 5xx errors)
     if (status >= 400) {
-      this.prisma.errorLog
-        .create({
+      try {
+        await this.prisma.errorLog.create({
           data: {
             endpoint,
             method,
@@ -71,10 +71,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
             businessId,
             userEmail,
           },
-        })
-        .catch((dbErr) => {
-          this.logger.warn(`Failed to save error log to DB: ${dbErr.message}`);
         });
+      } catch (dbErr: any) {
+        this.logger.warn(`Failed to save error log to DB: ${dbErr?.message || dbErr}`);
+      }
     }
 
     // 4. Return clean, consistent JSON response to client

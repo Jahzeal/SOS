@@ -1,6 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
+import { PrismaService } from '../src/prisma/prisma.service';
+import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
 
 let app: any;
 
@@ -24,6 +26,9 @@ export default async function handler(req: any, res: any) {
 
   if (!app) {
     app = await NestFactory.create(AppModule);
+
+    const prismaService = app.get(PrismaService);
+    app.useGlobalFilters(new AllExceptionsFilter(prismaService));
 
     app.useGlobalPipes(
       new ValidationPipe({

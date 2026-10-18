@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -55,6 +55,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
@@ -128,12 +133,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="fixed inset-y-0 left-0 z-40 hidden md:flex flex-col bg-white w-72 border-r border-slate-200/90 shadow-sm">
         {/* Admin Company Brand Header */}
         <div className="p-4 border-b border-slate-200 flex items-center gap-3 bg-white">
-          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-blue-600/20 shrink-0">
-            A
+          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-extrabold text-sm shadow-md shadow-blue-600/20 shrink-0" suppressHydrationWarning>
+            {mounted && user?.firstName ? user.firstName[0].toUpperCase() : 'A'}
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="text-xs font-extrabold text-slate-900 truncate">
-              {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Admin User'}
+            <span className="text-xs font-extrabold text-slate-900 truncate" suppressHydrationWarning>
+              {mounted && user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Admin User'}
             </span>
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
               System Administrator
@@ -188,8 +193,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Bell className="w-4 h-4" />
               <span className="w-2 h-2 rounded-full bg-blue-600 absolute top-1.5 right-1.5 ring-2 ring-white" />
             </Link>
-            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center border border-blue-200 shadow-subtle cursor-pointer">
-              AU
+            <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center border border-blue-200 shadow-subtle cursor-pointer" suppressHydrationWarning>
+              {mounted && user?.firstName ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`.toUpperCase() : 'AU'}
             </div>
           </div>
         </header>
@@ -207,11 +212,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="relative flex-1 max-w-xs w-full bg-white h-full shadow-2xl z-10 flex flex-col">
             <div className="p-4 border-b border-slate-200 flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
-                  A
+                <div className="w-8 h-8 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-xs" suppressHydrationWarning>
+                  {mounted && user?.firstName ? user.firstName[0].toUpperCase() : 'A'}
                 </div>
                 <div>
-                  <h3 className="font-bold text-xs text-slate-900">Admin User</h3>
+                  <h3 className="font-bold text-xs text-slate-900" suppressHydrationWarning>
+                    {mounted && user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Admin User'}
+                  </h3>
                   <p className="text-[10px] text-slate-500 font-medium">System Administrator</p>
                 </div>
               </div>

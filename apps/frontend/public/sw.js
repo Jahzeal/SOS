@@ -54,8 +54,18 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       })
-      .catch(() => {
-        return caches.match(event.request);
+      .catch(async () => {
+        const cached = await caches.match(event.request);
+        if (cached) return cached;
+        if (event.request.mode === 'navigate') {
+          const rootCached = await caches.match('/');
+          if (rootCached) return rootCached;
+        }
+        return new Response('Network connection failed and no offline cache is available.', {
+          status: 503,
+          statusText: 'Service Unavailable',
+          headers: { 'Content-Type': 'text/plain' },
+        });
       })
   );
 });
