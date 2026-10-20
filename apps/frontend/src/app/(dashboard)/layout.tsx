@@ -207,15 +207,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <SubscriptionGuardProvider>
-      <div className="min-h-screen flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-200">
+      <div className="min-h-screen flex w-full max-w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-200">
         {/* Responsive Sidebar (Desktop Persistent + Mobile Drawer) */}
         <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
         {/* Main Workspace */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-y-auto">
+        <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto">
           {/* Top Navigation Header */}
-          <header className="h-16 border-b border-slate-200/80 dark:border-slate-800 px-4 sm:px-6 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md z-20 shadow-subtle transition-colors duration-200">
-            <div className="flex items-center gap-3">
+          <header className="h-16 border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md z-20 shadow-subtle transition-colors duration-200 w-full max-w-full">
+            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
               {/* Mobile Hamburger Trigger */}
               <button
                 onClick={() => setIsMobileMenuOpen(true)}
@@ -226,29 +226,31 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </button>
 
               <Link href="/dashboard" className="flex items-center">
-                <BrandLogo size="sm" showText={true} textClassName="text-slate-900 dark:text-white text-xs font-black tracking-[0.18em]" />
+                <BrandLogo size="sm" showText={true} textClassName="hidden sm:inline text-slate-900 dark:text-white text-xs font-black tracking-[0.18em]" />
               </Link>
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
 
-              {/* Global Search Shortcut Trigger */}
+              {/* Global Search Shortcut Trigger - Compact Icon Button on Mobile (<sm), Expanded on Desktop (sm:) */}
               <button
                 onClick={() => setIsSearchOpen(true)}
-                className="flex items-center gap-2 px-3 py-1.5 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-500 dark:text-slate-400 transition shadow-subtle min-w-0 sm:min-w-[220px] justify-between cursor-pointer"
+                className="w-9 h-9 sm:w-auto flex items-center justify-center sm:justify-between sm:px-3 sm:py-1.5 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl sm:rounded-lg text-xs text-slate-500 dark:text-slate-400 transition shadow-subtle min-w-0 sm:min-w-[200px] cursor-pointer"
+                title="Search IMEI / Serial / Records (Ctrl+K)"
               >
                 <span className="flex items-center gap-2 truncate">
-                  <Search className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                  <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-slate-400 shrink-0" />
                   <span className="hidden sm:inline">Search IMEI / Serial...</span>
-                  <span className="sm:hidden">Search...</span>
                 </span>
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-400 font-semibold shadow-subtle">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-400 font-semibold shadow-subtle ml-2">
                   Ctrl+K
                 </kbd>
               </button>
 
-              {/* Theme Toggle (Light / Dark / Auto) */}
-              <ThemeToggle variant="dropdown" />
+              {/* Theme Toggle (Light / Dark / Auto) - Hidden on Mobile to prevent sizing out, available in User Menu & Sidebar */}
+              <div className="hidden sm:block">
+                <ThemeToggle variant="dropdown" />
+              </div>
 
               {/* Notification Bell Dropdown */}
               <div className="relative">
@@ -270,7 +272,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       className="fixed inset-0 z-40"
                       onClick={() => setIsNotificationsOpen(false)}
                     />
-                    <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl border border-slate-200 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-xs space-y-3">
+                    <div className="fixed inset-x-3 top-16 sm:absolute sm:inset-auto sm:right-0 sm:top-full mt-2 w-auto sm:w-96 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-xs space-y-3">
                       <div className="flex items-center justify-between border-b border-slate-100 pb-2.5 px-1">
                         <div className="flex items-center gap-2">
                           <span className="font-extrabold text-slate-900 text-sm">Notifications</span>
@@ -377,7 +379,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </button>
 
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 mt-2 w-64 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-2.5 z-50 animate-in fade-in duration-150 text-xs space-y-2">
+                  <>
+                    <div
+                      className="fixed inset-0 z-40"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-64 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-2.5 z-50 animate-in fade-in duration-150 text-xs space-y-2">
                     {/* User & Store Details Card */}
                     <div className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/80 space-y-2">
                       <div>
@@ -430,7 +437,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       </button>
                     </div>
                   </div>
-                )}
+                </>
+              )}
               </div>
 
             </div>
@@ -457,16 +465,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/verify"
-            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-teal-600 transition"
+            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition"
           >
-            <Search className="w-5 h-5 text-slate-700" />
+            <Search className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             <span>Verify</span>
           </Link>
 
           {/* Floating Register Phone / Item FAB Action Button in Center */}
           <Link
             href="/dashboard/register"
-            className="w-12 h-12 rounded-full bg-teal-600 text-white shadow-xl flex items-center justify-center -mt-6 border-4 border-white transition-transform active:scale-95"
+            className="w-12 h-12 rounded-full bg-teal-600 text-white shadow-xl flex items-center justify-center -mt-6 border-4 border-white dark:border-slate-900 transition-transform active:scale-95"
             title="Register Phone / Item"
           >
             <Plus className="w-6 h-6" />
@@ -474,17 +482,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/records"
-            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-teal-600 transition"
+            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition"
           >
-            <List className="w-5 h-5 text-slate-700" />
+            <List className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             <span>Records</span>
           </Link>
 
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 hover:text-teal-600 transition"
+            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition cursor-pointer"
           >
-            <Menu className="w-5 h-5 text-slate-700" />
+            <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             <span>Menu</span>
           </button>
         </nav>

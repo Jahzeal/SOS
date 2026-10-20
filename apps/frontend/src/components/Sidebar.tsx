@@ -31,6 +31,7 @@ import {
 import { Badge } from './ui/Badge';
 import { PwaInstallButton } from './PwaInstallButton';
 import { Logo } from './ui/Logo';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 interface MenuItem {
   name: string;
@@ -243,6 +244,12 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       {/* PWA Download / Native App Launcher Card */}
       <div className="px-3 pb-2">
         <PwaInstallButton variant="sidebar" />
+      </div>
+
+      {/* Theme Switcher in Mobile/Sidebar Drawer */}
+      <div className="px-3.5 py-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs bg-slate-50/50 dark:bg-slate-950/30">
+        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Appearance</span>
+        <ThemeToggle variant="compact" />
       </div>
 
       {/* User Footer with Log Out */}

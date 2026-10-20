@@ -114,26 +114,26 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
       className="fixed -inset-1 z-[100] bg-slate-950/75 backdrop-blur-sm flex items-start justify-center pt-16 sm:pt-24 p-4 animate-in fade-in duration-150"
     >
       <div
-        className="w-full max-w-2xl bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col"
+        className="w-full max-w-2xl bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Search Header Input */}
-        <div className="p-4 border-b border-slate-200 flex items-center gap-2 sm:gap-3">
-          <Search className="w-5 h-5 text-teal-600 shrink-0" />
+        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 sm:gap-3">
+          <Search className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0" />
           <input
             autoFocus
             type="text"
-            placeholder="Search IMEI, Serial Number, Device Model, Invoice ID..."
+            placeholder="Search IMEI, Serial, Model, Invoice..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full text-sm sm:text-base bg-transparent text-slate-900 placeholder-slate-400 focus:outline-none font-medium"
+            className="w-full text-sm sm:text-base bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none font-medium"
           />
-          {loading && <Loader2 className="w-4 h-4 text-teal-600 animate-spin shrink-0" />}
+          {loading && <Loader2 className="w-4 h-4 text-teal-600 dark:text-teal-400 animate-spin shrink-0" />}
           {query && (
             <button
               type="button"
               onClick={() => setQuery('')}
-              className="text-xs text-slate-500 hover:text-slate-800 px-2 py-1 rounded-md bg-slate-100 hover:bg-slate-200 transition cursor-pointer shrink-0 font-medium"
+              className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer shrink-0 font-medium"
               title="Clear search text"
             >
               Clear
@@ -143,12 +143,12 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
             type="button"
             onClick={onClose}
             aria-label="Close search modal"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer shrink-0 flex items-center justify-center"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0 flex items-center justify-center"
             title="Close modal (Esc)"
           >
             <X className="w-5 h-5" />
           </button>
-          <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-500">
+          <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
             ESC
           </span>
         </div>
@@ -156,7 +156,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
         {/* Content Body */}
         <div className="max-h-[380px] overflow-y-auto p-4 custom-scrollbar">
           {query.trim() === '' ? (
-            <div className="py-8 text-center text-slate-400 text-xs font-medium">
+            <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs font-medium">
               Type an IMEI, Serial Number, Customer name or Invoice ID to search live database records.
             </div>
           ) : results.length > 0 ? (
@@ -165,10 +165,10 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                 <button
                   key={`${item.type}-${item.id}`}
                   onClick={() => handleSelect(item)}
-                  className="w-full p-3 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 flex items-center justify-between text-left transition group cursor-pointer"
+                  className="w-full p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 flex items-center justify-between text-left transition group cursor-pointer"
                 >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
+                  <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
+                    <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 flex items-center justify-center shrink-0">
                       {item.type === 'PHONE' || item.type === 'IMEI' ? (
                         <Smartphone className="w-4 h-4" />
                       ) : item.type === 'CUSTOMER' ? (
@@ -177,27 +177,27 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                         <FileText className="w-4 h-4" />
                       )}
                     </div>
-                    <div className="min-w-0">
-                      <div className="font-bold text-xs sm:text-sm text-slate-900 truncate">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
                         {item.title}
                       </div>
-                      <div className="text-[11px] text-slate-500 truncate font-mono">
+                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-mono">
                         {item.subtitle}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 text-slate-700">
+                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                       {item.badgeText}
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-teal-600 group-hover:translate-x-0.5 transition" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 group-hover:translate-x-0.5 transition" />
                   </div>
                 </button>
               ))}
             </div>
           ) : (
-            <div className="py-8 text-center text-slate-400 text-xs font-medium">
+            <div className="py-8 text-center text-slate-400 dark:text-slate-500 text-xs font-medium">
               No matching records found in database for &quot;{query}&quot;.
             </div>
           )}

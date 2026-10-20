@@ -32,6 +32,12 @@ export function BrandLogo({
       {/* Exact Designer Artwork Container */}
       <div
         className={`relative overflow-hidden bg-white shadow-xs border border-white/30 flex items-center justify-center shrink-0 ${containerClass} ${className}`}
+        style={{
+          width: size === 'sm' ? 32 : size === 'md' ? 40 : size === 'lg' ? 48 : size === 'xl' ? 64 : undefined,
+          height: size === 'sm' ? 32 : size === 'md' ? 40 : size === 'lg' ? 48 : size === 'xl' ? 64 : undefined,
+          minWidth: size === 'sm' ? 32 : size === 'md' ? 40 : size === 'lg' ? 48 : size === 'xl' ? 64 : undefined,
+          minHeight: size === 'sm' ? 32 : size === 'md' ? 40 : size === 'lg' ? 48 : size === 'xl' ? 64 : undefined,
+        }}
       >
         <div className="relative w-full h-full scale-[1.85] flex items-center justify-center">
           <Image

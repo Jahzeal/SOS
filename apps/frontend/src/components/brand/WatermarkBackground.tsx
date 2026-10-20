@@ -32,16 +32,23 @@ export function WatermarkBackground({
   return (
     <div
       aria-hidden="true"
-      className={`pointer-events-none select-none absolute inset-0 overflow-hidden -z-10 flex ${positionClasses[position]} ${className}`}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        overflow: 'hidden',
+        pointerEvents: 'none',
+        zIndex: -10,
+      }}
+      className={`pointer-events-none select-none absolute inset-0 overflow-hidden -z-10 hidden md:flex ${positionClasses[position]} ${className}`}
     >
       <div
+        style={{ opacity: 0.035 }}
         className={`relative ${sizeClasses[size]} ${opacity} transition-opacity duration-300 flex items-center justify-center filter grayscale contrast-125`}
       >
         <Image
           src="/images/noxguardalogo.jpg"
           alt=""
           fill
-          priority
           sizes="(max-width: 768px) 300px, 600px"
           className="object-contain"
         />

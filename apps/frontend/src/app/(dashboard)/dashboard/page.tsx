@@ -98,11 +98,11 @@ export default function BusinessDashboardPage() {
       {/* ========================================================================= */}
       {/* 1. WELCOME BANNER (Executive Header)                                     */}
       {/* ========================================================================= */}
-      <div className="p-6 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative overflow-hidden transition-colors duration-200">
+      <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6 relative overflow-hidden transition-colors duration-200 w-full max-w-full">
         {/* Background Subtle Gradient Glow */}
         <div className="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/5 dark:bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="space-y-2 relative z-10">
+        <div className="space-y-2 relative z-10 min-w-0 max-w-full">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">
               <span className="hidden sm:inline">• </span>Main Downtown Branch
@@ -116,7 +116,7 @@ export default function BusinessDashboardPage() {
             </button>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white break-words">
             {new Date().getHours() < 12 ? 'Good Morning' : new Date().getHours() < 17 ? 'Good Afternoon' : 'Good Evening'}, {userName} 
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 font-medium max-w-xl leading-relaxed">
@@ -125,18 +125,18 @@ export default function BusinessDashboardPage() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-row items-center gap-2 sm:gap-2.5 relative z-10 shrink-0 w-full sm:w-auto">
-          <Link href="/dashboard/register" className="flex-1 sm:flex-none">
-            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-teal-600/30 text-teal-700 dark:text-teal-300 bg-teal-50/30 dark:bg-teal-950/40 hover:bg-teal-50 dark:hover:bg-teal-900/40 sm:bg-teal-600 sm:text-white sm:border-teal-600 sm:hover:bg-teal-700 shadow-xs sm:shadow-md sm:shadow-teal-600/10">
-              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600 dark:text-teal-400 sm:text-white" />
-              <span className="hidden sm:inline">Register Phone / Item</span>
-              <span className="inline sm:hidden">Register Item</span>
+        <div className="flex flex-row items-center gap-2 sm:gap-2.5 relative z-10 shrink-0 w-full sm:w-auto min-w-0">
+          <Link href="/dashboard/register" className="flex-1 sm:flex-none min-w-0">
+            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-teal-600/30 text-teal-700 dark:text-teal-300 bg-teal-50/30 dark:bg-teal-950/40 hover:bg-teal-50 dark:hover:bg-teal-900/40 sm:bg-teal-600 sm:text-white sm:border-teal-600 sm:hover:bg-teal-700 shadow-xs sm:shadow-md sm:shadow-teal-600/10">
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600 dark:text-teal-400 sm:text-white shrink-0" />
+              <span className="hidden sm:inline whitespace-nowrap">Register Phone / Item</span>
+              <span className="inline sm:hidden whitespace-nowrap">Register Item</span>
             </button>
           </Link>
-          <Link href="/dashboard/verify" className="flex-1 sm:flex-none">
-            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs">
-              <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-400 sm:text-teal-600 dark:sm:text-teal-400" />
-              <span>Record Sale</span>
+          <Link href="/dashboard/verify" className="flex-1 sm:flex-none min-w-0">
+            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs">
+              <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-400 sm:text-teal-600 dark:sm:text-teal-400 shrink-0" />
+              <span className="whitespace-nowrap">Record Sale</span>
             </button>
           </Link>
         </div>
@@ -266,30 +266,30 @@ export default function BusinessDashboardPage() {
       <div className="space-y-3">
         <h3 className="text-sm font-extrabold text-slate-900 dark:text-white uppercase tracking-wider">Quick Actions Toolbar</h3>
         
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
           <Link
             href="/dashboard/register"
-            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-3 sm:p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-2 sm:gap-3 group shadow-sm min-w-0"
           >
-            <div className="w-9 h-9 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition shrink-0">
               <Plus className="w-4 h-4" />
             </div>
-            <div>
-              <div className="font-extrabold text-xs text-slate-900 dark:text-white">Register Phone / Item</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Add serial / IMEI</div>
+            <div className="min-w-0 flex-1">
+              <div className="font-extrabold text-xs text-slate-900 dark:text-white truncate">Register Item</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">Add serial / IMEI</div>
             </div>
           </Link>
 
           <Link
             href="/dashboard/verify"
-            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-3 sm:p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-2 sm:gap-3 group shadow-sm min-w-0"
           >
-            <div className="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition shrink-0">
               <ShieldCheck className="w-4 h-4" />
             </div>
-            <div>
-              <div className="font-extrabold text-xs text-slate-900 dark:text-white">Verify Device</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Lookup IMEI or QR</div>
+            <div className="min-w-0 flex-1">
+              <div className="font-extrabold text-xs text-slate-900 dark:text-white truncate">Verify Device</div>
+              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">Lookup IMEI or QR</div>
             </div>
           </Link>
 
