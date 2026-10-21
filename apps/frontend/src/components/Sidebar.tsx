@@ -28,6 +28,7 @@ import {
   X,
   FileSpreadsheet,
 } from 'lucide-react';
+import { Badge } from './ui/Badge';
 import { Logo } from './ui/Logo';
 import { PwaInstallButton } from './PwaInstallButton';
 
