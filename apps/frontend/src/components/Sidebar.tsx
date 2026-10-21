@@ -28,10 +28,8 @@ import {
   X,
   FileSpreadsheet,
 } from 'lucide-react';
-import { Badge } from './ui/Badge';
-import { PwaInstallButton } from './PwaInstallButton';
 import { Logo } from './ui/Logo';
-import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { PwaInstallButton } from './PwaInstallButton';
 
 interface MenuItem {
   name: string;
@@ -246,12 +244,6 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <PwaInstallButton variant="sidebar" />
       </div>
 
-      {/* Theme Switcher in Mobile/Sidebar Drawer */}
-      <div className="px-3.5 py-2.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs bg-slate-50/50 dark:bg-slate-950/30">
-        <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Appearance</span>
-        <ThemeToggle variant="compact" />
-      </div>
-
       {/* User Footer with Log Out */}
       <div className="p-3.5 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between text-xs bg-slate-50/50 dark:bg-slate-950/40">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -280,8 +272,8 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
 
   return (
     <>
-      {/* Desktop Persistent Sidebar */}
-      <aside className="hidden lg:flex h-screen sticky top-0 z-30">
+      {/* Desktop Persistent Sidebar (Fixed in place) */}
+      <aside className="hidden lg:flex h-full shrink-0 z-30">
         {sidebarContent}
       </aside>
 

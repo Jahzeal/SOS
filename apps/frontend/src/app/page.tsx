@@ -1584,9 +1584,9 @@ export default function PublicLandingPageV2() {
         </div>
 
         <div className="text-center pt-4">
-          <Link href="/features" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-slate-900 text-white font-extrabold text-xs sm:text-sm hover:bg-slate-800 transition shadow-md">
+          <Link href="/features" className="inline-flex items-center gap-2 px-6 py-3 rounded-2xl bg-teal-600 text-white font-extrabold text-xs sm:text-sm hover:bg-teal-500 transition shadow-md shadow-teal-600/20 border border-teal-500/40">
             <span>Explore All NoxGuarda Features & Workflows</span>
-            <ArrowRight className="w-4 h-4 text-teal-400" />
+            <ArrowRight className="w-4 h-4 text-white" />
           </Link>
         </div>
       </section>

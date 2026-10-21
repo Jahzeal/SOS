@@ -207,14 +207,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <SubscriptionGuardProvider>
-      <div className="min-h-screen flex w-full max-w-full overflow-x-hidden bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 pb-16 lg:pb-0 transition-colors duration-200">
+      <div className="h-screen w-full max-w-full overflow-hidden flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
         {/* Responsive Sidebar (Desktop Persistent + Mobile Drawer) */}
         <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
-        {/* Main Workspace */}
-        <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-x-hidden overflow-y-auto">
+        {/* Main Workspace (Scrolls independently while Sidebar stays 100% fixed) */}
+        <div className="flex-1 flex flex-col h-full min-w-0 w-full max-w-full overflow-y-auto overflow-x-hidden pb-16 lg:pb-0">
           {/* Top Navigation Header */}
-          <header className="h-16 border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md z-20 shadow-subtle transition-colors duration-200 w-full max-w-full">
+          <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md z-20 shadow-subtle transition-colors duration-200 w-full max-w-full">
             <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
               {/* Mobile Hamburger Trigger */}
               <button
