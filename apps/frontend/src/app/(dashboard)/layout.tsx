@@ -242,7 +242,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Search className="w-4 h-4 sm:w-3.5 sm:h-3.5 text-slate-400 shrink-0" />
                   <span className="hidden sm:inline">Search IMEI / Serial...</span>
                 </span>
-                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-400 font-semibold shadow-subtle ml-2">
+                <kbd className="hidden sm:inline-flex items-center px-1.5 py-0.5 text-xs font-mono bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded text-slate-400 font-semibold shadow-subtle ml-2">
                   Ctrl+K
                 </kbd>
               </button>
@@ -277,18 +277,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <div className="flex items-center gap-2">
                           <span className="font-extrabold text-slate-900 text-sm">Notifications</span>
                           {unreadCount > 0 ? (
-                            <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-extrabold text-[10px] border border-teal-200">
+                            <span className="px-2 py-0.5 rounded-full bg-teal-50 text-teal-700 font-extrabold text-xs border border-teal-200">
                               {unreadCount} New
                             </span>
                           ) : (
-                            <span className="text-[10px] text-slate-400 font-bold">All caught up</span>
+                            <span className="text-xs text-slate-400 font-bold">All caught up</span>
                           )}
                         </div>
 
                         {unreadCount > 0 && (
                           <button
                             onClick={markAllAsRead}
-                            className="text-[11px] font-bold text-teal-600 hover:text-teal-700 hover:underline flex items-center gap-1 cursor-pointer"
+                            className="text-xs font-bold text-teal-600 hover:text-teal-700 hover:underline flex items-center gap-1 cursor-pointer"
                           >
                             <CheckCheck className="w-3.5 h-3.5" />
                             <span>Mark all read</span>
@@ -300,7 +300,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         {isLoadingNotifications && notifications.length === 0 ? (
                           <div className="py-8 flex flex-col items-center justify-center text-slate-400 gap-2">
                             <Loader2 className="w-5 h-5 animate-spin text-teal-600" />
-                            <span className="text-[11px] font-medium">Loading store activity...</span>
+                            <span className="text-xs font-medium">Loading store activity...</span>
                           </div>
                         ) : notifications.length === 0 ? (
                           <div className="py-7 px-4 text-center space-y-1.5">
@@ -308,7 +308,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                               <Bell className="w-4 h-4" />
                             </div>
                             <p className="text-xs font-bold text-slate-800">No New Notifications</p>
-                            <p className="text-[11px] text-slate-400 max-w-[210px] mx-auto leading-relaxed">
+                            <p className="text-xs text-slate-400 max-w-[210px] mx-auto leading-relaxed">
                               New inventory additions, sales receipts, and repair updates will appear here in real time.
                             </p>
                           </div>
@@ -335,9 +335,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                                   {n.icon === 'bell' && <Bell className="w-3.5 h-3.5 text-blue-600 shrink-0" />}
                                   <span className="font-extrabold text-slate-900 text-xs">{n.title}</span>
                                 </div>
-                                <span className="text-[10px] font-medium text-slate-400 shrink-0">{n.time}</span>
+                                <span className="text-xs font-medium text-slate-400 shrink-0">{n.time}</span>
                               </div>
-                              <p className="text-[11px] text-slate-600 font-medium mt-1 leading-snug pl-5">{n.description}</p>
+                              <p className="text-xs text-slate-600 font-medium mt-1 leading-snug pl-5">{n.description}</p>
                             </Link>
                           ))
                         )}
@@ -347,13 +347,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <Link
                           href="/dashboard/records"
                           onClick={() => setIsNotificationsOpen(false)}
-                          className="text-[11px] font-bold text-teal-600 hover:underline"
+                          className="text-xs font-bold text-teal-600 hover:underline"
                         >
                           View Store Records →
                         </Link>
                         <button
                           onClick={() => setIsNotificationsOpen(false)}
-                          className="text-[11px] font-bold text-slate-400 hover:text-slate-600"
+                          className="text-xs font-bold text-slate-400 hover:text-slate-600"
                         >
                           Close
                         </button>
@@ -391,10 +391,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         <div className="font-extrabold text-slate-900 dark:text-white truncate text-sm">
                           {user?.firstName || 'Store'} {user?.lastName || 'Owner'}
                         </div>
-                        <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-medium">{user?.email || ''}</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400 truncate font-medium">{user?.email || ''}</div>
                       </div>
 
-                      <div className="pt-2 border-t border-slate-200/80 dark:border-slate-700/80 space-y-1 text-[11px]">
+                      <div className="pt-2 border-t border-slate-200/80 dark:border-slate-700/80 space-y-1 text-xs">
                         <div className="flex items-center justify-between">
                           <span className="text-slate-500 dark:text-slate-400 font-medium">Store:</span>
                           <span className="font-bold text-teal-700 dark:text-teal-400 truncate max-w-[130px]">{user?.business?.name || 'TechWorld Mobile'}</span>
@@ -412,7 +412,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
                     {/* Quick Appearance Switcher */}
                     <div className="px-1 py-1 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
-                      <span className="text-[11px] font-bold text-slate-600 dark:text-slate-400">Theme</span>
+                      <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Theme</span>
                       <ThemeToggle variant="compact" />
                     </div>
 
@@ -457,7 +457,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-around shadow-2xl">
           <Link
             href="/dashboard"
-            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition"
+            className="flex flex-col items-center gap-0.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition"
           >
             <LayoutDashboard className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             <span>Home</span>
@@ -465,7 +465,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/verify"
-            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition"
+            className="flex flex-col items-center gap-0.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition"
           >
             <Search className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             <span>Verify</span>
@@ -482,7 +482,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <Link
             href="/dashboard/records"
-            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition"
+            className="flex flex-col items-center gap-0.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition"
           >
             <List className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             <span>Records</span>
@@ -490,7 +490,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="flex flex-col items-center gap-0.5 text-[10px] font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition cursor-pointer"
+            className="flex flex-col items-center gap-0.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-teal-600 dark:hover:text-teal-400 transition cursor-pointer"
           >
             <Menu className="w-5 h-5 text-slate-700 dark:text-slate-300" />
             <span>Menu</span>

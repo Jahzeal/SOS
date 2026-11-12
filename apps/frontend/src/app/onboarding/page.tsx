@@ -37,20 +37,21 @@ import { api } from '@/lib/api';
 import { Logo } from '@/components/ui/Logo';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
+import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModal';
 
 // Comprehensive Plan Specifications & Fallback Data
 const FALLBACK_PLANS = [
   {
     code: 'FREE',
     name: 'Free Forever',
-    description: 'Essential IMEI ledger and POS receipts for solo technicians and micro shops.',
+    description: 'Free forever for up to 10 devices. IMEI records and receipts for small shops.',
     monthlyPriceNgn: 0,
     annualPriceNgn: 0,
-    maxDevices: 25,
+    maxDevices: 10,
     customBranding: false,
     prioritySupport: false,
     features: [
-      'Up to 25 Devices Registered / Month',
+      'Up to 10 Devices, Free Forever',
       'IMEI & Serial Number Hardware Ledger',
       'Standard POS Thermal Receipts (80mm & 58mm)',
       'Anti-Theft Stolen Device Blacklist Check',
@@ -142,6 +143,8 @@ export default function OnboardingPage() {
   // Step 2 OTP State
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [otpResent, setOtpResent] = useState(false);
+  const [emailVerificationToken, setEmailVerificationToken] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Step 3 Business Profile State
   const [businessForm, setBusinessForm] = useState({
@@ -156,6 +159,12 @@ export default function OnboardingPage() {
   const [dynamicPlans, setDynamicPlans] = useState<any[]>(FALLBACK_PLANS);
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [viewingPlanDetails, setViewingPlanDetails] = useState<any | null>(null);
+
+  // Every new store starts on the Free plan. A paid plan only starts once it is paid for.
+  const [accountCreated, setAccountCreated] = useState(false);
+  const [pendingPlanCode, setPendingPlanCode] = useState<string | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [paidPlanActive, setPaidPlanActive] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -235,11 +244,12 @@ export default function OnboardingPage() {
       try {
         await api.sendOtp(accountForm.email, accountForm.fullName);
         setOtpError(null);
+        setAccountErrors({});
         setCurrentStep(2);
       } catch (err: any) {
         console.error('Failed to send OTP:', err);
-        // Still proceed to step 2 in dev mode
-        setCurrentStep(2);
+        // The code is required to create the account, so do not move on without it.
+        setAccountErrors({ email: err?.message || 'We could not send your verification code. Please try again.' });
       } finally {
         setIsSubmitting(false);
       }
@@ -256,7 +266,8 @@ export default function OnboardingPage() {
       setIsSubmitting(true);
       setOtpError(null);
       try {
-        await api.verifyOtp(accountForm.email, code);
+        const verified = await api.verifyOtp(accountForm.email, code);
+        setEmailVerificationToken(verified.emailVerificationToken || null);
         setCurrentStep(3);
       } catch (err: any) {
         setOtpError(err.message || 'Invalid or expired verification code.');
@@ -268,8 +279,16 @@ export default function OnboardingPage() {
     }
     
     setIsSubmitting(true);
+    setSubmitError(null);
     try {
-      if (currentStep === 4) {
+      if (currentStep === 4 && accountCreated) {
+        // The account already exists (they came back to this step): only payment is left.
+        if (pendingPlanCode && !paidPlanActive) {
+          setIsCheckoutOpen(true);
+          return;
+        }
+      } else if (currentStep === 4) {
+        let pendingPlan: string | null = null;
         const nameParts = (accountForm.fullName || 'Store Owner').trim().split(' ');
         const firstName = nameParts[0] || 'Store';
         const lastName = nameParts.slice(1).join(' ') || 'Owner';
@@ -278,7 +297,6 @@ export default function OnboardingPage() {
           // Trigger Google Business Workspace Registration
           const res = await api.googleAuth({
             credential: googleCredential,
-            email: accountForm.email,
             firstName,
             lastName,
             businessName: businessForm.storeName.trim() || `${firstName}'s Store`,
@@ -290,17 +308,28 @@ export default function OnboardingPage() {
             localStorage.setItem('vf_access_token', res.accessToken);
             localStorage.setItem('vf_user', JSON.stringify(res.user));
           }
+          pendingPlan = res.pendingPlan || null;
         } else {
           // Standard Email/Password Auth Registration
-          await register({
-            email: accountForm.email || `owner-${Date.now()}@example.com`,
-            password: accountForm.password || 'Password123!',
+          const res = await register({
+            email: accountForm.email,
+            password: accountForm.password,
+            emailVerificationToken: emailVerificationToken || undefined,
             firstName,
             lastName,
             businessName: businessForm.storeName.trim() || `${firstName}'s Mobile Store`,
             phone: businessForm.phone?.trim() || undefined,
             plan: selectedPlan.toUpperCase(),
           });
+          pendingPlan = res.pendingPlan || null;
+        }
+
+        setAccountCreated(true);
+        if (pendingPlan) {
+          // Paid plan chosen: the store is on Free until this payment goes through.
+          setPendingPlanCode(pendingPlan);
+          setIsCheckoutOpen(true);
+          return;
         }
       }
 
@@ -311,11 +340,8 @@ export default function OnboardingPage() {
       }
     } catch (err: any) {
       console.warn('Backend register error:', err);
-      if (currentStep < 5) {
-        setCurrentStep((prev) => prev + 1);
-      } else {
-        router.push('/dashboard');
-      }
+      // Stay on this step: moving on would leave the person in a dashboard with no account.
+      setSubmitError(err?.message || 'We could not create your account. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -363,8 +389,8 @@ export default function OnboardingPage() {
     },
     4: {
       headline: 'Choose the Right Plan',
-      description: 'Select a plan that fits your current store scale. All plans include a 14-day free trial.',
-      highlight: '14-Day Free Trial • Cancel Anytime',
+      description: 'Start on the Free plan, free forever for up to 10 devices, or pick a paid plan and pay to start it.',
+      highlight: 'Free Forever • Up to 10 Devices',
     },
     5: {
       headline: 'Welcome to NoxGuarda!',
@@ -374,6 +400,16 @@ export default function OnboardingPage() {
   };
 
   const currentBrand = stepBrandConfig[currentStep];
+
+  const findPlan = (code: string | null) =>
+    code ? dynamicPlans.find((p: any) => String(p.code || '').toUpperCase() === code.toUpperCase()) || null : null;
+  const checkoutPlan = findPlan(pendingPlanCode);
+  const selectedPlanItem = findPlan(selectedPlan);
+  const selectedIsFree =
+    selectedPlan.toUpperCase() === 'FREE' ||
+    (!!selectedPlanItem && !selectedPlanItem.monthlyPriceNgn && !selectedPlanItem.annualPriceNgn);
+  const paymentPending = accountCreated && !!pendingPlanCode && !paidPlanActive;
+  const activePlanName = paidPlanActive && checkoutPlan ? checkoutPlan.name : 'Free';
 
   return (
     <div className="min-h-screen lg:h-screen lg:max-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans lg:overflow-hidden">
@@ -420,9 +456,9 @@ export default function OnboardingPage() {
             <div className="p-3.5 xl:p-4 rounded-2xl bg-slate-900/80 border border-slate-800/90 text-xs space-y-2.5 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
                 <div className="flex text-amber-400 gap-0.5 text-xs">★★★★★</div>
-                <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider">Store Owner Review</span>
+                <span className="text-xs text-slate-400 font-extrabold uppercase tracking-wider">Store Owner Review</span>
               </div>
-              <p className="text-slate-200 font-medium italic leading-relaxed text-[11px] xl:text-xs">
+              <p className="text-slate-200 font-medium italic leading-relaxed text-xs xl:text-xs">
                 "Setting up our 3 store locations on NoxGuarda took less than 5 minutes. The IMEI receipt verification stopped warranty disputes instantly."
               </p>
               <div className="flex items-center gap-2.5 pt-1.5 border-t border-slate-800">
@@ -431,14 +467,14 @@ export default function OnboardingPage() {
                 </div>
                 <div>
                   <div className="font-bold text-white text-xs">Marcus Vance</div>
-                  <div className="text-[10px] text-slate-400">Owner, TechWorld Mobile (5 Store Branches)</div>
+                  <div className="text-xs text-slate-400">Owner, TechWorld Mobile (5 Store Branches)</div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Left Footer Info */}
-          <div className="relative z-10 text-[11px] xl:text-xs text-slate-400 font-semibold flex items-center justify-between border-t border-slate-800/80 pt-3">
+          <div className="relative z-10 text-xs xl:text-xs text-slate-400 font-semibold flex items-center justify-between border-t border-slate-800/80 pt-3">
             <span>© 2026 NoxGuarda Inc.</span>
           </div>
         </div>
@@ -466,7 +502,7 @@ export default function OnboardingPage() {
                       <ArrowLeft className="w-3 h-3" /> Back
                     </button>
                   )}
-                  <span className="text-[10px] sm:text-[11px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-teal-200">
+                  <span className="text-xs sm:text-xs font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-teal-200">
                     Step {currentStep}/5
                   </span>
                 </div>
@@ -514,7 +550,7 @@ export default function OnboardingPage() {
               </button>
 
               <div className="flex items-center gap-2.5 text-xs font-bold">
-                <span className="text-slate-500 uppercase tracking-wider text-[10px] xl:text-[11px]">
+                <span className="text-slate-500 uppercase tracking-wider text-xs xl:text-xs">
                   Step <span className="text-teal-600 font-extrabold">{currentStep}</span> of 5
                 </span>
                 <span className="text-slate-300">•</span>
@@ -554,7 +590,7 @@ export default function OnboardingPage() {
                       }`}
                     />
                     <div
-                      className={`text-[10px] font-bold transition-colors ${
+                      className={`text-xs font-bold transition-colors ${
                         isCompleted
                           ? 'text-emerald-700 group-hover:text-emerald-800'
                           : isCurrent
@@ -597,7 +633,7 @@ export default function OnboardingPage() {
                   {/* Divider */}
                   <div className="relative flex items-center justify-center my-2">
                     <div className="border-t border-slate-200 w-full" />
-                    <span className="bg-white px-2.5 text-[10px] font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+                    <span className="bg-white px-2.5 text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                       or register with work email
                     </span>
                     <div className="border-t border-slate-200 w-full" />
@@ -606,7 +642,7 @@ export default function OnboardingPage() {
                   <div className="space-y-2.5 sm:space-y-3">
                     {/* Full Name */}
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         Full Name <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
@@ -614,19 +650,19 @@ export default function OnboardingPage() {
                           type="text"
                           value={accountForm.fullName}
                           onChange={(e) => setAccountForm({ ...accountForm, fullName: e.target.value })}
-                          placeholder="e.g. Marcus Vance"
+                          placeholder="e.g. Chinedu Okafor"
                           className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
                         />
                         <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                       </div>
                       {accountErrors.fullName && (
-                        <p className="text-[11px] text-rose-500 font-semibold mt-0.5">{accountErrors.fullName}</p>
+                        <p className="text-xs text-rose-500 font-semibold mt-0.5">{accountErrors.fullName}</p>
                       )}
                     </div>
 
                     {/* Work Email */}
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         Work Email Address <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
@@ -634,19 +670,19 @@ export default function OnboardingPage() {
                           type="email"
                           value={accountForm.email}
                           onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
-                          placeholder="marcus@techworldmobile.com"
+                          placeholder="chinedu@zenithgadgets.ng"
                           className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
                         />
                         <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                       </div>
                       {accountErrors.email && (
-                        <p className="text-[11px] text-rose-500 font-semibold mt-0.5">{accountErrors.email}</p>
+                        <p className="text-xs text-rose-500 font-semibold mt-0.5">{accountErrors.email}</p>
                       )}
                     </div>
 
                     {/* Password */}
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         Password <span className="text-rose-500">*</span>
                       </label>
                       <div className="relative">
@@ -667,7 +703,7 @@ export default function OnboardingPage() {
                         </button>
                       </div>
                       {accountErrors.password && (
-                        <p className="text-[11px] text-rose-500 font-semibold mt-0.5">{accountErrors.password}</p>
+                        <p className="text-xs text-rose-500 font-semibold mt-0.5">{accountErrors.password}</p>
                       )}
                     </div>
 
@@ -680,13 +716,13 @@ export default function OnboardingPage() {
                         onChange={(e) => setAccountForm({ ...accountForm, agreeTerms: e.target.checked })}
                         className="mt-0.5 w-3.5 h-3.5 rounded text-teal-600 focus:ring-teal-500"
                       />
-                      <label htmlFor="agreeTerms" className="text-[11px] text-slate-600 font-medium leading-tight">
+                      <label htmlFor="agreeTerms" className="text-xs text-slate-600 font-medium leading-tight">
                         I agree to the <a href="#" className="text-teal-600 font-bold hover:underline">Terms of Service</a> and <a href="#" className="text-teal-600 font-bold hover:underline">Privacy Policy</a>.
                       </label>
                     </div>
 
                     {/* Or Login CTA */}
-                    <div className="pt-2 border-t border-slate-100 text-center text-[11px]">
+                    <div className="pt-2 border-t border-slate-100 text-center text-xs">
                       <span className="text-slate-500 font-medium">Already have an account? </span>
                       <Link href="/login" className="text-teal-600 font-bold hover:underline">
                         Log In to your workspace →
@@ -784,7 +820,7 @@ export default function OnboardingPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                       {/* Store Name */}
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                           Store Name <span className="text-rose-500">*</span>
                         </label>
                         <div className="relative">
@@ -792,7 +828,7 @@ export default function OnboardingPage() {
                             type="text"
                             value={businessForm.storeName}
                             onChange={(e) => setBusinessForm({ ...businessForm, storeName: e.target.value })}
-                            placeholder="e.g. TechWorld Mobile Ltd"
+                            placeholder="e.g. Zenith Gadgets Ltd"
                             className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
                           />
                           <Store className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
@@ -801,7 +837,7 @@ export default function OnboardingPage() {
 
                       {/* Store Phone */}
                       <div>
-                        <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                           Contact Phone
                         </label>
                         <div className="relative">
@@ -819,7 +855,7 @@ export default function OnboardingPage() {
 
                     {/* Business Type Selector */}
                     <div>
-                      <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1">
+                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
                         Business Category
                       </label>
                       <div className="grid grid-cols-2 gap-2">
@@ -840,7 +876,7 @@ export default function OnboardingPage() {
                             }`}
                           >
                             <div className="font-extrabold text-xs">{cat.label}</div>
-                            <div className="text-[10px] text-slate-500">{cat.desc}</div>
+                            <div className="text-xs text-slate-500">{cat.desc}</div>
                           </button>
                         ))}
                       </div>
@@ -850,7 +886,7 @@ export default function OnboardingPage() {
               )}
 
               {/* =================================================================== */}
-              {/* STEP 4: FREE TRIAL & FULL PACKAGE COMPARISON MATRIX                */}
+              {/* STEP 4: PLAN CHOICE & FULL PACKAGE COMPARISON MATRIX              */}
               {/* =================================================================== */}
               {currentStep === 4 && (
                 <div className="space-y-3.5 sm:space-y-4 animate-in fade-in duration-200">
@@ -859,13 +895,13 @@ export default function OnboardingPage() {
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Select Store Plan</h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-extrabold inline-flex items-center gap-1">
+                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold inline-flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          14-Day Free Trial • ₦0 Due Today
+                          Free plan is free forever
                         </span>
                       </div>
                       <p className="text-xs text-slate-500 font-medium mt-0.5">
-                        No credit card required. Cancel or switch plans anytime.
+                        The Free plan needs no card. A paid plan starts as soon as you pay, and you can switch anytime.
                       </p>
                     </div>
                     
@@ -902,7 +938,7 @@ export default function OnboardingPage() {
                         </button>
 
                         <div className="flex items-center gap-2">
-                          <span className="px-3 py-1 rounded-full text-[11px] font-extrabold uppercase bg-teal-50 text-teal-700 border border-teal-200">
+                          <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-teal-50 text-teal-700 border border-teal-200">
                             {viewingPlanDetails.code} Tier Specifications
                           </span>
                         </div>
@@ -922,7 +958,7 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="p-3.5 rounded-xl bg-white/10 border border-white/10 text-left sm:text-right shrink-0">
-                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                          <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                             {billingCycle === 'monthly' ? 'Monthly Billing' : 'Annual Billing (20% Off)'}
                           </div>
                           <div className="text-2xl sm:text-3xl font-black text-white font-mono">
@@ -933,9 +969,9 @@ export default function OnboardingPage() {
                               /{viewingPlanDetails.monthlyPriceNgn === 0 ? 'forever' : billingCycle === 'monthly' ? 'mo' : 'yr'}
                             </span>
                           </div>
-                          <div className="text-[11px] text-emerald-400 font-extrabold mt-0.5 flex items-center sm:justify-end gap-1">
+                          <div className="text-xs text-emerald-400 font-extrabold mt-0.5 flex items-center sm:justify-end gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5" />
-                            <span>14-Day Free Trial • ₦0 Due Today</span>
+                            <span>{viewingPlanDetails.monthlyPriceNgn === 0 ? 'Free forever • No card needed' : 'Starts as soon as you pay'}</span>
                           </div>
                         </div>
                       </div>
@@ -952,7 +988,7 @@ export default function OnboardingPage() {
                                 ? `Up to ${viewingPlanDetails.maxDevices.toLocaleString()} Devices`
                                 : 'Unlimited Device Inventory'}
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
+                            <p className="text-xs text-slate-500 mt-0.5">
                               Track IMEI, serial numbers, battery health, and test status.
                             </p>
                           </div>
@@ -966,7 +1002,7 @@ export default function OnboardingPage() {
                             <div className="font-extrabold text-slate-900 text-xs sm:text-sm">
                               {viewingPlanDetails.customBranding ? 'Custom Branded Receipts' : 'Standard Thermal POS'}
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
+                            <p className="text-xs text-slate-500 mt-0.5">
                               80mm/58mm instant thermal receipts with QR verification codes.
                             </p>
                           </div>
@@ -978,7 +1014,7 @@ export default function OnboardingPage() {
                           </div>
                           <div>
                             <div className="font-extrabold text-slate-900 text-xs sm:text-sm">Anti-Theft Protection</div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">
+                            <p className="text-xs text-slate-500 mt-0.5">
                               Cross-checks devices against police and blacklisted registry.
                             </p>
                           </div>
@@ -1001,7 +1037,7 @@ export default function OnboardingPage() {
                             ))
                           ) : (
                             <p className="text-xs text-slate-500 italic col-span-2">
-                              Full platform access enabled with 14-day free trial.
+                              Device records, receipts and verification are included.
                             </p>
                           )}
                         </div>
@@ -1055,7 +1091,7 @@ export default function OnboardingPage() {
                               }`}
                             >
                               {isRecommended && (
-                                <div className="absolute -top-2.5 right-3 bg-teal-600 text-white text-[9px] font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                                <div className="absolute -top-2.5 right-3 bg-teal-600 text-white text-xs font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                                   RECOMMENDED
                                 </div>
                               )}
@@ -1067,30 +1103,30 @@ export default function OnboardingPage() {
                                       {planItem.name}
                                     </span>
                                     {isFree && (
-                                      <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                                      <span className="text-xs font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
                                         FREE
                                       </span>
                                     )}
                                   </div>
                                   {isSelected && (
-                                    <span className="w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center text-[10px] font-bold">✓</span>
+                                    <span className="w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold">✓</span>
                                   )}
                                 </div>
 
                                 <div>
                                   <div className="text-lg sm:text-xl font-black text-slate-900 font-mono tracking-tight leading-tight">
                                     ₦{price?.toLocaleString()}
-                                    <span className="text-[11px] font-semibold text-slate-500 font-sans ml-1">
+                                    <span className="text-xs font-semibold text-slate-500 font-sans ml-1">
                                       {isFree ? '/forever' : '/mo'}
                                     </span>
                                   </div>
-                                  <p className="text-[11px] text-slate-500 font-medium line-clamp-2 mt-0.5 min-h-[32px]">
+                                  <p className="text-xs text-slate-500 font-medium line-clamp-2 mt-0.5 min-h-[32px]">
                                     {planItem.description || 'Verified device intelligence suite for store operations.'}
                                   </p>
                                 </div>
 
                                 {/* Rich Features List on Card */}
-                                <div className="space-y-1.5 pt-2 border-t border-slate-100 text-[11px] font-medium text-slate-700">
+                                <div className="space-y-1.5 pt-2 border-t border-slate-100 text-xs font-medium text-slate-700">
                                   {Array.isArray(planItem.features) && planItem.features.length > 0 ? (
                                     planItem.features.slice(0, 4).map((feat: string, fIdx: number) => (
                                       <div key={fIdx} className="flex items-start gap-1.5 leading-snug">
@@ -1124,7 +1160,7 @@ export default function OnboardingPage() {
                                     e.stopPropagation();
                                     setViewingPlanDetails(planItem);
                                   }}
-                                  className="w-full text-center text-[11px] font-bold text-teal-600 hover:text-teal-700 hover:underline flex items-center justify-center gap-1 cursor-pointer py-1 bg-teal-50/50 hover:bg-teal-50 rounded-lg transition"
+                                  className="w-full text-center text-xs font-bold text-teal-600 hover:text-teal-700 hover:underline flex items-center justify-center gap-1 cursor-pointer py-1 bg-teal-50/50 hover:bg-teal-50 rounded-lg transition"
                                 >
                                   <Info className="w-3.5 h-3.5" />
                                   <span>About Plan Specs ({planItem.features?.length || 6} Features) →</span>
@@ -1145,9 +1181,9 @@ export default function OnboardingPage() {
                         })
                       ) : (
                         <div className="col-span-full p-6 rounded-2xl bg-white border border-slate-200 text-center space-y-1">
-                          <p className="text-xs font-bold text-slate-700">14-Day Free Trial Activated</p>
+                          <p className="text-xs font-bold text-slate-700">Plans could not be loaded</p>
                           <p className="text-xs text-slate-500">
-                            Full store workspace access with unlimited features is enabled during your free trial period.
+                            Please refresh the page to choose a plan.
                           </p>
                         </div>
                       )}
@@ -1168,23 +1204,31 @@ export default function OnboardingPage() {
                   <div className="space-y-0.5">
                     <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">Setup Complete!</h3>
                     <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-md mx-auto">
-                      Your store workspace <strong className="text-slate-900">{businessForm.storeName || 'Store Workspace'}</strong> is ready on the <strong className="text-teal-600">{selectedPlan.toUpperCase()}</strong> plan.
+                      Your store workspace <strong className="text-slate-900">{businessForm.storeName || 'Store Workspace'}</strong> is ready on the <strong className="text-teal-600">{activePlanName}</strong> plan.
                     </p>
+                    {paymentPending && (
+                      <p className="text-xs text-amber-700 font-semibold max-w-md mx-auto pt-1">
+                        Payment for the {checkoutPlan?.name || pendingPlanCode} plan was not completed, so your store is on the Free plan (free forever, up to 10 devices). You can upgrade anytime from{' '}
+                        <Link href="/dashboard/settings?tab=subscription" className="underline font-bold">Settings → Subscription</Link>.
+                      </p>
+                    )}
                   </div>
 
                   {/* Ready Checklist */}
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-left">
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                      <div className="text-[10px] font-bold text-slate-500 uppercase">Inventory & POS</div>
+                      <div className="text-xs font-bold text-slate-500 uppercase">Inventory & POS</div>
                       <div className="text-xs font-extrabold text-slate-900 mt-0.5">Ready to Add Phones</div>
                     </div>
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                      <div className="text-[10px] font-bold text-slate-500 uppercase">Verification</div>
+                      <div className="text-xs font-bold text-slate-500 uppercase">Verification</div>
                       <div className="text-xs font-extrabold text-slate-900 mt-0.5">IMEI Registry Active</div>
                     </div>
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
-                      <div className="text-[10px] font-bold text-slate-500 uppercase">Billing</div>
-                      <div className="text-xs font-extrabold text-slate-900 mt-0.5">14-Day Free Trial</div>
+                      <div className="text-xs font-bold text-slate-500 uppercase">Billing</div>
+                      <div className="text-xs font-extrabold text-slate-900 mt-0.5">
+                        {paidPlanActive ? `${activePlanName} Plan Active` : 'Free Forever • 10 Devices'}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1213,7 +1257,9 @@ export default function OnboardingPage() {
                     {/* Shimmer Light Stripe that sweeps across on hover */}
                     <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-teal-100/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
                     
-                    <span className="relative z-10">Start 14-Day Free Trial</span>
+                    <span className="relative z-10">
+                      {isSubmitting ? 'Please wait...' : selectedIsFree ? 'Start free' : paymentPending ? 'Continue to payment' : 'Create account & pay'}
+                    </span>
                     <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
                   </button>
                 ) : (
@@ -1234,9 +1280,15 @@ export default function OnboardingPage() {
                 )}
               </div>
 
+              {submitError && (
+                <div role="alert" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700">
+                  {submitError}
+                </div>
+              )}
+
               {/* Mobile Social Proof Banner (block lg:hidden) */}
               <div className="block lg:hidden pt-2 border-t border-slate-100 text-center">
-                <p className="text-[10px] font-semibold text-slate-500 flex items-center justify-center gap-1 flex-wrap">
+                <p className="text-xs font-semibold text-slate-500 flex items-center justify-center gap-1 flex-wrap">
                   <span className="text-amber-500 font-bold">★★★★★</span>
                   <span>"Setup took &lt;5 mins" — Marcus V.</span>
                 </p>
@@ -1245,8 +1297,21 @@ export default function OnboardingPage() {
             </div>
           </div>
 
+          {/* Paid plan chosen at signup: pay now through the normal checkout */}
+          {isCheckoutOpen && checkoutPlan && (
+            <PaystackCheckoutModal
+              isOpen
+              plan={checkoutPlan}
+              onSuccess={() => setPaidPlanActive(true)}
+              onClose={() => {
+                setIsCheckoutOpen(false);
+                setCurrentStep(5);
+              }}
+            />
+          )}
+
           {/* Right Bottom Footer Link */}
-          <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-md lg:max-w-lg'} mx-auto w-full text-center text-[11px] font-medium text-slate-500 py-1 shrink-0`}>
+          <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-md lg:max-w-lg'} mx-auto w-full text-center text-xs font-medium text-slate-500 py-1 shrink-0`}>
             Need assistance with workspace setup?{' '}
             <a href="#" className="text-teal-600 font-bold hover:underline">Contact Store Support</a>
           </div>

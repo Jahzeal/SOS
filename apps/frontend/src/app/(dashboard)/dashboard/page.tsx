@@ -158,7 +158,7 @@ export default function BusinessDashboardPage() {
           ) : (
             <div className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{metrics.totalRegistered.toLocaleString()}</div>
           )}
-          <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
             <ArrowUpRight className="w-3.5 h-3.5" /> Real-time database ledger
           </div>
         </div>
@@ -178,7 +178,7 @@ export default function BusinessDashboardPage() {
               {metrics.sold.toLocaleString()}
             </div>
           )}
-          <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
             <ArrowUpRight className="w-3.5 h-3.5" /> Completed transactions
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function BusinessDashboardPage() {
               {metrics.inStock.toLocaleString()}
             </div>
           )}
-          <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600 dark:text-indigo-400">
+          <div className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
             <TrendingUp className="w-3.5 h-3.5" /> Ready for POS checkout
           </div>
         </div>
@@ -218,7 +218,7 @@ export default function BusinessDashboardPage() {
               ₦{metrics.revenue.toLocaleString()}
             </div>
           )}
-          <div className="text-[11px] font-bold text-blue-600 dark:text-blue-400">Total settled sales</div>
+          <div className="text-xs font-bold text-blue-600 dark:text-blue-400">Total settled sales</div>
         </div>
 
         {/* Card 5: Profit Made */}
@@ -236,7 +236,7 @@ export default function BusinessDashboardPage() {
               ₦{metrics.totalProfit.toLocaleString()}
             </div>
           )}
-          <div className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+          <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
             <span>{metrics.profitMargin}% margin</span> • <span>Net profit realized</span>
           </div>
         </div>
@@ -256,7 +256,7 @@ export default function BusinessDashboardPage() {
               ₦{metrics.valuation.toLocaleString()}
             </div>
           )}
-          <div className="text-[11px] font-bold text-slate-500 dark:text-slate-400">Live inventory valuation</div>
+          <div className="text-xs font-bold text-slate-500 dark:text-slate-400">Live inventory valuation</div>
         </div>
       </div>
 
@@ -276,7 +276,7 @@ export default function BusinessDashboardPage() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-extrabold text-xs text-slate-900 dark:text-white truncate">Register Item</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">Add serial / IMEI</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">Add serial / IMEI</div>
             </div>
           </Link>
 
@@ -289,7 +289,7 @@ export default function BusinessDashboardPage() {
             </div>
             <div className="min-w-0 flex-1">
               <div className="font-extrabold text-xs text-slate-900 dark:text-white truncate">Verify Device</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">Lookup IMEI or QR</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">Lookup IMEI or QR</div>
             </div>
           </Link>
 
@@ -302,7 +302,7 @@ export default function BusinessDashboardPage() {
             </div>
             <div>
               <div className="font-extrabold text-xs text-slate-900 dark:text-white">Issue Receipt</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">80mm POS format</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">80mm POS format</div>
             </div>
           </Link>
 
@@ -315,7 +315,7 @@ export default function BusinessDashboardPage() {
             </div>
             <div>
               <div className="font-extrabold text-xs text-slate-900 dark:text-white">Add Customer</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Link buyer profile</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Link buyer profile</div>
             </div>
           </Link>
 
@@ -328,7 +328,7 @@ export default function BusinessDashboardPage() {
             </div>
             <div>
               <div className="font-extrabold text-xs text-slate-900 dark:text-white">View Reports</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Sales & analytics</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Sales & analytics</div>
             </div>
           </Link>
 
@@ -341,7 +341,7 @@ export default function BusinessDashboardPage() {
             </div>
             <div>
               <div className="font-extrabold text-xs text-slate-900 dark:text-white">Store Settings</div>
-              <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Branches & branding</div>
+              <div className="text-xs text-slate-500 dark:text-slate-400 font-medium">Branches & branding</div>
             </div>
           </Link>
         </div>
@@ -394,7 +394,7 @@ export default function BusinessDashboardPage() {
             <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
               <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Sales & Profit
             </h4>
-            <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-[10px] font-bold">
+            <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-bold">
               <button
                 onClick={() => setSalesTimeframe('daily')}
                 className={`px-2 py-0.5 rounded ${salesTimeframe === 'daily' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow' : 'text-slate-500 dark:text-slate-400'}`}
@@ -412,7 +412,7 @@ export default function BusinessDashboardPage() {
 
           <div className="grid grid-cols-2 gap-2 text-xs">
             <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 space-y-0.5">
-              <div className="text-[11px] font-bold text-blue-900 dark:text-blue-300">Revenue</div>
+              <div className="text-xs font-bold text-blue-900 dark:text-blue-300">Revenue</div>
               {isDataLoading ? (
                 <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse my-0.5" />
               ) : (
@@ -420,11 +420,11 @@ export default function BusinessDashboardPage() {
                   ₦{metrics.revenue.toLocaleString()}
                 </div>
               )}
-              <div className="text-[9px] text-blue-700 dark:text-blue-400 font-semibold">Gross sales</div>
+              <div className="text-xs text-blue-700 dark:text-blue-400 font-semibold">Gross sales</div>
             </div>
 
             <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-0.5">
-              <div className="text-[11px] font-bold text-emerald-900 dark:text-emerald-300">Profit Made</div>
+              <div className="text-xs font-bold text-emerald-900 dark:text-emerald-300">Profit Made</div>
               {isDataLoading ? (
                 <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse my-0.5" />
               ) : (
@@ -432,7 +432,7 @@ export default function BusinessDashboardPage() {
                   ₦{metrics.totalProfit.toLocaleString()}
                 </div>
               )}
-              <div className="text-[9px] text-emerald-700 dark:text-emerald-400 font-semibold">{metrics.profitMargin}% margin</div>
+              <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">{metrics.profitMargin}% margin</div>
             </div>
           </div>
         </div>
@@ -481,7 +481,7 @@ export default function BusinessDashboardPage() {
           <div className="absolute bottom-16 right-0 w-72 bg-white rounded-2xl border border-slate-200 shadow-2xl p-4 space-y-3 text-xs animate-in fade-in duration-150">
             <div className="font-extrabold text-slate-900 flex items-center justify-between border-b border-slate-100 pb-2">
               <span>NoxGuarda Support</span>
-              <span className="text-[10px] text-emerald-600 font-bold">ONLINE</span>
+              <span className="text-xs text-emerald-600 font-bold">ONLINE</span>
             </div>
             <p className="text-slate-600 font-medium">Need help configuring box QR printers or multi-branch stock transfers?</p>
             <div className="space-y-1.5 pt-1">
@@ -528,7 +528,7 @@ export default function BusinessDashboardPage() {
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>1. Create Business Workspace ({businessName})</span>
                 </div>
-                <span className="text-[10px] text-emerald-700 font-extrabold uppercase">COMPLETED</span>
+                <span className="text-xs text-emerald-700 font-extrabold uppercase">COMPLETED</span>
               </div>
 
               <div className={`p-3.5 rounded-xl flex items-center justify-between ${livePhones.length > 0 ? 'bg-emerald-50/60 border border-emerald-200' : 'bg-blue-50/80 border border-blue-200'}`}>
@@ -537,7 +537,7 @@ export default function BusinessDashboardPage() {
                   <span>2. Register First Phone (IMEI & Box QR Code)</span>
                 </div>
                 {livePhones.length > 0 ? (
-                  <span className="text-[10px] text-emerald-700 font-extrabold uppercase">COMPLETED</span>
+                  <span className="text-xs text-emerald-700 font-extrabold uppercase">COMPLETED</span>
                 ) : (
                   <Link href="/dashboard/register" onClick={() => setShowOnboardingModal(false)} className="text-xs font-bold text-blue-600 hover:underline">
                     Register Now →
@@ -550,7 +550,7 @@ export default function BusinessDashboardPage() {
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>3. Customize Thermal QR Receipt & Logo</span>
                 </div>
-                <span className="text-[10px] text-emerald-700 font-extrabold uppercase">COMPLETED</span>
+                <span className="text-xs text-emerald-700 font-extrabold uppercase">COMPLETED</span>
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
@@ -565,7 +565,7 @@ export default function BusinessDashboardPage() {
             </div>
 
             <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-[11px] text-slate-400 font-medium">Re-open anytime from the top bar</span>
+              <span className="text-xs text-slate-400 font-medium">Re-open anytime from the top bar</span>
               <Button variant="secondary" size="md" onClick={() => setShowOnboardingModal(false)}>
                 Dismiss for Now
               </Button>

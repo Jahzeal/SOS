@@ -139,26 +139,26 @@ export default function CreateSubscriptionPlanPage() {
 
         {/* Plan Overview Card */}
         <div className="w-full bg-white border border-slate-200 rounded-2xl p-5 shadow-subtle mb-4">
-          <h2 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 mb-3">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 mb-3">
             Plan Overview
           </h2>
           <div className="grid grid-cols-2 gap-4 text-xs">
             <div>
-              <span className="text-[11px] text-slate-400 block mb-0.5">Plan Name</span>
+              <span className="text-xs text-slate-400 block mb-0.5">Plan Name</span>
               <span className="font-extrabold text-slate-900 text-sm">{planName}</span>
             </div>
             <div>
-              <span className="text-[11px] text-slate-400 block mb-0.5">Status</span>
-              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-[10px] uppercase border border-blue-200">
+              <span className="text-xs text-slate-400 block mb-0.5">Status</span>
+              <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold text-xs uppercase border border-blue-200">
                 {status}
               </span>
             </div>
             <div>
-              <span className="text-[11px] text-slate-400 block mb-0.5">Monthly Rate</span>
+              <span className="text-xs text-slate-400 block mb-0.5">Monthly Rate</span>
               <span className="font-mono font-bold text-slate-900 text-sm">₦ {monthlyPrice.toLocaleString()}</span>
             </div>
             <div>
-              <span className="text-[11px] text-slate-400 block mb-0.5">Annual Rate</span>
+              <span className="text-xs text-slate-400 block mb-0.5">Annual Rate</span>
               <span className="font-mono font-bold text-slate-900 text-sm">₦ {annualPrice.toLocaleString()}</span>
             </div>
           </div>
@@ -166,10 +166,10 @@ export default function CreateSubscriptionPlanPage() {
 
         {/* Audit Log Generated Section */}
         <div className="w-full mb-6">
-          <h2 className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 mb-2 px-1">
+          <h2 className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 mb-2 px-1">
             Audit Log Generated
           </h2>
-          <div className="bg-slate-100/90 border border-slate-200 rounded-2xl p-4 font-mono text-[11px] text-slate-700 leading-relaxed shadow-sm">
+          <div className="bg-slate-100/90 border border-slate-200 rounded-2xl p-4 font-mono text-xs text-slate-700 leading-relaxed shadow-sm">
             &gt; Admin created plan<br />
             • Plan: {planName}<br />
             • Pricing: ₦ {monthlyPrice.toLocaleString()}/month, ₦ {annualPrice.toLocaleString()}/year<br />
@@ -211,7 +211,7 @@ export default function CreateSubscriptionPlanPage() {
           </Link>
           <span className="font-extrabold text-slate-900 text-sm">Create Plan</span>
         </div>
-        <span className="text-[11px] font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
+        <span className="text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200">
           Step {currentStep} of 6
         </span>
       </div>
@@ -355,7 +355,7 @@ export default function CreateSubscriptionPlanPage() {
                     placeholder="e.g. Gold, Premium Enterprise"
                     className="w-full h-[40px] px-3.5 bg-slate-50/70 border border-slate-200 rounded-lg text-xs font-semibold text-slate-900 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-colors"
                   />
-                  <p className="mt-1 text-[11px] text-slate-400">Must be unique across all active subscription tiers.</p>
+                  <p className="mt-1 text-xs text-slate-400">Must be unique across all active subscription tiers.</p>
                 </div>
 
                 <div>
@@ -369,7 +369,7 @@ export default function CreateSubscriptionPlanPage() {
                     placeholder="Brief note on target audience..."
                     className="w-full p-3.5 bg-slate-50/70 border border-slate-200 rounded-lg text-xs font-medium text-slate-900 focus:border-blue-600 focus:ring-1 focus:ring-blue-600 outline-none transition-colors resize-none"
                   />
-                  <p className="mt-1 text-[11px] text-slate-400">Concise description displayed on the pricing tier card.</p>
+                  <p className="mt-1 text-xs text-slate-400">Concise description displayed on the pricing tier card.</p>
                 </div>
               </div>
             </div>
@@ -397,7 +397,7 @@ export default function CreateSubscriptionPlanPage() {
                     value="Nigerian Naira (₦)"
                     className="w-full h-[40px] px-3.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold text-slate-500 cursor-not-allowed"
                   />
-                  <p className="font-body-sm text-[11px] text-slate-500 mt-1">Currency is fixed to NGN for local verifications.</p>
+                  <p className="font-body-sm text-xs text-slate-500 mt-1">Currency is fixed to NGN for local verifications.</p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -457,7 +457,7 @@ export default function CreateSubscriptionPlanPage() {
                   <div className="flex justify-between items-start mb-2">
                     <label className="text-xs font-bold text-slate-800">Device Limit</label>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-semibold text-slate-500">Unlimited</span>
+                      <span className="text-xs font-semibold text-slate-500">Unlimited</span>
                       <input
                         type="checkbox"
                         checked={unlimitedDevices}
@@ -481,7 +481,7 @@ export default function CreateSubscriptionPlanPage() {
                   <div className="flex justify-between items-start mb-2">
                     <label className="text-xs font-bold text-slate-800">User Limit</label>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-semibold text-slate-500">Unlimited</span>
+                      <span className="text-xs font-semibold text-slate-500">Unlimited</span>
                       <input
                         type="checkbox"
                         checked={unlimitedUsers}
@@ -504,7 +504,7 @@ export default function CreateSubscriptionPlanPage() {
                   <div className="flex justify-between items-start mb-2">
                     <label className="text-xs font-bold text-slate-800">Branch Limit</label>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-semibold text-slate-500">Unlimited</span>
+                      <span className="text-xs font-semibold text-slate-500">Unlimited</span>
                       <input
                         type="checkbox"
                         checked={unlimitedBranches}
@@ -528,7 +528,7 @@ export default function CreateSubscriptionPlanPage() {
                   <div className="flex justify-between items-start mb-2">
                     <label className="text-xs font-bold text-slate-800">Verification Limit (Monthly)</label>
                     <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-semibold text-slate-500">Unlimited</span>
+                      <span className="text-xs font-semibold text-slate-500">Unlimited</span>
                       <input
                         type="checkbox"
                         checked={unlimitedVerifications}
@@ -583,7 +583,7 @@ export default function CreateSubscriptionPlanPage() {
                         className="rounded border-slate-300 text-blue-600 focus:ring-blue-600 w-4 h-4 cursor-pointer"
                       />
                     </div>
-                    <p className="text-[11px] text-slate-500 font-medium">{feat.desc}</p>
+                    <p className="text-xs text-slate-500 font-medium">{feat.desc}</p>
                   </div>
                 ))}
               </div>
@@ -605,7 +605,7 @@ export default function CreateSubscriptionPlanPage() {
 
               {/* Status Section */}
               <div className="bg-slate-50/70 border border-slate-200 rounded-xl p-4">
-                <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 mb-3">
+                <p className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 mb-3">
                   Status
                 </p>
                 <div className="space-y-2.5">
@@ -659,7 +659,7 @@ export default function CreateSubscriptionPlanPage() {
                 <div className="pt-3 border-t border-slate-200 flex items-center justify-between">
                   <div>
                     <p className="text-xs font-bold text-slate-900">Mark as Recommended</p>
-                    <p className="text-[11px] text-slate-500 mt-0.5">Visually highlights this plan above others.</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Visually highlights this plan above others.</p>
                   </div>
                   <input
                     type="checkbox"
@@ -690,14 +690,14 @@ export default function CreateSubscriptionPlanPage() {
                 {/* Summary Header */}
                 <div className="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
                   <span className="text-base font-extrabold text-slate-900">{planName}</span>
-                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold uppercase tracking-wider text-[10px] border border-blue-200">
+                  <span className="px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 font-bold uppercase tracking-wider text-xs border border-blue-200">
                     {status}
                   </span>
                 </div>
 
                 {/* Pricing Block */}
                 <div className="px-4 py-3 border-b border-slate-100">
-                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-1">Pricing</p>
+                  <p className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-1">Pricing</p>
                   <div className="flex items-baseline space-x-1.5">
                     <span className="font-mono font-bold text-blue-600 text-base">₦{monthlyPrice.toLocaleString()}</span>
                     <span className="text-slate-500">/ month</span>
@@ -710,7 +710,7 @@ export default function CreateSubscriptionPlanPage() {
 
                 {/* Limits Block */}
                 <div className="px-4 py-3 border-b border-slate-100">
-                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">Limits</p>
+                  <p className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">Limits</p>
                   <ul className="space-y-1.5 text-slate-700 font-medium">
                     <li className="flex items-center">
                       <Smartphone className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
@@ -733,7 +733,7 @@ export default function CreateSubscriptionPlanPage() {
 
                 {/* Features Block */}
                 <div className="px-4 py-3 bg-slate-50/50">
-                  <p className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">Features</p>
+                  <p className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 mb-2">Features</p>
                   <ul className="space-y-1.5">
                     {Object.values(features)
                       .filter((f) => f.enabled)
@@ -799,9 +799,9 @@ export default function CreateSubscriptionPlanPage() {
             <div className="p-5 border-b border-slate-100 bg-slate-50/70 flex items-center justify-between">
               <div>
                 <h3 className="font-extrabold text-slate-900 text-sm">Live Plan Summary</h3>
-                <p className="text-[11px] text-slate-400 font-medium">Real-time catalog preview</p>
+                <p className="text-xs text-slate-400 font-medium">Real-time catalog preview</p>
               </div>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
+              <span className="px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-200">
                 {status}
               </span>
             </div>
@@ -811,30 +811,30 @@ export default function CreateSubscriptionPlanPage() {
                 <div className="flex items-start justify-between gap-2 mb-1">
                   <h4 className="text-base font-extrabold text-slate-900">{planName || 'Untitled Plan'}</h4>
                   {badgeText && (
-                    <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
+                    <span className="px-2 py-0.5 rounded-md text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
                       {badgeText}
                     </span>
                   )}
                 </div>
-                <p className="text-slate-500 text-[11px] font-medium leading-relaxed">{description}</p>
+                <p className="text-slate-500 text-xs font-medium leading-relaxed">{description}</p>
               </div>
 
               <div className="border-t border-slate-100 pt-3">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Pricing</span>
+                <span className="text-xs uppercase font-bold tracking-wider text-slate-400">Pricing</span>
                 <div className="grid grid-cols-2 gap-2 mt-1.5">
                   <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <span className="text-[10px] text-slate-500 font-medium">Monthly</span>
+                    <span className="text-xs text-slate-500 font-medium">Monthly</span>
                     <div className="font-mono font-bold text-slate-900">₦{monthlyPrice.toLocaleString()}</div>
                   </div>
                   <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-100">
-                    <span className="text-[10px] text-slate-500 font-medium">Annually</span>
+                    <span className="text-xs text-slate-500 font-medium">Annually</span>
                     <div className="font-mono font-bold text-slate-900">₦{annualPrice.toLocaleString()}</div>
                   </div>
                 </div>
               </div>
 
               <div className="border-t border-slate-100 pt-3">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Limits</span>
+                <span className="text-xs uppercase font-bold tracking-wider text-slate-400">Limits</span>
                 <div className="space-y-1.5 mt-1.5 text-slate-700 font-semibold">
                   <div className="flex justify-between">
                     <span className="text-slate-500">Devices:</span>
@@ -856,12 +856,12 @@ export default function CreateSubscriptionPlanPage() {
               </div>
 
               <div className="border-t border-slate-100 pt-3">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Enabled Features</span>
+                <span className="text-xs uppercase font-bold tracking-wider text-slate-400">Enabled Features</span>
                 <div className="space-y-1 mt-1.5">
                   {Object.values(features)
                     .filter((f) => f.enabled)
                     .map((f) => (
-                      <div key={f.name} className="flex items-center gap-1.5 text-slate-800 font-medium text-[11px]">
+                      <div key={f.name} className="flex items-center gap-1.5 text-slate-800 font-medium text-xs">
                         <CheckCircle2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
                         <span>{f.name}</span>
                       </div>

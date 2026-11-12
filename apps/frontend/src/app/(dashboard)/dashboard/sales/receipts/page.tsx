@@ -136,11 +136,11 @@ export default function ReceiptsArchivePage() {
             <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
               <Receipt className="w-4 h-4" />
             </div>
-            <span className="text-emerald-700 font-extrabold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-0.5">
+            <span className="text-emerald-700 font-extrabold text-xs bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-0.5">
               <TrendingUp className="w-3 h-3" /> Live
             </span>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Sales Count</p>
+          <p className="text-slate-500 font-extrabold text-xs uppercase tracking-wider">Total Sales Count</p>
           {loading && !summaryData ? (
             <div className="h-7 w-16 bg-slate-200/60 rounded-md animate-pulse mt-1" />
           ) : (
@@ -157,11 +157,11 @@ export default function ReceiptsArchivePage() {
             <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
               <DollarSign className="w-4 h-4" />
             </div>
-            <span className="text-emerald-700 font-extrabold text-[11px] bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span className="text-emerald-700 font-extrabold text-xs bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
               Live Revenue
             </span>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Revenue</p>
+          <p className="text-slate-500 font-extrabold text-xs uppercase tracking-wider">Total Revenue</p>
           {loading && !summaryData ? (
             <div className="h-7 w-24 bg-slate-200/60 rounded-md animate-pulse mt-1" />
           ) : (
@@ -179,7 +179,7 @@ export default function ReceiptsArchivePage() {
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Average Sale</p>
+          <p className="text-slate-500 font-extrabold text-xs uppercase tracking-wider">Average Sale</p>
           {loading && !summaryData ? (
             <div className="h-7 w-20 bg-slate-200/60 rounded-md animate-pulse mt-1" />
           ) : (
@@ -199,7 +199,7 @@ export default function ReceiptsArchivePage() {
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Store Status</p>
+          <p className="text-slate-500 font-extrabold text-xs uppercase tracking-wider">Store Status</p>
           {loading && !summaryData ? (
             <div className="h-7 w-24 bg-slate-200/60 rounded-md animate-pulse mt-1" />
           ) : (
@@ -279,12 +279,12 @@ export default function ReceiptsArchivePage() {
                 <div key={rcp.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-[10px] border border-blue-200 shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-xs border border-blue-200 shrink-0">
                         {getCustomerInitials(customerName)}
                       </div>
                       <div>
                         <h4 className="font-extrabold text-slate-900 text-sm">{customerName}</h4>
-                        <p className="text-[10px] text-slate-400 font-mono font-bold text-blue-600">{displayNum}</p>
+                        <p className="text-xs text-slate-400 font-mono font-bold text-blue-600">{displayNum}</p>
                       </div>
                     </div>
                     {/* Status & Method Badges */}
@@ -292,7 +292,7 @@ export default function ReceiptsArchivePage() {
                       <Badge variant={rcp.paymentStatus === 'PAID' ? 'verified' : rcp.paymentStatus === 'PENDING' ? 'business' : 'error'} size="sm">
                         {rcp.paymentStatus || 'PAID'}
                       </Badge>
-                      <span className="text-[9px] text-slate-400 font-bold uppercase">{rcp.paymentMethod || 'CASH'}</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase">{rcp.paymentMethod || 'CASH'}</span>
                     </div>
                   </div>
 
@@ -300,11 +300,11 @@ export default function ReceiptsArchivePage() {
 
                   <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
                     <div>
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Date</span>
-                      <span className="font-bold text-slate-800 text-[11px]">{dateStr}</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Date</span>
+                      <span className="font-bold text-slate-800 text-xs">{dateStr}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Total Paid</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Total Paid</span>
                       <span className="font-extrabold text-slate-900 text-[13px]">
                         ₦{rcp.totalAmount ? rcp.totalAmount.toLocaleString() : '0'}
                       </span>
@@ -312,10 +312,10 @@ export default function ReceiptsArchivePage() {
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 text-xs">
-                    <button onClick={() => handlePrintReceipt(rcp)} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1">
+                    <button onClick={() => handlePrintReceipt(rcp)} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-xs flex items-center gap-1">
                       <Printer className="w-3.5 h-3.5" /> Print
                     </button>
-                    <button onClick={() => handleShareReceipt(rcp)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1 shadow-xs" title="Share Receipt via WhatsApp, Email, or PDF">
+                    <button onClick={() => handleShareReceipt(rcp)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-xs flex items-center gap-1 shadow-xs" title="Share Receipt via WhatsApp, Email, or PDF">
                       <Share2 className="w-3.5 h-3.5" /> Share
                     </button>
                   </div>
@@ -328,7 +328,7 @@ export default function ReceiptsArchivePage() {
         {/* Desktop Table View (Hidden on mobile) */}
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
-            <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
+            <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
               <tr>
                 <th className="py-3 px-4">Receipt / Invoice #</th>
                 <th className="py-3 px-4">Customer</th>
@@ -388,7 +388,7 @@ export default function ReceiptsArchivePage() {
                       <td className="py-3.5 px-4 font-mono font-bold text-blue-600">{displayNum}</td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-[10px] border border-blue-200">
+                          <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-xs border border-blue-200">
                             {getCustomerInitials(customerName)}
                           </div>
                           <span className="font-extrabold text-slate-900">{customerName}</span>
@@ -462,7 +462,7 @@ export default function ReceiptsArchivePage() {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">Sales Receipt Preview</h3>
-                  <p className="text-[11px] text-slate-400 font-mono font-bold text-blue-600">
+                  <p className="text-xs text-slate-400 font-mono font-bold text-blue-600">
                     {selectedReceipt.receiptNumber || selectedReceipt.invoiceNumber || selectedReceipt.id}
                   </p>
                 </div>

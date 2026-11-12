@@ -1,4 +1,4 @@
-import { IsString, IsNotEmpty, IsOptional, IsNumber, IsArray, ValidateNested, IsEnum } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsNumber, IsArray, ValidateNested, IsEnum, Min } from 'class-validator';
 import { Type } from 'class-transformer';
 import { QuoteStatus } from '@prisma/client';
 
@@ -13,14 +13,17 @@ export class CreateQuoteItemDto {
 
   @IsNotEmpty()
   @IsNumber()
+  @Min(0)
   unitPrice: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(1)
   quantity?: number;
 
   @IsOptional()
   @IsNumber()
+  @Min(0)
   discount?: number;
 }
 

@@ -61,8 +61,8 @@ export default function AdminSettingsPage() {
   const [allowRegistration, setAllowRegistration] = useState(true);
 
   // Paystack Gateway State
-  const [paystackPublicKey, setPaystackPublicKey] = useState('pk_live_894103847291048291048');
-  const [paystackSecretKey, setPaystackSecretKey] = useState('sk_live_••••••••••••••••••••••••');
+  const [paystackPublicKey, setPaystackPublicKey] = useState('');
+  const [paystackSecretKey, setPaystackSecretKey] = useState('');
   const [paystackWebhookSecret, setPaystackWebhookSecret] = useState('whsec_live_99482019482');
 
   useEffect(() => {
@@ -148,20 +148,20 @@ export default function AdminSettingsPage() {
 
   // Preview Interpolation
   const previewSubject = welcomeEmailSubject
-    .replace(/{{recipientName}}/g, 'Alex Vance')
+    .replace(/{{recipientName}}/g, 'Chinedu Okafor')
     .replace(/{{businessName}}/g, 'GadgetHub Lagos')
     .replace(/{{platformName}}/g, 'NoxGuarda');
 
   const previewHeading = welcomeEmailHeading
-    .replace(/{{recipientName}}/g, 'Alex Vance')
+    .replace(/{{recipientName}}/g, 'Chinedu Okafor')
     .replace(/{{businessName}}/g, 'GadgetHub Lagos');
 
   const previewSubheading = welcomeEmailSubheading
-    .replace(/{{recipientName}}/g, 'Alex Vance')
+    .replace(/{{recipientName}}/g, 'Chinedu Okafor')
     .replace(/{{businessName}}/g, 'GadgetHub Lagos');
 
   const previewBody = welcomeEmailBody
-    .replace(/{{recipientName}}/g, 'Alex Vance')
+    .replace(/{{recipientName}}/g, 'Chinedu Okafor')
     .replace(/{{businessName}}/g, 'GadgetHub Lagos')
     .replace(/{{planName}}/g, 'Starter Plan')
     .replace(/{{email}}/g, 'alex@gadgethub.ng');
@@ -382,11 +382,11 @@ export default function AdminSettingsPage() {
                       key={item.tag}
                       type="button"
                       onClick={() => insertPlaceholder(item.tag)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 text-slate-700 font-mono text-[11px] font-bold transition flex items-center gap-1"
+                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 border border-slate-200 text-slate-700 font-mono text-xs font-bold transition flex items-center gap-1"
                       title={item.desc}
                     >
                       <span>{item.tag}</span>
-                      <span className="text-[9px] text-slate-400 font-sans">({item.desc})</span>
+                      <span className="text-xs text-slate-400 font-sans">({item.desc})</span>
                     </button>
                   ))}
                 </div>
@@ -512,7 +512,7 @@ export default function AdminSettingsPage() {
                   <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
                     <Eye className="w-4 h-4 text-emerald-600" /> Live Visual Preview
                   </span>
-                  <span className="text-[10px] text-slate-400 font-bold bg-slate-100 px-2 py-0.5 rounded-md">
+                  <span className="text-xs text-slate-400 font-bold bg-slate-100 px-2 py-0.5 rounded-md">
                     Sample Data Render
                   </span>
                 </div>
@@ -522,7 +522,7 @@ export default function AdminSettingsPage() {
 
                   {/* Mock Subject Header */}
                   <div className="border-b border-slate-800 pb-3 space-y-1">
-                    <p className="text-[10px] uppercase font-bold text-slate-400">Subject:</p>
+                    <p className="text-xs uppercase font-bold text-slate-400">Subject:</p>
                     <p className="text-xs font-bold text-white truncate">{previewSubject}</p>
                   </div>
 
@@ -537,28 +537,28 @@ export default function AdminSettingsPage() {
 
                   {/* Inner Card */}
                   <div className="bg-[#1e293b] p-5 rounded-xl border border-slate-700/80 space-y-4">
-                    <h3 className="text-sm font-bold text-slate-100">Hello Alex Vance</h3>
+                    <h3 className="text-sm font-bold text-slate-100">Hello Chinedu Okafor</h3>
                     <p className="text-xs text-slate-300 leading-relaxed whitespace-pre-line">
                       {previewBody}
                     </p>
 
                     {/* Store Card Snapshot */}
                     <div className="bg-[#0f172a] p-3.5 rounded-lg border border-slate-700/60 space-y-1.5 text-xs">
-                      <div className="text-[9px] font-extrabold text-teal-400 uppercase tracking-wider">
+                      <div className="text-xs font-extrabold text-teal-400 uppercase tracking-wider">
                         Workspace Overview
                       </div>
-                      <div className="flex justify-between text-slate-400 text-[11px]">
+                      <div className="flex justify-between text-slate-400 text-xs">
                         <span>Store Name:</span>
                         <strong className="text-white">GadgetHub Lagos</strong>
                       </div>
-                      <div className="flex justify-between text-slate-400 text-[11px]">
+                      <div className="flex justify-between text-slate-400 text-xs">
                         <span>Plan:</span>
-                        <strong className="text-emerald-400">14-Day Full Access Trial</strong>
+                        <strong className="text-emerald-400">Free forever (up to 10 devices)</strong>
                       </div>
                     </div>
 
                     {/* Features Checklist */}
-                    <div className="space-y-1.5 text-[11px] text-slate-300 pt-1">
+                    <div className="space-y-1.5 text-xs text-slate-300 pt-1">
                       <p className="font-bold text-slate-200">What you can do next:</p>
                       <p>• <strong className="text-white">Scan & Stock Inventory:</strong> Add IMEIs with duplicate check.</p>
                       <p>• <strong className="text-white">Express POS Checkout:</strong> Print or email digital thermal receipts.</p>
@@ -574,7 +574,7 @@ export default function AdminSettingsPage() {
                   </div>
 
                   {/* Email Footer */}
-                  <div className="text-center text-[10px] text-slate-500 pt-2 border-t border-slate-800/80">
+                  <div className="text-center text-xs text-slate-500 pt-2 border-t border-slate-800/80">
                     © {new Date().getFullYear()} NoxGuarda Enterprise Inc. All rights reserved.
                   </div>
 
@@ -688,7 +688,7 @@ export default function AdminSettingsPage() {
               <div className="flex items-start justify-between p-4 bg-slate-50 border border-slate-200 rounded-xl">
                 <div className="pr-4">
                   <span className="font-bold text-xs text-slate-900 block">Allow New Store Registrations</span>
-                  <span className="text-[11px] text-slate-500">Enable or freeze new merchant registrations on the public onboarding portal.</span>
+                  <span className="text-xs text-slate-500">Enable or freeze new merchant registrations on the public onboarding portal.</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer shrink-0">
                   <input
@@ -707,7 +707,7 @@ export default function AdminSettingsPage() {
                     <AlertTriangle className="w-3.5 h-3.5 text-rose-600" />
                     Platform Maintenance Mode
                   </span>
-                  <span className="text-[11px] text-rose-700">Freeze public device lookups temporarily while performing network maintenance.</span>
+                  <span className="text-xs text-rose-700">Freeze public device lookups temporarily while performing network maintenance.</span>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer shrink-0">
                   <input

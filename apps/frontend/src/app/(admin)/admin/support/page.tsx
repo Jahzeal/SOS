@@ -220,7 +220,7 @@ export default function AdminSupportPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
         <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-subtle flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 block">
               Open
             </span>
             <span className="text-xl font-extrabold text-amber-600">{openCount}</span>
@@ -232,7 +232,7 @@ export default function AdminSupportPage() {
 
         <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-subtle flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 block">
               In Progress
             </span>
             <span className="text-xl font-extrabold text-blue-600">{inProgressCount}</span>
@@ -244,7 +244,7 @@ export default function AdminSupportPage() {
 
         <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-subtle flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 block">
               Pending
             </span>
             <span className="text-xl font-extrabold text-slate-700">{pendingCount}</span>
@@ -256,7 +256,7 @@ export default function AdminSupportPage() {
 
         <div className="bg-white border border-slate-200 rounded-xl p-3.5 shadow-subtle flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 block">
               High / Urgent
             </span>
             <span className="text-xl font-extrabold text-rose-600">{highUrgentCount}</span>
@@ -268,7 +268,7 @@ export default function AdminSupportPage() {
 
         <div className="col-span-2 sm:col-span-1 bg-white border border-slate-200 rounded-xl p-3.5 shadow-subtle flex items-center justify-between">
           <div>
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 block">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400 block">
               Avg. Response
             </span>
             <span className="text-xl font-mono font-extrabold text-slate-900">14m</span>
@@ -304,7 +304,7 @@ export default function AdminSupportPage() {
 
           {/* Quick Sort Selector */}
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap hidden sm:inline">
+            <span className="text-xs font-bold text-slate-500 whitespace-nowrap hidden sm:inline">
               Sort by:
             </span>
             <select
@@ -324,7 +324,7 @@ export default function AdminSupportPage() {
         {showFilters && (
           <div className="pt-3 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs animate-in fade-in-50 duration-150">
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1">Status</label>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Status</label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
@@ -340,7 +340,7 @@ export default function AdminSupportPage() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1">Priority</label>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Priority</label>
               <select
                 value={priorityFilter}
                 onChange={(e) => setPriorityFilter(e.target.value)}
@@ -355,7 +355,7 @@ export default function AdminSupportPage() {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold text-slate-500 mb-1">Business</label>
+              <label className="block text-xs font-bold text-slate-500 mb-1">Business</label>
               <select
                 value={businessFilter}
                 onChange={(e) => setBusinessFilter(e.target.value)}
@@ -389,7 +389,7 @@ export default function AdminSupportPage() {
       <div className="hidden md:block bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-subtle">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="border-b border-slate-200/80 bg-slate-50/70 text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+            <tr className="border-b border-slate-200/80 bg-slate-50/70 text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
               <th className="py-3 px-4">Ticket</th>
               <th className="py-3 px-4">Business</th>
               <th className="py-3 px-4">Subject</th>
@@ -429,7 +429,7 @@ export default function AdminSupportPage() {
                   {/* Business */}
                   <td className="py-3.5 px-4">
                     <span className="font-bold text-slate-900 block">{t.businessName}</span>
-                    <span className="text-[11px] text-slate-400 font-medium">{t.requesterName}</span>
+                    <span className="text-xs text-slate-400 font-medium">{t.requesterName}</span>
                   </td>
 
                   {/* Subject */}
@@ -438,7 +438,7 @@ export default function AdminSupportPage() {
                       {t.subject}
                     </span>
                     {t.relatedImei && (
-                      <span className="text-[10px] font-mono text-slate-400 mt-0.5 block">
+                      <span className="text-xs font-mono text-slate-400 mt-0.5 block">
                         IMEI: {t.relatedImei}
                       </span>
                     )}
@@ -447,7 +447,7 @@ export default function AdminSupportPage() {
                   {/* Priority */}
                   <td className="py-3.5 px-3 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${
+                      className={`inline-flex items-center px-2 py-0.5 rounded-md text-xs font-bold uppercase tracking-wider ${
                         t.priority === 'Urgent'
                           ? 'bg-rose-50 text-rose-700 border border-rose-200 font-extrabold'
                           : t.priority === 'High'
@@ -464,7 +464,7 @@ export default function AdminSupportPage() {
                   {/* Status */}
                   <td className="py-3.5 px-3 whitespace-nowrap">
                     <span
-                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                      className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                         t.status === 'Open'
                           ? 'bg-amber-100/70 text-amber-800 border border-amber-200'
                           : t.status === 'In Progress'
@@ -500,7 +500,7 @@ export default function AdminSupportPage() {
                         }`}
                       >
                         <Clock className="w-3.5 h-3.5 text-blue-600" />
-                        <span className="text-[11px] font-bold hidden xl:inline">In Progress</span>
+                        <span className="text-xs font-bold hidden xl:inline">In Progress</span>
                       </button>
 
                       {/* Done / Resolved Action */}
@@ -515,7 +515,7 @@ export default function AdminSupportPage() {
                         }`}
                       >
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span className="text-[11px] font-bold hidden xl:inline">Done</span>
+                        <span className="text-xs font-bold hidden xl:inline">Done</span>
                       </button>
 
                       {/* Mail Action */}
@@ -531,7 +531,7 @@ export default function AdminSupportPage() {
                   </td>
 
                   {/* Created */}
-                  <td className="py-3.5 px-4 whitespace-nowrap text-right text-slate-500 font-mono text-[11px]">
+                  <td className="py-3.5 px-4 whitespace-nowrap text-right text-slate-500 font-mono text-xs">
                     {t.createdAt}
                   </td>
                 </tr>
@@ -570,7 +570,7 @@ export default function AdminSupportPage() {
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-bold text-xs text-blue-600">#{t.id}</span>
                   <span
-                    className={`px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider ${
+                    className={`px-1.5 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
                       t.priority === 'Urgent' || t.priority === 'High'
                         ? 'bg-rose-50 text-rose-700 border border-rose-200'
                         : 'bg-slate-100 text-slate-700'
@@ -580,7 +580,7 @@ export default function AdminSupportPage() {
                   </span>
                 </div>
                 <span
-                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                  className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
                     t.status === 'Open'
                       ? 'bg-amber-50 text-amber-800 border border-amber-200'
                       : t.status === 'Resolved'
@@ -594,14 +594,14 @@ export default function AdminSupportPage() {
 
               <div>
                 <h3 className="text-xs font-bold text-slate-900 leading-snug">{t.subject}</h3>
-                <span className="text-[11px] text-slate-500 font-medium block mt-0.5">
+                <span className="text-xs text-slate-500 font-medium block mt-0.5">
                   {t.businessName} • {t.requesterName}
                 </span>
               </div>
 
-              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400">
+              <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                 <span>Updated {t.lastUpdated}</span>
-                <span className="font-semibold text-slate-700 font-mono text-[10px]">
+                <span className="font-semibold text-slate-700 font-mono text-xs">
                   #{t.id}
                 </span>
               </div>
@@ -612,7 +612,7 @@ export default function AdminSupportPage() {
                   <button
                     type="button"
                     onClick={(e) => handleStatusUpdate(e, t.id, 'In Progress')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 ${
                       t.status === 'In Progress'
                         ? 'bg-blue-100 text-blue-800 border border-blue-300'
                         : 'bg-slate-100 text-slate-700 hover:bg-blue-50'
@@ -625,7 +625,7 @@ export default function AdminSupportPage() {
                   <button
                     type="button"
                     onClick={(e) => handleStatusUpdate(e, t.id, 'Resolved')}
-                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1 ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold flex items-center gap-1 ${
                       t.status === 'Resolved'
                         ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                         : 'bg-slate-100 text-slate-700 hover:bg-emerald-50'

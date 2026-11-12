@@ -95,11 +95,11 @@ export function PwaRegister() {
                 <h4 className="font-extrabold text-sm text-white tracking-tight">
                   New Version Available
                 </h4>
-                <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full text-[10px] font-extrabold uppercase tracking-wider">
+                <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full text-xs font-extrabold uppercase tracking-wider">
                   Update
                 </span>
               </div>
-              <p className="text-[11px] text-slate-400 font-medium mt-0.5">
+              <p className="text-xs text-slate-400 font-medium mt-0.5">
                 NoxGuarda Retail OS
               </p>
             </div>

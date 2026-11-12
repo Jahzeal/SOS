@@ -111,7 +111,7 @@ export default function CustomersManagementPage() {
             >
               <ChevronLeft className="w-4 h-4" /> Back to Directory
             </button>
-            <span className="text-[10px] font-mono text-slate-400">{selectedCustomer.id}</span>
+            <span className="text-xs font-mono text-slate-400">{selectedCustomer.id}</span>
           </div>
 
           {/* Customer Identity */}
@@ -136,14 +136,14 @@ export default function CustomersManagementPage() {
           {/* Stats Snapshot */}
           <div className="grid grid-cols-2 gap-3 text-center text-xs">
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Lifetime Spend</p>
+              <p className="text-xs text-slate-400 font-bold uppercase">Lifetime Spend</p>
               <p className="text-base font-extrabold text-blue-600 mt-0.5">
                 ₦{(selectedCustomer.totalSpending || 0).toLocaleString()}
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <p className="text-[10px] text-slate-400 font-bold uppercase">Devices Owned</p>
+              <p className="text-xs text-slate-400 font-bold uppercase">Devices Owned</p>
               <p className="text-base font-extrabold text-emerald-600 mt-0.5">
                 {selectedCustomer.devicesCount || 0}
               </p>
@@ -152,7 +152,7 @@ export default function CustomersManagementPage() {
 
           {/* Phones Owned */}
           <div className="space-y-2 text-xs">
-            <h3 className="font-extrabold text-slate-900 uppercase text-[11px] tracking-wider">
+            <h3 className="font-extrabold text-slate-900 uppercase text-xs tracking-wider">
               Phones Owned ({(selectedCustomer.phoneRecords || []).length})
             </h3>
             <div className="space-y-2">
@@ -164,7 +164,7 @@ export default function CustomersManagementPage() {
                     </div>
                     <div>
                       <p className="font-bold text-slate-900">{dev.brand} {dev.model}</p>
-                      <p className="text-[10px] font-mono text-slate-500">IMEI: {dev.imei1}</p>
+                      <p className="text-xs font-mono text-slate-500">IMEI: {dev.imei1}</p>
                     </div>
                   </div>
                 </div>
@@ -211,7 +211,7 @@ export default function CustomersManagementPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Active</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Active</p>
             {loading && customers.length === 0 ? (
               <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
             ) : (
@@ -227,7 +227,7 @@ export default function CustomersManagementPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">New (30d)</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">New (30d)</p>
             {loading && customers.length === 0 ? (
               <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
             ) : (
@@ -245,7 +245,7 @@ export default function CustomersManagementPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">With Devices</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">With Devices</p>
             {loading && customers.length === 0 ? (
               <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
             ) : (
@@ -263,7 +263,7 @@ export default function CustomersManagementPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Lifetime Rev</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Lifetime Rev</p>
             {loading && !summaryData ? (
               <div className="h-6 w-16 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
             ) : (
@@ -281,7 +281,7 @@ export default function CustomersManagementPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Active Warranties</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Warranties</p>
             <p className="text-xl font-extrabold text-slate-900 mt-0.5">{activeWarrantiesCount}</p>
           </div>
         </div>
@@ -293,7 +293,7 @@ export default function CustomersManagementPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Repairs</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Repairs</p>
             <p className="text-xl font-extrabold text-slate-900 mt-0.5">
               {customers.reduce((sum, c) => sum + (c.repairs?.length || 0), 0)}
             </p>
@@ -329,7 +329,7 @@ export default function CustomersManagementPage() {
                   <button
                     key={type}
                     onClick={() => setSelectedTypeFilter(type)}
-                    className={`px-3 py-1.5 rounded-lg text-[11px] font-extrabold transition shrink-0 ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition shrink-0 ${
                       selectedTypeFilter === type
                         ? 'bg-blue-600 text-white shadow-sm'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -376,27 +376,27 @@ export default function CustomersManagementPage() {
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 text-blue-600 font-extrabold flex items-center justify-center shrink-0 text-[10px]">
+                          <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 text-blue-600 font-extrabold flex items-center justify-center shrink-0 text-xs">
                             {getCustomerInitials(cust.name)}
                           </div>
                           <div className="min-w-0">
                             <h4 className="font-extrabold text-slate-900 text-sm truncate">{cust.name}</h4>
-                            <p className="text-[10px] text-slate-400 font-mono">{cust.phone}</p>
+                            <p className="text-xs text-slate-400 font-mono">{cust.phone}</p>
                           </div>
                         </div>
                         <div className="text-right shrink-0">
-                          <span className="text-[9px] text-slate-400 font-bold uppercase block">Devices</span>
+                          <span className="text-xs text-slate-400 font-bold uppercase block">Devices</span>
                           <span className="font-extrabold text-slate-800 text-xs">{cust.devicesCount || 0} Owned</span>
                         </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
                         <div>
-                          <span className="text-[9px] text-slate-400 font-bold uppercase block">Last Purchase</span>
-                          <span className="font-bold text-slate-800 text-[10px] block truncate">{cust.lastPurchaseItem || 'N/A'}</span>
+                          <span className="text-xs text-slate-400 font-bold uppercase block">Last Purchase</span>
+                          <span className="font-bold text-slate-800 text-xs block truncate">{cust.lastPurchaseItem || 'N/A'}</span>
                         </div>
                         <div className="text-right">
-                          <span className="text-[9px] text-slate-400 font-bold uppercase block">Lifetime Spend</span>
+                          <span className="text-xs text-slate-400 font-bold uppercase block">Lifetime Spend</span>
                           <span className="font-extrabold text-blue-600 text-xs">
                             ₦{(cust.totalSpending || 0).toLocaleString()}
                           </span>
@@ -411,7 +411,7 @@ export default function CustomersManagementPage() {
             {/* DESKTOP CUSTOMERS TABLE */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
+                <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
                   <tr>
                     <th className="py-3 px-3">Customer Name</th>
                     <th className="py-3 px-3">Contact Info</th>
@@ -467,13 +467,13 @@ export default function CustomersManagementPage() {
                               </div>
                               <div>
                                 <p className="font-extrabold text-slate-900">{cust.name}</p>
-                                <p className="text-[10px] font-mono text-slate-400">{cust.id.slice(0, 8)}...</p>
+                                <p className="text-xs font-mono text-slate-400">{cust.id.slice(0, 8)}...</p>
                               </div>
                             </div>
                           </td>
                           <td className="py-3.5 px-3">
                             <p className="font-bold text-slate-800">{cust.phone}</p>
-                            <p className="text-[10px] text-slate-400">{cust.email || 'No email'}</p>
+                            <p className="text-xs text-slate-400">{cust.email || 'No email'}</p>
                           </td>
                           <td className="py-3.5 px-3 text-center font-extrabold text-slate-900">
                             {cust.devicesCount || 0}
@@ -483,7 +483,7 @@ export default function CustomersManagementPage() {
                           </td>
                           <td className="py-3.5 px-3 text-right">
                             <p className="font-bold text-slate-800">{cust.lastPurchaseDate}</p>
-                            <p className="text-[10px] text-blue-600 truncate max-w-[120px]">{cust.lastPurchaseItem}</p>
+                            <p className="text-xs text-blue-600 truncate max-w-[120px]">{cust.lastPurchaseItem}</p>
                           </td>
                         </tr>
                       );
@@ -504,7 +504,7 @@ export default function CustomersManagementPage() {
 
               {/* Close Action */}
               <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                <span className="text-[10px] font-mono text-slate-400 uppercase font-bold">Customer Profile</span>
+                <span className="text-xs font-mono text-slate-400 uppercase font-bold">Customer Profile</span>
                 <button
                   onClick={() => setSelectedCustomer(null)}
                   className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition"
@@ -521,7 +521,7 @@ export default function CustomersManagementPage() {
 
                 <div>
                   <h3 className="text-lg font-extrabold text-slate-900">{selectedCustomer.name}</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">{selectedCustomer.phone} • {selectedCustomer.email || 'No email'}</p>
+                  <p className="text-xs text-slate-500 font-medium">{selectedCustomer.phone} • {selectedCustomer.email || 'No email'}</p>
                 </div>
 
                 {/* Quick Action Triggers */}
@@ -537,14 +537,14 @@ export default function CustomersManagementPage() {
               {/* Financial Snapshot */}
               <div className="grid grid-cols-2 gap-3 text-center">
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Lifetime Spend</p>
+                  <p className="text-xs text-slate-400 font-bold uppercase">Lifetime Spend</p>
                   <p className="text-base font-extrabold text-blue-600 mt-0.5">
                     ₦{(selectedCustomer.totalSpending || 0).toLocaleString()}
                   </p>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
-                  <p className="text-[10px] text-slate-400 font-bold uppercase">Devices Owned</p>
+                  <p className="text-xs text-slate-400 font-bold uppercase">Devices Owned</p>
                   <p className="text-base font-extrabold text-emerald-600 mt-0.5">
                     {selectedCustomer.devicesCount || 0}
                   </p>
@@ -554,14 +554,14 @@ export default function CustomersManagementPage() {
               {/* Hardware / Devices Owned List */}
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <h4 className="font-extrabold text-slate-900 uppercase text-[10px] tracking-wider">
+                  <h4 className="font-extrabold text-slate-900 uppercase text-xs tracking-wider">
                     Phones Owned ({(selectedCustomer.phoneRecords || []).length})
                   </h4>
                 </div>
 
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {(selectedCustomer.phoneRecords || []).length === 0 ? (
-                    <p className="text-[11px] text-slate-400 text-center py-2">No registered devices owned.</p>
+                    <p className="text-xs text-slate-400 text-center py-2">No registered devices owned.</p>
                   ) : (
                     (selectedCustomer.phoneRecords || []).map((dev: any) => (
                       <div key={dev.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
@@ -571,7 +571,7 @@ export default function CustomersManagementPage() {
                           </div>
                           <div>
                             <p className="font-bold text-slate-900">{dev.brand} {dev.model}</p>
-                            <p className="text-[9px] font-mono text-slate-500">IMEI: {dev.imei1}</p>
+                            <p className="text-xs font-mono text-slate-500">IMEI: {dev.imei1}</p>
                           </div>
                         </div>
                         <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
@@ -583,22 +583,22 @@ export default function CustomersManagementPage() {
 
               {/* Sales History */}
               <div className="space-y-2 pt-2 border-t border-slate-100">
-                <h4 className="font-extrabold text-slate-900 uppercase text-[10px] tracking-wider">
+                <h4 className="font-extrabold text-slate-900 uppercase text-xs tracking-wider">
                   Purchase History ({(selectedCustomer.sales || []).length})
                 </h4>
                 <div className="space-y-2 border-l-2 border-slate-200 pl-3 max-h-40 overflow-y-auto">
                   {(selectedCustomer.sales || []).length === 0 ? (
-                    <p className="text-[11px] text-slate-400">No previous purchases.</p>
+                    <p className="text-xs text-slate-400">No previous purchases.</p>
                   ) : (
                     (selectedCustomer.sales || []).map((sale: any) => (
                       <div key={sale.id} className="space-y-0.5">
                         <p className="font-bold text-slate-900">
                           {sale.receiptNumber || sale.invoiceNumber || 'Sale Record'} — ₦{sale.totalAmount?.toLocaleString() || '0'}
                         </p>
-                        <p className="text-[10px] text-slate-500">
+                        <p className="text-xs text-slate-500">
                           {sale.items?.map((i: any) => i.description).join(', ') || 'Item'}
                         </p>
-                        <p className="text-[9px] font-mono text-slate-400">
+                        <p className="text-xs font-mono text-slate-400">
                           {new Date(sale.createdAt).toLocaleDateString('en-US')}
                         </p>
                       </div>

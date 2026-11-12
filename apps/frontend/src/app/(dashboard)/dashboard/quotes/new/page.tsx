@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -227,7 +229,7 @@ export default function CreateQuotePage() {
   // Add in-stock device to items
   const handleAddDevice = (device: any) => {
     if (items.some((i) => i.phoneRecordId === device.id)) {
-      alert('This device is already in the quotation.');
+      notify('This device is already in the quotation.');
       return;
     }
 
@@ -252,7 +254,7 @@ export default function CreateQuotePage() {
   // Add custom accessory / service / general product
   const handleAddCustomItem = () => {
     if (!newItemDesc.trim()) {
-      alert('Please enter an item description.');
+      notify('Please enter an item description.');
       return;
     }
     const price = parseFloat(newItemPrice.toString().replace(/,/g, '')) || 0;
@@ -426,7 +428,7 @@ export default function CreateQuotePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
               <div className="sm:col-span-3 space-y-1">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Proposal Subject / Reference</label>
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">Proposal Subject / Reference</label>
                 <input
                   type="text"
                   value={subject}
@@ -437,7 +439,7 @@ export default function CreateQuotePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Quote Date</label>
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">Quote Date</label>
                 <input
                   type="date"
                   value={quoteDate}
@@ -447,7 +449,7 @@ export default function CreateQuotePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Price Validity Duration</label>
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">Price Validity Duration</label>
                 <select
                   value={validityDays}
                   onChange={(e) => setValidityDays(Number(e.target.value))}
@@ -461,10 +463,10 @@ export default function CreateQuotePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Valid Until Date</label>
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">Valid Until Date</label>
                 <div className="w-full px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-100/90 border border-slate-200 rounded-xl font-bold text-xs text-slate-800 font-mono flex items-center justify-between">
                   <span>{expiryDate}</span>
-                  <span className="text-[10px] text-slate-500 font-sans font-semibold">({validityDays}d)</span>
+                  <span className="text-xs text-slate-500 font-sans font-semibold">({validityDays}d)</span>
                 </div>
               </div>
             </div>
@@ -476,12 +478,12 @@ export default function CreateQuotePage() {
               <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <User className="w-4 h-4 text-blue-600" /> Prospective Client Information
               </h2>
-              <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Select existing or type new</span>
+              <span className="text-xs sm:text-xs text-slate-400 font-medium">Select existing or type new</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 text-xs relative">
               <div className="space-y-1 relative">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Customer / Company Name *</label>
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">Customer / Company Name *</label>
                 <input
                   type="text"
                   value={customerName}
@@ -509,9 +511,9 @@ export default function CreateQuotePage() {
                         >
                           <div>
                             <p className="font-bold text-slate-900">{c.name}</p>
-                            <p className="text-[10px] text-slate-500">{c.phone} {c.email ? `• ${c.email}` : ''}</p>
+                            <p className="text-xs text-slate-500">{c.phone} {c.email ? `• ${c.email}` : ''}</p>
                           </div>
-                          <span className="text-[10px] text-blue-600 font-bold">Select</span>
+                          <span className="text-xs text-blue-600 font-bold">Select</span>
                         </button>
                       ))}
                   </div>
@@ -519,7 +521,7 @@ export default function CreateQuotePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Phone Number</label>
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">Phone Number</label>
                 <input
                   type="text"
                   value={customerPhone}
@@ -530,7 +532,7 @@ export default function CreateQuotePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Email Address (For PDF Delivery)</label>
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">Email Address (For PDF Delivery)</label>
                 <input
                   type="email"
                   value={customerEmail}
@@ -541,7 +543,7 @@ export default function CreateQuotePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">Billing / Delivery Address</label>
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">Billing / Delivery Address</label>
                 <input
                   type="text"
                   value={billingAddress}
@@ -571,7 +573,7 @@ export default function CreateQuotePage() {
                 <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                   <Smartphone className="w-3.5 h-3.5 text-blue-600" /> Add In-Stock Phone / Device
                 </span>
-                <span className="text-[10px] text-slate-400">Search by brand, model, or IMEI</span>
+                <span className="text-xs text-slate-400">Search by brand, model, or IMEI</span>
               </div>
 
               <div className="relative">
@@ -588,9 +590,9 @@ export default function CreateQuotePage() {
               {/* Devices Result Badges */}
               <div className="max-h-36 overflow-y-auto space-y-1.5 pr-1">
                 {isSearchingDevices ? (
-                  <p className="text-[11px] text-slate-400 py-2 text-center">Searching inventory...</p>
+                  <p className="text-xs text-slate-400 py-2 text-center">Searching inventory...</p>
                 ) : inStockDevices.length === 0 ? (
-                  <p className="text-[11px] text-slate-400 py-2 text-center">
+                  <p className="text-xs text-slate-400 py-2 text-center">
                     {deviceSearch ? 'No in-stock devices matched.' : 'Type above to search registered devices.'}
                   </p>
                 ) : (
@@ -601,7 +603,7 @@ export default function CreateQuotePage() {
                     >
                       <div>
                         <span className="font-bold text-slate-900">{dev.brand} {dev.model}</span>
-                        <span className="text-slate-500 text-[10px] ml-1.5">
+                        <span className="text-slate-500 text-xs ml-1.5">
                           {dev.storageCapacity} • {dev.color} • IMEI: {dev.imei1}
                         </span>
                       </div>
@@ -614,7 +616,7 @@ export default function CreateQuotePage() {
                           variant="secondary"
                           size="sm"
                           onClick={() => handleAddDevice(dev)}
-                          className="text-[11px] py-1 px-2.5 h-auto font-bold border-blue-200 text-blue-700 hover:bg-blue-50"
+                          className="text-xs py-1 px-2.5 h-auto font-bold border-blue-200 text-blue-700 hover:bg-blue-50"
                         >
                           + Add
                         </Button>
@@ -682,7 +684,7 @@ export default function CreateQuotePage() {
             {items.length > 0 ? (
               <div className="rounded-xl border border-slate-200 overflow-hidden">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-xs">
                     <tr>
                       <th className="py-2.5 px-3">Description</th>
                       <th className="py-2.5 px-3 text-center w-16">Qty</th>
@@ -708,7 +710,7 @@ export default function CreateQuotePage() {
                               className="w-full bg-transparent font-bold text-slate-900 focus:outline-none focus:bg-white rounded px-1 py-0.5 border border-transparent focus:border-slate-300"
                             />
                             {item.imei && (
-                              <span className="text-[10px] text-slate-400 font-mono block px-1">IMEI: {item.imei}</span>
+                              <span className="text-xs text-slate-400 font-mono block px-1">IMEI: {item.imei}</span>
                             )}
                           </td>
 
@@ -775,7 +777,7 @@ export default function CreateQuotePage() {
                 <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-emerald-600" /> Part-Payment & Installment Schedule
                 </h2>
-                <p className="text-[11px] text-slate-500">
+                <p className="text-xs text-slate-500">
                   Allow client to pay in split installments with configurable due dates and automated push/email reminders.
                 </p>
               </div>
@@ -799,7 +801,7 @@ export default function CreateQuotePage() {
                 {/* Deposit and Split Settings */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-emerald-50/50 p-3.5 rounded-xl border border-emerald-100">
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-700 text-[11px]">
+                    <label className="font-bold text-slate-700 text-xs">
                       Initial Deposit Received Today (₦)
                     </label>
                     <input
@@ -813,13 +815,13 @@ export default function CreateQuotePage() {
                       placeholder="0"
                       className="w-full px-3 py-2 bg-white border border-emerald-200 rounded-lg font-mono font-bold text-slate-900 text-xs focus:outline-none focus:border-emerald-600"
                     />
-                    <span className="text-[10px] text-slate-500 font-medium">
+                    <span className="text-xs text-slate-500 font-medium">
                       Remaining Debt: <strong className="text-amber-700 font-mono">₦{remainingBalance.toLocaleString()}</strong>
                     </span>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-700 text-[11px]">
+                    <label className="font-bold text-slate-700 text-xs">
                       Number of Split Payments
                     </label>
                     <select
@@ -836,7 +838,7 @@ export default function CreateQuotePage() {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-700 text-[11px]">
+                    <label className="font-bold text-slate-700 text-xs">
                       Payment Cadence / Due Interval
                     </label>
                     <select
@@ -858,12 +860,12 @@ export default function CreateQuotePage() {
                       <span className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5 text-slate-500" /> Agreed Installment Due Dates
                       </span>
-                      <span className="text-[10px] text-slate-500">You can adjust any specific installment date or amount</span>
+                      <span className="text-xs text-slate-500">You can adjust any specific installment date or amount</span>
                     </div>
 
                     <div className="rounded-xl border border-slate-200 overflow-hidden text-xs">
                       <table className="w-full text-left">
-                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                        <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase text-xs">
                           <tr>
                             <th className="py-2 px-3 w-28">Stage</th>
                             <th className="py-2 px-3 w-36">Due Date</th>
@@ -918,7 +920,7 @@ export default function CreateQuotePage() {
                     </div>
                     <div>
                       <p className="font-bold text-blue-950">Automated Installment Due Reminders</p>
-                      <p className="text-[11px] text-blue-800">
+                      <p className="text-xs text-blue-800">
                         Automatically dispatch customer app push notifications and branded emails on due dates.
                       </p>
                     </div>
@@ -943,7 +945,7 @@ export default function CreateQuotePage() {
 
             <div className="space-y-3 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">
                   Opening Greeting / Note to Client
                 </label>
                 <textarea
@@ -956,7 +958,7 @@ export default function CreateQuotePage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700 text-[11px] sm:text-xs">
+                <label className="font-bold text-slate-700 text-xs sm:text-xs">
                   Quotation Terms & Conditions
                 </label>
                 <textarea
@@ -1015,7 +1017,7 @@ export default function CreateQuotePage() {
                   />
                 </div>
                 {taxAmount > 0 && (
-                  <div className="flex justify-between text-[11px] text-slate-400 font-mono">
+                  <div className="flex justify-between text-xs text-slate-400 font-mono">
                     <span>Tax Amount:</span>
                     <span>+₦{taxAmount.toLocaleString()}</span>
                   </div>
@@ -1042,7 +1044,7 @@ export default function CreateQuotePage() {
                     <span className="font-mono font-black">₦{remainingBalance.toLocaleString()}</span>
                   </div>
                   {hasInstallments && installments.length > 0 && (
-                    <p className="text-[10px] text-slate-500">
+                    <p className="text-xs text-slate-500">
                       Scheduled over <strong>{installments.length} installment(s)</strong>.
                     </p>
                   )}
@@ -1075,7 +1077,7 @@ export default function CreateQuotePage() {
               </Button>
             </div>
 
-            <div className="p-3.5 bg-blue-50/70 rounded-xl border border-blue-100 text-[11px] text-blue-800 space-y-1">
+            <div className="p-3.5 bg-blue-50/70 rounded-xl border border-blue-100 text-xs text-blue-800 space-y-1">
               <p className="font-bold flex items-center gap-1">
                 ℹ️ Stock is not deducted yet
               </p>
@@ -1107,6 +1109,7 @@ export default function CreateQuotePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
               <a
                 href={api.getQuotePdfDownloadUrl(createdQuote.id)}
+                onClick={(e) => api.handlePdfLinkClick(e, api.getQuotePdfDownloadUrl(createdQuote.id), `Quotation-${createdQuote.quoteNumber || createdQuote.id}.pdf`)}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full"

@@ -276,3 +276,17 @@ body {
 .animate-ticker:hover {
   animation-play-state: paused;
 }
+
+/* Keyboard focus ring. Many controls use `outline-none`, which hid focus entirely
+   for keyboard users; this restores a visible ring without affecting mouse clicks. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+summary:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
+  outline: 2px solid #0d9488 !important;
+  outline-offset: 2px !important;
+}

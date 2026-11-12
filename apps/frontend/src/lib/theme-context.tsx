@@ -28,7 +28,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   // Determine if current route is an internal app/dashboard/admin page
   const isInternalRoute = useMemo(() => {
     if (!pathname) return false;
-    return pathname.startsWith('/dashboard') || pathname.startsWith('/admin');
+    // Only the store dashboard has dark styles; admin and public pages stay light.
+    return pathname.startsWith('/dashboard');
   }, [pathname]);
 
   // Helper to determine system preference

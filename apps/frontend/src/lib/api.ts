@@ -1,3 +1,4 @@
+import { notify, confirmDialog } from '@/lib/feedback';
 // Unified API Client Service Layer for NoxGuarda NestJS API Backend
 
 const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -32,8 +33,13 @@ class ApiClient {
     return localStorage.getItem('vf_access_token');
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const token = this.getToken();
+  /**
+   * @param authToken  pass a token to use instead of the logged-in account token
+   *                   (used by the public theft-report flow). `undefined` = account token.
+   */
+  private async request<T>(endpoint: string, options: RequestInit = {}, authToken?: string | null): Promise<T> {
+    const usingAccountToken = authToken === undefined;
+    const token = usingAccountToken ? this.getToken() : authToken;
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
@@ -69,7 +75,7 @@ class ApiClient {
     }
 
     if (!response.ok) {
-      if (response.status === 401 && typeof window !== 'undefined') {
+      if (response.status === 401 && usingAccountToken && typeof window !== 'undefined') {
         localStorage.removeItem('vf_access_token');
         localStorage.removeItem('vf_user');
         if (!window.location.pathname.startsWith('/login')) {
@@ -79,6 +85,7 @@ class ApiClient {
       const errorMessage = data?.message || response.statusText || 'An error occurred during API request';
       const err: any = new Error(Array.isArray(errorMessage) ? errorMessage.join(', ') : errorMessage);
       err.status = response.status;
+      err.code = data?.code;
       throw err;
     }
 
@@ -94,7 +101,7 @@ class ApiClient {
   }
 
   async registerBusiness(data: any) {
-    return this.request<{ accessToken: string; refreshToken: string; user: any }>('/auth/register', {
+    return this.request<{ accessToken: string; refreshToken: string; user: any; pendingPlan?: string | null }>('/auth/register', {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -109,7 +116,7 @@ class ApiClient {
     phone?: string;
     plan?: string;
   }) {
-    return this.request<{ accessToken: string; refreshToken: string; user: any; isNewUser?: boolean }>('/auth/google', {
+    return this.request<{ accessToken: string; refreshToken: string; user: any; isNewUser?: boolean; pendingPlan?: string | null }>('/auth/google', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -123,14 +130,14 @@ class ApiClient {
   }
 
   async verifyOtp(email: string, code: string) {
-    return this.request<{ success: boolean; verified: boolean }>('/auth/verify-otp', {
+    return this.request<{ success: boolean; verified: boolean; emailVerificationToken?: string }>('/auth/verify-otp', {
       method: 'POST',
       body: JSON.stringify({ email, code }),
     });
   }
 
   async forgotPassword(email: string) {
-    return this.request<{ message: string; resetUrl?: string; resetToken?: string }>('/auth/forgot-password', {
+    return this.request<{ message: string }>('/auth/forgot-password', {
       method: 'POST',
       body: JSON.stringify({ email }),
     });
@@ -388,9 +395,33 @@ class ApiClient {
   }
 
   getInvoicePdfDownloadUrl(id: string): string {
-    const token = this.getToken();
-    return `${API_BASE_URL}/sales/invoices/${id}/pdf${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    return `${API_BASE_URL}/sales/invoices/${id}/pdf`;
   }
+
+  /**
+   * PDFs need the login token, which must travel in a header (never in the URL,
+   * where it would end up in browser history and server logs). So a PDF link
+   * cannot be a plain href: fetch it, then hand the file to the browser.
+   */
+  async downloadPdf(url: string, filename: string): Promise<void> {
+    const file = await this.fetchPdfFile(url, filename);
+    const blobUrl = URL.createObjectURL(file);
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000);
+  }
+
+  /** onClick handler for PDF links and buttons. */
+  handlePdfLinkClick = (event: { preventDefault: () => void }, url: string, filename: string) => {
+    event.preventDefault();
+    this.downloadPdf(url, filename).catch((err: any) => {
+      notify(err?.message || 'Could not download the PDF. Please try again.');
+    });
+  };
 
   async fetchPdfFile(url: string, filename: string): Promise<File> {
     const res = await fetch(url, {
@@ -495,8 +526,7 @@ class ApiClient {
   }
 
   getQuotePdfDownloadUrl(id: string): string {
-    const token = this.getToken();
-    return `${API_BASE_URL}/quotes/${id}/pdf${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    return `${API_BASE_URL}/quotes/${id}/pdf`;
   }
 
   // --- POS Receipts Endpoints ---
@@ -527,8 +557,7 @@ class ApiClient {
   }
 
   getReceiptPdfDownloadUrl(id: string): string {
-    const token = this.getToken();
-    return `${API_BASE_URL}/sales/receipts/${id}/pdf${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+    return `${API_BASE_URL}/sales/receipts/${id}/pdf`;
   }
 
   async sendSaleEmail(id: string, email?: string) {
@@ -867,36 +896,57 @@ class ApiClient {
     });
   }
 
-  async submitPublicTheftReport(payload: {
-    imei1: string;
-    imei2?: string;
-    serialNumber?: string;
-    brand: string;
-    model: string;
-    color?: string;
-    ownerEmail: string;
-    ownerName: string;
-    ownerPhone: string;
-    lostNote?: string;
-    bountyAmount?: number;
-    verificationSource?: string;
-    policeCaseNo?: string;
-  }) {
-    return this.request<any>('/theft-reports/public-report', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+  /** Exchanges a real Google sign-in for a reporter session (verified on the server). */
+  async createTheftReporterSession(credential: string) {
+    return this.request<{ token: string; email: string; name: string; avatarUrl?: string | null }>(
+      '/theft-reports/session',
+      {
+        method: 'POST',
+        body: JSON.stringify({ credential }),
+      },
+      null,
+    );
   }
 
-  async resolveTheftReport(id: string, payload: { ownerEmail: string; resolvedNote?: string }) {
-    return this.request<any>(`/theft-reports/resolve/${id}`, {
-      method: 'POST',
-      body: JSON.stringify(payload),
-    });
+  async submitPublicTheftReport(
+    payload: {
+      imei1?: string;
+      imei2?: string;
+      serialNumber?: string;
+      brand: string;
+      model: string;
+      color?: string;
+      ownerName?: string;
+      ownerPhone: string;
+      lostNote?: string;
+      bountyAmount?: number;
+      policeCaseNo?: string;
+    },
+    reporterToken: string,
+  ) {
+    return this.request<any>(
+      '/theft-reports/public-report',
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      reporterToken,
+    );
   }
 
-  async getUserTheftReports(email: string) {
-    return this.request<any[]>(`/theft-reports/user-reports?email=${encodeURIComponent(email)}`);
+  async resolveTheftReport(id: string, payload: { resolvedNote?: string }, reporterToken: string) {
+    return this.request<any>(
+      `/theft-reports/resolve/${id}`,
+      {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      },
+      reporterToken,
+    );
+  }
+
+  async getUserTheftReports(reporterToken: string) {
+    return this.request<any[]>('/theft-reports/user-reports', {}, reporterToken);
   }
 
   async publicVerifyDevice(identifier: string) {

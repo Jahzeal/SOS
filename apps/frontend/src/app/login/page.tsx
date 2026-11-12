@@ -7,8 +7,8 @@ import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Mail, Lock, AlertCircle, ArrowRight, Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { PwaInstallButton } from '@/components/PwaInstallButton';
 import { Logo } from '@/components/ui/Logo';
+import { PwaInstallButton } from '@/components/PwaInstallButton';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
 
@@ -101,6 +101,11 @@ export default function LoginPage() {
         router.push(targetRoute);
       }
     } catch (err: any) {
+      // No account yet for this Google address: signing up requires choosing a plan.
+      if (err?.code === 'PLAN_REQUIRED') {
+        router.push('/onboarding');
+        return;
+      }
       console.error('Google login error:', err);
       setError(err.message || 'Google sign-in failed. Please try again.');
       setLoading(false);
@@ -123,7 +128,7 @@ export default function LoginPage() {
             <span className="text-slate-500">No store account?</span>
             <Link href="/onboarding">
               <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800 font-bold px-3 py-1.5 xl:px-4 xl:py-2 text-xs xl:text-sm rounded-xl">
-                Register Business →
+                Start free →
               </Button>
             </Link>
           </div>
@@ -168,7 +173,7 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="relative flex items-center justify-center my-4">
               <div className="border-t border-slate-200 w-full" />
-              <span className="bg-white px-3 text-[11px] xl:text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+              <span className="bg-white px-3 text-xs xl:text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                 or sign in with email
               </span>
               <div className="border-t border-slate-200 w-full" />
@@ -196,7 +201,7 @@ export default function LoginPage() {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <label className="block font-bold text-slate-800 text-xs xl:text-sm">Password</label>
-                  <Link href="/forgot-password" className="text-[11px] xl:text-xs text-teal-600 font-bold hover:underline">
+                  <Link href="/forgot-password" className="text-xs xl:text-xs text-teal-600 font-bold hover:underline">
                     Forgot password?
                   </Link>
                 </div>
@@ -263,7 +268,7 @@ export default function LoginPage() {
       </main>
 
       {/* Page Footer */}
-      <footer className="py-4 xl:py-6 text-center text-[11px] xl:text-xs text-slate-500 border-t border-slate-200 bg-white">
+      <footer className="py-4 xl:py-6 text-center text-xs xl:text-xs text-slate-500 border-t border-slate-200 bg-white">
         © {new Date().getFullYear()} NoxGuarda Technologies Inc. All rights reserved.
       </footer>
     </div>

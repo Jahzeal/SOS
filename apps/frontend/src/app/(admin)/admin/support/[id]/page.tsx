@@ -197,7 +197,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           <ArrowLeft className="w-3.5 h-3.5" />
           <span>Back to Support Queue</span>
         </Link>
-        <span className="text-[11px] font-mono text-slate-400">
+        <span className="text-xs font-mono text-slate-400">
           Created: 25 Aug 2026, 10:42 AM • Updated: 2 min ago
         </span>
       </div>
@@ -208,7 +208,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
           <div className="flex items-center gap-2 mb-1.5">
             <span className="font-mono font-extrabold text-blue-600 text-sm">#{ticketId}</span>
             <span
-              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider ${
+              className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${
                 priority === 'Urgent' || priority === 'High'
                   ? 'bg-rose-50 text-rose-700 border border-rose-200'
                   : 'bg-slate-100 text-slate-700'
@@ -217,7 +217,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
               {priority} Priority
             </span>
             <span
-              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+              className={`px-2.5 py-0.5 rounded-full text-xs font-bold uppercase tracking-wider ${
                 status === 'Open'
                   ? 'bg-amber-100/70 text-amber-800 border border-amber-200'
                   : status === 'In Progress'
@@ -241,7 +241,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
         <div className="flex items-center gap-2.5 self-start md:self-auto flex-wrap">
           {/* Status Selector */}
           <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Status:</span>
+            <span className="text-xs font-bold text-slate-400 uppercase">Status:</span>
             <select
               value={status}
               onChange={(e) => setStatus(e.target.value as any)}
@@ -257,7 +257,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
           {/* Priority Selector */}
           <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Priority:</span>
+            <span className="text-xs font-bold text-slate-400 uppercase">Priority:</span>
             <select
               value={priority}
               onChange={(e) => setPriority(e.target.value as any)}
@@ -272,7 +272,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
 
           {/* Assignee Selector */}
           <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1">
-            <span className="text-[10px] font-bold text-slate-400 uppercase">Assignee:</span>
+            <span className="text-xs font-bold text-slate-400 uppercase">Assignee:</span>
             <select
               value={assignee}
               onChange={(e) => setAssignee(e.target.value)}
@@ -342,14 +342,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-extrabold text-xs text-slate-900">{m.senderName}</span>
-                          <span className="text-[11px] text-slate-500 font-medium">({m.senderRole})</span>
+                          <span className="text-xs text-slate-500 font-medium">({m.senderRole})</span>
                         </div>
-                        <span className="text-[10px] text-slate-400 font-medium block">{m.timestamp}</span>
+                        <span className="text-xs text-slate-400 font-medium block">{m.timestamp}</span>
                       </div>
                     </div>
 
                     {isInternal && (
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-200/70 text-amber-900 border border-amber-300">
+                      <span className="px-2 py-0.5 rounded text-xs font-bold bg-amber-200/70 text-amber-900 border border-amber-300">
                         Internal — Not visible to business
                       </span>
                     )}
@@ -364,11 +364,11 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                       {m.attachments.map((att) => (
                         <div
                           key={att.name}
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-[11px] font-medium text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer shadow-2xs"
                         >
                           <Paperclip className="w-3 h-3 text-slate-400" />
                           <span>{att.name}</span>
-                          <span className="text-slate-400 font-mono text-[10px]">({att.size})</span>
+                          <span className="text-slate-400 font-mono text-xs">({att.size})</span>
                         </div>
                       ))}
                     </div>
@@ -440,7 +440,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                       <Paperclip className="w-4 h-4" />
                     </button>
                     {composerMode === 'internal' && (
-                      <span className="text-[11px] font-bold text-amber-700 flex items-center gap-1">
+                      <span className="text-xs font-bold text-amber-700 flex items-center gap-1">
                         <Lock className="w-3 h-3" /> Private Note
                       </span>
                     )}
@@ -483,7 +483,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
               </div>
               <Link
                 href="/admin/businesses"
-                className="text-[11px] font-bold text-blue-600 hover:underline flex items-center gap-0.5"
+                className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-0.5"
               >
                 <span>View Store</span>
                 <ExternalLink className="w-3 h-3" />
@@ -522,7 +522,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             <div className="space-y-2 text-xs">
               <div>
                 <span className="font-extrabold text-slate-900 block text-sm">Amaka Okafor</span>
-                <span className="text-[11px] text-slate-500 font-medium">Sales Staff (Ikeja Branch)</span>
+                <span className="text-xs text-slate-500 font-medium">Sales Staff (Ikeja Branch)</span>
               </div>
               <div className="flex items-center gap-2 text-slate-600 pt-1">
                 <Mail className="w-3.5 h-3.5 text-slate-400" />
@@ -550,14 +550,14 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 text-xs">
               <div className="flex justify-between items-start">
                 <span className="font-extrabold text-slate-900">Apple iPhone 15 Pro Max</span>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-100 text-emerald-800">
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">
                   Sold
                 </span>
               </div>
-              <div className="text-[11px] text-slate-500 font-mono">
+              <div className="text-xs text-slate-500 font-mono">
                 IMEI: <strong className="text-slate-800 font-bold">356892110482910</strong>
               </div>
-              <div className="text-[11px] text-slate-500 font-mono">
+              <div className="text-xs text-slate-500 font-mono">
                 Serial: <span className="text-slate-700 font-semibold">DNQZX09LMD6P</span>
               </div>
             </div>
@@ -566,11 +566,11 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
             <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5 text-xs">
               <div className="flex justify-between items-start">
                 <span className="font-mono font-bold text-blue-600">#VER-10482</span>
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-amber-100 text-amber-800">
+                <span className="px-1.5 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">
                   Pending QR
                 </span>
               </div>
-              <div className="text-[11px] text-slate-500">
+              <div className="text-xs text-slate-500">
                 Timestamp: 25 Aug 2026 · 10:39 AM
               </div>
             </div>
@@ -591,7 +591,7 @@ export default function TicketDetailPage({ params }: { params: Promise<{ id: str
                   <div className="w-2 h-2 rounded-full bg-blue-600 mt-1.5 shrink-0" />
                   <div className="flex-1">
                     <span className="text-slate-800 font-semibold block">{act.action}</span>
-                    <span className="text-[10px] text-slate-400">{act.actor} • {act.timestamp}</span>
+                    <span className="text-xs text-slate-400">{act.actor} • {act.timestamp}</span>
                   </div>
                 </div>
               ))}

@@ -24,6 +24,8 @@ interface SubscriptionGuardContextType {
   isLoading: boolean;
   isTrialActive: boolean;
   isTrialExpired: boolean;
+  /** Store created before trials were removed and still on one. No new store gets a trial. */
+  isLegacyTrial: boolean;
   isPaidActive: boolean;
   isFreePlan: boolean;
   trialDaysRemaining: number;
@@ -101,8 +103,8 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
   }, [fetchSubscriptionData]);
 
   // Derive status with authoritative database fields
-  const planCode = (business?.plan || user?.business?.plan || 'STARTER').toUpperCase();
-  const subscriptionStatus = (business?.subscriptionStatus || (business ? 'FREE' : 'TRIAL')).toUpperCase();
+  const planCode = (business?.plan || user?.business?.plan || 'FREE').toUpperCase();
+  const subscriptionStatus = (business?.subscriptionStatus || 'FREE').toUpperCase();
 
   // Find matching plan object
   const selectedPlan: PlanDetails = plans.find(
@@ -111,10 +113,10 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
     id: 'default-starter',
     code: planCode,
     name: planCode === 'FREE' ? 'Free Forever' : planCode === 'STARTER' || planCode === 'STARTER101' ? 'Starter' : planCode,
-    description: 'Onboarding store plan',
+    description: planCode === 'FREE' ? 'Free forever, up to 10 devices' : 'Store plan',
     monthlyPriceNgn: planCode === 'FREE' ? 0 : 5000,
     annualPriceNgn: planCode === 'FREE' ? 0 : 45000,
-    maxDevices: planCode === 'FREE' ? 25 : 500,
+    maxDevices: planCode === 'FREE' ? 10 : 500,
     features: [],
   };
 
@@ -125,7 +127,11 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
   const isFreePlan = planCode === 'FREE' || subscriptionStatus === 'FREE';
   const isPaidActive = subscriptionStatus === 'ACTIVE';
   
-  // Trial is expired ONLY if status is explicitly EXPIRED/PAST_DUE, or status is TRIAL and DB trial date has passed
+  // Only stores created before the Free plan replaced trials can have this status.
+  const isLegacyTrial = subscriptionStatus === 'TRIAL';
+
+  // Access has lapsed (the name is historical): a paid period ran out, or a legacy trial ended.
+  // True ONLY if status is explicitly EXPIRED/PAST_DUE, or status is TRIAL and DB trial date has passed
   const isTrialExpired =
     !isFreePlan &&
     !isPaidActive &&
@@ -202,6 +208,7 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
         isLoading,
         isTrialActive,
         isTrialExpired,
+        isLegacyTrial,
         isPaidActive,
         isFreePlan,
         trialDaysRemaining,

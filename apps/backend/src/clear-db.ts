@@ -4,8 +4,17 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function clearDatabase() {
-  const adminEmail = process.env.ADMIN_EMAIL || 'jahzealibeh529@gmail.com';
-  const adminPassword = process.env.ADMIN_PASSWORD || 'AdminPass123!';
+  const adminEmail = process.env.ADMIN_EMAIL;
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  if (!adminEmail || !adminPassword || adminPassword.length < 12) {
+    console.error(' Set ADMIN_EMAIL and ADMIN_PASSWORD (12+ characters) in the environment before running this script.');
+    process.exit(1);
+  }
+  // This script DELETES every store, user, sale and device. It only runs when asked explicitly.
+  if (process.env.CONFIRM_WIPE_DATABASE !== 'YES_DELETE_EVERYTHING') {
+    console.error(' Refusing to wipe the database. Set CONFIRM_WIPE_DATABASE=YES_DELETE_EVERYTHING to proceed.');
+    process.exit(1);
+  }
 
   console.log(`\n========================================`);
   console.log(` Clearing Database to Pure Clean State...`);
@@ -101,7 +110,7 @@ async function clearDatabase() {
     console.log(` Phones/Inventory:   ${phoneCount}`);
     console.log(` Sales/Transactions: ${salesCount}`);
     console.log(` Master Admin:       ${adminEmail}`);
-    console.log(` Master Password:    ${adminPassword}`);
+    console.log(` Master Password:    (the ADMIN_PASSWORD you supplied)`);
     console.log(`----------------------------------------\n`);
   } catch (err) {
     console.error(' Error clearing database:', err);

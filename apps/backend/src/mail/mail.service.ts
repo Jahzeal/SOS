@@ -185,7 +185,7 @@ export class MailService {
     to: string,
     recipientName: string,
     businessName: string,
-    planName: string = 'Starter Trial',
+    planName: string = 'Free',
     customTemplateOverrides?: {
       subject?: string;
       heading?: string;
@@ -291,7 +291,7 @@ export class MailService {
               <span>Store Name:</span> <strong style="color: #f1f5f9;">${businessName}</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 6px;">
-              <span>Plan:</span> <strong style="color: #10b981;">14-Day Full Access Trial</strong>
+              <span>Plan:</span> <strong style="color: #10b981;">${String(planName || '').toUpperCase() === 'FREE' ? 'Free forever (up to 10 devices)' : planName}</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8;">
               <span>Login Email:</span> <strong style="color: #f1f5f9;">${to}</strong>

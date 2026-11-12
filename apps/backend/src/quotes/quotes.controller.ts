@@ -17,10 +17,11 @@ import { CreateQuoteDto } from './dto/create-quote.dto';
 import { UpdateQuoteDto } from './dto/update-quote.dto';
 import { RecordQuotePaymentDto } from './dto/record-payment.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { PaymentMethod } from '@prisma/client';
 
 @Controller('quotes')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) {}
 

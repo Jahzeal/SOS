@@ -594,7 +594,7 @@ export default function ReceiptInvoiceTemplatesPage() {
                       type="text"
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
-                      placeholder="e.g. TechWorld Ltd"
+                      placeholder="e.g. Zenith Gadgets Ltd"
                       className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>

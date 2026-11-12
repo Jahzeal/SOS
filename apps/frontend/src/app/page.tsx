@@ -3,6 +3,7 @@
 import { api } from '@/lib/api';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { SiteFooter } from '@/components/marketing/SiteFooter';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PwaInstallButton } from '@/components/PwaInstallButton';
@@ -909,7 +910,7 @@ export default function PublicLandingPageV2() {
                 </Link>
                 <Link href="/onboarding">
                   <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    Start Free Trial
+                    Start free
                   </Button>
                 </Link>
               </>
@@ -991,7 +992,7 @@ export default function PublicLandingPageV2() {
                   </Link>
                   <Link href="/onboarding" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="primary" fullWidth size="md">
-                      Register Business
+                      Start free
                     </Button>
                   </Link>
                 </>
@@ -1013,7 +1014,7 @@ export default function PublicLandingPageV2() {
           </h1>
 
           <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed max-w-xl">
-            NoxGuarda empowers phone and laptop retailers, distributors, and electronics stores to register devices via QR code, IMEI, or Serial Number. Protect your business from fake warranty claims while providing buyers instant proof of origin.
+            NoxGuarda helps sellers of phones, laptops and accessories register every device by QR code, IMEI or serial number. Protect your business from fake warranty claims and give buyers instant proof of where their device came from.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -1024,13 +1025,13 @@ export default function PublicLandingPageV2() {
                 rightIcon={<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1.5" />}
                 className="w-full sm:w-auto sm:min-w-[320px] px-9 py-4 rounded-2xl border-2 border-teal-500/50 ring-4 ring-teal-500/15 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-teal-950/15 hover:shadow-xl transition-all group justify-center tracking-tight"
               >
-                Get Started
+                Start free
               </Button>
             </Link>
           </div>
 
           <p className="text-xs text-slate-500 font-medium pt-1">
-            For phone and laptop retailers, distributors, wholesalers & electronics businesses.
+            For sellers of phones, laptops and accessories: retailers, distributors and wholesalers.
           </p>
 
         </div>
@@ -1040,7 +1041,7 @@ export default function PublicLandingPageV2() {
           <div className="border-2 border-slate-200/90 shadow-xl p-5 sm:p-6 rounded-2xl bg-white space-y-4">
             <div className="border-b border-slate-100 pb-3 flex items-center justify-between">
               <div>
-                <h3 className="text-base font-extrabold text-slate-900">Verify Phone Record</h3>
+                <h3 className="text-base font-extrabold text-slate-900">Verify a Device</h3>
                 <p className="text-xs text-slate-500 font-medium">Instant IMEI, Serial & QR origin lookup</p>
               </div>
               <Link
@@ -1372,7 +1373,7 @@ export default function PublicLandingPageV2() {
             <div className="animate-ticker items-center gap-8 sm:gap-14 font-bold text-xs sm:text-sm text-slate-800 select-none">
               {/* Set 1 */}
               <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Store className="w-4 h-4 text-teal-600" /> TechWorld Mobile
+                <Store className="w-4 h-4 text-teal-600" /> Zenith Gadgets, Ikeja
               </div>
               <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
                 <Smartphone className="w-4 h-4 text-emerald-600" /> Apex Wireless
@@ -1392,7 +1393,7 @@ export default function PublicLandingPageV2() {
 
               {/* Set 2 (Seamless Duplicate Loop) */}
               <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Store className="w-4 h-4 text-teal-600" /> TechWorld Mobile
+                <Store className="w-4 h-4 text-teal-600" /> Zenith Gadgets, Ikeja
               </div>
               <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
                 <Smartphone className="w-4 h-4 text-emerald-600" /> Apex Wireless
@@ -1439,10 +1440,10 @@ export default function PublicLandingPageV2() {
         <div className="max-w-7xl mx-auto text-center space-y-10">
           <div className="max-w-3xl mx-auto space-y-4">
             <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              Meet NoxGuarda: The Complete Phone & Laptop Retail OS
+              Meet NoxGuarda: One Workspace for Phone, Laptop & Accessory Sellers
             </h2>
             <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed">
-              One unified workspace to register IMEI stock, process express POS checkouts, issue digital thermal receipts, track warranties, and handle repairs.
+              One workspace to register stock by IMEI or serial number, sell at the counter, issue receipts, invoices and quotations, track warranties, and handle repairs.
             </p>
           </div>
 
@@ -1475,10 +1476,10 @@ export default function PublicLandingPageV2() {
       <section id="features" className="py-20 px-6 max-w-7xl mx-auto w-full space-y-12">
         <div className="text-center max-w-2xl mx-auto space-y-2">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Designed Exclusively for Phone & Laptop Businesses
+            Built for Phone, Laptop & Accessory Sellers
           </h2>
           <p className="text-xs sm:text-sm text-slate-500">
-            Every feature is purpose-built for smartphones, tablets, laptops, and electronics retail workflows.
+            Every feature is built around how phones, laptops and accessories are actually bought, sold and repaired.
           </p>
         </div>
 
@@ -1488,9 +1489,9 @@ export default function PublicLandingPageV2() {
             <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 text-emerald-600 flex items-center justify-center">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <h3 className="text-base font-bold text-slate-900">Phone Verification</h3>
+            <h3 className="text-base font-bold text-slate-900">Device Verification</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Instantly verify any phone via manufacturer QR code, IMEI, or Serial Number. Eliminates fraud disputes.
+              Check any registered phone or laptop by QR code, IMEI or serial number, and see at once if it has been reported stolen.
             </p>
             <Link href="/features#verification" className="inline-flex items-center gap-1 text-xs font-bold text-teal-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
@@ -1504,7 +1505,7 @@ export default function PublicLandingPageV2() {
             </div>
             <h3 className="text-base font-bold text-slate-900">Inventory Management</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Track stock by unique hardware serial numbers across multiple store branches in real time.
+              Track every phone and laptop by its own IMEI or serial number, with condition, cost price, selling price and stock status.
             </p>
             <Link href="/features#inventory" className="inline-flex items-center gap-1 text-xs font-bold text-blue-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
@@ -1518,7 +1519,7 @@ export default function PublicLandingPageV2() {
             </div>
             <h3 className="text-base font-bold text-slate-900">POS & Corporate Invoicing</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Fast counter checkout with 80mm thermal receipts or full A4 corporate commercial invoices with payment ledgers.
+              Fast counter checkout for devices and accessories, with printable receipts, A4 invoices, quotations and a record of every payment.
             </p>
             <Link href="/features#invoicing" className="inline-flex items-center gap-1 text-xs font-bold text-indigo-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
@@ -1532,7 +1533,7 @@ export default function PublicLandingPageV2() {
             </div>
             <h3 className="text-base font-bold text-slate-900">Warranty Tracking</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Automated hardware guarantee countdowns and expiration alerts sent directly to store managers and customers.
+              Set a warranty period for each device you sell. The expiry date is saved with the sale and shown when the device is verified.
             </p>
             <Link href="/features#warranty" className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
@@ -1546,7 +1547,7 @@ export default function PublicLandingPageV2() {
             </div>
             <h3 className="text-base font-bold text-slate-900">Repair Desk & Tickets</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Intake diagnostics, technician work logs, parts cost estimation, and automated pickup notifications.
+              Log the fault at intake, add technician notes and cost estimates, and move each ticket through to ready for pickup.
             </p>
             <Link href="/features#repairs" className="inline-flex items-center gap-1 text-xs font-bold text-purple-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
@@ -1560,7 +1561,7 @@ export default function PublicLandingPageV2() {
             </div>
             <h3 className="text-base font-bold text-slate-900">Buyer QR Verification</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Allow end buyers to scan receipt/box QR codes to verify store authenticity without downloading an app.
+              Buyers scan the QR code on their receipt to confirm the device and the store that sold it. No app or account needed.
             </p>
             <Link href="/features#public-portal" className="inline-flex items-center gap-1 text-xs font-bold text-slate-700 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
@@ -1573,9 +1574,7 @@ export default function PublicLandingPageV2() {
             </div>
             <h3 className="text-base font-bold text-slate-900">Laptop Registration & Management</h3>
             <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
-              Seamlessly register, track, and service laptops – from serial numbers to warranty periods,
-              inventory specs, and on‑demand diagnostics. All the same fast workflow you love for phones,
-              now powered for laptops.
+              Register, sell and repair laptops by serial number, with the same stock, warranty and receipt workflow used for phones.
             </p>
             <Link href="/features#laptops" className="inline-flex items-center gap-1 text-xs font-bold text-gray-600 pt-2 hover:underline">
               Learn More <ArrowRight className="w-3 h-3" />
@@ -1599,25 +1598,25 @@ export default function PublicLandingPageV2() {
               How NoxGuarda Operates
             </h2>
             <p className="text-xs sm:text-sm text-slate-500">
-              Clear pathways built for both store staff and end-user phone buyers.
+              Simple steps for the store and for the buyer.
             </p>
           </div>
 
           {/* Workflow 1: For Businesses */}
           <div className="space-y-6">
             <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <Building className="w-5 h-5 text-blue-600" /> For Phone & Laptop Retailers & Businesses
+              <Building className="w-5 h-5 text-blue-600" /> For Phone, Laptop & Accessory Sellers
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-2 relative">
                 <div className="text-xs font-bold text-blue-600">STEP 01</div>
                 <h4 className="text-sm font-bold text-slate-900">Create Workspace</h4>
-                <p className="text-xs text-slate-500">Register your business & invite branch staff in 60 seconds.</p>
+                <p className="text-xs text-slate-500">Register your business and set up your store in a few minutes.</p>
               </div>
 
               <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-2 relative">
                 <div className="text-xs font-bold text-blue-600">STEP 02</div>
-                <h4 className="text-sm font-bold text-slate-900">Register Phones</h4>
+                <h4 className="text-sm font-bold text-slate-900">Register Devices</h4>
                 <p className="text-xs text-slate-500">Log stock using QR scanner, IMEI, or Serial Number.</p>
               </div>
 
@@ -1630,7 +1629,7 @@ export default function PublicLandingPageV2() {
               <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-5 space-y-2 relative">
                 <div className="text-xs font-bold text-blue-600">STEP 04</div>
                 <h4 className="text-sm font-bold text-slate-900">Grow Your Business</h4>
-                <p className="text-xs text-slate-500">Track multi-branch analytics and eliminate warranty fraud.</p>
+                <p className="text-xs text-slate-500">See sales and stock reports, and settle warranty claims with proof.</p>
               </div>
             </div>
           </div>
@@ -1638,25 +1637,25 @@ export default function PublicLandingPageV2() {
           {/* Workflow 2: For Customers */}
           <div className="space-y-6">
             <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <Users className="w-5 h-5 text-emerald-600" /> For Phone Buyers & Customers
+              <Users className="w-5 h-5 text-emerald-600" /> For Buyers & Customers
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="bg-white border border-emerald-200/80 shadow-sm rounded-2xl p-5 space-y-2 bg-emerald-50/30">
                 <div className="text-xs font-bold text-emerald-700">STEP 01</div>
                 <h4 className="text-sm font-bold text-slate-900">Scan QR Code or Enter IMEI</h4>
-                <p className="text-xs text-slate-600">Scan the receipt QR code or enter phone IMEI on store link.</p>
+                <p className="text-xs text-slate-600">Scan the QR code on the receipt, or enter the IMEI or serial number.</p>
               </div>
 
               <div className="bg-white border border-emerald-200/80 shadow-sm rounded-2xl p-5 space-y-2 bg-emerald-50/30">
                 <div className="text-xs font-bold text-emerald-700">STEP 02</div>
                 <h4 className="text-sm font-bold text-slate-900">Instant Verification</h4>
-                <p className="text-xs text-slate-600">NoxGuarda queries the retailer's official cloud ledger in 1 second.</p>
+                <p className="text-xs text-slate-600">NoxGuarda checks the store's records and the stolen-device registry in seconds.</p>
               </div>
 
               <div className="bg-white border border-emerald-200/80 shadow-sm rounded-2xl p-5 space-y-2 bg-emerald-50/30">
                 <div className="text-xs font-bold text-emerald-700">STEP 03</div>
-                <h4 className="text-sm font-bold text-slate-900">Know Your Phone's Origin</h4>
-                <p className="text-xs text-slate-600">Get immediate proof of purchase, warranty dates, and genuine seal.</p>
+                <h4 className="text-sm font-bold text-slate-900">Know Your Device's Origin</h4>
+                <p className="text-xs text-slate-600">See the store that sold it, the warranty status, and whether it has been reported stolen.</p>
               </div>
             </div>
           </div>
@@ -1670,7 +1669,7 @@ export default function PublicLandingPageV2() {
             Explore the NoxGuarda Interface
           </h2>
           <p className="text-xs sm:text-sm text-slate-500">
-            Click through active screens to preview actual store workflows.
+            Sample screens with example data, to show how each part of the app is laid out.
           </p>
         </div>
 
@@ -1681,7 +1680,6 @@ export default function PublicLandingPageV2() {
             { id: 'verification', label: 'Verification Portal' },
             { id: 'inventory', label: 'Inventory' },
             { id: 'sales', label: 'Sales & Receipts' },
-            { id: 'reports', label: 'Reports' },
           ].map((tab) => (
             <button
               key={tab.id}
@@ -1724,7 +1722,7 @@ export default function PublicLandingPageV2() {
               <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-2 text-xs">
                 <Badge variant="verified">VERIFIED GENUINE</Badge>
                 <div className="font-bold text-slate-900 text-sm">Apple iPhone 16 Pro 256GB</div>
-                <div className="text-slate-600">IMEI: 354892019283741 • Retailer: TechWorld Mobile</div>
+                <div className="text-slate-600">IMEI: 354892019283741 • Retailer: Zenith Gadgets, Ikeja</div>
                 <div className="text-emerald-700 font-semibold pt-1">Warranty Active until July 22, 2027</div>
               </div>
             </div>
@@ -1735,7 +1733,7 @@ export default function PublicLandingPageV2() {
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
                 <div>
                   <h4 className="text-base font-extrabold text-slate-900">Serial & IMEI-Tracked Inventory Ledger</h4>
-                  <p className="text-xs text-slate-500 font-medium">Real-time dual-IMEI verification, stock levels & branch distribution</p>
+                  <p className="text-xs text-slate-500 font-medium">Every unit listed by IMEI or serial number, with its stock status</p>
                 </div>
                 <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-extrabold flex items-center gap-1 self-start sm:self-auto">
                   <Smartphone className="w-3.5 h-3.5" /> 1,420 Units Tracked
@@ -1771,7 +1769,7 @@ export default function PublicLandingPageV2() {
                   </div>
 
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-semibold pt-1">
-                    <span>Stock Allocation: 12 Downtown Flagship • 6 Eastside Mall</span>
+                    <span>Condition: New • 12-month store warranty</span>
                     <span className="text-blue-600 font-extrabold flex items-center gap-1">
                       <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> 100% IMEIs Verified & Scanned
                     </span>
@@ -1794,8 +1792,7 @@ export default function PublicLandingPageV2() {
                   <div className="flex items-center justify-center gap-1.5 font-black text-slate-900 text-sm tracking-tight">
                     <ShieldCheck className="w-4 h-4 text-blue-600" /> TECHWORLD MOBILE
                   </div>
-                  <p className="text-[10px] text-slate-500 font-sans font-medium">Main Downtown Flagship • Branch #01</p>
-                  <p className="text-[10px] text-slate-400 font-mono">102 Tech Plaza • Tel: +1 (555) 019-2834</p>
+                                    <p className="text-[10px] text-slate-400 font-mono">102 Tech Plaza • Tel: +1 (555) 019-2834</p>
                 </div>
 
                 <div className="border-b-2 border-dashed border-slate-300 py-1" />
@@ -1867,104 +1864,6 @@ export default function PublicLandingPageV2() {
             </div>
           )}
 
-          {showcaseTab === 'reports' && (
-            <div className="space-y-5 animate-in fade-in duration-150 text-left">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
-                <div>
-                  <h4 className="text-base font-extrabold text-slate-900">Branch Revenue & Claims Analytics</h4>
-                  <p className="text-xs text-slate-500 font-medium">Real-time store performance, warranty claim ratios & sales volume</p>
-                </div>
-                <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold flex items-center gap-1 self-start sm:self-auto">
-                  <TrendingUp className="w-3.5 h-3.5" /> +12.4% Gross Growth
-                </span>
-              </div>
-
-              {/* Multi-Branch Performance Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
-
-                {/* Branch 1 */}
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold text-blue-600 uppercase bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
-                      MAIN FLAGSHIP
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-600">+14.2%</span>
-                  </div>
-                  <h5 className="font-extrabold text-slate-900 text-sm">Downtown Branch</h5>
-                  <p className="text-2xl font-extrabold text-slate-900">₦92,400,000</p>
-                  <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] font-semibold text-slate-500">
-                    <span>1,248 Units Sold</span>
-                    <span className="text-emerald-600 font-bold">99.8% Clean Record</span>
-                  </div>
-                </div>
-
-                {/* Branch 2 */}
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold text-indigo-600 uppercase bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                      MALL BRANCH
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-600">+8.5%</span>
-                  </div>
-                  <h5 className="font-extrabold text-slate-900 text-sm">Eastside Mall Branch</h5>
-                  <p className="text-2xl font-extrabold text-slate-900">₦48,900,000</p>
-                  <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] font-semibold text-slate-500">
-                    <span>612 Units Sold</span>
-                    <span className="text-emerald-600 font-bold">99.2% Clean Record</span>
-                  </div>
-                </div>
-
-                {/* Branch 3 */}
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-extrabold text-amber-600 uppercase bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
-                      TECH OUTLET
-                    </span>
-                    <span className="text-[10px] font-bold text-emerald-600">+5.1%</span>
-                  </div>
-                  <h5 className="font-extrabold text-slate-900 text-sm">West End Outlet</h5>
-                  <p className="text-2xl font-extrabold text-slate-900">₦28,200,000</p>
-                  <div className="pt-2 border-t border-slate-100 flex justify-between items-center text-[10px] font-semibold text-slate-500">
-                    <span>380 Units Sold</span>
-                    <span className="text-emerald-600 font-bold">98.9% Clean Record</span>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* AI Insights & Revenue Bar Visual */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
-
-                {/* AI Automated Insight Pill */}
-                <div className="p-4 rounded-2xl bg-slate-900 text-white space-y-2 shadow-md border border-slate-800">
-                  <div className="flex items-center gap-1.5 text-xs font-extrabold text-amber-400">
-                    AI Store Intelligence
-                  </div>
-                  <p className="text-xs text-slate-200 leading-relaxed font-medium">
-                    <strong>iPhone 16 Pro Max</strong> accounts for 42% of gross retail revenue across all 3 locations. Zero fraudulent warranty claims reported.
-                  </p>
-                </div>
-
-                {/* Mini Visual Bar Chart */}
-                <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2 shadow-sm flex flex-col justify-between">
-                  <div className="flex justify-between items-center text-xs font-bold text-slate-700">
-                    <span>Gross Sales Volume Trend</span>
-                    <span className="text-[10px] font-mono text-blue-600">30-Day Aggregated</span>
-                  </div>
-
-                  <div className="h-10 w-full flex items-end gap-1.5 pt-1">
-                    <div className="flex-1 bg-blue-100 hover:bg-blue-200 h-[40%] rounded-t-md transition" />
-                    <div className="flex-1 bg-blue-200 hover:bg-blue-300 h-[60%] rounded-t-md transition" />
-                    <div className="flex-1 bg-blue-300 hover:bg-blue-400 h-[55%] rounded-t-md transition" />
-                    <div className="flex-1 bg-blue-500 hover:bg-blue-600 h-[80%] rounded-t-md transition" />
-                    <div className="flex-1 bg-blue-600 h-[98%] rounded-t-md shadow-sm" />
-                  </div>
-                </div>
-
-              </div>
-
-            </div>
-          )}
         </div>
       </section>
 
@@ -2004,16 +1903,16 @@ export default function PublicLandingPageV2() {
               </div>
               <ul className="space-y-3 text-slate-800 font-medium">
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" /> Cryptographic Cloud Ledger
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" /> Every device recorded by IMEI or serial number
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" /> 2-Second Instant Public Verification
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" /> Public verification in seconds
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" /> Digital & Thermal QR Receipts
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" /> Printable receipts with a verification QR code
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check className="w-4 h-4 text-emerald-600 shrink-0" /> Fraud-Proof Warranty Protection
+                  <Check className="w-4 h-4 text-emerald-600 shrink-0" /> Warranty claims checked against the sale record
                 </li>
               </ul>
             </div>
@@ -2089,30 +1988,39 @@ export default function PublicLandingPageV2() {
         <div className="space-y-3">
           {[
             {
-              q: 'How does phone verification work?',
-              a: 'Retailers register devices by scanning manufacturer QR codes, IMEI, or Serial Numbers. NoxGuarda links the device to your store ledger. Buyers can scan receipt QR codes or enter IMEI on your store link to instantly verify authenticity.',
+              q: 'How does device verification work?',
+              a: 'A store registers each phone or laptop with its IMEI or serial number. When it is sold, the receipt carries a QR code. Anyone can scan that code, or type the IMEI or serial number into the checker on this page, to see the store that registered it, the model, the warranty status, and whether it has been reported stolen.',
             },
             {
               q: 'Can customers verify purchases without an account?',
-              a: 'Yes! Customers do not need to register or log in. The verification portal is completely public and frictionless.',
+              a: 'Yes. Checking a device is public and free. Buyers do not need to sign up, log in or install an app.',
             },
             {
               q: 'Can I manage multiple store branches?',
-              a: 'Yes, NoxGuarda supports multi-branch management. You can track inventory transfers between stores and monitor branch revenue.',
+              a: 'Not yet. Each NoxGuarda account is one store with one login. Separate branches and staff accounts are not available at the moment.',
             },
             {
               q: 'Do I need special hardware to run NoxGuarda?',
-              a: 'No. NoxGuarda is cloud-based and runs on any modern browser (laptop, tablet, smartphone). Standard USB/Bluetooth barcode scanners are supported.',
+              a: 'No. NoxGuarda runs in the browser on a phone, tablet or computer, and can be installed to your home screen. You can scan with the device camera or type the IMEI or serial number in.',
             },
             {
-              q: 'Can I print receipts directly to thermal printers?',
-              a: 'Yes! NoxGuarda includes a custom receipt builder supporting 80mm thermal POS rolls, 58mm rolls, and standard A4 sheets.',
+              q: 'Can I print receipts?',
+              a: 'Yes. Receipts, invoices and quotations open in a print-ready layout that you print from your browser, save as a PDF, or share with the customer.',
             },
             {
-              q: 'Can I scan manufacturer QR codes on phone boxes?',
-              a: 'Yes, our built-in QR scanner reads standard manufacturer box barcodes instantly.',
+              q: 'Can I scan the barcode on a phone box?',
+              a: 'Yes. The built-in scanner reads the IMEI or serial barcode on the box using your camera. If the label is hard to read, you can take a photo of it or type the number in.',
+            },
+            {
+              q: 'Does it work for laptops and accessories?',
+              a: 'Yes. Laptops are registered by serial number in the same way as phones. Accessories can be added to a sale as items on the receipt or invoice.',
+            },
+            {
+              q: 'What does it cost?',
+              a: 'There is a Free plan for up to 10 devices. Paid plans are charged in naira through Paystack; current prices are on the Pricing page.',
             },
           ].map((item, idx) => (
+
             <div key={idx} className="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
               <button
                 onClick={() => toggleFaq(idx)}
@@ -2138,10 +2046,10 @@ export default function PublicLandingPageV2() {
       <section className="py-20 bg-gradient-to-b from-blue-50/50 via-white to-slate-50 border-t border-slate-200 px-6">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Ready to Modernize Your Phone Business?
+            Ready to Modernize Your Device Business?
           </h2>
           <p className="text-sm sm:text-base text-slate-600 font-medium max-w-xl mx-auto leading-relaxed">
-            Join hundreds of phone retailers, distributors, and electronics businesses using NoxGuarda to simplify verification, inventory, sales, and warranty management.
+            For sellers of phones, laptops and accessories who want simpler verification, inventory, sales and warranty records.
           </p>
 
           <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -2152,68 +2060,14 @@ export default function PublicLandingPageV2() {
                 rightIcon={<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1.5" />}
                 className="w-full sm:w-auto sm:min-w-[320px] px-9 py-4 rounded-2xl border-2 border-teal-500/50 ring-4 ring-teal-500/15 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-teal-950/15 hover:shadow-xl transition-all group justify-center tracking-tight"
               >
-                Get Started
+                Start free
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-50 text-slate-700 text-sm py-14 px-6 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-          {/* Col 1 */}
-          <div className="space-y-3">
-            <div className="font-extrabold text-slate-900 text-base">Product</div>
-            <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><Link href="/pricing" className="hover:text-teal-600 transition">Pricing & Plans</Link></li>
-              <li><Link href="/report-stolen" className="text-rose-600 hover:text-rose-700 font-bold transition flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-rose-600" /> Report Stolen Phone</Link></li>
-              <li><a href="#features" className="hover:text-teal-600 transition">Features</a></li>
-              <li><a href="#solutions" className="hover:text-teal-600 transition">Verification Ledger</a></li>
-            </ul>
-          </div>
-
-          {/* Col 2 */}
-          <div className="space-y-3">
-            <div className="font-extrabold text-slate-900 text-base">Resources</div>
-            <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><Link href="/report-stolen" className="hover:text-teal-600 transition">Anti-Theft Registry</Link></li>
-              <li><a href="#faq" className="hover:text-teal-600 transition">Help Center</a></li>
-              <li><a href="#faq" className="hover:text-teal-600 transition">Documentation</a></li>
-              <li><span className="text-slate-400">Developer API (Soon)</span></li>
-              <li><span className="text-slate-400">Blog (Soon)</span></li>
-            </ul>
-          </div>
-
-          {/* Col 3 */}
-          <div className="space-y-3">
-            <div className="font-extrabold text-slate-900 text-base">Company</div>
-            <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><a href="#" className="hover:text-teal-600 transition">About NoxGuarda</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition">Contact Sales</a></li>
-              <li><span className="text-slate-400">Careers (Hiring)</span></li>
-            </ul>
-          </div>
-
-          {/* Col 4 */}
-          <div className="space-y-3">
-            <div className="font-extrabold text-slate-900 text-base">Legal & Security</div>
-            <ul className="space-y-2.5 font-medium text-slate-700">
-              <li><a href="#" className="hover:text-teal-600 transition">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-teal-600 transition">Cookie Settings</a></li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-600">
-          <div>NoxGuarda Anti-Theft Operating System © 2026. All rights reserved.</div>
-          <div className="flex items-center gap-6">
-            <span>English (US)</span>
-            <span>Security Compliant</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter />
 
       {/* DEMO REQUEST MODAL FORM */}
       {isDemoModalOpen && (

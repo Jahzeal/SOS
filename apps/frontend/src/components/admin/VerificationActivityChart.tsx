@@ -177,7 +177,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
             <Activity className="w-3.5 h-3.5 text-blue-400" />
             {timeRange === 'today' ? `Time: ${label}` : `Period: ${label}`}
           </span>
-          <span className="font-mono text-[11px] font-bold text-blue-400 bg-blue-950/80 border border-blue-800/60 px-1.5 py-0.5 rounded">
+          <span className="font-mono text-xs font-bold text-blue-400 bg-blue-950/80 border border-blue-800/60 px-1.5 py-0.5 rounded">
             {formatNumber(total)} lookups
           </span>
         </div>
@@ -191,7 +191,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
               </div>
               <div className="font-mono flex items-center gap-1.5 font-bold">
                 <span>{(data.verified || 0).toLocaleString()}</span>
-                <span className="text-slate-400 text-[10px] font-normal">
+                <span className="text-slate-400 text-xs font-normal">
                   ({total > 0 ? (((data.verified || 0) / total) * 100).toFixed(0) : 0}%)
                 </span>
               </div>
@@ -206,7 +206,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
               </div>
               <div className="font-mono flex items-center gap-1.5 font-bold">
                 <span className="text-amber-300">{(data.notFound || 0).toLocaleString()}</span>
-                <span className="text-slate-400 text-[10px] font-normal">
+                <span className="text-slate-400 text-xs font-normal">
                   ({total > 0 ? (((data.notFound || 0) / total) * 100).toFixed(0) : 0}%)
                 </span>
               </div>
@@ -221,14 +221,14 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
               </div>
               <div className="font-mono flex items-center gap-1.5 font-bold">
                 <span className="text-rose-400">{(data.invalid || 0).toLocaleString()}</span>
-                <span className="text-slate-400 text-[10px] font-normal">
+                <span className="text-slate-400 text-xs font-normal">
                   ({total > 0 ? (((data.invalid || 0) / total) * 100).toFixed(0) : 0}%)
                 </span>
               </div>
             </div>
           )}
 
-          <div className="pt-2 border-t border-slate-700/80 flex items-center justify-between text-[11px] font-bold text-slate-300">
+          <div className="pt-2 border-t border-slate-700/80 flex items-center justify-between text-xs font-bold text-slate-300">
             <span className="flex items-center gap-1">
               <CheckCircle2 className="w-3 h-3 text-emerald-400" />
               Success Rate:
@@ -247,7 +247,7 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
         <div>
           <div className="flex items-center gap-2">
             <h3 className="text-base font-extrabold text-slate-900">Verification Activity</h3>
-            <span className="text-[10px] font-bold uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
+            <span className="text-xs font-bold uppercase tracking-wider bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full border border-blue-200">
               Live DB Flow
             </span>
           </div>
@@ -302,28 +302,28 @@ export default function VerificationActivityChart({ timeRange }: VerificationAct
       {/* Mini KPI Highlights Bar (100% Real DB Data) */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 py-1">
         <div className="bg-slate-50 border border-slate-100 rounded-xl p-2.5 flex flex-col justify-between">
-          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-tight">Total Volume</span>
+          <span className="text-xs font-bold text-slate-500 uppercase tracking-tight">Total Volume</span>
           <span className="text-lg font-extrabold text-slate-900 font-mono mt-0.5">
             {formatNumber(metrics.totalLookups)}
           </span>
         </div>
 
         <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-2.5 flex flex-col justify-between">
-          <span className="text-[11px] font-bold text-blue-700 uppercase tracking-tight">Verified Rate</span>
+          <span className="text-xs font-bold text-blue-700 uppercase tracking-tight">Verified Rate</span>
           <span className="text-lg font-extrabold text-blue-700 font-mono mt-0.5">
             {metrics.avgSuccessRate}%
           </span>
         </div>
 
         <div className="bg-amber-50/50 border border-amber-100 rounded-xl p-2.5 flex flex-col justify-between">
-          <span className="text-[11px] font-bold text-amber-700 uppercase tracking-tight">Unresolved</span>
+          <span className="text-xs font-bold text-amber-700 uppercase tracking-tight">Unresolved</span>
           <span className="text-lg font-extrabold text-amber-700 font-mono mt-0.5">
             {formatNumber(metrics.totalNotFound)}
           </span>
         </div>
 
         <div className="bg-rose-50/50 border border-rose-100 rounded-xl p-2.5 flex flex-col justify-between">
-          <span className="text-[11px] font-bold text-rose-700 uppercase tracking-tight">Peak Activity</span>
+          <span className="text-xs font-bold text-rose-700 uppercase tracking-tight">Peak Activity</span>
           <span className="text-sm font-extrabold text-slate-900 font-mono mt-1 truncate">
             {metrics.peakLabel} ({formatNumber(metrics.peakTotal)})
           </span>

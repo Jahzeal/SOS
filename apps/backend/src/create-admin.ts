@@ -4,8 +4,12 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function createOrPromoteAdmin() {
-  const email = process.env.ADMIN_EMAIL || 'jahzealibeh529@gmail.com';
-  const password = process.env.ADMIN_PASSWORD || 'AdminPass123!';
+  const email = process.env.ADMIN_EMAIL;
+  const password = process.env.ADMIN_PASSWORD;
+  if (!email || !password || password.length < 12) {
+    console.error(' Set ADMIN_EMAIL and ADMIN_PASSWORD (12+ characters) in the environment before running this script.');
+    process.exit(1);
+  }
   const firstName = 'Jahzeal';
   const lastName = 'Admin';
 
@@ -71,7 +75,7 @@ async function createOrPromoteAdmin() {
     console.log(` ADMIN LOGIN CREDENTIALS:`);
     console.log(`----------------------------------------`);
     console.log(` Email:    ${email}`);
-    console.log(` Password: ${password}`);
+    console.log(` Password: (the ADMIN_PASSWORD you supplied)`);
     console.log(` Role:     ADMIN (Global Platform Superuser)`);
     console.log(` Stores:   0 (Not a merchant subscriber)`);
     console.log(`----------------------------------------\n`);

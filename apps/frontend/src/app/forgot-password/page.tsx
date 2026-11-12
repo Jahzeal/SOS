@@ -12,7 +12,6 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
-  const [devResetUrl, setDevResetUrl] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,11 +20,8 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await api.forgotPassword(email.trim());
+      await api.forgotPassword(email.trim());
       setSubmitted(true);
-      if (res.resetUrl) {
-        setDevResetUrl(res.resetUrl);
-      }
     } catch (err: any) {
       console.error('Forgot password error:', err);
       setError(err.message || 'Failed to request password reset. Please try again.');
@@ -65,19 +61,6 @@ export default function ForgotPasswordPage() {
                   If an account exists for <span className="font-bold text-slate-900">{email}</span>, password reset instructions have been dispatched.
                 </p>
               </div>
-
-              {devResetUrl && (
-                <div className="p-3 bg-teal-50 border border-teal-200 rounded-2xl text-left space-y-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-teal-700 block">Development Link Preview</span>
-                  <p className="text-[11px] text-slate-600">Click below to test the reset flow locally:</p>
-                  <a
-                    href={devResetUrl}
-                    className="text-xs text-teal-600 font-mono font-bold break-all hover:underline block"
-                  >
-                    {devResetUrl}
-                  </a>
-                </div>
-              )}
 
               <div className="pt-2">
                 <Link href="/login">

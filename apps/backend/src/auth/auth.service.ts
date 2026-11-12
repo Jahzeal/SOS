@@ -1,99 +1,148 @@
-import { Injectable, UnauthorizedException, ConflictException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  UnauthorizedException,
+  ConflictException,
+  BadRequestException,
+  ServiceUnavailableException,
+  Logger,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { MailService } from '../mail/mail.service';
 import * as bcrypt from 'bcrypt';
+import { randomBytes, randomInt, createHash, timingSafeEqual } from 'crypto';
 import { RegisterDto, LoginDto, GoogleAuthDto } from './dto/auth.dto';
 import { UserRole } from '@prisma/client';
+import { frontendUrl } from '../common/config/env';
+import { RateLimitService } from '../common/services/rate-limit.service';
+
+// OAuth client IDs are public identifiers (they ship in the frontend), not secrets.
+const DEFAULT_GOOGLE_CLIENT_ID = '380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c.apps.googleusercontent.com';
+
+const OTP_TTL_MS = 10 * 60 * 1000;
+const OTP_MAX_ATTEMPTS = 5;
 
 @Injectable()
 export class AuthService {
-  // In-memory OTP cache (or database model)
-  private otpCache = new Map<string, { code: string; expiresAt: number }>();
+  private readonly logger = new Logger(AuthService.name);
 
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private mailService: MailService,
+    private rateLimit: RateLimitService,
   ) {}
 
-  private async verifyGoogleCredential(credential: string): Promise<{
+  private normalizeEmail(email: string): string {
+    return String(email || '').trim().toLowerCase();
+  }
+
+  /** Emails were historically stored as typed, so look them up without regard to case. */
+  private findUserByEmail(email: string) {
+    return this.prisma.user.findFirst({
+      where: { email: { equals: this.normalizeEmail(email), mode: 'insensitive' } },
+      include: { business: true },
+    });
+  }
+
+  private hashOtp(email: string, code: string): string {
+    return createHash('sha256').update(`${email}:${code}`).digest('hex');
+  }
+
+  /**
+   * A plan MUST be chosen at signup, and only real, active, publicly offered
+   * plans are accepted. There is no trial: every new store starts on the Free
+   * plan (free forever, device cap from the FREE plan row). If a paid plan was
+   * chosen it is returned as `pendingPlan` so the app can open checkout; the
+   * paid plan only becomes active in PaymentsService.applySuccessfulPayment.
+   */
+  private async resolveSignupPlan(
+    requested?: string,
+  ): Promise<{ planId: string | null; pendingPlan: string | null }> {
+    const code = String(requested || '').trim().toUpperCase();
+    const plan = code
+      ? await this.prisma.subscriptionPlan.findFirst({
+          where: { code, isActive: true, isPublic: true },
+          select: { id: true, code: true },
+        })
+      : null;
+
+    if (!plan) {
+      throw new BadRequestException({
+        statusCode: 400,
+        code: 'PLAN_REQUIRED',
+        message: code
+          ? 'The selected plan is not available. Please choose one of the listed plans.'
+          : 'Please choose a plan to create your account.',
+      });
+    }
+    if (plan.code === 'FREE') {
+      return { planId: plan.id, pendingPlan: null };
+    }
+
+    const freePlan = await this.prisma.subscriptionPlan.findUnique({
+      where: { code: 'FREE' },
+      select: { id: true },
+    });
+    return { planId: freePlan?.id ?? null, pendingPlan: plan.code };
+  }
+
+  /**
+   * Verifies a Google ID token with Google and returns the profile it vouches for.
+   * There is no fallback: if Google does not confirm the token, it is rejected.
+   */
+  async verifyGoogleCredential(credential: string): Promise<{
     email: string;
     firstName?: string;
     lastName?: string;
     picture?: string;
     sub?: string;
   }> {
-    const rawExpected = process.env.GOOGLE_CLIENT_ID || '380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c.apps.googleusercontent.com';
-    const cleanExpected = rawExpected.replace(/['"\s]/g, '').trim();
+    if (!credential || typeof credential !== 'string') {
+      throw new BadRequestException('Google credential token is required');
+    }
 
-    const isAudienceValid = (aud: any, azp?: any): boolean => {
-      if (!cleanExpected) return true;
-      const audStr = String(aud || '').replace(/['"\s]/g, '').trim();
-      const azpStr = String(azp || '').replace(/['"\s]/g, '').trim();
+    const expectedAudience = (process.env.GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID)
+      .replace(/['"\s]/g, '')
+      .trim();
 
-      return (
-        audStr === cleanExpected ||
-        azpStr === cleanExpected ||
-        audStr.startsWith('380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c') ||
-        azpStr.startsWith('380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c')
+    let data: any;
+    try {
+      // Google validates the signature and expiry before answering 200.
+      const res = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
       );
+      if (!res.ok) {
+        throw new UnauthorizedException('Invalid or expired Google authentication credential');
+      }
+      data = await res.json();
+    } catch (err: any) {
+      if (err instanceof UnauthorizedException) throw err;
+      this.logger.warn(`Google tokeninfo lookup failed: ${err?.message || err}`);
+      throw new ServiceUnavailableException('Could not reach Google to verify your sign-in. Please try again.');
+    }
+
+    if (String(data.aud || '') !== expectedAudience) {
+      this.logger.warn(`Google token audience mismatch (aud="${data.aud}")`);
+      throw new UnauthorizedException('Google token was not issued for this application.');
+    }
+
+    const issuer = String(data.iss || '');
+    if (issuer !== 'accounts.google.com' && issuer !== 'https://accounts.google.com') {
+      throw new UnauthorizedException('Invalid Google token issuer.');
+    }
+
+    if (!data.email || String(data.email_verified) !== 'true') {
+      throw new UnauthorizedException('Your Google account email is not verified.');
+    }
+
+    return {
+      email: String(data.email).toLowerCase().trim(),
+      firstName: data.given_name || (data.name ? data.name.split(' ')[0] : 'Store'),
+      lastName: data.family_name || (data.name ? data.name.split(' ').slice(1).join(' ') : 'Owner'),
+      picture: data.picture,
+      sub: data.sub,
     };
-
-    // 1. Attempt verifying with Google's tokeninfo API
-    try {
-      const res = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`);
-      if (res.ok) {
-        const data = await res.json();
-        
-        // Security check: Validate audience
-        if (!isAudienceValid(data.aud, data.azp)) {
-          console.error(`Google token audience mismatch. Received aud="${data.aud}", azp="${data.azp}", expected="${cleanExpected}"`);
-          throw new BadRequestException('Google token audience mismatch. Unauthorized application.');
-        }
-
-        if (data.email) {
-          return {
-            email: data.email.toLowerCase().trim(),
-            firstName: data.given_name || (data.name ? data.name.split(' ')[0] : 'Store'),
-            lastName: data.family_name || (data.name ? data.name.split(' ').slice(1).join(' ') : 'Owner'),
-            picture: data.picture,
-            sub: data.sub,
-          };
-        }
-      }
-    } catch (err: any) {
-      if (err instanceof BadRequestException) throw err;
-      console.warn('Google tokeninfo API lookup failed, trying fallback decode:', err);
-    }
-
-    // 2. Fallback: Parse standard JWT payload if base64 encoded
-    try {
-      const parts = credential.split('.');
-      if (parts.length === 3) {
-        const payloadJson = Buffer.from(parts[1], 'base64').toString('utf-8');
-        const payload = JSON.parse(payloadJson);
-
-        if (!isAudienceValid(payload.aud, payload.azp)) {
-          throw new BadRequestException('Google token audience mismatch.');
-        }
-
-        if (payload.email) {
-          return {
-            email: payload.email.toLowerCase().trim(),
-            firstName: payload.given_name || (payload.name ? payload.name.split(' ')[0] : 'Store'),
-            lastName: payload.family_name || (payload.name ? payload.name.split(' ').slice(1).join(' ') : 'Owner'),
-            picture: payload.picture,
-            sub: payload.sub,
-          };
-        }
-      }
-    } catch (err: any) {
-      if (err instanceof BadRequestException) throw err;
-      console.warn('Failed to parse JWT payload:', err);
-    }
-
-    throw new BadRequestException('Invalid or expired Google authentication credential');
   }
 
   async googleAuth(dto: GoogleAuthDto) {
@@ -102,17 +151,16 @@ export class AuthService {
     }
 
     const googleProfile = await this.verifyGoogleCredential(dto.credential);
-    const email = (dto.email || googleProfile.email).toLowerCase();
+    // The email comes only from the token Google verified, never from the request body.
+    const email = googleProfile.email;
     const firstName = dto.firstName || googleProfile.firstName || 'Store';
     const lastName = dto.lastName || googleProfile.lastName || 'Owner';
 
     // Check if user already exists
-    let user = await this.prisma.user.findUnique({
-      where: { email },
-      include: { business: true },
-    });
+    let user = await this.findUserByEmail(email);
 
     if (!user) {
+      const signupPlan = await this.resolveSignupPlan(dto.plan);
       // Create new user and business workspace
       const storeName = dto.businessName?.trim() || `${firstName}'s Store`;
       let slug = storeName.toLowerCase().replace(/[^a-z0-9]/g, '-');
@@ -121,20 +169,17 @@ export class AuthService {
         slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
       }
 
-      const randomPassword = Math.random().toString(36).slice(-12) + '!A1';
+      const randomPassword = randomBytes(24).toString('base64url');
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
-
-      const trialEndsAt = new Date();
-      trialEndsAt.setDate(trialEndsAt.getDate() + 14);
 
       const business = await this.prisma.business.create({
         data: {
           name: storeName,
           slug,
           phone: dto.phone,
-          plan: (dto.plan || 'STARTER').toUpperCase(),
-          subscriptionStatus: 'TRIAL',
-          trialEndsAt,
+          plan: 'FREE',
+          planId: signupPlan.planId,
+          subscriptionStatus: 'FREE',
           users: {
             create: {
               email,
@@ -173,6 +218,7 @@ export class AuthService {
           },
         },
         isNewUser: true,
+        pendingPlan: signupPlan.pendingPlan,
         ...tokens,
       };
     }
@@ -194,13 +240,18 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const existingUser = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-    });
+    const email = this.normalizeEmail(dto.email);
+
+    // The address must have been confirmed with a one-time code first.
+    this.assertEmailVerified(email, dto.emailVerificationToken);
+
+    const existingUser = await this.findUserByEmail(email);
 
     if (existingUser) {
       throw new ConflictException('Email already registered');
     }
+
+    const signupPlan = await this.resolveSignupPlan(dto.plan);
 
     let slug = dto.businessName.toLowerCase().replace(/[^a-z0-9]/g, '-');
     const existingBusiness = await this.prisma.business.findUnique({ where: { slug } });
@@ -210,20 +261,17 @@ export class AuthService {
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    const trialEndsAt = new Date();
-    trialEndsAt.setDate(trialEndsAt.getDate() + 14);
-
     const business = await this.prisma.business.create({
       data: {
         name: dto.businessName,
         slug,
         phone: dto.phone,
-        plan: (dto.plan || 'STARTER').toUpperCase(),
-        subscriptionStatus: 'TRIAL',
-        trialEndsAt,
+        plan: 'FREE',
+        planId: signupPlan.planId,
+        subscriptionStatus: 'FREE',
         users: {
           create: {
-            email: dto.email,
+            email,
             password: hashedPassword,
             firstName: dto.firstName,
             lastName: dto.lastName,
@@ -258,15 +306,19 @@ export class AuthService {
           plan: business.plan,
         },
       },
+      pendingPlan: signupPlan.pendingPlan,
       ...tokens,
     };
   }
 
   async login(dto: LoginDto) {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
-      include: { business: true },
-    });
+    const email = this.normalizeEmail(dto.email);
+
+    // Per-account limit, on top of the per-IP limit on the route, so one account
+    // cannot be guessed at from many addresses.
+    await this.rateLimit.hit(`login:email:${email}`, 10, 15 * 60);
+
+    const user = await this.findUserByEmail(email);
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
@@ -293,28 +345,10 @@ export class AuthService {
   }
 
   private async generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
-    
-    const accessToken = this.jwtService.sign(payload);
-    const refreshToken = this.jwtService.sign(payload, {
-      secret: process.env.JWT_REFRESH_SECRET || 'super-secret-verifyflow-refresh-key-change-in-production',
-      expiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
-    });
-
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-
-    await this.prisma.refreshToken.create({
-      data: {
-        token: refreshToken,
-        userId,
-        expiresAt,
-      },
-    });
-
+    // Refresh tokens were being stored on every login but nothing ever consumed
+    // or revoked them, so only the access token is issued.
     return {
-      accessToken,
-      refreshToken,
+      accessToken: this.jwtService.sign({ sub: userId, email }),
     };
   }
 
@@ -323,9 +357,10 @@ export class AuthService {
       throw new BadRequestException('Email address is required');
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { email: email.trim().toLowerCase() },
-    });
+    const cleanEmail = this.normalizeEmail(email);
+    await this.rateLimit.hit(`forgot:email:${cleanEmail}`, 3, 60 * 60);
+
+    const user = await this.findUserByEmail(cleanEmail);
 
     if (!user) {
       // For security reasons, respond with success message
@@ -340,15 +375,18 @@ export class AuthService {
       { expiresIn: '1h' }
     );
 
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+    const resetUrl = `${frontendUrl()}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
-    // Dispatch real email via Resend
-    await this.mailService.sendPasswordResetEmail(user.email, resetUrl, user.firstName);
+    // The link goes to the account's inbox only. It must never be returned in the
+    // API response, otherwise anyone could reset anyone's password.
+    try {
+      await this.mailService.sendPasswordResetEmail(user.email, resetUrl, user.firstName);
+    } catch (err: any) {
+      this.logger.error(`Failed to send password reset email: ${err?.message || err}`);
+    }
 
     return {
       message: 'If an account is associated with this email address, password reset instructions have been sent.',
-      resetUrl, // Provided for developer preview
-      resetToken,
     };
   }
 
@@ -357,15 +395,28 @@ export class AuthService {
       throw new BadRequestException('Email address is required');
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-    // Generate random 6-digit OTP
-    const code = Math.floor(100000 + Math.random() * 900000).toString();
-    const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
+    const cleanEmail = this.normalizeEmail(email);
+    await this.rateLimit.hit(`otp-send:email:${cleanEmail}`, 3, 10 * 60);
 
-    this.otpCache.set(cleanEmail, { code, expiresAt });
+    const code = randomInt(100000, 1000000).toString();
 
-    // Send email via Resend
-    const res = await this.mailService.sendOtpEmail(cleanEmail, code, fullName);
+    // Only a hash is stored; a new code replaces any earlier one for this address.
+    await this.prisma.emailOtp.upsert({
+      where: { email: cleanEmail },
+      create: {
+        email: cleanEmail,
+        codeHash: this.hashOtp(cleanEmail, code),
+        expiresAt: new Date(Date.now() + OTP_TTL_MS),
+      },
+      update: {
+        codeHash: this.hashOtp(cleanEmail, code),
+        expiresAt: new Date(Date.now() + OTP_TTL_MS),
+        attempts: 0,
+        createdAt: new Date(),
+      },
+    });
+
+    await this.mailService.sendOtpEmail(cleanEmail, code, fullName);
 
     return {
       success: true,
@@ -378,26 +429,66 @@ export class AuthService {
       throw new BadRequestException('Email and verification code are required');
     }
 
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanCode = code.trim();
+    const cleanEmail = this.normalizeEmail(email);
+    const cleanCode = String(code).trim();
 
-    const cached = this.otpCache.get(cleanEmail);
-    if (!cached) {
+    const pending = await this.prisma.emailOtp.findUnique({ where: { email: cleanEmail } });
+    if (!pending) {
       throw new BadRequestException('Verification code has expired or was not requested. Please request a new code.');
     }
 
-    if (Date.now() > cached.expiresAt) {
-      this.otpCache.delete(cleanEmail);
+    if (pending.expiresAt.getTime() < Date.now()) {
+      await this.prisma.emailOtp.delete({ where: { email: cleanEmail } }).catch(() => {});
       throw new BadRequestException('Verification code has expired. Please request a new one.');
     }
 
-    if (cached.code !== cleanCode) {
-      throw new BadRequestException('Invalid 6-digit verification code. Please check your email and try again.');
+    if (pending.attempts >= OTP_MAX_ATTEMPTS) {
+      await this.prisma.emailOtp.delete({ where: { email: cleanEmail } }).catch(() => {});
+      throw new BadRequestException('Too many incorrect attempts. Please request a new code.');
     }
 
-    // OTP Verified successfully
-    this.otpCache.delete(cleanEmail);
-    return { success: true, verified: true };
+    const expected = Buffer.from(pending.codeHash, 'hex');
+    const given = Buffer.from(this.hashOtp(cleanEmail, cleanCode), 'hex');
+    const matches = expected.length === given.length && timingSafeEqual(expected, given);
+
+    if (!matches) {
+      await this.prisma.emailOtp.update({
+        where: { email: cleanEmail },
+        data: { attempts: { increment: 1 } },
+      });
+      const left = OTP_MAX_ATTEMPTS - (pending.attempts + 1);
+      throw new BadRequestException(
+        left > 0
+          ? `Invalid verification code. ${left} attempt${left === 1 ? '' : 's'} left.`
+          : 'Too many incorrect attempts. Please request a new code.',
+      );
+    }
+
+    // A code works once.
+    await this.prisma.emailOtp.delete({ where: { email: cleanEmail } }).catch(() => {});
+
+    // Signup must present this token, proving the address was confirmed.
+    const emailVerificationToken = this.jwtService.sign(
+      { type: 'email_verified', email: cleanEmail },
+      { expiresIn: '30m' },
+    );
+
+    return { success: true, verified: true, emailVerificationToken };
+  }
+
+  private assertEmailVerified(email: string, token?: string) {
+    if (!token) {
+      throw new BadRequestException('Please verify your email address with the code we sent you before creating an account.');
+    }
+    let payload: any;
+    try {
+      payload = this.jwtService.verify(token);
+    } catch {
+      throw new BadRequestException('Your email verification has expired. Please request a new code.');
+    }
+    if (payload?.type !== 'email_verified' || payload.email !== email) {
+      throw new BadRequestException('Email verification does not match this address. Please verify again.');
+    }
   }
 
   async resetPassword(token: string, newPassword: string) {
@@ -405,8 +496,8 @@ export class AuthService {
       throw new BadRequestException('Reset token and new password are required');
     }
 
-    if (newPassword.length < 6) {
-      throw new BadRequestException('Password must be at least 6 characters long');
+    if (newPassword.length < 8) {
+      throw new BadRequestException('Password must be at least 8 characters long');
     }
 
     let payload: any;
@@ -446,8 +537,8 @@ export class AuthService {
       updateData.lastName = data.lastName.trim();
     }
     if (data.password && data.password.trim()) {
-      if (data.password.length < 6) {
-        throw new BadRequestException('Password must be at least 6 characters long');
+      if (data.password.length < 8) {
+        throw new BadRequestException('Password must be at least 8 characters long');
       }
       updateData.password = await bcrypt.hash(data.password, 10);
     }

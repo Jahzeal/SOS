@@ -24,7 +24,7 @@ interface AuthContextType {
   token: string | null;
   isLoading: boolean;
   login: (email: string, pass: string) => Promise<void>;
-  register: (payload: any) => Promise<void>;
+  register: (payload: any) => Promise<{ pendingPlan?: string | null }>;
   logout: () => void;
 }
 
@@ -71,6 +71,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(res.user);
     localStorage.setItem('vf_access_token', res.accessToken);
     localStorage.setItem('vf_user', JSON.stringify(res.user));
+    return { pendingPlan: res.pendingPlan ?? null };
   };
 
   const logout = () => {

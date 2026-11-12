@@ -227,7 +227,7 @@ Thank you for your business!`;
                 <h3 className="font-extrabold text-base text-slate-900 truncate">
                   Share {docLabel}
                 </h3>
-                <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-mono text-[10px] font-bold">
+                <span className="px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 font-mono text-xs font-bold">
                   #{doc.docNumber}
                 </span>
               </div>
@@ -297,7 +297,7 @@ Thank you for your business!`;
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
                   <span>Customer WhatsApp Number</span>
-                  <span className="text-[11px] font-normal text-slate-400">e.g. 08012345678 or 2348012345678</span>
+                  <span className="text-xs font-normal text-slate-400">e.g. 08012345678 or 2348012345678</span>
                 </label>
                 <div className="relative">
                   <Smartphone className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
@@ -336,6 +336,7 @@ Thank you for your business!`;
                   <div className="grid grid-cols-2 gap-2.5">
                     <a
                       href={getPdfDownloadUrl()}
+              onClick={(e) => api.handlePdfLinkClick(e, getPdfDownloadUrl(), getPdfFilename())}
                       download={getPdfFilename()}
                       className="py-3 px-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition shadow-sm cursor-pointer"
                     >
@@ -356,8 +357,8 @@ Thank you for your business!`;
               </div>
 
               {/* Message Preview */}
-              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-[11px] text-slate-600 space-y-1">
-                <span className="font-extrabold text-slate-800 uppercase tracking-wider text-[10px] block">
+              <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 space-y-1">
+                <span className="font-extrabold text-slate-800 uppercase tracking-wider text-xs block">
                   WhatsApp Message Preview
                 </span>
                 <p className="whitespace-pre-line text-slate-600 font-mono text-[10.5px] leading-relaxed max-h-24 overflow-y-auto">
@@ -386,7 +387,7 @@ Thank you for your business!`;
 
               <div className="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-100 text-xs text-blue-900 space-y-1">
                 <p className="font-bold">Official PDF Delivery Notice:</p>
-                <p className="text-[11px] text-blue-800 leading-relaxed font-sans">
+                <p className="text-xs text-blue-800 leading-relaxed font-sans">
                   The recipient will receive an email containing their official formatted A4 statement attached as a PDF document ({getPdfFilename()}).
                 </p>
               </div>
@@ -424,6 +425,7 @@ Thank you for your business!`;
 
             <a
               href={getPdfDownloadUrl()}
+              onClick={(e) => api.handlePdfLinkClick(e, getPdfDownloadUrl(), getPdfFilename())}
               target="_blank"
               rel="noopener noreferrer"
               download={getPdfFilename()}

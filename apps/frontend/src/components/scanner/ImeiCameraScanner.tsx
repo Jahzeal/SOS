@@ -405,7 +405,7 @@ export function ImeiCameraScanner({
             {/* Real-time Guidance Banner */}
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-max max-w-[90%]">
               <div
-                className={`px-3 py-1.5 rounded-full text-[11px] font-extrabold shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-1.5 ${
+                className={`px-3 py-1.5 rounded-full text-xs font-extrabold shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-1.5 ${
                   cameraGuidance.type === 'dark'
                     ? 'bg-amber-500 text-slate-950 animate-pulse border border-amber-300'
                     : cameraGuidance.type === 'warning'
@@ -421,10 +421,10 @@ export function ImeiCameraScanner({
 
             {/* SCANNER OVERLAY RETICLE FRAME */}
             <div ref={reticleRef} className="scanner-overlay-reticle flex flex-col items-center justify-between p-2">
-              <span className="text-[10px] uppercase tracking-widest font-extrabold text-emerald-400 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shadow-sm">
+              <span className="text-xs uppercase tracking-widest font-extrabold text-emerald-400 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shadow-sm">
                 Scan Barcode / Label
               </span>
-              <span className="text-[9px] font-semibold text-slate-200 bg-slate-950/70 px-2 py-0.5 rounded-full">
+              <span className="text-xs font-semibold text-slate-200 bg-slate-950/70 px-2 py-0.5 rounded-full">
                 ALIGN 15-DIGIT IMEI OR SERIAL NUMBER (S/N)
               </span>
               {!isCameraFrozen && <div className="scanner-overlay-laser" />}
@@ -457,7 +457,7 @@ export function ImeiCameraScanner({
                       left: `${pill.leftPct}%`,
                       top: `${pill.topPct}%`,
                     }}
-                    className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full transition-all duration-200 transform hover:scale-110 flex items-center gap-1 text-[11px] font-mono font-black border shadow-2xl ${
+                    className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full transition-all duration-200 transform hover:scale-110 flex items-center gap-1 text-xs font-mono font-black border shadow-2xl ${
                       pill.type === 'IMEI'
                         ? 'bg-emerald-600 text-white border-emerald-300 ring-4 ring-emerald-400/70 shadow-emerald-600/60 animate-bounce z-40'
                         : 'bg-blue-600 text-white border-blue-300 ring-4 ring-blue-400/70 shadow-blue-600/50 z-30'
@@ -472,7 +472,7 @@ export function ImeiCameraScanner({
           </div>
 
           {/* Captured details & Actions */}
-          <div className="flex items-center justify-between gap-2 pt-1 text-[11px] text-slate-500 font-medium">
+          <div className="flex items-center justify-between gap-2 pt-1 text-xs text-slate-500 font-medium">
             {isCameraFrozen ? (
               <div className="flex items-center gap-2 w-full">
                 <button

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect } from 'react';
 import {
   AlertTriangle,
@@ -70,7 +72,7 @@ export default function AdminErrorsPage() {
   };
 
   const handleClearAll = async () => {
-    if (!window.confirm('Are you sure you want to clear all recorded error logs?')) return;
+    if (!await confirmDialog('Are you sure you want to clear all recorded error logs?')) return;
     try {
       await api.clearAllErrorLogs();
       setActionSuccess('All error logs cleared.');
@@ -78,7 +80,7 @@ export default function AdminErrorsPage() {
       fetchLogs();
       setTimeout(() => setActionSuccess(null), 3000);
     } catch (err: any) {
-      alert('Failed to clear logs: ' + err.message);
+      notify('Failed to clear logs: ' + err.message);
     }
   };
 
@@ -92,7 +94,7 @@ export default function AdminErrorsPage() {
       setActionSuccess('Log entry deleted.');
       setTimeout(() => setActionSuccess(null), 3000);
     } catch (err: any) {
-      alert('Failed to delete log: ' + err.message);
+      notify('Failed to delete log: ' + err.message);
     }
   };
 
@@ -193,7 +195,7 @@ ${log.stack || 'No stack trace captured'}
             <AlertCircle className="w-4 h-4 text-slate-400" />
           </div>
           <p className="text-2xl font-black text-slate-900">{stats.totalErrors}</p>
-          <p className="text-[11px] text-slate-400 font-medium">Recorded exception events</p>
+          <p className="text-xs text-slate-400 font-medium">Recorded exception events</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-rose-50/50 border border-rose-200/80 shadow-xs space-y-1">
@@ -202,7 +204,7 @@ ${log.stack || 'No stack trace captured'}
             <ShieldAlert className="w-4 h-4 text-rose-600" />
           </div>
           <p className="text-2xl font-black text-rose-700">{stats.serverErrors500}</p>
-          <p className="text-[11px] text-rose-600/80 font-medium">Internal server / unhandled errors</p>
+          <p className="text-xs text-rose-600/80 font-medium">Internal server / unhandled errors</p>
         </div>
 
         <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/80 shadow-xs space-y-1">
@@ -211,7 +213,7 @@ ${log.stack || 'No stack trace captured'}
             <AlertTriangle className="w-4 h-4 text-amber-600" />
           </div>
           <p className="text-2xl font-black text-amber-700">{stats.clientErrors400}</p>
-          <p className="text-[11px] text-amber-600/80 font-medium">Bad requests, 404s, or conflicts</p>
+          <p className="text-xs text-amber-600/80 font-medium">Bad requests, 404s, or conflicts</p>
         </div>
       </div>
 
@@ -238,7 +240,7 @@ ${log.stack || 'No stack trace captured'}
 
         {/* Filter Pills */}
         <div className="flex flex-wrap items-center gap-1.5 pt-1 text-xs">
-          <span className="text-[11px] font-bold text-slate-400 mr-1 flex items-center gap-1">
+          <span className="text-xs font-bold text-slate-400 mr-1 flex items-center gap-1">
             <Filter className="w-3 h-3" /> Status:
           </span>
           <button
@@ -294,7 +296,7 @@ ${log.stack || 'No stack trace captured'}
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-extrabold text-[10px]">
+              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider font-extrabold text-xs">
                 <tr>
                   <th className="py-3 px-4">Time</th>
                   <th className="py-3 px-4">HTTP & Route</th>
@@ -319,13 +321,13 @@ ${log.stack || 'No stack trace captured'}
                       onClick={() => setSelectedLog(log)}
                       className="hover:bg-slate-50/80 transition-colors cursor-pointer group"
                     >
-                      <td className="py-3 px-4 whitespace-nowrap text-slate-500 font-mono text-[11px]">
+                      <td className="py-3 px-4 whitespace-nowrap text-slate-500 font-mono text-xs">
                         {dateStr}
                       </td>
 
                       <td className="py-3 px-4 whitespace-nowrap">
                         <div className="flex items-center gap-1.5 font-mono">
-                          <span className={`px-1.5 py-0.5 rounded text-[10px] font-black ${
+                          <span className={`px-1.5 py-0.5 rounded text-xs font-black ${
                             log.method === 'POST' ? 'bg-blue-100 text-blue-800' :
                             log.method === 'GET' ? 'bg-emerald-100 text-emerald-800' :
                             log.method === 'DELETE' ? 'bg-rose-100 text-rose-800' :
@@ -340,7 +342,7 @@ ${log.stack || 'No stack trace captured'}
                       </td>
 
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <span className={`px-2 py-0.5 rounded-md font-extrabold text-[11px] ${
+                        <span className={`px-2 py-0.5 rounded-md font-extrabold text-xs ${
                           is500 ? 'bg-rose-100 text-rose-800 border border-rose-200' : 'bg-amber-100 text-amber-800 border border-amber-200'
                         }`}>
                           {log.statusCode || 500}
@@ -407,7 +409,7 @@ ${log.stack || 'No stack trace captured'}
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-mono text-xs font-black text-slate-900">{selectedLog.method || 'GET'} {selectedLog.endpoint}</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-black ${
+                    <span className={`px-2 py-0.5 rounded text-xs font-black ${
                       (selectedLog.statusCode || 500) >= 500 ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'
                     }`}>
                       HTTP {selectedLog.statusCode || 500}
@@ -433,13 +435,13 @@ ${log.stack || 'No stack trace captured'}
               {/* Error Message Card */}
               <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200/90 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-extrabold text-rose-950 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
+                  <span className="font-extrabold text-rose-950 uppercase tracking-wider text-xs flex items-center gap-1.5">
                     <AlertTriangle className="w-4 h-4 text-rose-600" />
                     <span>{selectedLog.errorType || 'Error Exception'}</span>
                   </span>
                   <button
                     onClick={() => copyToClipboard(selectedLog.message, 'message')}
-                    className="text-[11px] font-bold text-rose-700 hover:underline flex items-center gap-1"
+                    className="text-xs font-bold text-rose-700 hover:underline flex items-center gap-1"
                   >
                     {copiedField === 'message' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
                     <span>{copiedField === 'message' ? 'Copied' : 'Copy Message'}</span>
@@ -453,11 +455,11 @@ ${log.stack || 'No stack trace captured'}
               {/* Context Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-600">
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">User Context</span>
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">User Context</span>
                   <p className="font-bold text-slate-900 font-mono text-xs">{selectedLog.userEmail || 'Anonymous / Unauthenticated'}</p>
                 </div>
                 <div className="p-3 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">Business Store ID</span>
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-slate-400">Business Store ID</span>
                   <p className="font-bold text-slate-900 font-mono text-xs truncate">{selectedLog.businessId || 'N/A'}</p>
                 </div>
               </div>
@@ -472,7 +474,7 @@ ${log.stack || 'No stack trace captured'}
                   {selectedLog.stack && (
                     <button
                       onClick={() => copyToClipboard(selectedLog.stack, 'stack')}
-                      className="text-[11px] font-bold text-teal-600 hover:underline flex items-center gap-1"
+                      className="text-xs font-bold text-teal-600 hover:underline flex items-center gap-1"
                     >
                       {copiedField === 'stack' ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
                       <span>{copiedField === 'stack' ? 'Copied Stack' : 'Copy Stack'}</span>
@@ -480,7 +482,7 @@ ${log.stack || 'No stack trace captured'}
                   )}
                 </div>
 
-                <div className="p-4 rounded-2xl bg-slate-950 text-slate-200 font-mono text-[11px] leading-relaxed overflow-x-auto max-h-[220px] shadow-inner border border-slate-800">
+                <div className="p-4 rounded-2xl bg-slate-950 text-slate-200 font-mono text-xs leading-relaxed overflow-x-auto max-h-[220px] shadow-inner border border-slate-800">
                   <pre className="whitespace-pre-wrap break-words">{selectedLog.stack || 'No stack trace captured.'}</pre>
                 </div>
               </div>

@@ -1,9 +1,12 @@
-import { Controller, Post, Get, Body, Query } from '@nestjs/common';
+import { Controller, Post, Get, Body, Query, UseGuards } from '@nestjs/common';
+import { RateLimit, RateLimitGuard } from '../common/guards/rate-limit.guard';
 import { DeviceLookupService } from './device-lookup.service';
 import { LookupDeviceDto } from './dto/lookup-device.dto';
 import { NormalizedLookupResponse } from './interfaces/device-lookup-provider.interface';
 
 @Controller('devices')
+@UseGuards(RateLimitGuard)
+@RateLimit({ name: 'device-lookup', limit: 30, windowSeconds: 60 })
 export class DeviceLookupController {
   constructor(private readonly lookupService: DeviceLookupService) {}
 

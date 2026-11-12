@@ -2,11 +2,13 @@ import { Controller, Get, Post, Patch, Delete, Body, Param, Query, UseGuards, Re
 import { PhonesService } from './phones.service';
 import { DeviceLookupService } from './device-lookup.service';
 import { RegisterPhoneDto } from './dto/register-phone.dto';
+import { UpdatePhoneDto, FlagStolenDto } from './dto/update-phone.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { PhoneStatus } from '@prisma/client';
 
 @Controller('phones')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
 export class PhonesController {
   constructor(
     private readonly phonesService: PhonesService,
@@ -70,13 +72,13 @@ export class PhonesController {
   }
 
   @Patch(':id')
-  async update(@Request() req, @Param('id') id: string, @Body() dto: any) {
+  async update(@Request() req, @Param('id') id: string, @Body() dto: UpdatePhoneDto) {
     const businessId = req.user.businessId;
     return this.phonesService.update(businessId, id, dto);
   }
 
   @Patch(':id/flag-stolen')
-  async flagStolen(@Request() req, @Param('id') id: string, @Body() dto: any) {
+  async flagStolen(@Request() req, @Param('id') id: string, @Body() dto: FlagStolenDto) {
     const businessId = req.user.businessId;
     return this.phonesService.flagAsStolen(businessId, id, dto);
   }

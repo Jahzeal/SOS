@@ -29,6 +29,7 @@ export function SubscriptionPaywallModal() {
     closePaywall,
     selectedPlan,
     formattedTrialEndDate,
+    isLegacyTrial,
     paywallContextAction,
     switchToFreePlan,
     refreshSubscription,
@@ -165,7 +166,7 @@ export function SubscriptionPaywallModal() {
         setSuccessDowngrade(true);
         await refreshSubscription();
       } else {
-        setErrorMessage('Failed to switch to Free Basic plan. Please try again.');
+        setErrorMessage('Could not switch to the Free plan. Please try again.');
       }
     } catch (err: any) {
       setErrorMessage(err.message || 'An error occurred while switching to the Free plan.');
@@ -193,17 +194,26 @@ export function SubscriptionPaywallModal() {
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[11px] font-extrabold uppercase tracking-wider mb-2.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-extrabold uppercase tracking-wider mb-2.5">
                 <Clock className="w-3.5 h-3.5" />
-                <span>14-Day Free Trial Ended</span>
+                <span>{isLegacyTrial ? 'Trial Ended' : 'Plan Expired'}</span>
               </div>
 
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                 Pay for your {planName} Plan
               </h2>
               <p className="text-xs text-slate-300 font-medium mt-1 leading-relaxed">
-                Your 14-day free trial of the <strong className="text-teal-300">{planName} Plan</strong> ended on{' '}
-                <strong className="text-amber-200">{formattedTrialEndDate}</strong>. Pay for your selected plan {getActionReason()}, or continue with the Free Basic Plan.
+                {isLegacyTrial ? (
+                  <>
+                    Your trial of the <strong className="text-teal-300">{planName} Plan</strong> ended on{' '}
+                    <strong className="text-amber-200">{formattedTrialEndDate}</strong>.
+                  </>
+                ) : (
+                  <>
+                    Your <strong className="text-teal-300">{planName} Plan</strong> is no longer active.
+                  </>
+                )}{' '}
+                Pay for the plan {getActionReason()}, or move to the Free plan (free forever, up to 10 devices).
               </p>
             </div>
 
@@ -255,7 +265,7 @@ export function SubscriptionPaywallModal() {
                     >
                       <span>Annual Billing</span>
                       {savingsNgn > 0 && (
-                        <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-[9px] bg-teal-100 text-teal-800 font-extrabold">
+                        <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-xs bg-teal-100 text-teal-800 font-extrabold">
                           Save ₦{savingsNgn.toLocaleString()}
                         </span>
                       )}
@@ -266,8 +276,8 @@ export function SubscriptionPaywallModal() {
                   <div className="p-4 bg-teal-50/40 border-2 border-teal-200/90 rounded-2xl space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] font-black uppercase text-teal-800 bg-teal-100/90 px-2 py-0.5 rounded tracking-wider">
-                          Selected At Registration
+                        <span className="text-xs font-black uppercase text-teal-800 bg-teal-100/90 px-2 py-0.5 rounded tracking-wider">
+                          Your Plan
                         </span>
                         <h3 className="text-base font-extrabold text-slate-900 mt-1">{planName} Plan</h3>
                       </div>
@@ -275,13 +285,13 @@ export function SubscriptionPaywallModal() {
                         <div className="text-xl font-black text-slate-900 font-mono">
                           ₦{currentPrice.toLocaleString()}
                         </div>
-                        <div className="text-[10px] font-bold text-slate-500">
+                        <div className="text-xs font-bold text-slate-500">
                           /{billingCycle === 'ANNUAL' ? 'year' : 'month'}
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-teal-100 grid grid-cols-2 gap-2 text-[11px] text-slate-700 font-medium">
+                    <div className="pt-2 border-t border-teal-100 grid grid-cols-2 gap-2 text-xs text-slate-700 font-medium">
                       <div className="flex items-center gap-1.5">
                         <Check className="w-3.5 h-3.5 text-teal-600 shrink-0" />
                         <span>{selectedPlan.maxDevices ? `${selectedPlan.maxDevices.toLocaleString()} Devices Limit` : 'Unlimited Devices'}</span>
@@ -334,7 +344,7 @@ export function SubscriptionPaywallModal() {
                       )}
                     </button>
 
-                    {/* Secondary Option: Learn & Continue with Free Basic */}
+                    {/* Secondary Option: Learn about and use the Free plan */}
                     <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-2">
                       <button
                         type="button"
@@ -344,10 +354,10 @@ export function SubscriptionPaywallModal() {
                         }}
                         className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
                       >
-                        <span>Continue with Free Basic Plan →</span>
+                        <span>Use the Free plan →</span>
                       </button>
-                      <span className="text-[10px] text-slate-400 font-medium text-center">
-                        See what Free Basic includes & limits before deciding.
+                      <span className="text-xs text-slate-400 font-medium text-center">
+                        See what the Free plan includes and its limits before deciding.
                       </span>
                     </div>
 
@@ -356,14 +366,14 @@ export function SubscriptionPaywallModal() {
                       <Link
                         href="/dashboard/settings?tab=subscription"
                         onClick={closePaywall}
-                        className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline inline-flex items-center gap-1"
+                        className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline inline-flex items-center gap-1"
                       >
                         <span>Need a different tier? Explore All Plans</span>
                         <ChevronRight className="w-3 h-3" />
                       </Link>
                     </div>
 
-                    <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 font-medium pt-1">
+                    <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium pt-1">
                       <Lock className="w-3 h-3 text-slate-400" />
                       <span>Secured 256-bit encrypted checkout powered by Paystack</span>
                     </div>
@@ -390,16 +400,16 @@ export function SubscriptionPaywallModal() {
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-[11px] font-extrabold uppercase tracking-wider mb-2.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-xs font-extrabold uppercase tracking-wider mb-2.5">
                 <Gift className="w-3.5 h-3.5" />
-                <span>Free Basic Plan Overview</span>
+                <span>Free Plan Overview</span>
               </div>
 
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                What the Free Basic Plan Offers
+                What the Free Plan Offers
               </h2>
               <p className="text-xs text-slate-300 font-medium mt-1 leading-relaxed">
-                Review what is included and the limits before switching your store to the Free Basic tier.
+                Review what is included and the limits before switching your store to the Free plan. It is free forever.
               </p>
             </div>
 
@@ -412,9 +422,9 @@ export function SubscriptionPaywallModal() {
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-extrabold text-slate-900">Free Basic Plan Active!</h3>
+                    <h3 className="text-xl font-extrabold text-slate-900">Free Plan Active!</h3>
                     <p className="text-xs text-slate-500 font-medium mt-1">
-                      Your store has been switched to the <strong>Free Basic</strong> tier. All your past records, devices, and receipts remain safe.
+                      Your store has been switched to the <strong>Free</strong> plan. All your past records, devices, and receipts remain safe.
                     </p>
                   </div>
                   <button
@@ -431,7 +441,7 @@ export function SubscriptionPaywallModal() {
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-teal-600 animate-pulse" />
                       <span className="text-xs font-extrabold uppercase tracking-wider text-teal-900">
-                        Included in Free Basic:
+                        Included in the Free plan:
                       </span>
                     </div>
 
@@ -439,7 +449,7 @@ export function SubscriptionPaywallModal() {
                       <div className="flex items-start gap-2">
                         <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
                         <div>
-                          <strong className="text-slate-900">Up to 25 Devices / Month:</strong>
+                          <strong className="text-slate-900">Up to 10 Devices:</strong>
                           <span className="text-slate-600"> Full IMEI & SKU inventory tracking.</span>
                         </div>
                       </div>
@@ -479,10 +489,10 @@ export function SubscriptionPaywallModal() {
                       </span>
                     </div>
 
-                    <div className="space-y-1.5 text-[11px] text-slate-600">
+                    <div className="space-y-1.5 text-xs text-slate-600">
                       <div className="flex items-center gap-2">
                         <XCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
-                        <span>High-volume device additions (&gt; 25/month)</span>
+                        <span>More than 10 devices in your stock records</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <XCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
@@ -520,12 +530,12 @@ export function SubscriptionPaywallModal() {
                       {isDowngrading ? (
                         <>
                           <RefreshCw className="w-4 h-4 animate-spin" />
-                          <span>Switching to Free Basic...</span>
+                          <span>Switching to the Free plan...</span>
                         </>
                       ) : (
                         <>
                           <Check className="w-4 h-4" />
-                          <span>Confirm & Switch to Free Basic Plan</span>
+                          <span>Confirm & Switch to the Free Plan</span>
                         </>
                       )}
                     </button>

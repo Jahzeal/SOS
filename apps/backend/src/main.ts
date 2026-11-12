@@ -2,10 +2,13 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { PrismaService } from './prisma/prisma.service';
+import { assertRequiredEnv } from './common/config/env';
+import { corsOptions } from './common/config/cors';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, { rawBody: true });
+  assertRequiredEnv();
 
   const prismaService = app.get(PrismaService);
   app.useGlobalFilters(new AllExceptionsFilter(prismaService));
@@ -18,15 +21,7 @@ async function bootstrap() {
     }),
   );
 
-  app.enableCors({
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-      // Permissive CORS for localhost, *.vercel.app, and configured domains
-      callback(null, true);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-  });
+  app.enableCors(corsOptions);
 
   const port = process.env.PORT || 4000;
   await app.listen(port);

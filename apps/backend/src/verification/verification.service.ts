@@ -3,6 +3,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterPhoneDto } from './dto/phone-record.dto';
 import { DeviceIntelligenceService } from './device-intelligence.service';
 import { DeviceLookupService } from '../phones/device-lookup.service';
+import { maskPhone } from '../theft-reports/theft-reports.service';
+import { frontendUrl } from '../common/config/env';
+import { SubscriptionService } from '../common/services/subscription.service';
 import * as QRCode from 'qrcode';
 
 @Injectable()
@@ -11,9 +14,35 @@ export class VerificationService {
     private prisma: PrismaService,
     private deviceIntel: DeviceIntelligenceService,
     private deviceLookup: DeviceLookupService,
+    private subscriptions: SubscriptionService,
   ) {}
 
   async registerPhone(businessId: string, userId: string, dto: RegisterPhoneDto) {
+    // A device with an ACTIVE theft report must never enter stock as a normal item.
+    const ids = [dto.imei1, dto.imei2, dto.serialNumber]
+      .map((i) => (i ? String(i).trim() : ''))
+      .filter(Boolean);
+    if (ids.length > 0) {
+      const reported = await this.prisma.theftReport.findFirst({
+        where: {
+          status: 'ACTIVE',
+          OR: [
+            { imei1: { in: ids } },
+            { imei2: { in: ids } },
+            ...ids.map((id) => ({ serialNumber: { equals: id, mode: 'insensitive' as const } })),
+          ],
+        },
+        select: { id: true },
+      });
+      if (reported) {
+        throw new ConflictException(
+          'This device is listed as STOLEN in the NoxGuarda theft registry and cannot be added to inventory. Do not buy or sell it.',
+        );
+      }
+    }
+
+    await this.subscriptions.assertCanAddDevice(businessId);
+
     // Check if IMEI1 already registered under this business
     const existing = await this.prisma.phoneRecord.findFirst({
       where: {
@@ -55,7 +84,7 @@ export class VerificationService {
     });
 
     // Generate QR code data URL for public verification link
-    const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify/${record.id}`;
+    const verificationUrl = `${frontendUrl()}/verify/${record.id}`;
     let qrCodeUrl = null;
     try {
       qrCodeUrl = await QRCode.toDataURL(verificationUrl);
@@ -185,7 +214,7 @@ export class VerificationService {
   }
 
   // Public Verification Portal (No authentication required)
-  async publicVerify(identifier: string) {
+  async publicVerify(identifier: string, opts: { revealContact?: boolean } = {}) {
     const cleanId = identifier.trim();
 
     // 1. Check for Active Theft / Lost Mode Reports
@@ -238,7 +267,10 @@ export class VerificationService {
     const theftStatus = isStolen ? 'STOLEN' : 'CLEAN';
 
     const ownerMessage = activeTheftReport?.lostNote || phone?.lostNote || (isStolen ? 'This device has been flagged as stolen in the registry.' : null);
-    const contactPhone = activeTheftReport?.ownerPhone || phone?.contactPhone || null;
+    // Public page: never expose the owner's full number or email.
+    const rawContactPhone = activeTheftReport?.ownerPhone || phone?.contactPhone || null;
+    const contactPhone = opts.revealContact ? rawContactPhone : maskPhone(rawContactPhone);
+    const contactPhoneMasked = !opts.revealContact && !!rawContactPhone;
     const ownerName = activeTheftReport?.ownerName || (phone?.theftReportedBy ? 'Verified Business Reporter' : null);
     const reportedAt = activeTheftReport?.createdAt || phone?.stolenAt || null;
 
@@ -265,6 +297,7 @@ export class VerificationService {
         isStolen,
         ownerMessage,
         contactPhone,
+        contactPhoneMasked,
         ownerName,
         reportedAt,
         carrierStatus,
@@ -307,6 +340,7 @@ export class VerificationService {
       isStolen,
       ownerMessage,
       contactPhone,
+      contactPhoneMasked,
       ownerName,
       reportedAt,
       carrierStatus,

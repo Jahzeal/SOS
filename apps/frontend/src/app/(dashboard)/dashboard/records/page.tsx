@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
@@ -131,14 +133,14 @@ export default function PhoneRecordsPage() {
   };
 
   const handleClearStolen = async (rec: any) => {
-    if (!confirm(`Are you sure you want to CLEAR the stolen flag for ${rec.brand} ${rec.model} (${rec.imei1})?`)) return;
+    if (!await confirmDialog(`Are you sure you want to CLEAR the stolen flag for ${rec.brand} ${rec.model} (${rec.imei1})?`)) return;
     try {
       await api.clearPhoneStolen(rec.id);
       setActionSuccess(`Stolen flag cleared for IMEI ${rec.imei1}. Status restored to Clean.`);
       queryClient.invalidateQueries({ queryKey: ['records'] });
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
     } catch (err: any) {
-      alert(err.message || 'Failed to clear stolen flag.');
+      notify(err.message || 'Failed to clear stolen flag.');
     }
   };
 
@@ -204,7 +206,7 @@ export default function PhoneRecordsPage() {
             <Smartphone className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Registered</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Total Registered</p>
             {loading && records.length === 0 ? (
               <div className="h-6 w-14 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
             ) : (
@@ -218,7 +220,7 @@ export default function PhoneRecordsPage() {
             <Package className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">In Stock</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">In Stock</p>
             {loading && records.length === 0 ? (
               <div className="h-6 w-14 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
             ) : (
@@ -232,7 +234,7 @@ export default function PhoneRecordsPage() {
             <ShieldCheck className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Under Warranty</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Under Warranty</p>
             {loading && records.length === 0 ? (
               <div className="h-6 w-14 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
             ) : (
@@ -246,7 +248,7 @@ export default function PhoneRecordsPage() {
             <ShieldAlert className="w-5 h-5" />
           </div>
           <div>
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400">Stolen / Blacklisted</p>
+            <p className="text-xs font-bold uppercase tracking-wider text-slate-400">Stolen / Blacklisted</p>
             {loading && records.length === 0 ? (
               <div className="h-6 w-14 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
             ) : (
@@ -338,12 +340,12 @@ export default function PhoneRecordsPage() {
                         <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
                           {rec.model}
                           {isStolen && (
-                            <span className="px-1.5 py-0.5 rounded bg-rose-600 text-white font-extrabold text-[9px] uppercase tracking-wider">
+                            <span className="px-1.5 py-0.5 rounded bg-rose-600 text-white font-extrabold text-xs uppercase tracking-wider">
                               STOLEN
                             </span>
                           )}
                         </h4>
-                        <p className="text-[11px] text-slate-500 font-medium">{rec.brand} • {rec.condition}</p>
+                        <p className="text-xs text-slate-500 font-medium">{rec.brand} • {rec.condition}</p>
                       </div>
                     </div>
                     <div>
@@ -355,17 +357,17 @@ export default function PhoneRecordsPage() {
 
                   <div className="flex flex-wrap gap-1">
                     {rec.storageCapacity && (
-                      <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200/80 rounded font-bold text-[9px] text-slate-600">
+                      <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200/80 rounded font-bold text-xs text-slate-600">
                         {rec.storageCapacity}
                       </span>
                     )}
                     {rec.color && (
-                      <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200/80 rounded font-bold text-[9px] text-slate-600">
+                      <span className="px-1.5 py-0.5 bg-slate-100 border border-slate-200/80 rounded font-bold text-xs text-slate-600">
                         {rec.color}
                       </span>
                     )}
                     {rec.carrierStatus && (
-                      <span className={`px-1.5 py-0.5 rounded font-bold text-[9px] ${rec.carrierStatus === 'UNLOCKED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                      <span className={`px-1.5 py-0.5 rounded font-bold text-xs ${rec.carrierStatus === 'UNLOCKED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
                         {rec.carrierStatus === 'UNLOCKED' ? 'UNLOCKED' : `LOCKED (${rec.lockedCarrier || 'CARRIER'})`}
                       </span>
                     )}
@@ -373,8 +375,8 @@ export default function PhoneRecordsPage() {
 
                   <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
                     <div>
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">IMEI / SN</span>
-                      <div className="flex items-center gap-1 font-mono font-bold text-slate-900 text-[11px] whitespace-nowrap">
+                      <span className="text-xs text-slate-400 font-bold uppercase block">IMEI / SN</span>
+                      <div className="flex items-center gap-1 font-mono font-bold text-slate-900 text-xs whitespace-nowrap">
                         <span>{rec.imei1}</span>
                         <button onClick={() => handleCopy(rec.imei1)} title="Copy IMEI" className="text-slate-400 hover:text-slate-600">
                           <Copy className="w-3 h-3" />
@@ -382,7 +384,7 @@ export default function PhoneRecordsPage() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Price</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Price</span>
                       <span className="font-extrabold text-slate-900 text-[13px]">
                         {rec.sellingPrice != null ? `₦${rec.sellingPrice.toLocaleString()}` : '—'}
                       </span>
@@ -394,14 +396,14 @@ export default function PhoneRecordsPage() {
                       {isStolen ? (
                         <button
                           onClick={() => handleClearStolen(rec)}
-                          className="px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 font-bold text-[11px]"
+                          className="px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 font-bold text-xs"
                         >
                           Clear Stolen Flag
                         </button>
                       ) : (
                         <button
                           onClick={() => setStolenModalRecord(rec)}
-                          className="px-2.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-bold text-[11px] flex items-center gap-1"
+                          className="px-2.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-bold text-xs flex items-center gap-1"
                         >
                           <ShieldAlert className="w-3 h-3" /> Flag Stolen
                         </button>
@@ -409,7 +411,7 @@ export default function PhoneRecordsPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Link href={`/dashboard/records/${rec.id}`}>
-                        <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 font-bold text-[11px] flex items-center gap-1">
+                        <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 font-bold text-xs flex items-center gap-1">
                           <Eye className="w-3.5 h-3.5" /> Detail
                         </button>
                       </Link>
@@ -424,7 +426,7 @@ export default function PhoneRecordsPage() {
         {/* Desktop Table View */}
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
-            <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
+            <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
               <tr>
                 <th className="py-3 px-4 w-10">
                   <input
@@ -493,7 +495,7 @@ export default function PhoneRecordsPage() {
                           </div>
                           <div>
                             <p className="font-extrabold text-slate-900 text-xs sm:text-sm">{rec.model}</p>
-                            <p className="text-[11px] text-slate-500 font-medium">
+                            <p className="text-xs text-slate-500 font-medium">
                               {rec.brand} {rec.color ? `• ${rec.color}` : ''} {rec.storageCapacity ? `• ${rec.storageCapacity}` : ''}
                             </p>
                           </div>
@@ -506,16 +508,16 @@ export default function PhoneRecordsPage() {
                             <Copy className="w-3 h-3" />
                           </button>
                           {copiedImei === rec.imei1 && (
-                            <span className="text-[10px] text-emerald-600 font-bold">Copied!</span>
+                            <span className="text-xs text-emerald-600 font-bold">Copied!</span>
                           )}
                         </div>
                         {rec.serialNumber && (
-                          <p className="font-mono text-slate-500 text-[10px] font-medium">SN: {rec.serialNumber}</p>
+                          <p className="font-mono text-slate-500 text-xs font-medium">SN: {rec.serialNumber}</p>
                         )}
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="flex flex-col gap-1">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold text-[10px] w-fit ${rec.carrierStatus === 'CARRIER_LOCKED' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'}`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold text-xs w-fit ${rec.carrierStatus === 'CARRIER_LOCKED' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'}`}>
                             {rec.carrierStatus === 'CARRIER_LOCKED' ? (
                               <><Lock className="w-2.5 h-2.5" /> Locked ({rec.lockedCarrier || 'Carrier'})</>
                             ) : (
@@ -523,7 +525,7 @@ export default function PhoneRecordsPage() {
                             )}
                           </span>
                           {rec.activationStatus && (
-                            <span className="text-[10px] text-slate-500 font-medium">
+                            <span className="text-xs text-slate-500 font-medium">
                               Activation: <strong>{rec.activationStatus.replace(/_/g, ' ')}</strong>
                             </span>
                           )}
@@ -531,11 +533,11 @@ export default function PhoneRecordsPage() {
                       </td>
                       <td className="py-3.5 px-4">
                         {isStolen ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-extrabold text-[10px] border border-rose-300 animate-pulse">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-extrabold text-xs border border-rose-300 animate-pulse">
                             <ShieldAlert className="w-3 h-3 text-rose-600" /> STOLEN / BLACKLISTED
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-[10px] border border-emerald-200">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200">
                             <ShieldCheck className="w-3 h-3 text-emerald-600" /> Clean
                           </span>
                         )}
@@ -556,7 +558,7 @@ export default function PhoneRecordsPage() {
                           {isStolen ? (
                             <button
                               onClick={() => handleClearStolen(rec)}
-                              className="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition font-bold text-[10px]"
+                              className="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition font-bold text-xs"
                               title="Clear Stolen Status"
                             >
                               Clear Flag
@@ -664,7 +666,7 @@ export default function PhoneRecordsPage() {
                   onChange={(e) => setLostNote(e.target.value)}
                   className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition"
                 />
-                <p className="text-[10px] text-slate-400 mt-1">This message will be visible to any buyer or shop scanning this IMEI.</p>
+                <p className="text-xs text-slate-400 mt-1">This message will be visible to any buyer or shop scanning this IMEI.</p>
               </div>
 
               <div className="grid grid-cols-2 gap-3">

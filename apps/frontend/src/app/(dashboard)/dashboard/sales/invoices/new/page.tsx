@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
@@ -222,7 +224,7 @@ export default function CreateInvoicePage() {
   const handleEmailPDF = async () => {
     const targetEmail = customerEmail.trim();
     if (!targetEmail) {
-      alert('Please enter a customer email address in the customer details section.');
+      notify('Please enter a customer email address in the customer details section.');
       return;
     }
 
@@ -343,7 +345,7 @@ export default function CreateInvoicePage() {
       </div>
 
       {/* Step Indicators on Mobile */}
-      <div className="flex sm:hidden items-center justify-between border-b border-slate-200/80 pb-3 mb-2 text-[10px] font-extrabold text-slate-400">
+      <div className="flex sm:hidden items-center justify-between border-b border-slate-200/80 pb-3 mb-2 text-xs font-extrabold text-slate-400">
         <button
           onClick={() => setMobileStep(1)}
           className={`pb-1 border-b-2 transition ${mobileStep === 1 ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
@@ -385,47 +387,47 @@ export default function CreateInvoicePage() {
           <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 overflow-hidden ${mobileStep === 1 ? 'block' : 'hidden sm:block'}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Customer / Business Name *</label>
+                <label className="text-xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Customer / Business Name *</label>
                 <input
                   type="text"
                   required
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="e.g. Acme Corp or Johnathan Doe..."
-                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
+                  placeholder="e.g. Zenith Gadgets Ltd or Emeka Obi..."
+                  className="w-full text-xs sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
+                <label className="text-xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
                 <input
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   placeholder="e.g. client@example.com"
-                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
+                  className="w-full text-xs sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
+                <label className="text-xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
                 <input
                   type="text"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   placeholder="e.g. +1 (555) 234-5678"
-                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
+                  className="w-full text-xs sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Billing Address</label>
+                <label className="text-xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Billing Address</label>
                 <input
                   type="text"
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
                   placeholder="e.g. 123 Corporate Blvd, New York, NY"
-                  className="w-full text-[11px] sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
+                  className="w-full text-xs sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
                 />
               </div>
             </div>
@@ -452,7 +454,7 @@ export default function CreateInvoicePage() {
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                 <Smartphone className="w-4 h-4 text-blue-600" /> Select In-Stock Device from Inventory
               </h2>
-              <span className="text-[10px] text-slate-400 font-bold uppercase">Available Inventory</span>
+              <span className="text-xs text-slate-400 font-bold uppercase">Available Inventory</span>
             </div>
 
             <div className="relative">
@@ -462,7 +464,7 @@ export default function CreateInvoicePage() {
                 value={deviceSearch}
                 onChange={(e) => setDeviceSearch(e.target.value)}
                 placeholder="Search by IMEI, Model, or Brand..."
-                className="w-full text-[11px] sm:text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-[10px]"
+                className="w-full text-xs sm:text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
               />
             </div>
 
@@ -493,13 +495,13 @@ export default function CreateInvoicePage() {
                           <Smartphone className="w-3.5 h-3.5" />
                         </div>
                         <div className="min-w-0">
-                          <p className="font-bold text-slate-800 text-[11px] sm:text-xs truncate">{phone.brand} {phone.model}</p>
-                          <p className="text-[9px] font-mono text-slate-500 truncate">IMEI: {phone.imei1}</p>
+                          <p className="font-bold text-slate-800 text-xs sm:text-xs truncate">{phone.brand} {phone.model}</p>
+                          <p className="text-xs font-mono text-slate-500 truncate">IMEI: {phone.imei1}</p>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2.5 shrink-0">
-                        <span className="font-bold text-slate-950 text-[11px] sm:text-xs">
+                        <span className="font-bold text-slate-950 text-xs sm:text-xs">
                           ₦{(phone.sellingPrice ?? phone.purchasePrice ?? 0).toLocaleString()}
                         </span>
                         <button
@@ -540,7 +542,7 @@ export default function CreateInvoicePage() {
                     <div className="flex items-start justify-between gap-3">
                       <div>
                         <p className="font-extrabold text-slate-900">{item.description}</p>
-                        <p className="text-[10px] font-mono text-slate-500">IMEI: {item.imei}</p>
+                        <p className="text-xs font-mono text-slate-500">IMEI: {item.imei}</p>
                       </div>
                       <button
                         onClick={() => removeItem(item.id)}
@@ -552,11 +554,11 @@ export default function CreateInvoicePage() {
 
                     <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-100">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase">Qty:</span>
+                        <span className="text-xs text-slate-400 font-bold uppercase">Qty:</span>
                         <span className="font-bold text-slate-800">{item.quantity}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase">Price:</span>
+                        <span className="text-xs text-slate-400 font-bold uppercase">Price:</span>
                         <div className="flex items-center gap-0.5">
                           <span className="text-slate-400 font-bold">₦</span>
                           <input
@@ -570,7 +572,7 @@ export default function CreateInvoicePage() {
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9px] text-slate-400 font-bold uppercase block mb-0.5">Total</span>
+                        <span className="text-xs text-slate-400 font-bold uppercase block mb-0.5">Total</span>
                         <span className="font-extrabold text-slate-900">₦{(item.unitPrice * item.quantity).toLocaleString()}</span>
                       </div>
                     </div>
@@ -582,7 +584,7 @@ export default function CreateInvoicePage() {
             {/* Desktop Table View (Hidden on mobile) */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
+                <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
                   <tr>
                     <th className="py-2.5 px-3">Description</th>
                     <th className="py-2.5 px-3">IMEI / Serial</th>
@@ -603,7 +605,7 @@ export default function CreateInvoicePage() {
                     items.map((item) => (
                       <tr key={item.id} className="hover:bg-slate-50/80 transition">
                         <td className="py-3 px-3 font-extrabold text-slate-900">{item.description}</td>
-                        <td className="py-3 px-3 font-mono text-slate-500 text-[11px]">{item.imei}</td>
+                        <td className="py-3 px-3 font-mono text-slate-500 text-xs">{item.imei}</td>
                         <td className="py-3 px-3 text-center font-bold text-slate-800">{item.quantity}</td>
                         <td className="py-3 px-3 text-right font-semibold text-slate-800">
                           <input
@@ -635,7 +637,7 @@ export default function CreateInvoicePage() {
 
             {/* Add Custom Line Item Form */}
             <form onSubmit={handleAddCustomItem} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3 pt-4">
-              <p className="text-[11px] font-bold text-slate-700">Add Custom Item / Service</p>
+              <p className="text-xs font-bold text-slate-700">Add Custom Item / Service</p>
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                 <div className="sm:col-span-5">
                   <input
@@ -644,7 +646,7 @@ export default function CreateInvoicePage() {
                     value={newItemDesc}
                     onChange={(e) => setNewItemDesc(e.target.value)}
                     placeholder="Description (e.g. Repair)..."
-                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-[10px]"
+                    className="w-full text-xs sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-xs"
                   />
                 </div>
                 <div className="sm:col-span-3">
@@ -653,7 +655,7 @@ export default function CreateInvoicePage() {
                     value={newItemImei}
                     onChange={(e) => setNewItemImei(e.target.value)}
                     placeholder="IMEI (Optional)..."
-                    className="w-full font-mono text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-[10px]"
+                    className="w-full font-mono text-xs sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-xs"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -664,7 +666,7 @@ export default function CreateInvoicePage() {
                     value={newItemQty}
                     onChange={(e) => setNewItemQty(e.target.value)}
                     placeholder="Qty..."
-                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 text-center placeholder-slate-400 placeholder:text-[10px]"
+                    className="w-full text-xs sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 text-center placeholder-slate-400 placeholder:text-xs"
                   />
                 </div>
                 <div className="sm:col-span-2">
@@ -678,7 +680,7 @@ export default function CreateInvoicePage() {
                       setNewItemPrice(raw);
                     }}
                     placeholder="Rate (₦)..."
-                    className="w-full text-[11px] sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-[10px]"
+                    className="w-full text-xs sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-xs"
                   />
                 </div>
               </div>
@@ -723,14 +725,14 @@ export default function CreateInvoicePage() {
                   <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
                     Remittance Bank Account
                   </h3>
-                  <p className="text-[11px] text-slate-500">
+                  <p className="text-xs text-slate-500">
                     Payment destination printed on this customer's invoice statement
                   </p>
                 </div>
               </div>
 
               {/* Mode Toggle Pills */}
-              <div className="grid grid-cols-2 sm:flex sm:items-center bg-slate-100 p-1 rounded-xl gap-1 text-[11px] font-bold w-full sm:w-auto">
+              <div className="grid grid-cols-2 sm:flex sm:items-center bg-slate-100 p-1 rounded-xl gap-1 text-xs font-bold w-full sm:w-auto">
                 <button
                   type="button"
                   onClick={() => {
@@ -773,7 +775,7 @@ export default function CreateInvoicePage() {
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="font-extrabold text-blue-950 text-sm">{templateBank.bankName}</span>
-                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
                           Template Default
                         </span>
                       </div>
@@ -781,7 +783,7 @@ export default function CreateInvoicePage() {
                         Account #: <span className="text-blue-900">{templateBank.accountNumber}</span>
                       </p>
                       {templateBank.accountName && (
-                        <p className="text-slate-600 font-medium text-[11px] truncate">
+                        <p className="text-slate-600 font-medium text-xs truncate">
                           Beneficiary: <strong className="text-slate-900">{templateBank.accountName}</strong>
                         </p>
                       )}
@@ -808,7 +810,7 @@ export default function CreateInvoicePage() {
                   <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <p className="font-bold">No Default Bank Account in Templates</p>
-                      <p className="text-[11px] text-amber-800">
+                      <p className="text-xs text-amber-800">
                         You have not configured store bank details in /dashboard/templates yet.
                       </p>
                     </div>
@@ -834,7 +836,7 @@ export default function CreateInvoicePage() {
               /* Custom Bank Account Form */
               <div className="space-y-3 bg-slate-50/70 p-4 rounded-xl border border-slate-200 animate-in fade-in duration-150">
                 <div className="flex items-center justify-between">
-                  <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide">
+                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wide">
                     Custom Remittance Account Details
                   </span>
                   {templateBank?.accountNumber && (
@@ -845,7 +847,7 @@ export default function CreateInvoicePage() {
                         setAccountNumber(templateBank.accountNumber);
                         setAccountName(templateBank.accountName);
                       }}
-                      className="text-[11px] text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
+                      className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
                     >
                       <RefreshCw className="w-3 h-3" />
                       <span>Fill Template Values</span>
@@ -855,7 +857,7 @@ export default function CreateInvoicePage() {
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-slate-700">Bank Name</label>
+                    <label className="block text-xs font-bold text-slate-700">Bank Name</label>
                     <input
                       type="text"
                       value={bankName}
@@ -865,7 +867,7 @@ export default function CreateInvoicePage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-slate-700">Account Number</label>
+                    <label className="block text-xs font-bold text-slate-700">Account Number</label>
                     <input
                       type="text"
                       inputMode="numeric"
@@ -876,7 +878,7 @@ export default function CreateInvoicePage() {
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-[11px] font-bold text-slate-700">Account / Beneficiary Name</label>
+                    <label className="block text-xs font-bold text-slate-700">Account / Beneficiary Name</label>
                     <input
                       type="text"
                       value={accountName}
@@ -941,7 +943,7 @@ export default function CreateInvoicePage() {
               <div className="space-y-1.5">
                 <label className="font-bold text-slate-700 flex items-center justify-between text-xs">
                   <span>Payment Status</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                  <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                     invoicePaymentStatus === 'PAID'
                       ? 'bg-emerald-100 text-emerald-800'
                       : 'bg-amber-100 text-amber-800'
@@ -1082,7 +1084,7 @@ export default function CreateInvoicePage() {
               </div>
               <div className="flex justify-between border-b border-slate-200 pb-2">
                 <span>Payment Status</span>
-                <span className={`font-bold px-2 py-0.5 rounded text-[10px] ${
+                <span className={`font-bold px-2 py-0.5 rounded text-xs ${
                   invoicePaymentStatus === 'PAID'
                     ? 'bg-emerald-100 text-emerald-800'
                     : 'bg-amber-100 text-amber-800'

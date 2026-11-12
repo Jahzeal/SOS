@@ -125,13 +125,13 @@ export default function AnalyticsReportsPage() {
             {/* KPI 1 */}
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
-                <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Total Revenue</p>
+                <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Total Revenue</p>
                 <h3 className="text-2xl font-extrabold text-blue-900 mt-1">
                   ₦{(kpis.totalRevenue || 0).toLocaleString()}
                 </h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-emerald-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-0.5">
                   <TrendingUp className="w-3.5 h-3.5" /> Sales & Repairs
                 </span>
               </div>
@@ -140,11 +140,11 @@ export default function AnalyticsReportsPage() {
             {/* KPI 2 */}
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
-                <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Total Sales</p>
+                <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Total Sales</p>
                 <h3 className="text-2xl font-extrabold text-blue-900 mt-1">{kpis.totalSalesCount || 0}</h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-emerald-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-0.5">
                   <ShoppingCart className="w-3.5 h-3.5" /> Completed
                 </span>
               </div>
@@ -153,11 +153,11 @@ export default function AnalyticsReportsPage() {
             {/* KPI 3 */}
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
-                <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Devices Sold</p>
+                <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Devices Sold</p>
                 <h3 className="text-2xl font-extrabold text-blue-900 mt-1">{kpis.devicesSoldCount || 0}</h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-emerald-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-0.5">
                   <Smartphone className="w-3.5 h-3.5" /> Units
                 </span>
               </div>
@@ -166,13 +166,13 @@ export default function AnalyticsReportsPage() {
             {/* KPI 4 */}
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
-                <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Avg. Order Value</p>
+                <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Avg. Order Value</p>
                 <h3 className="text-2xl font-extrabold text-blue-900 mt-1">
                   ₦{(kpis.avgOrderValue || 0).toLocaleString()}
                 </h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-slate-500 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-slate-500 flex items-center gap-0.5">
                   <DollarSign className="w-3.5 h-3.5" /> Per Ticket
                 </span>
               </div>
@@ -181,11 +181,11 @@ export default function AnalyticsReportsPage() {
             {/* KPI 5 */}
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
-                <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">New Customers</p>
+                <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">New Customers</p>
                 <h3 className="text-2xl font-extrabold text-blue-900 mt-1">{kpis.newCustomersCount || 0}</h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-emerald-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-0.5">
                   <Users className="w-3.5 h-3.5" /> Signups
                 </span>
               </div>
@@ -194,13 +194,13 @@ export default function AnalyticsReportsPage() {
             {/* KPI 6 */}
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
-                <p className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Repair Revenue</p>
+                <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Repair Revenue</p>
                 <h3 className="text-2xl font-extrabold text-blue-900 mt-1">
                   ₦{(kpis.repairRevenue || 0).toLocaleString()}
                 </h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-[11px] font-extrabold text-blue-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-blue-600 flex items-center gap-0.5">
                   <Wrench className="w-3.5 h-3.5" /> Service
                 </span>
               </div>
@@ -224,11 +224,11 @@ export default function AnalyticsReportsPage() {
                   <div className="flex gap-2">
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 rounded-full border border-blue-100">
                       <div className="w-2 h-2 rounded-full bg-blue-600" />
-                      <span className="text-[10px] font-extrabold text-blue-700 uppercase">Sales</span>
+                      <span className="text-xs font-extrabold text-blue-700 uppercase">Sales</span>
                     </div>
                     <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
                       <div className="w-2 h-2 rounded-full bg-emerald-600" />
-                      <span className="text-[10px] font-extrabold text-emerald-700 uppercase">Repairs</span>
+                      <span className="text-xs font-extrabold text-emerald-700 uppercase">Repairs</span>
                     </div>
                   </div>
                 </div>
@@ -275,7 +275,7 @@ export default function AnalyticsReportsPage() {
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-100/70 text-slate-500 uppercase tracking-wider font-mono text-[10px] border-b border-slate-200/80">
+                    <thead className="bg-slate-100/70 text-slate-500 uppercase tracking-wider font-mono text-xs border-b border-slate-200/80">
                       <tr>
                         <th className="px-4 py-3">Model Name</th>
                         <th className="px-4 py-3">Category</th>
@@ -362,7 +362,7 @@ export default function AnalyticsReportsPage() {
                 <p className="text-xs text-slate-500 font-medium">Stock valuation breakdown by days in inventory</p>
               </div>
               <div className="text-right">
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase">Value at Risk (90+ Days)</span>
+                <span className="text-xs font-extrabold text-slate-400 uppercase">Value at Risk (90+ Days)</span>
                 <p className="text-xl font-extrabold font-mono text-rose-600">
                   ₦{(inventoryAgeing.totalValueAtRisk || 0).toLocaleString()}
                 </p>

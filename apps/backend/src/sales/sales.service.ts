@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CheckoutSaleDto } from './dto/checkout-sale.dto';
+import { CheckoutSaleDto, UpdateInvoiceDto } from './dto/checkout-sale.dto';
 import { PhoneStatus, PaymentMethod } from '@prisma/client';
 import { MailService } from '../mail/mail.service';
 import { generateInvoicePdfBuffer } from './invoice-pdf.generator';
+import { DocumentNumberService } from '../common/services/document-number.service';
 
 @Injectable()
 export class SalesService {
@@ -12,6 +13,7 @@ export class SalesService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
+    private docNumbers: DocumentNumberService,
   ) {}
 
   async checkout(businessId: string, userId: string, dto: CheckoutSaleDto) {
@@ -22,9 +24,13 @@ export class SalesService {
     const isInvoice = dto.type === 'INVOICE' || dto.paymentStatus === 'DRAFT' || dto.paymentStatus === 'PENDING';
 
     // 1. Separate inventory devices and custom items
-    const deviceItemIds = dto.items
-      .filter((i) => i.phoneRecordId)
-      .map((i) => i.phoneRecordId as string);
+    const deviceItemIds = Array.from(
+      new Set(dto.items.filter((i) => i.phoneRecordId).map((i) => i.phoneRecordId as string)),
+    );
+
+    if (deviceItemIds.length !== dto.items.filter((i) => i.phoneRecordId).length) {
+      throw new BadRequestException('The same device appears more than once in this sale.');
+    }
 
     let phones: any[] = [];
     if (deviceItemIds.length > 0) {
@@ -71,17 +77,18 @@ export class SalesService {
 
     // 3. Compute Totals & Generate Invoice / Receipt Numbers
     const totalAmount = dto.items.reduce((sum, item) => sum + (item.price * (item.quantity || 1)), 0);
-    const ref = Math.floor(100000 + Math.random() * 900000);
-    const invoiceNumber = `NG-INV-${ref}`;
-    // Commercial Invoices do not have receipt numbers; POS checkouts have receipt numbers
-    const receiptNumber = isInvoice ? null : `NG-REC-${ref}`;
+    // Sequential per store. Commercial invoices have no receipt number until paid.
+    const invoiceNumber = await this.docNumbers.next(businessId, 'INVOICE');
+    const receiptNumber = isInvoice ? null : await this.docNumbers.next(businessId, 'RECEIPT');
+    const effectivePaymentStatus = dto.paymentStatus || (isInvoice ? 'PENDING' : 'PAID');
+    const takesDevices = effectivePaymentStatus === 'PAID' || effectivePaymentStatus === 'PARTIALLY_PAID';
 
     // Pack metadata into notes if invoice
     let combinedNotes = dto.notes?.trim() || '';
     if (isInvoice) {
-      const customBank = (dto as any).bankName ? `[BANK:${(dto as any).bankName}]` : '';
-      const customAcc = (dto as any).accountNumber ? `[ACC:${(dto as any).accountNumber}]` : '';
-      const customAccName = (dto as any).accountName ? `[ACCNAME:${(dto as any).accountName}]` : '';
+      const customBank = dto.bankName ? `[BANK:${dto.bankName}]` : '';
+      const customAcc = dto.accountNumber ? `[ACC:${dto.accountNumber}]` : '';
+      const customAccName = dto.accountName ? `[ACCNAME:${dto.accountName}]` : '';
 
       const metaTags = [
         '[TYPE:INVOICE]',
@@ -97,6 +104,28 @@ export class SalesService {
 
     // 4. Run Prisma Transaction to create sale & mark any devices as SOLD if paid
     const sale = await this.prisma.$transaction(async (tx) => {
+      // Claim the devices INSIDE the transaction. The update only matches devices
+      // that are not sold yet, so if two tills sell the same phone at the same
+      // moment exactly one succeeds and the other is rolled back.
+      if (deviceItemIds.length > 0) {
+        if (takesDevices) {
+          const claimed = await tx.phoneRecord.updateMany({
+            where: { id: { in: deviceItemIds }, businessId, status: { not: PhoneStatus.SOLD } },
+            data: { status: PhoneStatus.SOLD, customerId },
+          });
+          if (claimed.count !== deviceItemIds.length) {
+            throw new BadRequestException('One of these devices has just been sold in another transaction. Please refresh and try again.');
+          }
+        } else {
+          const alreadySold = await tx.phoneRecord.count({
+            where: { id: { in: deviceItemIds }, businessId, status: PhoneStatus.SOLD },
+          });
+          if (alreadySold > 0) {
+            throw new BadRequestException('One of these devices has already been sold.');
+          }
+        }
+      }
+
       // Create Sale Record
       const newSale = await tx.sale.create({
         data: {
@@ -107,7 +136,7 @@ export class SalesService {
           receiptNumber,
           totalAmount,
           paymentMethod: dto.paymentMethod || PaymentMethod.CASH,
-          paymentStatus: dto.paymentStatus || (isInvoice ? 'PENDING' : 'PAID'),
+          paymentStatus: effectivePaymentStatus,
           notes: combinedNotes || null,
           items: {
             create: dto.items.map((item) => {
@@ -152,18 +181,6 @@ export class SalesService {
           },
         },
       });
-
-      // Update phone statuses to SOLD ONLY if payment has been received (PAID or PARTIALLY_PAID)
-      const effectivePaymentStatus = dto.paymentStatus || (isInvoice ? 'PENDING' : 'PAID');
-      if (deviceItemIds.length > 0 && (effectivePaymentStatus === 'PAID' || effectivePaymentStatus === 'PARTIALLY_PAID')) {
-        await tx.phoneRecord.updateMany({
-          where: { id: { in: deviceItemIds } },
-          data: {
-            status: PhoneStatus.SOLD,
-            customerId,
-          },
-        });
-      }
 
       return newSale;
     });
@@ -290,7 +307,7 @@ export class SalesService {
     return { success: true, message: `Invoice ${invoice.invoiceNumber} deleted successfully.` };
   }
 
-  async updateInvoice(businessId: string, id: string, dto: any) {
+  async updateInvoice(businessId: string, id: string, dto: UpdateInvoiceDto) {
     const existing = await this.findOneInvoice(businessId, id);
 
     let customerId = existing.customerId;
@@ -441,8 +458,9 @@ export class SalesService {
   ) {
     const invoice = await this.findOneInvoice(businessId, id);
 
-    const ref = Math.floor(100000 + Math.random() * 900000);
-    const receiptNumber = invoice.receiptNumber || `VF-REC-${ref}`;
+    if (invoice.paymentStatus === 'PAID' && Number(invoice.balanceDue || 0) <= 0 && invoice.receiptNumber) {
+      throw new BadRequestException('This invoice has already been paid in full.');
+    }
 
     const deviceItemIds = invoice.items
       .filter((i) => i.phoneRecordId)
@@ -478,6 +496,9 @@ export class SalesService {
     const newAmountPaid = Math.min(totalAmount, currentPaid + amountToPay);
     const newBalanceDue = Math.max(0, totalAmount - newAmountPaid);
     const newStatus = newBalanceDue <= 0 ? 'PAID' : 'PARTIALLY_PAID';
+    // A receipt number is issued once, when the invoice becomes fully paid.
+    const receiptNumber =
+      invoice.receiptNumber || (newStatus === 'PAID' ? await this.docNumbers.next(businessId, 'RECEIPT') : null);
 
     return this.prisma.$transaction(async (tx) => {
       // Record payment audit entry
@@ -501,7 +522,7 @@ export class SalesService {
           paymentMethod: payMethod,
           amountPaid: newAmountPaid,
           balanceDue: newBalanceDue,
-          receiptNumber: newStatus === 'PAID' ? receiptNumber : invoice.receiptNumber,
+          receiptNumber,
         },
         include: {
           customer: true,
@@ -518,7 +539,7 @@ export class SalesService {
 
       if ((newStatus === 'PAID' || newStatus === 'PARTIALLY_PAID') && deviceItemIds.length > 0) {
         await tx.phoneRecord.updateMany({
-          where: { id: { in: deviceItemIds } },
+          where: { id: { in: deviceItemIds }, businessId },
           data: {
             status: PhoneStatus.SOLD,
             customerId: invoice.customerId,

@@ -29,8 +29,9 @@ export class PaymentsController {
     @Headers('x-paystack-signature') signature: string,
     @Body() body: any,
   ) {
-    // If rawBody is not available on req, JSON.stringify body
-    const rawBody = req.rawBody ? req.rawBody.toString() : JSON.stringify(body);
+    // rawBody is enabled in main.ts / api/index.ts; the signature must be checked
+    // against the exact bytes Paystack sent.
+    const rawBody = req.rawBody ? req.rawBody.toString('utf8') : JSON.stringify(body);
     return this.paymentsService.handleWebhook(rawBody, signature);
   }
 }

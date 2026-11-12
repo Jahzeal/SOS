@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { SiteFooter } from '@/components/marketing/SiteFooter';
 import {
   ShieldAlert,
   Smartphone,
@@ -29,6 +30,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Logo } from '@/components/ui/Logo';
 import { PwaInstallButton } from '@/components/PwaInstallButton';
 import { api } from '@/lib/api';
+import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { parseImeiTac, validateLuhnIMEI } from '@/lib/imei-utils';
 
 export default function ReportStolenPage() {
@@ -38,9 +40,8 @@ export default function ReportStolenPage() {
   const [dashboardUrl, setDashboardUrl] = useState('/dashboard');
 
   // Google Auth Simulation / Real Session State
-  const [googleUser, setGoogleUser] = useState<{ email: string; name: string; avatarUrl?: string } | null>(null);
-  const [authEmailInput, setAuthEmailInput] = useState('');
-  const [authNameInput, setAuthNameInput] = useState('');
+  const [googleUser, setGoogleUser] = useState<{ email: string; name: string; avatarUrl?: string; token: string } | null>(null);
+  const [signInError, setSignInError] = useState<string | null>(null);
   const [isSigningIn, setIsSigningIn] = useState(false);
 
   // Form State
@@ -94,7 +95,13 @@ export default function ReportStolenPage() {
       const savedReporter = localStorage.getItem('vf_google_reporter');
       if (savedReporter) {
         try {
-          setGoogleUser(JSON.parse(savedReporter));
+          const parsed = JSON.parse(savedReporter);
+          // Sessions saved before server-side verification have no token: sign in again.
+          if (parsed?.token && parsed?.email) {
+            setGoogleUser(parsed);
+          } else {
+            localStorage.removeItem('vf_google_reporter');
+          }
         } catch {}
       }
     }
@@ -102,8 +109,8 @@ export default function ReportStolenPage() {
 
   // Fetch user's reports when logged in
   useEffect(() => {
-    if (googleUser?.email && activeTab === 'MY_REPORTS') {
-      fetchMyReports(googleUser.email);
+    if (googleUser?.token && activeTab === 'MY_REPORTS') {
+      fetchMyReports();
     }
   }, [googleUser, activeTab]);
 
@@ -126,34 +133,50 @@ export default function ReportStolenPage() {
     }
   };
 
-  const fetchMyReports = async (email: string) => {
+  const handleSessionExpired = () => {
+    setGoogleUser(null);
+    setSignInError('Your sign-in has expired. Please sign in with Google again.');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('vf_google_reporter');
+    }
+  };
+
+  const fetchMyReports = async () => {
+    if (!googleUser?.token) return;
     setLoadingReports(true);
     try {
-      const reports = await api.getUserTheftReports(email);
+      const reports = await api.getUserTheftReports(googleUser.token);
       setMyReports(Array.isArray(reports) ? reports : []);
-    } catch (err) {
+    } catch (err: any) {
+      if (err?.status === 401) handleSessionExpired();
       console.warn('Could not fetch user reports:', err);
     } finally {
       setLoadingReports(false);
     }
   };
 
-  const handleGoogleSignIn = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!authEmailInput.trim() || !authNameInput.trim()) return;
+  // Google proves who the reporter is; the server verifies the token before
+  // issuing the session used to file and resolve reports.
+  const handleGoogleSignIn = async (result: { credential: string }) => {
     setIsSigningIn(true);
-    setTimeout(() => {
+    setSignInError(null);
+    try {
+      const session = await api.createTheftReporterSession(result.credential);
       const userObj = {
-        email: authEmailInput.trim().toLowerCase(),
-        name: authNameInput.trim(),
-        avatarUrl: `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(authNameInput.trim())}`,
+        email: session.email,
+        name: session.name,
+        avatarUrl: session.avatarUrl || undefined,
+        token: session.token,
       };
       setGoogleUser(userObj);
       if (typeof window !== 'undefined') {
         localStorage.setItem('vf_google_reporter', JSON.stringify(userObj));
       }
+    } catch (err: any) {
+      setSignInError(err?.message || 'Google sign-in could not be verified. Please try again.');
+    } finally {
       setIsSigningIn(false);
-    }, 400);
+    }
   };
 
   const handleSignOut = () => {
@@ -166,8 +189,8 @@ export default function ReportStolenPage() {
   const handleSubmitReport = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!googleUser) return;
-    if (!imei1.trim()) {
-      setErrorMessage('Primary IMEI is required.');
+    if (!imei1.trim() && !serialNumber.trim()) {
+      setErrorMessage('Enter the IMEI, or the serial number if the device has no IMEI (for example a laptop).');
       return;
     }
     if (!ownerPhone.trim()) {
@@ -179,21 +202,22 @@ export default function ReportStolenPage() {
     setErrorMessage(null);
 
     try {
-      const res = await api.submitPublicTheftReport({
-        imei1: imei1.trim(),
+      const res = await api.submitPublicTheftReport(
+        {
+        imei1: imei1.trim() || undefined,
         imei2: imei2.trim() || undefined,
         serialNumber: serialNumber.trim() || undefined,
         brand: brand.trim(),
         model: model.trim() || 'Smartphone',
         color: color.trim() || undefined,
-        ownerEmail: googleUser.email,
         ownerName: googleUser.name,
         ownerPhone: ownerPhone.trim(),
         lostNote: lostNote.trim() || undefined,
         bountyAmount: bountyAmount ? parseFloat(bountyAmount) : 0,
         policeCaseNo: policeCaseNo.trim() || undefined,
-        verificationSource: 'GOOGLE_AUTH',
-      });
+        },
+        googleUser.token,
+      );
 
       setSuccessReport(res);
       // Reset form
@@ -207,6 +231,7 @@ export default function ReportStolenPage() {
       setPoliceCaseNo('');
       setTacProfile(null);
     } catch (err: any) {
+      if (err?.status === 401) handleSessionExpired();
       setErrorMessage(err.message || 'Failed to submit theft report. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -214,16 +239,14 @@ export default function ReportStolenPage() {
   };
 
   const handleResolveReport = async (reportId: string) => {
-    if (!googleUser?.email) return;
+    if (!googleUser?.token) return;
     if (!confirm('Are you sure you want to mark this device as RECOVERED / FOUND? This will clear the blacklist.')) return;
 
     try {
-      await api.resolveTheftReport(reportId, {
-        ownerEmail: googleUser.email,
-        resolvedNote: 'Recovered by owner',
-      });
-      fetchMyReports(googleUser.email);
+      await api.resolveTheftReport(reportId, { resolvedNote: 'Recovered by owner' }, googleUser.token);
+      fetchMyReports();
     } catch (err: any) {
+      if (err?.status === 401) handleSessionExpired();
       alert(err.message || 'Failed to resolve report.');
     }
   };
@@ -280,7 +303,7 @@ export default function ReportStolenPage() {
                 </Link>
                 <Link href="/onboarding">
                   <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    Start Free Trial
+                    Start free
                   </Button>
                 </Link>
               </>
@@ -343,7 +366,7 @@ export default function ReportStolenPage() {
                   </Link>
                   <Link href="/onboarding" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="primary" fullWidth size="md">
-                      Register Business
+                      Start free
                     </Button>
                   </Link>
                 </>
@@ -363,10 +386,10 @@ export default function ReportStolenPage() {
             <span>Anti-Theft Blacklist Registry</span>
           </div>
           <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Report a Stolen or Lost Phone
+            Report a Stolen or Lost Phone or Laptop
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium max-w-xl mx-auto">
-            Blacklist your stolen phone across verified stores, repair technicians, and public search verification portals.
+            Flag your stolen or lost device so that NoxGuarda stores and anyone who checks its IMEI or serial number here will see it has been reported.
           </p>
         </div>
 
@@ -389,59 +412,36 @@ export default function ReportStolenPage() {
               </p>
             </div>
 
-            <form onSubmit={handleGoogleSignIn} className="space-y-4 text-left">
-              <div className="space-y-1.5">
-                <label className="block text-xs font-extrabold text-slate-900">
-                  Your Full Name <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    required
-                    placeholder="e.g. David Adeleke"
-                    value={authNameInput}
-                    onChange={(e) => setAuthNameInput(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
-                  />
-                  <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
+            <div className="space-y-4">
+              {signInError && (
+                <div role="alert" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700 text-left">
+                  {signInError}
                 </div>
-              </div>
+              )}
 
-              <div className="space-y-1.5">
-                <label className="block text-xs font-extrabold text-slate-900">
-                  Google Email Address <span className="text-rose-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    required
-                    placeholder="e.g. david@gmail.com"
-                    value={authEmailInput}
-                    onChange={(e) => setAuthEmailInput(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 text-sm font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
-                  />
-                  <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
-                </div>
-              </div>
+              <GoogleAuthButton
+                mode="signin"
+                disabled={isSigningIn}
+                onSuccess={handleGoogleSignIn}
+                onError={(message) => setSignInError(message)}
+              />
 
-              <div className="pt-2">
-                <Button
-                  type="submit"
-                  variant="primary"
-                  fullWidth
-                  size="md"
-                  disabled={isSigningIn}
-                  leftIcon={isSigningIn ? <Loader2 className="w-4 h-4 animate-spin" /> : <Lock className="w-4 h-4" />}
-                  className="bg-teal-600 hover:bg-teal-700 text-white font-extrabold shadow-sm py-3"
-                >
-                  {isSigningIn ? 'Authenticating...' : 'Continue with Google Identity'}
-                </Button>
-              </div>
+              {isSigningIn && (
+                <p className="text-xs text-slate-500 font-medium flex items-center justify-center gap-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> Verifying your Google account...
+                </p>
+              )}
+
+              <p className="text-xs text-slate-500 font-medium leading-relaxed text-left bg-slate-50 border border-slate-200 rounded-xl p-3">
+                <strong className="text-slate-900">What becomes public:</strong> the device brand and model, your note, and a
+                partly hidden version of your phone number. Your email is never shown. Registered NoxGuarda stores can see
+                your full phone number so they can contact you if the device turns up.
+              </p>
 
               <p className="text-[11px] text-slate-400 text-center font-medium">
                 Free public registry. No credit card required.
               </p>
-            </form>
+            </div>
           </div>
         ) : (
           /* STEP 2: AUTHENTICATED USER PORTAL */
@@ -503,12 +503,12 @@ export default function ReportStolenPage() {
                       <div>
                         <h3 className="font-extrabold text-emerald-900 text-base">Device Successfully Blacklisted</h3>
                         <p className="text-xs text-emerald-700 font-medium">
-                          IMEI <strong className="font-mono">{successReport.imei1}</strong> ({successReport.brand} {successReport.model}) is now flagged as STOLEN across all partner search portals.
+                          {successReport.imei1 ? 'IMEI' : 'Serial'} <strong className="font-mono">{successReport.imei1 || successReport.serialNumber}</strong> ({successReport.brand} {successReport.model}) is now flagged as STOLEN whenever it is checked on NoxGuarda.
                         </p>
                       </div>
                     </div>
                     <div className="pt-3 border-t border-emerald-200 flex items-center justify-between text-xs">
-                      <Link href={`/dashboard/verify?imei=${successReport.imei1}`}>
+                      <Link href="/#verify-widget">
                         <span className="text-emerald-700 hover:text-emerald-900 font-bold flex items-center gap-1">
                           View Verification Status <ExternalLink className="w-3.5 h-3.5" />
                         </span>
@@ -534,7 +534,7 @@ export default function ReportStolenPage() {
                         Do not have your phone, box, or paper receipt?
                       </h4>
                       <p className="text-xs text-slate-600 leading-relaxed font-medium">
-                        Your 15-digit IMEI is stored in your Apple or Google cloud account. Follow the quick guide below to retrieve it in under 60 seconds:
+                        Your IMEI and serial number are stored in your Apple or Google account. Follow the quick guide below to retrieve it in under 60 seconds:
                       </p>
                     </div>
                   </div>
@@ -547,26 +547,26 @@ export default function ReportStolenPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Smartphone className="w-4 h-4 text-slate-900" />
-                          <span className="font-extrabold text-xs text-slate-900">iPhone / iOS Users</span>
+                          <span className="font-extrabold text-xs text-slate-900">iPhone, iPad &amp; Mac</span>
                         </div>
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">iCloud Find My</span>
+                        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2 py-0.5 rounded">Apple Account</span>
                       </div>
                       
                       <ol className="text-[11px] text-slate-600 space-y-1.5 font-medium list-decimal list-inside">
-                        <li>Tap below to open Apple iCloud Find My in a new tab.</li>
-                        <li>Sign in with your Apple Account / Apple ID.</li>
-                        <li>Select your iPhone from <strong>All Devices</strong> to view device info / IMEI.</li>
+                        <li>Tap below to open your Apple Account in a new tab.</li>
+                        <li>Sign in with the Apple Account used on the device.</li>
+                        <li>Open <strong>Devices</strong> and select the device to see its serial number and IMEI.</li>
                         <li>Return to this page and tap <strong>Paste</strong>.</li>
                       </ol>
 
                       <a
-                        href="https://www.icloud.com/find"
+                        href="https://account.apple.com"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs shadow-sm transition"
                       >
                         <Smartphone className="w-3.5 h-3.5" />
-                        <span>Open Apple iCloud Find My</span>
+                        <span>Open Apple Account Devices</span>
                         <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
                       </a>
                     </div>
@@ -603,6 +603,28 @@ export default function ReportStolenPage() {
                   </div>
                 </div>
 
+                {/* LOCK THE DEVICE WITH APPLE / GOOGLE */}
+                <div className="p-5 sm:p-6 rounded-3xl bg-amber-50/70 border border-amber-200 text-slate-900 space-y-2 shadow-2xs">
+                  <h4 className="font-extrabold text-sm sm:text-base tracking-tight flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-amber-700" /> Lock the device as well
+                  </h4>
+                  <p className="text-xs text-slate-700 leading-relaxed font-medium">
+                    A report here warns stores and buyers, but it does not lock the device. Also lock it with the maker&apos;s own tool:
+                  </p>
+                  <ul className="text-xs font-bold space-y-1.5">
+                    <li>
+                      <a href="https://support.apple.com/en-us/101593" target="_blank" rel="noopener noreferrer" className="text-teal-700 underline inline-flex items-center gap-1">
+                        iPhone, iPad or Mac: turn on Apple&apos;s &quot;Mark as Lost&quot; <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </li>
+                    <li>
+                      <a href="https://support.google.com/accounts/answer/6160491" target="_blank" rel="noopener noreferrer" className="text-teal-700 underline inline-flex items-center gap-1">
+                        Android: lock or erase it with Google&apos;s &quot;Find My Device&quot; <ExternalLink className="w-3 h-3" />
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+
                 {/* REPORT FORM */}
                 <form onSubmit={handleSubmitReport} className="border-2 border-slate-200/90 shadow-xl rounded-3xl p-5 sm:p-8 space-y-6 bg-white">
                   {errorMessage && (
@@ -618,7 +640,7 @@ export default function ReportStolenPage() {
                     <div className="space-y-1.5 sm:col-span-2">
                       <div className="flex items-center justify-between">
                         <label className="block text-xs font-extrabold text-slate-900">
-                          Primary IMEI Number <span className="text-rose-500">*</span>
+                          IMEI Number <span className="text-slate-400 font-normal">(phones and tablets with a SIM)</span>
                         </label>
                         {tacProfile?.brand && (
                           <span className="text-[11px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-lg flex items-center gap-1 animate-in fade-in">
@@ -630,7 +652,6 @@ export default function ReportStolenPage() {
                       <div className="relative">
                         <input
                           type="text"
-                          required
                           maxLength={18}
                           placeholder="Paste or enter 15-digit IMEI"
                           value={imei1}
@@ -692,6 +713,20 @@ export default function ReportStolenPage() {
                       />
                     </div>
 
+                    {/* Serial Number */}
+                    <div className="space-y-1.5">
+                      <label className="block text-xs font-extrabold text-slate-900">
+                        Serial Number <span className="text-slate-400 font-normal">(required if there is no IMEI, e.g. a laptop)</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. C02XK1ABJG5H"
+                        value={serialNumber}
+                        onChange={(e) => setSerialNumber(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-900 font-mono text-sm font-medium focus:outline-none focus:border-teal-600 focus:bg-white transition-all shadow-2xs"
+                      />
+                    </div>
+
                     {/* Secondary IMEI */}
                     <div className="space-y-1.5">
                       <label className="block text-xs font-extrabold text-slate-900">
@@ -725,7 +760,7 @@ export default function ReportStolenPage() {
                     </div>
 
                     {/* Police Case Number */}
-                    <div className="space-y-1.5 sm:col-span-2">
+                    <div className="space-y-1.5">
                       <label className="block text-xs font-extrabold text-slate-900">
                         Police Case Number <span className="text-slate-400 font-normal">(Optional)</span>
                       </label>
@@ -756,6 +791,14 @@ export default function ReportStolenPage() {
                     </div>
                   </div>
 
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed bg-slate-50 border border-slate-200 rounded-xl p-3">
+                    By publishing this alert you agree that the device brand and model, your note and a partly hidden
+                    version of your phone number are shown publicly, and that signed-in NoxGuarda stores can see your
+                    full phone number. Your email address is never shown. See the{' '}
+                    <Link href="/privacy" className="text-teal-700 font-bold underline">Privacy Policy</Link> and{' '}
+                    <Link href="/terms" className="text-teal-700 font-bold underline">Terms</Link>.
+                  </p>
+
                   <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <p className="text-xs text-slate-500 font-medium">
                       Reporting as: <strong className="text-slate-900">{googleUser.email}</strong>
@@ -784,7 +827,7 @@ export default function ReportStolenPage() {
                     <p className="text-xs text-slate-500 font-medium">Manage and resolve active theft alerts associated with {googleUser.email}</p>
                   </div>
                   <button
-                    onClick={() => fetchMyReports(googleUser.email)}
+                    onClick={() => fetchMyReports()}
                     className="p-2 rounded-xl bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200 transition"
                     title="Refresh list"
                   >
@@ -813,7 +856,7 @@ export default function ReportStolenPage() {
                               {item.status === 'ACTIVE' ? 'ACTIVE BLACKLIST' : 'RECOVERED'}
                             </Badge>
                           </div>
-                          <p className="text-xs font-mono text-slate-600">IMEI: <strong>{item.imei1}</strong></p>
+                          <p className="text-xs font-mono text-slate-600">{item.imei1 ? 'IMEI' : 'Serial'}: <strong>{item.imei1 || item.serialNumber}</strong></p>
                           {item.lostNote && (
                             <p className="text-[11px] text-slate-500 italic">"{item.lostNote}"</p>
                           )}
@@ -848,57 +891,7 @@ export default function ReportStolenPage() {
 
       </main>
 
-      {/* Footer */}
-      <footer className="bg-slate-50 text-slate-700 text-sm py-14 px-6 border-t border-slate-200 mt-auto">
-        <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8 mb-12">
-          {/* Col 1 */}
-          <div className="space-y-3">
-            <div className="font-extrabold text-slate-900 text-base">Product</div>
-            <ul className="space-y-2.5 font-medium text-slate-700 text-xs">
-              <li><Link href="/pricing" className="hover:text-teal-600 transition">Pricing & Plans</Link></li>
-              <li><Link href="/report-stolen" className="text-rose-600 hover:text-rose-700 font-bold transition flex items-center gap-1.5"><ShieldAlert className="w-3.5 h-3.5 text-rose-600" /> Report Stolen Phone</Link></li>
-              <li><Link href="/features" className="hover:text-teal-600 transition">Features</Link></li>
-              <li><Link href="/" className="hover:text-teal-600 transition">Verification Ledger</Link></li>
-            </ul>
-          </div>
-
-          {/* Col 2 */}
-          <div className="space-y-3">
-            <div className="font-extrabold text-slate-900 text-base">Resources</div>
-            <ul className="space-y-2.5 font-medium text-slate-700 text-xs">
-              <li><Link href="/report-stolen" className="hover:text-teal-600 transition">Anti-Theft Registry</Link></li>
-              <li><Link href="/" className="hover:text-teal-600 transition">Device Lookup</Link></li>
-              <li><span className="text-slate-400">Developer API (Soon)</span></li>
-            </ul>
-          </div>
-
-          {/* Col 3 */}
-          <div className="space-y-3">
-            <div className="font-extrabold text-slate-900 text-base">Company</div>
-            <ul className="space-y-2.5 font-medium text-slate-700 text-xs">
-              <li><Link href="/" className="hover:text-emerald-600 transition">About NoxGuarda</Link></li>
-              <li><Link href="/login" className="hover:text-emerald-600 transition">Business Portal</Link></li>
-            </ul>
-          </div>
-
-          {/* Col 4 */}
-          <div className="space-y-3">
-            <div className="font-extrabold text-slate-900 text-base">Legal & Security</div>
-            <ul className="space-y-2.5 font-medium text-slate-700 text-xs">
-              <li><span className="text-slate-500">Privacy Policy</span></li>
-              <li><span className="text-slate-500">Terms of Service</span></li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-semibold text-slate-600">
-          <div>NoxGuarda Anti-Theft Operating System © 2026. All rights reserved.</div>
-          <div className="flex items-center gap-6">
-            <span>English (US)</span>
-            <span>Security Compliant</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter className="mt-auto" />
     </div>
   );
 }

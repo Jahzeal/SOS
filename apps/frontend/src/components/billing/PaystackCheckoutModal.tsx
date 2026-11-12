@@ -205,7 +205,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                 >
                   <span>Annual Billing</span>
                   {savingsNgn > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 rounded-full text-[9px] bg-emerald-100 text-emerald-800 font-extrabold">
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-800 font-extrabold">
                       Save ₦{savingsNgn.toLocaleString()}
                     </span>
                   )}
@@ -215,7 +215,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
               {/* Price Breakdown */}
               <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between">
                 <div>
-                  <div className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Amount</div>
+                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Amount</div>
                   <div className="text-2xl font-black text-slate-900 mt-0.5">
                     ₦{currentPrice.toLocaleString()}
                     <span className="text-xs text-slate-400 font-medium ml-1">
@@ -224,7 +224,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] font-extrabold uppercase px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                  <div className="text-xs font-extrabold uppercase px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
                     {plan.maxDevices ? `${plan.maxDevices.toLocaleString()} Devices Limit` : 'Unlimited Devices'}
                   </div>
                 </div>
@@ -233,9 +233,9 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
               {/* Feature Checklist - Constrained Scroll Container */}
               {Array.isArray(plan.features) && plan.features.length > 0 && (
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                  <div className="flex items-center justify-between text-xs font-bold text-slate-500 uppercase tracking-wider">
                     <span>Included Benefits ({plan.features.length})</span>
-                    <span className="text-[9px] font-medium lowercase text-slate-400">scroll to view all</span>
+                    <span className="text-xs font-medium lowercase text-slate-400">scroll to view all</span>
                   </div>
                   <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1.5 border border-slate-100 p-2.5 rounded-xl bg-slate-50/60 divide-y divide-slate-100/80">
                     {plan.features.map((feat, idx) => (
@@ -279,7 +279,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                   )}
                 </button>
 
-                <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-400 font-medium">
+                <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium">
                   <Lock className="w-3 h-3 text-slate-400" />
                   <span>Secured 256-bit encrypted checkout powered by Paystack</span>
                 </div>

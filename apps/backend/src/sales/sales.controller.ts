@@ -1,11 +1,12 @@
 import { Controller, Get, Post, Put, Delete, Body, Param, Query, UseGuards, Request, Response } from '@nestjs/common';
 import { SalesService } from './sales.service';
-import { CheckoutSaleDto } from './dto/checkout-sale.dto';
+import { CheckoutSaleDto, UpdateInvoiceDto, PayInvoiceDto, SendDocumentEmailDto } from './dto/checkout-sale.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { PaymentMethod } from '@prisma/client';
 
 @Controller('sales')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
@@ -55,7 +56,7 @@ export class SalesController {
   }
 
   @Put('invoices/:id')
-  async updateInvoice(@Request() req, @Param('id') id: string, @Body() dto: any) {
+  async updateInvoice(@Request() req, @Param('id') id: string, @Body() dto: UpdateInvoiceDto) {
     const businessId = req.user.businessId;
     return this.salesService.updateInvoice(businessId, id, dto);
   }
@@ -70,7 +71,7 @@ export class SalesController {
   async markInvoiceAsPaid(
     @Request() req,
     @Param('id') id: string,
-    @Body() body?: { paymentMethod?: any; amount?: number; reference?: string; notes?: string },
+    @Body() body: PayInvoiceDto,
   ) {
     const businessId = req.user.businessId;
     const userId = req.user.id;
@@ -81,7 +82,7 @@ export class SalesController {
   async sendInvoiceEmail(
     @Request() req,
     @Param('id') id: string,
-    @Body() body?: { email?: string },
+    @Body() body: SendDocumentEmailDto,
   ) {
     const businessId = req.user.businessId;
     return this.salesService.sendSaleEmail(businessId, id, body?.email);
@@ -132,7 +133,7 @@ export class SalesController {
   async sendReceiptEmail(
     @Request() req,
     @Param('id') id: string,
-    @Body() body?: { email?: string },
+    @Body() body: SendDocumentEmailDto,
   ) {
     const businessId = req.user.businessId;
     return this.salesService.sendSaleEmail(businessId, id, body?.email);
@@ -150,14 +151,14 @@ export class SalesController {
   }
 
   @Post(':id/email')
-  async sendSaleEmail(@Request() req, @Param('id') id: string, @Body() body?: { email?: string }) {
+  async sendSaleEmail(@Request() req, @Param('id') id: string, @Body() body: SendDocumentEmailDto) {
     const businessId = req.user.businessId;
     return this.salesService.sendSaleEmail(businessId, id, body?.email);
   }
 
   @Post('email')
-  async sendSaleEmailDirect(@Request() req, @Body() body: { id: string; email?: string }) {
+  async sendSaleEmailDirect(@Request() req, @Body() body: SendDocumentEmailDto) {
     const businessId = req.user.businessId;
-    return this.salesService.sendSaleEmail(businessId, body.id, body.email);
+    return this.salesService.sendSaleEmail(businessId, body.id || '', body.email);
   }
 }

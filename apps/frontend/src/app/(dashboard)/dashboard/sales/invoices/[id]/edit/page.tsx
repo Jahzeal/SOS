@@ -452,7 +452,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="e.g. John Doe or Retail Corp"
+                  placeholder="e.g. Emeka Obi or Zenith Gadgets Ltd"
                   className="w-full px-3 py-2 border border-slate-200 rounded-xl font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>
@@ -525,7 +525,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                         <p className="font-extrabold text-slate-900">
                           {phone.brand} {phone.model}
                         </p>
-                        <p className="text-[10px] text-slate-400 font-mono">IMEI: {phone.imei1}</p>
+                        <p className="text-xs text-slate-400 font-mono">IMEI: {phone.imei1}</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <span className="font-mono font-bold text-slate-800">
@@ -534,7 +534,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                         <button
                           type="button"
                           onClick={() => handleAddDeviceToInvoice(phone)}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 shadow-xs cursor-pointer"
+                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow-xs cursor-pointer"
                         >
                           <Plus className="w-3 h-3" /> Add
                         </button>
@@ -583,7 +583,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
             {/* Existing Items Table */}
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
               <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
                   <tr>
                     <th className="py-2.5 px-3">Item Description</th>
                     <th className="py-2.5 px-3 w-20 text-center">Qty</th>
@@ -605,7 +605,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                         <td className="py-3 px-3">
                           <p className="font-extrabold text-slate-900">{item.description}</p>
                           {item.imei && item.imei !== 'N/A' && (
-                            <p className="text-[10px] text-slate-400 font-mono font-bold mt-0.5">
+                            <p className="text-xs text-slate-400 font-mono font-bold mt-0.5">
                               IMEI/SN: {item.imei}
                             </p>
                           )}
@@ -677,7 +677,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
               {useCustomBank && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl animate-in fade-in">
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-600 text-[11px]">Bank Name</label>
+                    <label className="font-bold text-slate-600 text-xs">Bank Name</label>
                     <input
                       type="text"
                       value={bankName}
@@ -687,7 +687,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-600 text-[11px]">Account Number</label>
+                    <label className="font-bold text-slate-600 text-xs">Account Number</label>
                     <input
                       type="text"
                       value={accountNumber}
@@ -697,7 +697,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-600 text-[11px]">Account Name</label>
+                    <label className="font-bold text-slate-600 text-xs">Account Name</label>
                     <input
                       type="text"
                       value={accountName}
@@ -758,7 +758,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                 </button>
               </div>
               {paymentStatus === 'DRAFT' && (
-                <p className="text-[11px] text-amber-600 font-bold mt-1">
+                <p className="text-xs text-amber-600 font-bold mt-1">
                   Currently saved as DRAFT. Select PENDING or PAID above to issue active invoice.
                 </p>
               )}

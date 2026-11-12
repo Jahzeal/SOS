@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import {
@@ -76,7 +78,7 @@ export default function RepairsDashboardPage() {
       await api.updateRepairStatus(ticketId, newStatus);
     } catch (err: any) {
       console.error('Failed to update repair status:', err);
-      alert(err.message || 'Failed to update repair status.');
+      notify(err.message || 'Failed to update repair status.');
       fetchRepairsData(); // Revert on failure
     }
   };
@@ -115,7 +117,7 @@ export default function RepairsDashboardPage() {
       fetchRepairsData();
     } catch (err: any) {
       console.error('Failed to create repair ticket:', err);
-      alert(err.message || 'Failed to create repair ticket. Please try again.');
+      notify(err.message || 'Failed to create repair ticket. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -171,7 +173,7 @@ export default function RepairsDashboardPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Active</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Active</p>
             <p className="text-xl font-extrabold text-slate-900 mt-0.5">{stats.total}</p>
           </div>
         </div>
@@ -183,7 +185,7 @@ export default function RepairsDashboardPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Diagnosing</p>
+            <p className="text-xs font-bold text-amber-800 uppercase tracking-wider">Diagnosing</p>
             <p className="text-xl font-extrabold text-amber-900 mt-0.5">{stats.diagnosing}</p>
           </div>
         </div>
@@ -195,7 +197,7 @@ export default function RepairsDashboardPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-blue-800 uppercase tracking-wider">In Progress</p>
+            <p className="text-xs font-bold text-blue-800 uppercase tracking-wider">In Progress</p>
             <p className="text-xl font-extrabold text-blue-900 mt-0.5">{stats.inProgress}</p>
           </div>
         </div>
@@ -207,7 +209,7 @@ export default function RepairsDashboardPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Ready / Fixed</p>
+            <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider">Ready / Fixed</p>
             <p className="text-xl font-extrabold text-emerald-900 mt-0.5">{stats.readyOrCompleted}</p>
           </div>
         </div>
@@ -219,7 +221,7 @@ export default function RepairsDashboardPage() {
             </div>
           </div>
           <div>
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Est. Revenue</p>
+            <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Est. Revenue</p>
             <p className="text-xl font-extrabold text-white mt-0.5">
               ${stats.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2 })}
             </p>
@@ -246,7 +248,7 @@ export default function RepairsDashboardPage() {
           </div>
 
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 md:pb-0 hide-scrollbar">
-            <span className="text-slate-400 font-bold uppercase text-[10px] shrink-0 mr-1">Filter:</span>
+            <span className="text-slate-400 font-bold uppercase text-xs shrink-0 mr-1">Filter:</span>
             {[
               { id: 'ALL', label: 'All Repairs' },
               { id: 'DIAGNOSING', label: 'Diagnosing' },
@@ -258,7 +260,7 @@ export default function RepairsDashboardPage() {
               <button
                 key={f.id}
                 onClick={() => setSelectedStatusFilter(f.id)}
-                className={`px-3 py-1.5 rounded-lg text-[11px] font-extrabold transition shrink-0 ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition shrink-0 ${
                   selectedStatusFilter === f.id
                     ? 'bg-blue-600 text-white shadow-sm'
                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -305,19 +307,19 @@ export default function RepairsDashboardPage() {
                 <div key={r.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] flex items-center justify-center border border-slate-200 shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200 shrink-0">
                         {getInitials(custName)}
                       </div>
                       <div>
                         <h4 className="font-extrabold text-slate-900 text-sm">{custName}</h4>
-                        <p className="text-[10px] text-slate-400 font-mono font-bold text-blue-600">{r.ticketNumber || r.id}</p>
+                        <p className="text-xs text-slate-400 font-mono font-bold text-blue-600">{r.ticketNumber || r.id}</p>
                       </div>
                     </div>
                     
                     <select
                       value={r.status}
                       onChange={(e) => handleStatusChange(r.id, e.target.value)}
-                      className={`text-[10px] font-extrabold px-2 py-1 rounded-lg border transition-all cursor-pointer focus:outline-none shrink-0 ${
+                      className={`text-xs font-extrabold px-2 py-1 rounded-lg border transition-all cursor-pointer focus:outline-none shrink-0 ${
                         r.status === 'DIAGNOSING'
                           ? 'bg-amber-50 text-amber-700 border-amber-300'
                           : r.status === 'IN_PROGRESS'
@@ -346,17 +348,17 @@ export default function RepairsDashboardPage() {
                       <span>{r.issueDescription}</span>
                     </div>
                     {r.phoneRecord && (
-                      <p className="text-[9px] text-slate-400 font-mono pl-5">IMEI: {r.phoneRecord.imei1}</p>
+                      <p className="text-xs text-slate-400 font-mono pl-5">IMEI: {r.phoneRecord.imei1}</p>
                     )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
                     <div>
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Created</span>
-                      <span className="font-bold text-slate-800 text-[10px]">{dateStr}</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Created</span>
+                      <span className="font-bold text-slate-800 text-xs">{dateStr}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Est. Cost</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Est. Cost</span>
                       <span className="font-extrabold text-slate-900 text-xs">
                         ₦{(r.finalCost || r.estimatedCost || 0).toLocaleString()}
                       </span>
@@ -371,7 +373,7 @@ export default function RepairsDashboardPage() {
         {/* DESKTOP TABLE VIEW */}
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
-            <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
+            <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
               <tr>
                 <th className="py-3 px-3">Ticket ID</th>
                 <th className="py-3 px-3">Customer</th>
@@ -424,12 +426,12 @@ export default function RepairsDashboardPage() {
                       <td className="py-3.5 px-3 font-mono font-extrabold text-blue-600">{r.ticketNumber || r.id}</td>
                       <td className="py-3.5 px-3 font-bold text-slate-900">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold text-[10px] flex items-center justify-center border border-slate-200">
+                          <div className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 font-bold text-xs flex items-center justify-center border border-slate-200">
                             {getInitials(custName)}
                           </div>
                           <div>
                             <p className="font-extrabold text-slate-900">{custName}</p>
-                            <p className="text-[10px] text-slate-400 font-normal">{r.customer?.phone || ''}</p>
+                            <p className="text-xs text-slate-400 font-normal">{r.customer?.phone || ''}</p>
                           </div>
                         </div>
                       </td>
@@ -439,7 +441,7 @@ export default function RepairsDashboardPage() {
                           <div>
                             <p className="font-bold text-slate-900">{r.issueDescription}</p>
                             {r.phoneRecord && (
-                              <p className="text-[10px] text-slate-400 font-mono">IMEI: {r.phoneRecord.imei1}</p>
+                              <p className="text-xs text-slate-400 font-mono">IMEI: {r.phoneRecord.imei1}</p>
                             )}
                           </div>
                         </div>
@@ -450,7 +452,7 @@ export default function RepairsDashboardPage() {
                         <select
                           value={r.status}
                           onChange={(e) => handleStatusChange(r.id, e.target.value)}
-                          className={`text-[11px] font-extrabold px-3 py-1.5 rounded-xl border transition-all cursor-pointer focus:outline-none ${
+                          className={`text-xs font-extrabold px-3 py-1.5 rounded-xl border transition-all cursor-pointer focus:outline-none ${
                             r.status === 'DIAGNOSING'
                               ? 'bg-amber-50 text-amber-700 border-amber-300'
                               : r.status === 'IN_PROGRESS'
@@ -515,7 +517,7 @@ export default function RepairsDashboardPage() {
                   required
                   value={ticketCustomer}
                   onChange={(e) => setTicketCustomer(e.target.value)}
-                  placeholder="e.g. Sarah Connor"
+                  placeholder="e.g. Aisha Bello"
                   className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                 />
               </div>

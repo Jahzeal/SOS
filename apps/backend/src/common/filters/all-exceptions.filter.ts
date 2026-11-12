@@ -38,11 +38,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
       errorType = exception.name || 'HttpException';
     } else if (exception instanceof Error) {
-      message = exception.message;
+      // Keep the real message for our own logs only (see internalMessage below).
       errorType = exception.name || 'Error';
-    } else if (typeof exception === 'string') {
-      message = exception;
     }
+
+    // What we record internally. Unexpected errors can contain SQL, file paths
+    // or other internals, so the client only ever sees a generic message for them.
+    const internalMessage =
+      exception instanceof HttpException
+        ? message
+        : exception instanceof Error
+          ? exception.message
+          : String(exception);
 
     const stack = exception instanceof Error ? exception.stack : null;
     const endpoint = request.originalUrl || request.url || 'UNKNOWN';
@@ -53,12 +60,13 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // 2. Console diagnostic output
     this.logger.error(
-      `[${method} ${endpoint}] ${status} ${errorType}: ${message}`,
+      `[${method} ${endpoint}] ${status} ${errorType}: ${internalMessage}`,
       stack || '',
     );
 
-    // 3. Persist to database ErrorLog (only 4xx and 5xx errors)
-    if (status >= 400) {
+    // 3. Persist real faults only. Routine 4xx responses (bad password, not found,
+    //    validation) are not faults, and logging them let anyone flood the table.
+    if (status >= 500) {
       try {
         await this.prisma.errorLog.create({
           data: {
@@ -66,7 +74,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
             method,
             statusCode: status,
             errorType,
-            message: String(message).slice(0, 2000),
+            message: String(internalMessage).slice(0, 2000),
             stack: stack ? String(stack).slice(0, 5000) : null,
             businessId,
             userEmail,
@@ -78,12 +86,16 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     // 4. Return clean, consistent JSON response to client
+    const res = exception instanceof HttpException ? exception.getResponse() : null;
+    const code = res && typeof res === 'object' ? (res as any).code : undefined;
+
     response.status(status).json({
       statusCode: status,
       timestamp: new Date().toISOString(),
       path: endpoint,
-      errorType,
-      message,
+      errorType: status >= 500 ? 'InternalServerError' : errorType,
+      message: status >= 500 ? 'Something went wrong on our side. Please try again.' : message,
+      ...(code ? { code } : {}),
     });
   }
 }

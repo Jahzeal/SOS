@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect, useCallback } from 'react';
 import { api } from '@/lib/api';
 import {
@@ -132,28 +134,28 @@ export default function AdminTransactionsPage() {
     switch (method) {
       case 'CARD':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 font-semibold text-[11px] border border-blue-100">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-blue-50 text-blue-700 font-semibold text-xs border border-blue-100">
             <CreditCard className="w-3.5 h-3.5 text-blue-600 shrink-0" />
             <span>Card Payment</span>
           </span>
         );
       case 'BANK_TRANSFER':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 font-semibold text-[11px] border border-indigo-100">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-700 font-semibold text-xs border border-indigo-100">
             <Landmark className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
             <span>Bank Transfer</span>
           </span>
         );
       case 'POS':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-50 text-purple-700 font-semibold text-[11px] border border-purple-100">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-50 text-purple-700 font-semibold text-xs border border-purple-100">
             <Terminal className="w-3.5 h-3.5 text-purple-600 shrink-0" />
             <span>POS Terminal</span>
           </span>
         );
       case 'SPLIT':
         return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 font-semibold text-[11px] border border-amber-100">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-amber-50 text-amber-700 font-semibold text-xs border border-amber-100">
             <Layers className="w-3.5 h-3.5 text-amber-600 shrink-0" />
             <span>Split Payment</span>
           </span>
@@ -161,7 +163,7 @@ export default function AdminTransactionsPage() {
       case 'CASH':
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold text-[11px] border border-emerald-100">
+          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-emerald-50 text-emerald-700 font-semibold text-xs border border-emerald-100">
             <Banknote className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
             <span>Cash</span>
           </span>
@@ -171,7 +173,7 @@ export default function AdminTransactionsPage() {
 
   const handleExportCsv = () => {
     if (transactions.length === 0) {
-      alert('No transactions to export.');
+      notify('No transactions to export.');
       return;
     }
     const headers = ['Reference ID,Business Name,Type,Amount (NGN),Method,Status,Date'];
@@ -217,7 +219,7 @@ export default function AdminTransactionsPage() {
         {/* Total Processed Volume */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-subtle">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
               Total Processed Volume
             </span>
             <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -228,7 +230,7 @@ export default function AdminTransactionsPage() {
             <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
               ₦{stats.totalVolume.toLocaleString()}
             </div>
-            <div className="text-[11px] font-bold text-blue-600 mt-2 flex items-center gap-1">
+            <div className="text-xs font-bold text-blue-600 mt-2 flex items-center gap-1">
               <span>{stats.transactionCount} total recorded transactions</span>
             </div>
           </div>
@@ -237,7 +239,7 @@ export default function AdminTransactionsPage() {
         {/* Pending Settlements */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-subtle">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
               Pending Volume
             </span>
             <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -248,7 +250,7 @@ export default function AdminTransactionsPage() {
             <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight font-mono">
               ₦{stats.pendingVolume.toLocaleString()}
             </div>
-            <div className="text-[11px] font-semibold text-slate-500 mt-2">
+            <div className="text-xs font-semibold text-slate-500 mt-2">
               {stats.pendingCount} transaction(s) pending payment
             </div>
           </div>
@@ -257,7 +259,7 @@ export default function AdminTransactionsPage() {
         {/* 24h Activity */}
         <div className="bg-white border border-slate-200 rounded-2xl p-5 flex flex-col justify-between shadow-subtle">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
               Activity (Last 24h)
             </span>
             <div className="w-8 h-8 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -268,7 +270,7 @@ export default function AdminTransactionsPage() {
             <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
               {stats.last24hCount}
             </div>
-            <div className="text-[11px] font-bold text-emerald-600 mt-2 flex items-center gap-1">
+            <div className="text-xs font-bold text-emerald-600 mt-2 flex items-center gap-1">
               <span>Transactions logged in the last 24 hours</span>
             </div>
           </div>
@@ -351,14 +353,14 @@ export default function AdminTransactionsPage() {
                   <div>
                     <div className="font-mono text-xs font-bold text-blue-600 mb-0.5">{tx.refId}</div>
                     <div className="font-bold text-slate-900 text-sm">{tx.businessName}</div>
-                    <span className="text-[11px] text-slate-500 font-medium">{tx.type}</span>
+                    <span className="text-xs text-slate-500 font-medium">{tx.type}</span>
                   </div>
                   <div className="text-right">
                     <div className="font-mono font-bold text-slate-900 text-sm">
                       ₦{tx.amount.toLocaleString()}
                     </div>
                     <span
-                      className={`inline-flex items-center gap-1 px-2 py-0.5 mt-1 rounded-full text-[10px] font-bold uppercase ${
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 mt-1 rounded-full text-xs font-bold uppercase ${
                         tx.status === 'Successful'
                           ? 'bg-[#e6f4ea] text-[#137333] border border-[#ceead6]'
                           : tx.status === 'Pending'
@@ -387,7 +389,7 @@ export default function AdminTransactionsPage() {
         {/* Desktop Table View (hidden md:block) */}
         <div className="hidden md:block overflow-x-auto w-full max-w-full custom-scrollbar">
           <table className="w-full text-left border-collapse text-xs min-w-[800px]">
-            <thead className="bg-slate-50/80 sticky top-0 z-10 border-b border-slate-200 font-mono text-[11px] text-slate-500 uppercase tracking-wider">
+            <thead className="bg-slate-50/80 sticky top-0 z-10 border-b border-slate-200 font-mono text-xs text-slate-500 uppercase tracking-wider">
               <tr>
                 <th className="py-3 px-4 font-semibold">Reference ID</th>
                 <th className="py-3 px-4 font-semibold">Business Name</th>
@@ -413,7 +415,7 @@ export default function AdminTransactionsPage() {
                     </td>
                     <td className="py-3 px-4 text-center">
                       <span
-                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold uppercase ${
                           tx.status === 'Successful'
                             ? 'bg-[#e6f4ea] text-[#137333] border border-[#ceead6]'
                             : tx.status === 'Pending'
@@ -424,7 +426,7 @@ export default function AdminTransactionsPage() {
                         {tx.status}
                       </span>
                     </td>
-                    <td className="py-3 px-4 text-right text-slate-500 font-mono text-[11px]">
+                    <td className="py-3 px-4 text-right text-slate-500 font-mono text-xs">
                       {tx.timestamp}
                     </td>
                   </tr>

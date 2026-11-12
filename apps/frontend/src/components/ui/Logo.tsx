@@ -34,9 +34,9 @@ export function Logo({
   };
 
   const subtitleSizes = {
-    sm: 'text-[9px] font-bold uppercase tracking-wider',
-    md: 'text-[10px] font-bold uppercase tracking-wider',
-    lg: 'text-[11px] font-bold uppercase tracking-wider',
+    sm: 'text-xs font-bold uppercase tracking-wider',
+    md: 'text-xs font-bold uppercase tracking-wider',
+    lg: 'text-xs font-bold uppercase tracking-wider',
   };
 
   const textColor = variant === 'white' ? 'text-white' : 'text-slate-900';

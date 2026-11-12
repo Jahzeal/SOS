@@ -4,17 +4,21 @@ import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
+import { requireEnv } from '../common/config/env';
 
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET || 'super-secret-verifyflow-jwt-key-change-in-production',
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1d' },
+    // registerAsync so the secret is read after .env has been loaded
+    JwtModule.registerAsync({
+      useFactory: () => ({
+        secret: requireEnv('JWT_SECRET'),
+        signOptions: { expiresIn: process.env.JWT_EXPIRES_IN || '1d' },
+      }),
     }),
   ],
   controllers: [AuthController],
   providers: [AuthService, JwtStrategy],
-  exports: [AuthService, JwtStrategy, PassportModule],
+  exports: [AuthService, JwtStrategy, PassportModule, JwtModule],
 })
 export class AuthModule {}

@@ -56,7 +56,7 @@ export function StatCard({
       <div className="mt-3 flex items-baseline justify-between">
         <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{value}</span>
         {badgeText && (
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
             {badgeText}
           </span>
         )}
@@ -111,7 +111,7 @@ export function ActivityItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-center justify-between gap-2">
           <h4 className="text-xs sm:text-sm font-semibold text-slate-900 truncate">{title}</h4>
-          <span className="text-[11px] text-slate-400 shrink-0">{timestamp}</span>
+          <span className="text-xs text-slate-400 shrink-0">{timestamp}</span>
         </div>
         <p className="text-xs text-slate-500 mt-0.5 truncate">{subtitle}</p>
       </div>
@@ -135,7 +135,7 @@ export function FeatureCard({ title, description, icon, badge }: FeatureCardProp
           {icon}
         </div>
         {badge && (
-          <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
+          <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600">
             {badge}
           </span>
         )}
@@ -175,7 +175,7 @@ export function PricingCard({
       }`}
     >
       {isPopular && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[11px] font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-blue-600 text-white shadow-sm">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-blue-600 text-white shadow-sm">
           Most Popular
         </span>
       )}

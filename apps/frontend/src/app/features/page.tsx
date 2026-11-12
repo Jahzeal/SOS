@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import { SiteFooter } from '@/components/marketing/SiteFooter';
 import {
   ShieldCheck,
   Smartphone,
@@ -48,7 +49,7 @@ export default function FeaturesPage() {
             <Link href="/features" className="text-teal-600 transition">Features & Workflows</Link>
             <Link href="/pricing" className="hover:text-slate-900 transition">Pricing</Link>
             <Link href="/#faq" className="hover:text-slate-900 transition">FAQ</Link>
-            <Link href="/dashboard/verify" className="hover:text-slate-900 transition">Public Scanner</Link>
+            <Link href="/#verify-widget" className="hover:text-slate-900 transition">Verify a Device</Link>
           </div>
 
           <div className="flex items-center gap-3">
@@ -59,7 +60,7 @@ export default function FeaturesPage() {
             </Link>
             <Link href="/onboarding">
               <Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-700 font-bold text-xs shadow-sm shadow-teal-600/20">
-                Start Free Trial
+                Start free
               </Button>
             </Link>
           </div>
@@ -72,24 +73,24 @@ export default function FeaturesPage() {
       <section className="relative overflow-hidden pt-16 pb-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-white via-teal-50/20 to-slate-50 border-b border-slate-200">
         <div className="max-w-5xl mx-auto text-center space-y-6">
           <div className="inline-flex items-center px-4 py-1.5 rounded-full bg-slate-100 border border-slate-200 text-slate-800 font-extrabold text-xs shadow-xs">
-            <span>The Complete OS Purpose-Built for Electronics Retailers</span>
+            <span>Built for Sellers of Phones, Laptops & Accessories</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
-            Everything your phone & laptop store needs. <br className="hidden sm:inline" />
+            Everything your phone, laptop & accessory store needs. <br className="hidden sm:inline" />
             <span className="text-teal-600">
               Without the clutter.
             </span>
           </h1>
 
           <p className="text-sm sm:text-base text-slate-600 max-w-2xl mx-auto font-medium leading-relaxed">
-            NoxGuarda replaces disconnected spreadsheets and generic tools with a single hardware-aware operating system: IMEI-level verification, POS receipts, corporate commercial invoices, live repair tickets, digital warranty passports, and comprehensive laptop inventory management.
+            NoxGuarda replaces scattered spreadsheets and generic tools with one workspace: verification by IMEI or serial number, receipts, invoices and quotations, repair tickets, warranty records, and stock for phones and laptops.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link href="/onboarding" className="w-full sm:w-auto">
               <Button size="lg" className="w-full bg-teal-600 hover:bg-teal-700 font-extrabold text-sm shadow-md shadow-teal-600/20 px-8 py-3.5">
-                Start 14-Day Free Trial
+                Start free
               </Button>
             </Link>
             <Link href="/pricing" className="w-full sm:w-auto">
@@ -101,23 +102,29 @@ export default function FeaturesPage() {
 
           {/* Quick Pillar Jump Navigation */}
           <div className="pt-8 flex flex-wrap items-center justify-center gap-2 text-xs font-bold">
-            <a href="#verification" className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
-              🛡️ Phone Verification
+            <a href="#verification" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
+              <ShieldCheck className="w-3.5 h-3.5 text-teal-600 shrink-0" aria-hidden="true" />
+              Phone Verification
             </a>
-            <a href="#inventory" className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
-              📱 Serial Inventory
+            <a href="#inventory" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
+              <Smartphone className="w-3.5 h-3.5 text-teal-600 shrink-0" aria-hidden="true" />
+              Serial Inventory
             </a>
-            <a href="#invoicing" className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
-              🧾 POS & Corporate Invoices
+            <a href="#invoicing" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
+              <Receipt className="w-3.5 h-3.5 text-teal-600 shrink-0" aria-hidden="true" />
+              POS & Corporate Invoices
             </a>
-            <a href="#warranty" className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
-              🛡️ Digital Warranties
+            <a href="#warranty" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
+              <FileText className="w-3.5 h-3.5 text-teal-600 shrink-0" aria-hidden="true" />
+              Digital Warranties
             </a>
-            <a href="#repairs" className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
-              🔧 Repair Desk
+            <a href="#repairs" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
+              <Wrench className="w-3.5 h-3.5 text-teal-600 shrink-0" aria-hidden="true" />
+              Repair Desk
             </a>
-            <a href="#public-portal" className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
-              🔍 Buyer QR Verification
+            <a href="#public-portal" className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-700 hover:border-teal-400 hover:text-teal-700 shadow-xs transition">
+              <QrCode className="w-3.5 h-3.5 text-teal-600 shrink-0" aria-hidden="true" />
+              Buyer QR Verification
             </a>
           </div>
         </div>
@@ -139,7 +146,7 @@ export default function FeaturesPage() {
               Instant IMEI & Hardware Authenticity Verification
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-medium">
-              Eliminate counterfeit devices, stolen phone claims, and duplicate serial swaps. NoxGuarda validates hardware serials and IMEI pairs instantly when checking in store inventory or processing trade-ins.
+              Cut down on stolen-device disputes and serial swaps. NoxGuarda checks IMEI and serial numbers against your own records and the stolen-device registry when you take in stock or a trade-in.
             </p>
             <ul className="space-y-3 text-xs font-semibold text-slate-700">
               <li className="flex items-start gap-2.5">
@@ -148,11 +155,11 @@ export default function FeaturesPage() {
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Anti-Stolen Device Blacklisting:</strong> Flag reported stolen devices and prevent resale in real-time.</span>
+                <span><strong>Anti-Stolen Device Blacklisting:</strong> Devices reported stolen are flagged whenever they are checked.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>QR Digital Passports:</strong> Generates tamper-proof QR tags for every verified device.</span>
+                <span><strong>QR Verification Codes:</strong> Every registered device gets a QR code that opens its verification page.</span>
               </li>
             </ul>
             <div className="pt-2">
@@ -189,7 +196,7 @@ export default function FeaturesPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Registration Store</span>
-                <span className="font-bold text-slate-900">TechWorld Mobile (Ikeja Main)</span>
+                <span className="font-bold text-slate-900">Sample Store, Ikeja</span>
               </div>
             </div>
           </div>
@@ -200,7 +207,7 @@ export default function FeaturesPage() {
           <div className="lg:col-span-6 order-2 lg:order-1 p-6 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="font-extrabold text-sm text-slate-900">Live Serialized Inventory Hub</h3>
-              <span className="text-xs text-teal-600 font-bold">Multi-Branch Synced</span>
+              <span className="text-xs text-teal-600 font-bold">Sample data</span>
             </div>
 
             <div className="space-y-2">
@@ -242,13 +249,13 @@ export default function FeaturesPage() {
           <div className="lg:col-span-6 order-1 lg:order-2 space-y-5">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-blue-50 text-blue-700 font-extrabold text-xs border border-blue-200">
               <Smartphone className="w-4 h-4" />
-              <span>PILLAR 02 • MULTI-STORE SERIAL INVENTORY</span>
+              <span>PILLAR 02 • SERIAL INVENTORY</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Never Lose Track of a Single Phone or IMEI
+              Never Lose Track of a Single Device
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-medium">
-              Generic POS systems track quantities ("iPhone 15 x 5"). NoxGuarda tracks exact physical devices with individual battery health, purchase cost, selling price, and warranty durations across all branch stores.
+              Generic POS systems track quantities ("iPhone 15 x 5"). NoxGuarda tracks each physical phone and laptop with its own condition, purchase cost, selling price and warranty period.
             </p>
             <ul className="space-y-3 text-xs font-semibold text-slate-700">
               <li className="flex items-start gap-2.5">
@@ -261,7 +268,7 @@ export default function FeaturesPage() {
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" />
-                <span><strong>Stock Ageing Alerts:</strong> Identify aging devices on shelf to discount before value drops.</span>
+                <span><strong>Stock Status:</strong> See at a glance what is in stock, sold, reserved, in repair or returned.</span>
               </li>
             </ul>
             <div className="pt-2">
@@ -285,7 +292,7 @@ export default function FeaturesPage() {
               Dual-Mode Checkout: 80mm POS Thermal & Corporate A4 Invoices
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-medium">
-              Run fast counter checkout with thermal QR receipts, or generate structured corporate A4 commercial invoices with complete payment logs, bank details, and legal warranty clauses.
+              Run fast counter checkout for devices and accessories with QR receipts, or issue A4 invoices and quotations with payment history, bank details and your warranty terms.
             </p>
             <ul className="space-y-3 text-xs font-semibold text-slate-700">
               <li className="flex items-start gap-2.5">
@@ -383,10 +390,10 @@ export default function FeaturesPage() {
               <span>PILLAR 04 • DIGITAL STORE GUARANTEES</span>
             </div>
             <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-              Automate Warranties & Build Unshakable Trust
+              Keep Warranty Records Buyers Can Check
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-medium">
-              Turn warranty promises from a messy paperwork hassle into your biggest competitive advantage. Customers get automated countdowns and verifiable warranty proof on their phones.
+              Turn warranty promises from a messy paperwork hassle into your biggest competitive advantage. Customers can check their warranty status themselves by scanning the receipt.
             </p>
             <ul className="space-y-3 text-xs font-semibold text-slate-700">
               <li className="flex items-start gap-2.5">
@@ -399,13 +406,13 @@ export default function FeaturesPage() {
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                <span><strong>Automated Expiration Warnings:</strong> Notify customers before warranty lapses with upgrade offers.</span>
+                <span><strong>Expiry Date on Record:</strong> The warranty end date is saved with the sale and shown on the verification page.</span>
               </li>
             </ul>
             <div className="pt-2">
               <Link href="/onboarding">
                 <Button size="md" className="bg-teal-600 hover:bg-teal-500 font-bold text-xs text-white" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                  Start Free Trial
+                  Start free
                 </Button>
               </Link>
             </div>
@@ -423,7 +430,7 @@ export default function FeaturesPage() {
               Track Repairs from Intake to Customer Pickup
             </h2>
             <p className="text-sm text-slate-600 leading-relaxed font-medium">
-              Manage phone repair tickets, technician diagnosis, replacement parts cost, and customer pickup alerts in one unified repair pipeline.
+              Manage repair tickets for phones and laptops: technician diagnosis, parts cost, and a clear status from intake to ready for pickup.
             </p>
             <ul className="space-y-3 text-xs font-semibold text-slate-700">
               <li className="flex items-start gap-2.5">
@@ -436,7 +443,7 @@ export default function FeaturesPage() {
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <span><strong>Estimated vs Final Costing:</strong> Automatic bill calculation for parts and technician labor.</span>
+                <span><strong>Estimated vs Final Cost:</strong> Record the estimate at intake and the final cost on completion.</span>
               </li>
             </ul>
             <div className="pt-2">
@@ -481,7 +488,7 @@ export default function FeaturesPage() {
             </div>
             <h3 className="font-extrabold text-base text-slate-900">Zero App Download Required</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto leading-relaxed">
-              Customers scan the QR code on your printed receipt or phone box with their standard camera app to verify legitimacy instantly.
+              Customers scan the QR code on your receipt with their normal camera app to check the device in seconds.
             </p>
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs font-mono text-slate-700">
               noxguarda.com/verify/354892019482019
@@ -502,7 +509,7 @@ export default function FeaturesPage() {
             <ul className="space-y-3 text-xs font-semibold text-slate-700">
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Custom Store Branding:</strong> Show your store logo, phone number, and branch address on verification pages.</span>
+                <span><strong>Your Store Details:</strong> Show your store name and contact details on verification pages.</span>
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
@@ -510,7 +517,7 @@ export default function FeaturesPage() {
               </li>
               <li className="flex items-start gap-2.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                <span><strong>Store Reputation Growth:</strong> Verified stores build repeat customer loyalty and word-of-mouth referrals.</span>
+                <span><strong>Stolen-Device Check:</strong> Buyers also see if the device has been reported stolen.</span>
               </li>
             </ul>
             <div className="pt-2">
@@ -531,15 +538,15 @@ export default function FeaturesPage() {
       <section className="bg-slate-900 text-white py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           <h2 className="text-3xl sm:text-4xl font-black tracking-tight">
-            Ready to upgrade your phone store operations?
+            Ready to upgrade how your store runs?
           </h2>
           <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto font-medium">
-            Join hundreds of phone retailers, wholesalers, and technicians using NoxGuarda. Full access free for 14 days.
+            For retailers, wholesalers and technicians dealing in phones, laptops and accessories. Free forever for up to 10 devices.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
             <Link href="/onboarding" className="w-full sm:w-auto">
               <Button size="lg" className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-3.5">
-                Start 14-Day Free Trial
+                Start free
               </Button>
             </Link>
             <Link href="/pricing" className="w-full sm:w-auto">
@@ -551,19 +558,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="bg-white border-t border-slate-200 py-10 px-4 sm:px-6 lg:px-8 text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <Logo size="sm" />
-          <div className="flex items-center gap-6 font-bold">
-            <Link href="/features" className="hover:text-slate-900">Features</Link>
-            <Link href="/pricing" className="hover:text-slate-900">Pricing</Link>
-            <Link href="/dashboard/verify" className="hover:text-slate-900">Verification</Link>
-            <Link href="/login" className="hover:text-slate-900">Sign In</Link>
-          </div>
-          <p>© {new Date().getFullYear()} NoxGuarda. All rights reserved.</p>
-        </div>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }

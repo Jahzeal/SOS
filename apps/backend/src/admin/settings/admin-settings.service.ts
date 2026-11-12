@@ -41,7 +41,7 @@ export class AdminSettingsService implements OnModuleInit {
       rateLimitPerMinute: '120',
       maxLookupsPerDayFree: '50',
       alertEmail: process.env.ALERT_EMAIL || 'security@noxguarda.com',
-      webhookSecret: process.env.WEBHOOK_SECRET || 'whsec_noxguarda_live_89410384',
+      webhookSecret: process.env.WEBHOOK_SECRET ? '********' : '',
       paystackLiveEnabled: process.env.PAYSTACK_LIVE_ENABLED || 'true',
       // Email defaults
       welcomeEmailEnabled: 'true',
@@ -81,7 +81,7 @@ export class AdminSettingsService implements OnModuleInit {
       rateLimitPerMinute: parseInt(map.get('rateLimitPerMinute') || '120', 10),
       maxLookupsPerDayFree: parseInt(map.get('maxLookupsPerDayFree') || '50', 10),
       alertEmail: map.get('alertEmail') || 'security@noxguarda.com',
-      webhookSecret: map.get('webhookSecret') || 'whsec_noxguarda_live_89410384',
+      webhookSecret: map.get('webhookSecret') || '',
       paystackLiveEnabled: map.get('paystackLiveEnabled') === 'true',
       // Email fields
       welcomeEmailEnabled: map.get('welcomeEmailEnabled') !== 'false',
@@ -137,7 +137,7 @@ export class AdminSettingsService implements OnModuleInit {
       targetEmail,
       'Test Merchant',
       'Apex Digital Gadgets (Test)',
-      'Enterprise Pro Trial',
+      'Free',
       payload.template,
     );
 

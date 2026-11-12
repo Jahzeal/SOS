@@ -139,7 +139,7 @@ export default function AdminBusinessesManagementPage() {
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-subtle">
         <div className="overflow-x-auto w-full custom-scrollbar">
           <table className="w-full text-left border-collapse text-xs min-w-[760px]">
-            <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-mono text-[11px] uppercase tracking-wider">
+            <thead className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-mono text-xs uppercase tracking-wider">
               <tr>
                 <th className="px-5 py-3 font-semibold">Business</th>
                 <th className="px-4 py-3 font-semibold">Contact / Email</th>
@@ -161,14 +161,14 @@ export default function AdminBusinessesManagementPage() {
                         </div>
                         <div>
                           <div className="font-extrabold text-slate-900">{b.name}</div>
-                          <div className="text-[11px] text-slate-400 font-mono">/{b.slug}</div>
+                          <div className="text-xs text-slate-400 font-mono">/{b.slug}</div>
                         </div>
                       </div>
                     </td>
 
                     <td className="px-4 py-3.5">
                       <div className="text-slate-900 font-semibold">{b.email || '—'}</div>
-                      <div className="text-[11px] text-slate-400">
+                      <div className="text-xs text-slate-400">
                         {b.phone && b.phone !== '+15550192834' ? b.phone : '—'}
                       </div>
                     </td>
@@ -176,7 +176,7 @@ export default function AdminBusinessesManagementPage() {
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-1.5 flex-wrap">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase ${
                             b.plan === 'ENTERPRISE'
                               ? 'bg-purple-100 text-purple-800'
                               : b.plan === 'BUSINESS'
@@ -187,12 +187,16 @@ export default function AdminBusinessesManagementPage() {
                           {b.plan}
                         </span>
                         {b.subscriptionStatus === 'ACTIVE' ? (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
                             Active (Paid)
                           </span>
                         ) : (
-                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[9px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
-                            14-Day Trial
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                            {b.subscriptionStatus === 'TRIAL'
+                            ? 'Trial (old)'
+                            : b.subscriptionStatus === 'EXPIRED' || b.subscriptionStatus === 'PAST_DUE'
+                            ? 'Expired'
+                            : 'Free'}
                           </span>
                         )}
                       </div>
@@ -234,12 +238,12 @@ export default function AdminBusinessesManagementPage() {
                           </>
                         )}
                         {!b.email && (!b.phone || b.phone === '+15550192834') && (
-                          <span className="text-slate-400 text-[11px]">—</span>
+                          <span className="text-slate-400 text-xs">—</span>
                         )}
                       </div>
                     </td>
 
-                    <td className="px-5 py-3.5 text-right font-mono text-[11px] text-slate-400">
+                    <td className="px-5 py-3.5 text-right font-mono text-xs text-slate-400">
                       {new Date(b.createdAt).toLocaleDateString()}
                     </td>
                   </tr>

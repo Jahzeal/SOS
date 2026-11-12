@@ -318,7 +318,7 @@ model RepairTicket {
 model Sale {
   id                    String            @id @default(uuid())
   invoiceNumber         String
-  receiptNumber         String?           @unique
+  receiptNumber         String?
   businessId            String
   business              Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
@@ -345,6 +345,10 @@ model Sale {
 
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
+
+  // Receipt numbers are sequential per store, so they are unique per store.
+  @@unique([businessId, receiptNumber])
+  @@index([businessId, createdAt])
 }
 
 model SaleItem {
@@ -657,4 +661,32 @@ model ErrorLog {
   @@index([errorType])
   @@index([statusCode])
   @@index([createdAt])
+}
+
+// Per-store running numbers for invoices, receipts, quotes and repair tickets.
+model DocumentCounter {
+  businessId String
+  kind       String // "INVOICE", "RECEIPT", "REPAIR", "QUOTE-2026"
+  value      Int    @default(0)
+
+  @@id([businessId, kind])
+}
+
+// Fixed-window request counters. Lives in the database because the API runs on
+// serverless instances that do not share memory.
+model RateLimitBucket {
+  key          String   @id
+  count        Int      @default(0)
+  windowEndsAt DateTime
+
+  @@index([windowEndsAt])
+}
+
+// One pending email verification code per address (only a hash of the code is stored).
+model EmailOtp {
+  email     String   @id
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
 }

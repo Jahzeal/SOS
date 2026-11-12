@@ -1,5 +1,6 @@
 import { Controller, Get, Put, Body, UseGuards } from '@nestjs/common';
 import { BusinessService } from './business.service';
+import { UpdateBusinessSettingsDto, UpdateTemplateSettingsDto, UpdatePlanDto } from './dto/business.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 
@@ -14,13 +15,13 @@ export class BusinessController {
   }
 
   @Put('settings')
-  async updateSettings(@CurrentUser() user: any, @Body() body: any) {
+  async updateSettings(@CurrentUser() user: any, @Body() body: UpdateBusinessSettingsDto) {
     return this.businessService.updateBusinessProfile(user.businessId, body);
   }
 
   @Put('plan')
-  async updatePlan(@CurrentUser() user: any, @Body('plan') plan: any) {
-    return this.businessService.updatePlan(user.businessId, plan);
+  async updatePlan(@CurrentUser() user: any, @Body() body: UpdatePlanDto) {
+    return this.businessService.updatePlan(user.businessId, body.plan);
   }
 
   @Get('templates')
@@ -29,7 +30,7 @@ export class BusinessController {
   }
 
   @Put('templates')
-  async updateTemplates(@CurrentUser() user: any, @Body() body: any) {
+  async updateTemplates(@CurrentUser() user: any, @Body() body: UpdateTemplateSettingsDto) {
     return this.businessService.updateTemplateSettings(user.businessId, body);
   }
 }

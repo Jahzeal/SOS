@@ -467,8 +467,8 @@ export class DashboardService {
       });
     }
 
-    // Workspace / Trial Status notification
-    if (business.trialEndsAt) {
+    // Stores created before the Free plan replaced trials may still be on a trial.
+    if (business.trialEndsAt && String(business.subscriptionStatus || '').toUpperCase() === 'TRIAL') {
       const diffDays = Math.ceil((new Date(business.trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       notifications.push({
         id: `biz_trial_${business.id}`,
@@ -476,7 +476,7 @@ export class DashboardService {
         description:
             diffDays > 0
             ? `Welcome to NoxGuarda! ${diffDays}-day free trial active.`
-            : 'Your free trial has ended. Upgrade to continue syncing store records.',
+            : 'Your free trial has ended. Choose a plan to keep adding records.',
         createdAt: business.createdAt,
         icon: 'bell',
         href: '/dashboard/settings',

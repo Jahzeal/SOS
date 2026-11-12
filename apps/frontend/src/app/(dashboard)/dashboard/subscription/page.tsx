@@ -41,8 +41,8 @@ export default function BusinessSubscriptionPage() {
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
 
   const business = businessProfile || user?.business;
-  const currentPlanCode = (business?.plan || 'STARTER101').toUpperCase();
-  const subscriptionStatus = (business?.subscriptionStatus || 'TRIAL').toUpperCase();
+  const currentPlanCode = (business?.plan || 'FREE').toUpperCase();
+  const subscriptionStatus = (business?.subscriptionStatus || 'FREE').toUpperCase();
 
   // Dynamically match active plan from database publicPlans or business profile
   const activePlan = publicPlans.find((p: any) => 
@@ -54,17 +54,15 @@ export default function BusinessSubscriptionPage() {
   const planDescription = activePlan?.description || `Dedicated retail inventory & verification plan for ${business?.name || 'your store'}.`;
   const monthlyPrice = activePlan?.monthlyPriceNgn ?? 5000;
   const annualPrice = activePlan?.annualPriceNgn ?? monthlyPrice * 10;
-  const maxDevices = activePlan?.maxDevices || 500;
+  const maxDevices = activePlan?.maxDevices || (currentPlanCode === 'FREE' ? 10 : 500);
   const maxUsers = activePlan?.maxUsers || 3;
 
-  // Calculate Trial Days Remaining
+  // Only stores created before the Free plan replaced trials can still be on a trial.
   const getTrialInfo = () => {
     if (subscriptionStatus !== 'TRIAL') return null;
-    if (!business?.trialEndsAt && !business?.createdAt) return null;
+    if (!business?.trialEndsAt) return null;
 
-    const trialEnd = business?.trialEndsAt
-      ? new Date(business.trialEndsAt)
-      : new Date(new Date(business.createdAt).getTime() + 14 * 24 * 60 * 60 * 1000);
+    const trialEnd = new Date(business.trialEndsAt);
 
     const now = new Date();
     const diffTime = trialEnd.getTime() - now.getTime();
@@ -92,12 +90,12 @@ export default function BusinessSubscriptionPage() {
 
   const faqs = [
     {
-      q: 'How does the 14-day free trial work?',
-      a: 'All new businesses receive full access to their chosen tier for 14 days with zero commitment and no credit card required. You can register devices, issue receipts, and print QR codes immediately.',
+      q: 'Is the Free plan really free?',
+      a: 'Yes. The Free plan is free forever and needs no card. You can keep up to 10 devices in your records, issue receipts and print QR codes. When you need more than 10 devices, pay for a paid plan.',
     },
     {
-      q: 'What happens when my trial expires?',
-      a: 'Your registered devices and inventory data remain completely safe and intact. To continue registering new items, creating quotes, and accessing advanced analytics, simply activate an active subscription.',
+      q: 'What happens when my paid plan runs out?',
+      a: 'Your devices, sales and receipts stay safe. To keep adding new records, renew the plan, or move to the Free plan (free forever, up to 10 devices).',
     },
     {
       q: 'Can I upgrade or switch my plan at any time?',
@@ -140,7 +138,7 @@ export default function BusinessSubscriptionPage() {
         </div>
       </div>
 
-      {/* Trial Expiry Warning Banner (If Trial Active or Expiring) */}
+      {/* Legacy trial notice. New stores never get a trial. */}
       {trialInfo && (
         <div className={`p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in duration-200 ${
           trialInfo.isExpired
@@ -159,17 +157,17 @@ export default function BusinessSubscriptionPage() {
               <div className="flex items-center gap-2">
                 <span className="font-extrabold text-sm sm:text-base">
                   {trialInfo.isExpired
-                    ? '14-Day Free Trial Has Expired'
-                    : `${trialInfo.daysRemaining} Days Remaining in Free Trial`}
+                    ? 'Your Trial Has Ended'
+                    : `${trialInfo.daysRemaining} Days Left on Your Trial`}
                 </span>
-                <span className="px-2 py-0.5 rounded-md bg-white/80 border border-current text-[10px] font-black uppercase">
+                <span className="px-2 py-0.5 rounded-md bg-white/80 border border-current text-xs font-black uppercase">
                   Ends {trialInfo.endDate}
                 </span>
               </div>
               <p className="text-xs font-medium opacity-90 mt-0.5">
                 {trialInfo.isExpired
-                  ? 'Activate an active subscription below to restore full inventory ingestion and sales features.'
-                  : 'Enjoy unlimited access during your trial period. Upgrade anytime to ensure zero interruption.'}
+                  ? 'Pay for a plan below to keep adding stock and making sales, or move to the Free plan (free forever, up to 10 devices).'
+                  : 'Pay for a plan before it ends, or move to the Free plan (free forever, up to 10 devices).'}
               </p>
             </div>
           </div>
@@ -196,9 +194,11 @@ export default function BusinessSubscriptionPage() {
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Current Plan</span>
-                  <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                  <span className={`px-2 py-0.5 rounded-md text-xs font-black uppercase ${
                     subscriptionStatus === 'ACTIVE'
                       ? 'bg-emerald-100 text-emerald-800'
+                      : subscriptionStatus === 'FREE'
+                      ? 'bg-teal-100 text-teal-800'
                       : subscriptionStatus === 'TRIAL'
                       ? 'bg-amber-100 text-amber-800'
                       : 'bg-rose-100 text-rose-800'
@@ -218,7 +218,7 @@ export default function BusinessSubscriptionPage() {
                 <span className="text-xl sm:text-2xl font-black text-teal-600 block">
                   ₦{monthlyPrice.toLocaleString()}
                 </span>
-                <span className="text-[10px] text-slate-400 font-bold uppercase block">Per Month</span>
+                <span className="text-xs text-slate-400 font-bold uppercase block">Per Month</span>
               </div>
             </div>
 
@@ -373,7 +373,7 @@ export default function BusinessSubscriptionPage() {
               }`}
             >
               Annual Billing
-              <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black">
+              <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
                 Save 20%
               </span>
             </button>
@@ -398,7 +398,7 @@ export default function BusinessSubscriptionPage() {
                 }`}
               >
                 {isCurrent && (
-                  <span className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-teal-600 text-white text-[10px] font-black uppercase tracking-wider shadow-xs">
+                  <span className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-teal-600 text-white text-xs font-black uppercase tracking-wider shadow-xs">
                     Your Active Plan
                   </span>
                 )}
@@ -407,7 +407,7 @@ export default function BusinessSubscriptionPage() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-black text-slate-900">{plan.name}</h3>
                     {plan.code === 'PRO' && (
-                      <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-black uppercase">
+                      <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-black uppercase">
                         Most Popular
                       </span>
                     )}
@@ -424,7 +424,7 @@ export default function BusinessSubscriptionPage() {
                       <span className="text-xs text-slate-400 font-bold">/ month</span>
                     </div>
                     {billingCycle === 'annual' && (
-                      <span className="text-[11px] text-emerald-700 font-bold block mt-0.5">
+                      <span className="text-xs text-emerald-700 font-bold block mt-0.5">
                         Billed annually (₦{annualPrice.toLocaleString()} / year)
                       </span>
                     )}

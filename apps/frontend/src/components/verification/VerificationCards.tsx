@@ -79,19 +79,19 @@ export function VerifiedPhoneCard({ data }: { data: VerifiedPhoneData }) {
       {/* Key Numbers & Warranty Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
         <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/60">
-          <div className="text-[11px] text-slate-500 font-medium">IMEI Number</div>
+          <div className="text-xs text-slate-500 font-medium">IMEI Number</div>
           <div className="font-mono font-bold text-slate-800 truncate mt-0.5">{data.imei}</div>
         </div>
         <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/60">
-          <div className="text-[11px] text-slate-500 font-medium">Serial Number</div>
+          <div className="text-xs text-slate-500 font-medium">Serial Number</div>
           <div className="font-mono font-bold text-slate-800 truncate mt-0.5">{data.serialNumber}</div>
         </div>
         <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/60">
-          <div className="text-[11px] text-slate-500 font-medium">Purchase Date</div>
+          <div className="text-xs text-slate-500 font-medium">Purchase Date</div>
           <div className="font-semibold text-slate-800 mt-0.5">{data.purchaseDate}</div>
         </div>
         <div className="p-3 rounded-lg bg-slate-50 border border-slate-200/60">
-          <div className="text-[11px] text-slate-500 font-medium">Registered Buyer</div>
+          <div className="text-xs text-slate-500 font-medium">Registered Buyer</div>
           <div className="font-semibold text-slate-800 truncate mt-0.5">{data.customerName}</div>
         </div>
       </div>
@@ -152,7 +152,7 @@ export function QRScanSuccessCard({ code }: { code: string }) {
         </div>
         <div>
           <div className="text-xs font-bold text-emerald-950">QR Code Scanned</div>
-          <div className="text-[11px] font-mono text-emerald-700">{code}</div>
+          <div className="text-xs font-mono text-emerald-700">{code}</div>
         </div>
       </div>
       <Badge variant="verified" size="sm">

@@ -13,10 +13,11 @@ import { RepairsService } from './repairs.service';
 import { CreateRepairTicketDto } from './dto/create-repair-ticket.dto';
 import { UpdateRepairStatusDto } from './dto/update-repair-status.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { RepairStatus } from '@prisma/client';
 
 @Controller('repairs')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, SubscriptionGuard)
 export class RepairsController {
   constructor(private readonly repairsService: RepairsService) {}
 

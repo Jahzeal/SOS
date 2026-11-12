@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -139,7 +141,7 @@ export default function QuotesRegistryPage() {
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
 
   const handleConvertToSale = async (quote: Quote) => {
-    if (!confirm(`Convert Quotation ${quote.quoteNumber} into a Commercial Invoice / Sale? This will generate the invoice and lock device inventory.`)) {
+    if (!await confirmDialog(`Convert Quotation ${quote.quoteNumber} into a Commercial Invoice / Sale? This will generate the invoice and lock device inventory.`)) {
       return;
     }
 
@@ -152,7 +154,7 @@ export default function QuotesRegistryPage() {
         await loadQuotes();
       }
     } catch (err: any) {
-      alert(err.message || 'Failed to convert quotation to invoice.');
+      notify(err.message || 'Failed to convert quotation to invoice.');
     } finally {
       setConvertingQuoteId(null);
     }
@@ -162,7 +164,7 @@ export default function QuotesRegistryPage() {
     if (!selectedQuoteForPayment) return;
     const amount = parseFloat(paymentAmount);
     if (!amount || amount <= 0) {
-      alert('Please enter a valid deposit or payment amount.');
+      notify('Please enter a valid deposit or payment amount.');
       return;
     }
 
@@ -174,14 +176,14 @@ export default function QuotesRegistryPage() {
         reference: paymentRef.trim() || undefined,
         notes: paymentNotes.trim() || undefined,
       });
-      alert(`Payment of ₦${amount.toLocaleString()} recorded successfully!`);
+      notify(`Payment of ₦${amount.toLocaleString()} recorded successfully!`);
       setSelectedQuoteForPayment(null);
       setPaymentAmount('');
       setPaymentRef('');
       setPaymentNotes('');
       loadQuotes();
     } catch (err: any) {
-      alert(err.message || 'Failed to record payment.');
+      notify(err.message || 'Failed to record payment.');
     } finally {
       setIsRecordingPayment(false);
     }
@@ -196,7 +198,7 @@ export default function QuotesRegistryPage() {
       setReminderResult(res);
       loadQuotes();
     } catch (err: any) {
-      alert(err.message || 'Failed to send payment reminder.');
+      notify(err.message || 'Failed to send payment reminder.');
       setSelectedQuoteForReminder(null);
     } finally {
       setIsSendingReminder(false);
@@ -226,21 +228,21 @@ export default function QuotesRegistryPage() {
   const getStatusBadge = (status: Quote['status']) => {
     switch (status) {
       case 'DRAFT':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-100 text-slate-700 border border-slate-200">DRAFT</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-slate-100 text-slate-700 border border-slate-200">DRAFT</span>;
       case 'SENT':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">SENT</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">SENT</span>;
       case 'PARTIALLY_PAID':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-50 text-amber-800 border border-amber-300">PARTIAL DEPOSIT</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 text-amber-800 border border-amber-300">PARTIAL DEPOSIT</span>;
       case 'ACCEPTED':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">ACCEPTED</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">ACCEPTED</span>;
       case 'CONVERTED':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-purple-50 text-purple-700 border border-purple-200">CONVERTED</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">CONVERTED</span>;
       case 'DECLINED':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-rose-50 text-rose-700 border border-rose-200">DECLINED</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-rose-50 text-rose-700 border border-rose-200">DECLINED</span>;
       case 'EXPIRED':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200">EXPIRED</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200">EXPIRED</span>;
       default:
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-100 text-slate-700">{status}</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-slate-100 text-slate-700">{status}</span>;
     }
   };
 
@@ -291,7 +293,7 @@ export default function QuotesRegistryPage() {
               ₦{(stats?.totalQuotedAmount || 0).toLocaleString()}
             </p>
           )}
-          <p className="text-[11px] font-semibold text-slate-400">
+          <p className="text-xs font-semibold text-slate-400">
             Across {stats?.totalQuotesCount || 0} total proposals
           </p>
         </div>
@@ -305,7 +307,7 @@ export default function QuotesRegistryPage() {
               ₦{(stats?.acceptedAmount || 0).toLocaleString()}
             </p>
           )}
-          <p className="text-[11px] font-semibold text-slate-400">
+          <p className="text-xs font-semibold text-slate-400">
             {stats?.acceptedCount || 0} quotes approved
           </p>
         </div>
@@ -319,7 +321,7 @@ export default function QuotesRegistryPage() {
               {stats?.activeCount || 0}
             </p>
           )}
-          <p className="text-[11px] font-semibold text-slate-400">
+          <p className="text-xs font-semibold text-slate-400">
             Awaiting client confirmation
           </p>
         </div>
@@ -333,7 +335,7 @@ export default function QuotesRegistryPage() {
               {stats?.conversionRate || 0}%
             </p>
           )}
-          <p className="text-[11px] font-semibold text-slate-400">
+          <p className="text-xs font-semibold text-slate-400">
             {stats?.convertedCount || 0} converted to sales
           </p>
         </div>
@@ -440,7 +442,7 @@ export default function QuotesRegistryPage() {
                           {quote.customer?.name || 'Walk-in / General Client'}
                         </p>
                         {quote.customer?.phone && (
-                          <p className="text-[11px] text-slate-400 font-mono">{quote.customer.phone}</p>
+                          <p className="text-xs text-slate-400 font-mono">{quote.customer.phone}</p>
                         )}
                       </div>
 
@@ -449,34 +451,34 @@ export default function QuotesRegistryPage() {
                           ₦{quote.totalAmount.toLocaleString()}
                         </span>
                         {quote.amountPaid > 0 && (
-                          <span className="text-[10px] text-emerald-600 font-mono font-bold block">
+                          <span className="text-xs text-emerald-600 font-mono font-bold block">
                             Paid: ₦{quote.amountPaid.toLocaleString()}
                           </span>
                         )}
                         {quote.balanceDue > 0 && quote.amountPaid > 0 && (
-                          <span className="text-[10px] text-amber-700 font-mono font-bold block">
+                          <span className="text-xs text-amber-700 font-mono font-bold block">
                             Due: ₦{quote.balanceDue.toLocaleString()}
                           </span>
                         )}
                         {quote.discount > 0 && (
-                          <span className="text-[10px] text-rose-500 font-mono block">
+                          <span className="text-xs text-rose-500 font-mono block">
                             Disc: -₦{quote.discount.toLocaleString()}
                           </span>
                         )}
                       </div>
                     </div>
 
-                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-600 space-y-1">
+                    <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs text-slate-600 space-y-1">
                       <p className="font-medium text-slate-800 line-clamp-1">
                         <strong className="text-slate-500">Subject:</strong> {quote.subject || quote.items[0]?.description || 'Equipment Quote'}
                       </p>
-                      <div className="flex items-center justify-between text-slate-500 pt-0.5 text-[10px]">
+                      <div className="flex items-center justify-between text-slate-500 pt-0.5 text-xs">
                         <span>Issued: <strong className="text-slate-700">{formattedDate}</strong></span>
                         {expiryDateStr && <span>Valid to: <strong className="text-slate-700">{expiryDateStr}</strong></span>}
                         <span>{quote.items.length} {quote.items.length === 1 ? 'item' : 'items'}</span>
                       </div>
                       {quote.hasInstallments && quote.installments && quote.installments.length > 0 && (
-                        <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between text-[10px]">
+                        <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between text-xs">
                           <span className="text-blue-700 font-bold">
                             Installments: {quote.installments.filter(i => i.status === 'PAID').length}/{quote.installments.length} Paid
                           </span>
@@ -541,6 +543,7 @@ export default function QuotesRegistryPage() {
                         </button>
                         <a
                           href={api.getQuotePdfDownloadUrl(quote.id)}
+                onClick={(e) => api.handlePdfLinkClick(e, api.getQuotePdfDownloadUrl(quote.id), `Quotation-${quote.quoteNumber || quote.id}.pdf`)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-2 rounded-lg text-slate-500 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition"
@@ -575,7 +578,7 @@ export default function QuotesRegistryPage() {
             <div className="hidden md:block overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                  <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[10px]">
+                  <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-xs">
                     <th className="py-3 px-4">Quote #</th>
                     <th className="py-3 px-4">Customer</th>
                     <th className="py-3 px-4">Subject / Devices</th>
@@ -609,7 +612,7 @@ export default function QuotesRegistryPage() {
                             {quote.quoteNumber}
                           </Link>
                           {quote.hasInstallments && (
-                            <span className="block text-[9px] font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
+                            <span className="block text-xs font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
                               {quote.installments?.length || 0} Installments
                             </span>
                           )}
@@ -619,23 +622,23 @@ export default function QuotesRegistryPage() {
                         <td className="py-3 px-4">
                           <p className="font-bold text-slate-900">{quote.customer?.name || 'Walk-in / General Client'}</p>
                           {quote.customer?.phone && (
-                            <p className="text-[10px] text-slate-400 font-mono">{quote.customer.phone}</p>
+                            <p className="text-xs text-slate-400 font-mono">{quote.customer.phone}</p>
                           )}
                         </td>
 
                         {/* Subject & Item Summary */}
                         <td className="py-3 px-4 max-w-xs truncate">
                           <p className="font-bold text-slate-800 truncate">{quote.subject || quote.items[0]?.description || 'Equipment Quote'}</p>
-                          <p className="text-[10px] text-slate-400">
+                          <p className="text-xs text-slate-400">
                             {quote.items.length} {quote.items.length === 1 ? 'item' : 'items'}
                             {quote.items.some((i) => i.phoneRecord) ? ' • Includes verified hardware' : ''}
                           </p>
                         </td>
 
                         {/* Dates */}
-                        <td className="py-3 px-4 whitespace-nowrap text-slate-600 text-[11px]">
+                        <td className="py-3 px-4 whitespace-nowrap text-slate-600 text-xs">
                           <div>Issued: <span className="font-bold text-slate-800">{formattedDate}</span></div>
-                          <div className="text-[10px] text-slate-400">Valid to: {expiryDateStr}</div>
+                          <div className="text-xs text-slate-400">Valid to: {expiryDateStr}</div>
                         </td>
 
                         {/* Amount & Payments */}
@@ -644,17 +647,17 @@ export default function QuotesRegistryPage() {
                             ₦{quote.totalAmount.toLocaleString()}
                           </span>
                           {quote.amountPaid > 0 && (
-                            <span className="text-[10px] text-emerald-600 font-mono font-bold block">
+                            <span className="text-xs text-emerald-600 font-mono font-bold block">
                               Deposit: ₦{quote.amountPaid.toLocaleString()}
                             </span>
                           )}
                           {quote.balanceDue > 0 && quote.amountPaid > 0 && (
-                            <span className="text-[10px] text-amber-700 font-mono font-bold block">
+                            <span className="text-xs text-amber-700 font-mono font-bold block">
                               Due: ₦{quote.balanceDue.toLocaleString()}
                             </span>
                           )}
                           {quote.discount > 0 && (
-                            <p className="text-[9px] text-rose-500 font-mono">Disc: -₦{quote.discount.toLocaleString()}</p>
+                            <p className="text-xs text-rose-500 font-mono">Disc: -₦{quote.discount.toLocaleString()}</p>
                           )}
                         </td>
 
@@ -724,6 +727,7 @@ export default function QuotesRegistryPage() {
                             {/* Download PDF */}
                             <a
                               href={api.getQuotePdfDownloadUrl(quote.id)}
+                onClick={(e) => api.handlePdfLinkClick(e, api.getQuotePdfDownloadUrl(quote.id), `Quotation-${quote.quoteNumber || quote.id}.pdf`)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
@@ -784,15 +788,15 @@ export default function QuotesRegistryPage() {
 
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-3 gap-2 text-center text-xs">
               <div>
-                <span className="text-[10px] text-slate-400 font-bold block">Total Amount</span>
+                <span className="text-xs text-slate-400 font-bold block">Total Amount</span>
                 <span className="font-mono font-bold text-slate-900">₦{selectedQuoteForPayment.totalAmount.toLocaleString()}</span>
               </div>
               <div>
-                <span className="text-[10px] text-emerald-600 font-bold block">Already Paid</span>
+                <span className="text-xs text-emerald-600 font-bold block">Already Paid</span>
                 <span className="font-mono font-bold text-emerald-700">₦{selectedQuoteForPayment.amountPaid.toLocaleString()}</span>
               </div>
               <div>
-                <span className="text-[10px] text-amber-700 font-bold block">Balance Due</span>
+                <span className="text-xs text-amber-700 font-bold block">Balance Due</span>
                 <span className="font-mono font-bold text-amber-800">₦{selectedQuoteForPayment.balanceDue.toLocaleString()}</span>
               </div>
             </div>
@@ -908,7 +912,7 @@ export default function QuotesRegistryPage() {
                   {reminderResult.message || 'Reminder processed successfully!'}
                 </div>
 
-                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-[11px] text-slate-700">
+                <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs text-slate-700">
                   <p><strong>Customer:</strong> {selectedQuoteForReminder.customer?.name}</p>
                   <p><strong>Outstanding Balance:</strong> ₦{selectedQuoteForReminder.balanceDue.toLocaleString()}</p>
                   {reminderResult.emailSent && (
@@ -994,19 +998,19 @@ export default function QuotesRegistryPage() {
 
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs text-slate-600">
               <div className="flex justify-between items-center">
-                <span className="text-slate-400 font-bold uppercase text-[10px]">Quote #</span>
+                <span className="text-slate-400 font-bold uppercase text-xs">Quote #</span>
                 <span className="font-mono font-bold text-blue-600 truncate ml-2">
                   {quoteToDelete.quoteNumber}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-400 font-bold uppercase text-[10px]">Customer</span>
+                <span className="text-slate-400 font-bold uppercase text-xs">Customer</span>
                 <span className="font-bold text-slate-800 truncate ml-2">
                   {quoteToDelete.customer?.name || 'General Client'}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-400 font-bold uppercase text-[10px]">Total Amount</span>
+                <span className="text-slate-400 font-bold uppercase text-xs">Total Amount</span>
                 <span className="font-extrabold text-slate-900">
                   ₦{Number(quoteToDelete.totalAmount || 0).toLocaleString()}
                 </span>

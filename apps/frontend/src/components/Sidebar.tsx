@@ -158,7 +158,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       <div className="mx-3.5 my-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 flex items-center justify-between">
         <div className="flex flex-col min-w-0">
           <span className="text-xs font-bold text-slate-900 dark:text-white truncate">{user?.business?.name || 'Store Account'}</span>
-          <span className="text-[10px] text-slate-500 dark:text-slate-400 font-medium">Main Branch</span>
+          <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Main Branch</span>
         </div>
         <Badge
           variant="business"
@@ -229,7 +229,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
                   <Icon className="w-4 h-4" />
                   <span>{item.name}</span>
                   {item.name === 'Templates' && (
-                    <span className="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300">
+                    <span className="ml-auto text-xs font-bold px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/60 text-teal-700 dark:text-teal-300">
                       NEW
                     </span>
                   )}
@@ -255,13 +255,13 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             <div className="font-bold text-slate-900 dark:text-white truncate max-w-[110px]">
               {user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Store Owner'}
             </div>
-            <div className="text-[10px] text-slate-500 dark:text-slate-400 font-medium truncate">{user?.role || 'OWNER'}</div>
+            <div className="text-xs text-slate-500 dark:text-slate-400 font-medium truncate">{user?.role || 'OWNER'}</div>
           </div>
         </div>
 
         <button
           onClick={handleLogout}
-          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition border border-transparent hover:border-rose-200 dark:hover:border-rose-900/50 font-bold text-[11px] cursor-pointer"
+          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-slate-500 dark:text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition border border-transparent hover:border-rose-200 dark:hover:border-rose-900/50 font-bold text-xs cursor-pointer"
           title="Sign out of store session"
         >
           <LogOut className="w-3.5 h-3.5" />

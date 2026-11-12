@@ -191,7 +191,7 @@ For warranty or device verification, present this receipt.`;
             <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
               <span>Customer Email Address</span>
               {!emailInput && (
-                <span className="text-[10px] text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-full">
                   Recipient required
                 </span>
               )}
@@ -215,17 +215,17 @@ For warranty or device verification, present this receipt.`;
               <FileText className="w-3.5 h-3.5 text-blue-600 shrink-0" />
               <span>Official PDF Document Attached:</span>
             </div>
-            <p className="text-blue-800/90 font-mono text-[11px] pl-5">
+            <p className="text-blue-800/90 font-mono text-xs pl-5">
               Receipt-{receiptNum}.pdf
             </p>
-            <p className="text-[10px] text-blue-700/80 pl-5 pt-0.5">
+            <p className="text-xs text-blue-700/80 pl-5 pt-0.5">
               Customer will receive the official store receipt breakdown along with an A4 PDF attachment.
             </p>
           </div>
 
           {/* Quick Client Actions */}
           <div className="space-y-2">
-            <p className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+            <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">
               Alternative Options
             </p>
             

@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect } from 'react';
 import { useAuthStore } from '@/store/useAuthStore';
 import { api } from '@/lib/api';
@@ -73,7 +75,7 @@ export default function RebuiltSettingsPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 5 * 1024 * 1024) {
-        alert('File size exceeds 5MB limit. Please choose a smaller image.');
+        notify('File size exceeds 5MB limit. Please choose a smaller image.');
         return;
       }
       const reader = new FileReader();
@@ -413,7 +415,7 @@ export default function RebuiltSettingsPage() {
                     <h3 className="text-base font-extrabold text-slate-900">Personal Operator Information</h3>
                     <p className="text-xs text-slate-500 font-medium">This name is used for dashboard greetings, activity logs, and receipts.</p>
                   </div>
-                  <span className="text-[10px] font-extrabold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200 uppercase">
+                  <span className="text-xs font-extrabold px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200 uppercase">
                     {user?.role || 'OWNER'}
                   </span>
                 </div>
@@ -457,7 +459,7 @@ export default function RebuiltSettingsPage() {
                     disabled
                     className="w-full text-xs sm:text-sm px-3.5 py-2.5 bg-slate-100 border border-slate-200 rounded-xl font-medium text-slate-500 cursor-not-allowed"
                   />
-                  <p className="text-[11px] text-slate-400 font-medium mt-1">
+                  <p className="text-xs text-slate-400 font-medium mt-1">
                     Your authenticated account identifier. Contact support if you need to transfer ownership.
                   </p>
                 </div>
@@ -552,7 +554,7 @@ export default function RebuiltSettingsPage() {
                   <Sun className="w-3.5 h-3.5 text-amber-500" />
                   <span>Theme & Appearance</span>
                 </h4>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 border border-teal-200/60 dark:border-teal-800/40">
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 border border-teal-200/60 dark:border-teal-800/40">
                   Instant Switch
                 </span>
               </div>
@@ -586,7 +588,7 @@ export default function RebuiltSettingsPage() {
                   ) : (
                     <div className="flex flex-col items-center justify-center text-slate-400 gap-1">
                       <Building className="w-8 h-8 text-slate-400" />
-                      <span className="text-[10px] font-bold">No Logo</span>
+                      <span className="text-xs font-bold">No Logo</span>
                     </div>
                   )}
                 </div>
@@ -785,7 +787,7 @@ export default function RebuiltSettingsPage() {
 
             {/* Live Customer Preview */}
             <div className="p-6 rounded-2xl bg-slate-100/70 border border-slate-200/80 shadow-sm text-center space-y-4">
-              <div className="text-[11px] font-extrabold uppercase text-slate-500 tracking-wider text-left">
+              <div className="text-xs font-extrabold uppercase text-slate-500 tracking-wider text-left">
                 Customer Verification Preview
               </div>
 
@@ -797,11 +799,11 @@ export default function RebuiltSettingsPage() {
                 </div>
                 <div className="text-center">
                   <div className="font-extrabold text-slate-900 text-sm">iPhone 16 Pro Max</div>
-                  <div className="font-mono text-[11px] text-slate-500 font-semibold mt-0.5">IMEI: 354892019283741</div>
+                  <div className="font-mono text-xs text-slate-500 font-semibold mt-0.5">IMEI: 354892019283741</div>
                 </div>
 
                 <div className="pt-3 border-t border-slate-100 text-center space-y-1">
-                  <div className="text-[10px] uppercase font-bold text-slate-400">Registered By</div>
+                  <div className="text-xs uppercase font-bold text-slate-400">Registered By</div>
                   <div className="flex items-center justify-center gap-2">
                     {businessProfile.showLogo && (
                       <img src={businessProfile.logoUrl} alt="Logo" className="w-5 h-5 rounded object-cover" />
@@ -815,7 +817,7 @@ export default function RebuiltSettingsPage() {
 
               <div className="flex items-start gap-2 text-left bg-white p-3 rounded-xl border border-slate-200 text-xs">
                 <Info className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
-                <p className="text-[11px] text-slate-600 font-medium">
+                <p className="text-xs text-slate-600 font-medium">
                   Internal supplier costs, wholesale margins, and private ledger records are never exposed to customers.
                 </p>
               </div>
@@ -913,7 +915,7 @@ export default function RebuiltSettingsPage() {
                       </div>
                       <div>
                         <div className="font-bold text-slate-900 text-sm">{u.name}</div>
-                        <div className="text-[11px] text-slate-500">{u.email}</div>
+                        <div className="text-xs text-slate-500">{u.email}</div>
                       </div>
                     </div>
                     <button className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition">
@@ -923,18 +925,18 @@ export default function RebuiltSettingsPage() {
                   
                   <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
                     <div>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Role</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Role</span>
                       <span className="font-bold text-slate-800">{u.role}</span>
                     </div>
                     <div>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Branch</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Branch</span>
                       <span className="text-slate-600 font-medium">{u.branch}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
                     <div>
-                      <span className="text-[10px] text-slate-400 font-bold uppercase block mb-1">Status</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block mb-1">Status</span>
                       {u.status === 'ACTIVE' ? (
                         <Badge variant="verified" size="sm">Active</Badge>
                       ) : (
@@ -942,8 +944,8 @@ export default function RebuiltSettingsPage() {
                       )}
                     </div>
                     <div className="text-right">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase block">Last Active</span>
-                      <span className="text-slate-500 text-[11px] font-medium">{u.lastActive}</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Last Active</span>
+                      <span className="text-slate-500 text-xs font-medium">{u.lastActive}</span>
                     </div>
                   </div>
                 </div>
@@ -953,7 +955,7 @@ export default function RebuiltSettingsPage() {
             {/* Desktop Table View (Hidden on mobile) */}
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-xs whitespace-nowrap">
-                <thead className="bg-slate-50 text-slate-500 font-extrabold uppercase border-b border-slate-200 text-[10px] tracking-wider">
+                <thead className="bg-slate-50 text-slate-500 font-extrabold uppercase border-b border-slate-200 text-xs tracking-wider">
                   <tr>
                     <th className="px-4 py-3">Staff Member</th>
                     <th className="px-4 py-3">Assigned Role</th>
@@ -973,7 +975,7 @@ export default function RebuiltSettingsPage() {
                           </div>
                           <div>
                             <div className="font-bold text-slate-900">{u.name}</div>
-                            <div className="text-[11px] text-slate-500">{u.email}</div>
+                            <div className="text-xs text-slate-500">{u.email}</div>
                           </div>
                         </div>
                       </td>
@@ -986,7 +988,7 @@ export default function RebuiltSettingsPage() {
                           <Badge variant="neutral" size="sm" className="bg-slate-100 text-slate-600 border-slate-200">Inactive</Badge>
                         )}
                       </td>
-                      <td className="px-4 py-3 text-slate-500 text-[11px]">{u.lastActive}</td>
+                      <td className="px-4 py-3 text-slate-500 text-xs">{u.lastActive}</td>
                       <td className="px-4 py-3 text-right">
                         <button className="p-1 rounded-lg text-slate-400 hover:text-slate-900 hover:bg-slate-200/60 transition">
                           <MoreVertical className="w-4 h-4" />
@@ -1031,11 +1033,11 @@ export default function RebuiltSettingsPage() {
 
                 <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Assigned Staff</span>
+                    <span className="text-xs uppercase font-bold text-slate-400 block">Assigned Staff</span>
                     <span className="font-extrabold text-slate-900 text-sm">{b.staffCount} Team Members</span>
                   </div>
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Live Stock Valuation</span>
+                    <span className="text-xs uppercase font-bold text-slate-400 block">Live Stock Valuation</span>
                     <span className="font-extrabold text-emerald-700 text-sm">{b.stockValue}</span>
                   </div>
                 </div>
@@ -1059,16 +1061,20 @@ export default function RebuiltSettingsPage() {
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   {liveBusinessData?.subscriptionStatus === 'ACTIVE' ? (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-emerald-500 text-white shadow-sm">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase bg-emerald-500 text-white shadow-sm">
                       Active (Paid Subscription)
                     </span>
                   ) : (
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase bg-blue-500 text-white shadow-sm">
-                      14-Day Free Trial
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase bg-blue-500 text-white shadow-sm">
+                      {liveBusinessData?.subscriptionStatus === 'TRIAL'
+                        ? 'Trial'
+                        : liveBusinessData?.subscriptionStatus === 'EXPIRED' || liveBusinessData?.subscriptionStatus === 'PAST_DUE'
+                        ? 'Plan Expired'
+                        : 'Free Forever'}
                     </span>
                   )}
                   <span className="text-xs font-bold text-slate-400 font-mono">
-                    Tier: {liveBusinessData?.plan || user?.business?.plan || 'STARTER'}
+                    Tier: {liveBusinessData?.plan || user?.business?.plan || 'FREE'}
                   </span>
                 </div>
 
@@ -1077,16 +1083,25 @@ export default function RebuiltSettingsPage() {
                     ? 'Enterprise Network Plan'
                     : liveBusinessData?.plan === 'BUSINESS'
                     ? 'Business Hub Plan'
+                    : (liveBusinessData?.plan || 'FREE') === 'FREE'
+                    ? 'Free Plan'
                     : 'Starter Retailer Plan'}
                 </h2>
                 
                 <p className="text-xs text-slate-400 font-medium mt-1">
                   {liveBusinessData?.subscriptionEndsAt ? (
                     <>Active until {new Date(liveBusinessData.subscriptionEndsAt).toLocaleDateString()} • Renews via Paystack</>
-                  ) : liveBusinessData?.subscriptionStatus === 'EXPIRED' || (liveBusinessData?.trialEndsAt && new Date(liveBusinessData.trialEndsAt) <= new Date()) ? (
-                    <>Trial ended on {new Date(liveBusinessData?.trialEndsAt || Date.now()).toLocaleDateString()} • Pay for your selected plan to keep full access</>
-                  ) : liveBusinessData?.trialEndsAt ? (
-                    <>14-Day Free Trial ends on {new Date(liveBusinessData.trialEndsAt).toLocaleDateString()} • Pay anytime to keep full access</>
+                  ) : liveBusinessData?.subscriptionStatus === 'EXPIRED' || (liveBusinessData?.subscriptionStatus === 'TRIAL' && liveBusinessData?.trialEndsAt && new Date(liveBusinessData.trialEndsAt) <= new Date()) ? (
+                    <>
+                      {liveBusinessData?.subscriptionStatus === 'TRIAL'
+                        ? `Trial ended on ${new Date(liveBusinessData?.trialEndsAt || Date.now()).toLocaleDateString()}`
+                        : 'Your plan has expired'}{' '}
+                      • Pay for a plan to keep full access, or use the Free plan
+                    </>
+                  ) : liveBusinessData?.subscriptionStatus === 'TRIAL' && liveBusinessData?.trialEndsAt ? (
+                    <>Trial ends on {new Date(liveBusinessData.trialEndsAt).toLocaleDateString()} • Pay anytime to keep full access</>
+                  ) : (liveBusinessData?.plan || 'FREE') === 'FREE' ? (
+                    <>Free forever • Up to 10 devices • Upgrade when you need more</>
                   ) : (
                     <>Instant verification, POS, and thermal receipt generation active</>
                   )}
@@ -1098,7 +1113,11 @@ export default function RebuiltSettingsPage() {
                   variant="primary"
                   size="md"
                   onClick={() => {
-                    const upgradePlan = availablePlans.find((p) => p.code === (liveBusinessData?.plan || 'STARTER')) || availablePlans[0];
+                    // A Free store upgrades to the first paid plan; a paid store renews its own.
+                    const upgradePlan =
+                      availablePlans.find((p) => p.code === liveBusinessData?.plan && (p.monthlyPriceNgn || 0) > 0) ||
+                      availablePlans.find((p) => (p.monthlyPriceNgn || 0) > 0) ||
+                      availablePlans[0];
                     if (upgradePlan) {
                       setSelectedPlanForCheckout(upgradePlan);
                       setIsPaystackModalOpen(true);
@@ -1107,7 +1126,7 @@ export default function RebuiltSettingsPage() {
                   className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-600/20"
                 >
                   <CreditCard className="w-4 h-4 mr-2" />
-                  {liveBusinessData?.subscriptionStatus === 'EXPIRED' || (liveBusinessData?.trialEndsAt && new Date(liveBusinessData.trialEndsAt) <= new Date())
+                  {liveBusinessData?.subscriptionStatus === 'EXPIRED' || (liveBusinessData?.subscriptionStatus === 'TRIAL' && liveBusinessData?.trialEndsAt && new Date(liveBusinessData.trialEndsAt) <= new Date())
                     ? 'Pay & Activate Plan with Paystack →'
                     : 'Pay / Upgrade with Paystack →'}
                 </Button>
@@ -1181,7 +1200,7 @@ export default function RebuiltSettingsPage() {
                       <div className="flex items-center justify-between">
                         <span className="font-extrabold text-slate-900 text-lg">{p.name}</span>
                         {isCurrent && (
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                          <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
                             Current Tier
                           </span>
                         )}
@@ -1196,13 +1215,13 @@ export default function RebuiltSettingsPage() {
                           ₦{p.monthlyPriceNgn.toLocaleString()}
                           <span className="text-xs text-slate-400 font-sans font-medium ml-1">/ month</span>
                         </div>
-                        <div className="text-[11px] text-slate-500 font-medium mt-1">
+                        <div className="text-xs text-slate-500 font-medium mt-1">
                           or ₦{(p.annualPriceNgn || p.monthlyPriceNgn * 10).toLocaleString()} / year (Save ~17%)
                         </div>
                       </div>
 
                       <div className="space-y-2 pt-2 text-xs">
-                        <div className="font-bold text-slate-800 text-[11px] uppercase tracking-wider">Features Included:</div>
+                        <div className="font-bold text-slate-800 text-xs uppercase tracking-wider">Features Included:</div>
                         <div className="space-y-1.5 text-slate-600 font-medium">
                           <div className="flex items-center gap-2">
                             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
@@ -1234,7 +1253,7 @@ export default function RebuiltSettingsPage() {
                         <CreditCard className="w-3.5 h-3.5" />
                         <span>
                           {isCurrent
-                            ? liveBusinessData?.subscriptionStatus === 'EXPIRED' || (liveBusinessData?.trialEndsAt && new Date(liveBusinessData.trialEndsAt) <= new Date())
+                            ? liveBusinessData?.subscriptionStatus === 'EXPIRED' || (liveBusinessData?.subscriptionStatus === 'TRIAL' && liveBusinessData?.trialEndsAt && new Date(liveBusinessData.trialEndsAt) <= new Date())
                               ? `Pay & Activate ${p.name}`
                               : 'Renew / Extend with Paystack'
                             : `Switch to ${p.name}`}

@@ -15,77 +15,91 @@ declare global {
   }
 }
 
+type InstallPlatform = 'ios' | 'android' | 'desktop';
+
+type InstallWindow = Window & {
+  __ngInstallPrompt?: BeforeInstallPromptEvent | null;
+  __ngInstalled?: boolean;
+};
+
+function detectPlatform(): InstallPlatform {
+  if (typeof window === 'undefined') return 'desktop';
+  const ua = window.navigator.userAgent.toLowerCase();
+  // iPadOS reports itself as a Mac, so also look for a touch screen.
+  const isIpadOs = ua.includes('macintosh') && (window.navigator.maxTouchPoints || 0) > 1;
+  if (/iphone|ipad|ipod/.test(ua) || isIpadOs) return 'ios';
+  if (ua.includes('android')) return 'android';
+  return 'desktop';
+}
+
+/**
+ * The browser's install offer is captured once in app/layout.tsx (it fires early,
+ * often before any button exists) and shared by every Download App button.
+ */
 export function usePwaInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
-  const [isIOS, setIsIOS] = useState(false);
+  const [platform, setPlatform] = useState<InstallPlatform>('desktop');
   const [isStandalone, setIsStandalone] = useState(false);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    const w = window as InstallWindow;
 
-    // Check if already installed / standalone mode
+    // Already running as the installed app
     const isStandaloneMode =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as any).standalone === true;
 
     setIsStandalone(isStandaloneMode);
-    if (isStandaloneMode) {
-      setIsInstalled(true);
-    }
+    setPlatform(detectPlatform());
 
-    // Check if iOS
-    const userAgent = window.navigator.userAgent.toLowerCase();
-    const isIosDevice = /iphone|ipad|ipod/.test(userAgent);
-    setIsIOS(isIosDevice);
-
-    const handleBeforeInstallPrompt = (e: BeforeInstallPromptEvent) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
+    const sync = () => {
+      setDeferredPrompt(w.__ngInstallPrompt || null);
+      setIsInstalled(isStandaloneMode || w.__ngInstalled === true);
     };
+    sync();
 
-    const handleAppInstalled = () => {
-      setIsInstalled(true);
-      setDeferredPrompt(null);
-      console.log('[PWA] NoxGuarda App installed successfully');
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
-    };
+    window.addEventListener('ng-install-change', sync);
+    return () => window.removeEventListener('ng-install-change', sync);
   }, []);
 
   const triggerInstall = async (): Promise<boolean> => {
-    if (deferredPrompt) {
-      try {
-        await deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        if (choice.outcome === 'accepted') {
-          setIsInstalled(true);
-          setDeferredPrompt(null);
-          return true;
-        }
-      } catch (err) {
-        console.error('Install prompt error:', err);
-      }
+    if (!deferredPrompt) return false;
+    const w = window as InstallWindow;
+    try {
+      await deferredPrompt.prompt();
+      const choice = await deferredPrompt.userChoice;
+      // An offer can only be shown once; the browser sends a new one if it was declined.
+      w.__ngInstallPrompt = null;
+      if (choice.outcome === 'accepted') w.__ngInstalled = true;
+      window.dispatchEvent(new Event('ng-install-change'));
+      return choice.outcome === 'accepted';
+    } catch (err) {
+      console.error('Install prompt error:', err);
+      return false;
     }
-    return false;
   };
 
   return {
     deferredPrompt,
     isInstalled,
-    isIOS,
+    platform,
+    isIOS: platform === 'ios',
     isStandalone,
     triggerInstall,
   };
 }
 
-export function PwaInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
+export function PwaInstallModal({
+  isOpen,
+  onClose,
+  platform = 'desktop',
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  platform?: InstallPlatform;
+}) {
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -116,34 +130,65 @@ export function PwaInstallModal({ isOpen, onClose }: { isOpen: boolean; onClose:
           </div>
           <div>
             <h3 className="text-sm sm:text-base font-extrabold text-slate-900">Install NoxGuarda App</h3>
-            <p className="text-[10px] sm:text-xs text-emerald-600 font-bold uppercase tracking-wider">Fast • Offline POS • Instant Barcode</p>
+            <p className="text-xs sm:text-xs text-emerald-600 font-bold uppercase tracking-wider">Fast • Offline POS • Instant Barcode</p>
           </div>
         </div>
 
         <div className="space-y-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 text-xs text-slate-700">
           <div className="font-bold text-slate-900 flex items-center gap-2">
-            <Smartphone className="w-4 h-4 text-teal-600 shrink-0" />
-            <span>Mobile & Tablet Installation:</span>
+            {platform === 'desktop' ? (
+              <Monitor className="w-4 h-4 text-teal-600 shrink-0" />
+            ) : (
+              <Smartphone className="w-4 h-4 text-teal-600 shrink-0" />
+            )}
+            <span>
+              {platform === 'ios' && 'On iPhone or iPad:'}
+              {platform === 'android' && 'On Android:'}
+              {platform === 'desktop' && 'On a computer (Chrome or Edge):'}
+            </span>
           </div>
-          <ol className="list-decimal list-inside space-y-1.5 pl-1 text-slate-600 text-[11px] sm:text-xs leading-relaxed">
-            <li>Open this website in Safari or Chrome.</li>
-            <li>
-              Tap the <span className="font-bold text-slate-900 inline-flex items-center gap-1"><Share className="w-3 h-3 text-blue-600 inline shrink-0" /> Share / Menu</span> icon.
-            </li>
-            <li>
-              Select <span className="font-bold text-slate-900">"Add to Home Screen"</span> or <span className="font-bold text-slate-900">"Install App"</span>.
-            </li>
-          </ol>
-        </div>
 
-        <div className="space-y-2.5 bg-slate-50 border border-slate-200/80 rounded-2xl p-3.5 sm:p-4 text-xs text-slate-700">
-          <div className="font-bold text-slate-900 flex items-center gap-2">
-            <Monitor className="w-4 h-4 text-teal-600 shrink-0" />
-            <span>Desktop (Chrome, Edge & Brave):</span>
-          </div>
-          <p className="text-slate-600 text-[11px] sm:text-xs leading-relaxed">
-            Click the <span className="font-bold text-slate-900">Install App</span> icon directly in your browser's address bar to run NoxGuarda in fullscreen POS kiosk mode.
-          </p>
+          {platform === 'ios' && (
+            <ol className="list-decimal list-inside space-y-1.5 pl-1 text-slate-600 text-[11px] sm:text-xs leading-relaxed">
+              <li>
+                Tap the <span className="font-bold text-slate-900 inline-flex items-center gap-1"><Share className="w-3 h-3 text-blue-600 inline shrink-0" /> Share</span> button in your browser.
+              </li>
+              <li>
+                Scroll down and tap <span className="font-bold text-slate-900">"Add to Home Screen"</span>.
+              </li>
+              <li>
+                Tap <span className="font-bold text-slate-900">"Add"</span>. NoxGuarda now opens from your home screen like any other app.
+              </li>
+            </ol>
+          )}
+
+          {platform === 'android' && (
+            <ol className="list-decimal list-inside space-y-1.5 pl-1 text-slate-600 text-[11px] sm:text-xs leading-relaxed">
+              <li>
+                Tap the <span className="font-bold text-slate-900">menu (⋮)</span> at the top right of your browser.
+              </li>
+              <li>
+                Tap <span className="font-bold text-slate-900">"Install app"</span> or <span className="font-bold text-slate-900">"Add to Home screen"</span>.
+              </li>
+              <li>
+                Tap <span className="font-bold text-slate-900">"Install"</span>. NoxGuarda now opens from your home screen like any other app.
+              </li>
+            </ol>
+          )}
+
+          {platform === 'desktop' && (
+            <ol className="list-decimal list-inside space-y-1.5 pl-1 text-slate-600 text-[11px] sm:text-xs leading-relaxed">
+              <li>
+                Look for the <span className="font-bold text-slate-900">Install</span> icon at the right end of the address bar, or open the browser <span className="font-bold text-slate-900">menu (⋮)</span>.
+              </li>
+              <li>
+                Click <span className="font-bold text-slate-900">"Install NoxGuarda"</span>.
+              </li>
+              <li>
+                NoxGuarda opens in its own window and is added to your apps. If you do not see the option, the app may already be installed, or your browser does not support it (try Chrome or Edge).
+              </li>
+            </ol>
+          )}
         </div>
 
         <button
@@ -164,7 +209,7 @@ export function PwaInstallButton({
   variant?: 'button' | 'header' | 'sidebar' | 'drawer';
   className?: string;
 }) {
-  const { deferredPrompt, isStandalone, triggerInstall } = usePwaInstall();
+  const { deferredPrompt, isStandalone, isInstalled, platform, triggerInstall } = usePwaInstall();
   const [showModal, setShowModal] = useState(false);
   const [isDismissed, setIsDismissed] = useState<boolean>(() => {
     if (typeof window !== 'undefined') {
@@ -175,13 +220,12 @@ export function PwaInstallButton({
 
   const handleClick = async () => {
     if (deferredPrompt) {
-      const accepted = await triggerInstall();
-      if (!accepted) {
-        setShowModal(true);
-      }
-    } else {
-      setShowModal(true);
+      // The browser shows its own install box. If the person says no, leave it at that.
+      await triggerInstall();
+      return;
     }
+    // No install offer from this browser (iPhone, or already declined): show the steps.
+    setShowModal(true);
   };
 
   const handleDismiss = (e: React.MouseEvent) => {
@@ -192,8 +236,8 @@ export function PwaInstallButton({
     }
   };
 
-  if (isStandalone || (variant === 'sidebar' && isDismissed)) {
-    return null; // Hide completely if already running in standalone PWA window or dismissed
+  if (isStandalone || isInstalled || (variant === 'sidebar' && isDismissed)) {
+    return null; // Nothing to offer once the app is installed, running as an app, or dismissed
   }
 
   if (variant === 'sidebar') {
@@ -211,7 +255,7 @@ export function PwaInstallButton({
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
-          <p className="text-[11px] text-slate-300 leading-snug">
+          <p className="text-xs text-slate-300 leading-snug">
             Run NoxGuarda with offline thermal receipts and instant camera scanning.
           </p>
           <button
@@ -222,7 +266,7 @@ export function PwaInstallButton({
             <span>Download / Install App</span>
           </button>
         </div>
-        <PwaInstallModal isOpen={showModal} onClose={() => setShowModal(false)} />
+        <PwaInstallModal isOpen={showModal} onClose={() => setShowModal(false)} platform={platform} />
       </>
     );
   }
@@ -240,12 +284,12 @@ export function PwaInstallButton({
             </div>
             <div className="text-left">
               <div className="font-extrabold text-slate-900">Install Native App</div>
-              <div className="text-[10px] text-teal-700 font-medium">Add NoxGuarda to your home screen</div>
+              <div className="text-xs text-teal-700 font-medium">Add NoxGuarda to your home screen</div>
             </div>
           </div>
-          <span className="text-[10px] font-bold bg-teal-600 text-white px-2 py-1 rounded-lg">Install</span>
+          <span className="text-xs font-bold bg-teal-600 text-white px-2 py-1 rounded-lg">Install</span>
         </button>
-        <PwaInstallModal isOpen={showModal} onClose={() => setShowModal(false)} />
+        <PwaInstallModal isOpen={showModal} onClose={() => setShowModal(false)} platform={platform} />
       </>
     );
   }
@@ -255,14 +299,14 @@ export function PwaInstallButton({
       <>
         <button
           onClick={handleClick}
-          title="Install NoxGuarda as Desktop/Mobile PWA"
+          title="Install NoxGuarda as an app on this device"
           className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-teal-800 hover:bg-teal-100 font-bold text-xs transition shadow-xs shrink-0 ${className}`}
         >
           <Download className="w-3.5 h-3.5 text-teal-600 shrink-0" />
           <span className="hidden sm:inline">Download App</span>
-          <span className="sm:hidden text-[11px]">App</span>
+          <span className="sm:hidden text-xs">App</span>
         </button>
-        <PwaInstallModal isOpen={showModal} onClose={() => setShowModal(false)} />
+        <PwaInstallModal isOpen={showModal} onClose={() => setShowModal(false)} platform={platform} />
       </>
     );
   }
@@ -276,7 +320,7 @@ export function PwaInstallButton({
         <Download className="w-4 h-4 text-white" />
         <span>Install / Download PWA</span>
       </button>
-      <PwaInstallModal isOpen={showModal} onClose={() => setShowModal(false)} />
+      <PwaInstallModal isOpen={showModal} onClose={() => setShowModal(false)} platform={platform} />
     </>
   );
 }

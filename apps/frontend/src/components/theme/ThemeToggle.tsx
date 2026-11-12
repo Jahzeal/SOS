@@ -103,7 +103,7 @@ export function ThemeToggle({ variant = 'simple', className = '' }: ThemeToggleP
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-xs">
-          <div className="px-2.5 py-1 text-[10px] font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+          <div className="px-2.5 py-1 text-xs font-extrabold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
             Appearance
           </div>
 

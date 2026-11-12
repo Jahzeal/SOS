@@ -397,7 +397,7 @@ function CheckoutPOSContent() {
         </div>
 
         {/* Step Indicator Badges */}
-        <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold shrink-0">
+        <div className="flex items-center gap-1.5 text-xs sm:text-xs font-extrabold shrink-0">
           <span className={`transition-colors duration-200 ${checkoutStep === 1 ? 'text-blue-600 font-extrabold font-sans' : 'text-slate-400'}`}>
             1. Items & Customer
           </span>
@@ -434,7 +434,7 @@ function CheckoutPOSContent() {
                 <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
                   <User className="w-4 h-4 text-blue-600" /> Customer Information
                 </h2>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Buyer Profile</span>
+                <span className="text-xs text-slate-400 font-bold uppercase">Buyer Profile</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -446,7 +446,7 @@ function CheckoutPOSContent() {
                       type="text"
                       value={customerName}
                       onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="e.g. Johnathan Doe"
+                      placeholder="e.g. Emeka Obi"
                       className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
@@ -490,7 +490,7 @@ function CheckoutPOSContent() {
                   <span className="hidden sm:inline">Select In-Stock Device from Inventory</span>
                   <span className="inline sm:hidden">Select In-Stock Device</span>
                 </h2>
-                <span className="text-[10px] text-slate-400 font-bold uppercase">Available Inventory</span>
+                <span className="text-xs text-slate-400 font-bold uppercase">Available Inventory</span>
               </div>
 
               {/* Device Search Box */}
@@ -535,8 +535,8 @@ function CheckoutPOSContent() {
                           </div>
                           <div className="min-w-0">
                             <p className="font-extrabold text-slate-900 truncate">{phone.brand} {phone.model}</p>
-                            <p className="text-[10px] font-mono text-slate-500 truncate">IMEI: {phone.imei1}</p>
-                            <p className="text-[10px] text-slate-400 font-semibold">{phone.condition} • {phone.storageCapacity || 'N/A'}</p>
+                            <p className="text-xs font-mono text-slate-500 truncate">IMEI: {phone.imei1}</p>
+                            <p className="text-xs text-slate-400 font-semibold">{phone.condition} • {phone.storageCapacity || 'N/A'}</p>
                           </div>
                         </div>
 
@@ -626,9 +626,9 @@ function CheckoutPOSContent() {
                     <User className="w-4 h-4 text-blue-600" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Customer Profile</p>
+                    <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">Customer Profile</p>
                     <p className="text-xs font-extrabold text-slate-900">{customerName.trim() || 'Retail Buyer'}</p>
-                    <p className="text-[10px] text-slate-500 font-medium">{customerPhone.trim() || 'No Phone Specified'}</p>
+                    <p className="text-xs text-slate-500 font-medium">{customerPhone.trim() || 'No Phone Specified'}</p>
                   </div>
                 </div>
               </div>
@@ -651,10 +651,10 @@ function CheckoutPOSContent() {
                         </div>
                         <div className="min-w-0">
                           <p className="font-extrabold text-slate-900 truncate">{item.model}</p>
-                          <p className="text-[10px] font-mono text-slate-500 truncate">
+                          <p className="text-xs font-mono text-slate-500 truncate">
                             {item.isDevice ? `IMEI: ${item.imei}` : item.color}
                           </p>
-                          <p className="text-[10px] text-slate-400 font-semibold">{item.condition} • {item.storage}</p>
+                          <p className="text-xs text-slate-400 font-semibold">{item.condition} • {item.storage}</p>
                         </div>
                       </div>
 
@@ -742,7 +742,7 @@ function CheckoutPOSContent() {
                 <p className="text-xs text-slate-500 font-medium">Customer: <strong>{customerName.trim() || 'Retail Buyer'}</strong> ({customerPhone || 'No Phone'})</p>
               </div>
               <div className="text-right">
-                <p className="text-[10px] text-slate-400 font-extrabold uppercase">Total Amount Due</p>
+                <p className="text-xs text-slate-400 font-extrabold uppercase">Total Amount Due</p>
                 <p className="text-lg sm:text-2xl font-extrabold text-blue-600">₦{grandTotal.toLocaleString()}</p>
               </div>
             </div>
@@ -797,7 +797,7 @@ function CheckoutPOSContent() {
                   <button
                     type="button"
                     onClick={() => setCashTendered(grandTotal.toString())}
-                    className="text-[10px] text-blue-600 font-bold hover:underline"
+                    className="text-xs text-blue-600 font-bold hover:underline"
                   >
                     Exact: ₦{grandTotal.toLocaleString()}
                   </button>
@@ -826,7 +826,7 @@ function CheckoutPOSContent() {
                     <Building2 className="w-4 h-4 text-teal-400" />
                     <span className="font-extrabold text-white">Store Settlement Bank Account</span>
                   </div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                     {paymentMethod === 'BANK_TRANSFER' ? 'Direct Transfer' : 'POS Settlement'}
                   </span>
                 </div>
@@ -835,23 +835,23 @@ function CheckoutPOSContent() {
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase block">Bank Name</span>
+                        <span className="text-xs text-slate-400 font-bold uppercase block">Bank Name</span>
                         <span className="font-extrabold text-white text-sm">{storeBankDetails.bankName || 'Store Bank'}</span>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] text-slate-400 font-bold uppercase block">Transfer Amount</span>
+                        <span className="text-xs text-slate-400 font-bold uppercase block">Transfer Amount</span>
                         <span className="font-mono font-black text-emerald-400 text-base">₦{grandTotal.toLocaleString()}</span>
                       </div>
                     </div>
 
                     <div className="p-3 bg-white/10 rounded-xl flex items-center justify-between border border-white/10">
                       <div>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase block">Account Number</span>
+                        <span className="text-xs text-slate-400 font-bold uppercase block">Account Number</span>
                         <span className="font-mono font-black text-white text-lg tracking-wider">
                           {storeBankDetails.accountNumber}
                         </span>
                         {storeBankDetails.accountName && (
-                          <span className="text-[11px] text-slate-300 font-medium block mt-0.5">
+                          <span className="text-xs text-slate-300 font-medium block mt-0.5">
                             {storeBankDetails.accountName}
                           </span>
                         )}

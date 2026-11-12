@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import Link from 'next/link';
@@ -200,7 +202,7 @@ export default function InvoicesRegistryPage() {
         <div className="flex items-center gap-1.5 max-w-[280px]" title={fullTooltip}>
           <span className="font-semibold text-slate-800 text-xs truncate">{name}</span>
           {count > 1 && (
-            <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-extrabold text-[10px] border border-blue-100 font-mono">
+            <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-extrabold text-xs border border-blue-100 font-mono">
               ×{count}
             </span>
           )}
@@ -215,15 +217,15 @@ export default function InvoicesRegistryPage() {
           <div className="flex items-center gap-1.5">
             <span className="font-semibold text-slate-800 text-xs truncate">{grouped[0][0]}</span>
             {grouped[0][1] > 1 && (
-              <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold text-[9px] font-mono">
+              <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-bold text-xs font-mono">
                 ×{grouped[0][1]}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-1.5 text-slate-500 text-[11px]">
+          <div className="flex items-center gap-1.5 text-slate-500 text-xs">
             <span className="truncate">{grouped[1][0]}</span>
             {grouped[1][1] > 1 && (
-              <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold text-[9px] font-mono">
+              <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold text-xs font-mono">
                 ×{grouped[1][1]}
               </span>
             )}
@@ -242,21 +244,21 @@ export default function InvoicesRegistryPage() {
       <div className="space-y-1 max-w-[320px]" title={fullTooltip}>
         <div className="flex items-center gap-1.5">
           <span className="font-bold text-slate-900 text-xs truncate">{top1[0]}</span>
-          <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-extrabold text-[10px] border border-blue-200/60 font-mono">
+          <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-blue-50 text-blue-700 font-extrabold text-xs border border-blue-200/60 font-mono">
             ×{top1[1]}
           </span>
         </div>
-        <div className="flex items-center gap-1.5 text-slate-600 text-[11px]">
+        <div className="flex items-center gap-1.5 text-slate-600 text-xs">
           <span className="truncate max-w-[140px]">{top2[0]}</span>
           {top2[1] > 1 && (
-            <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold text-[9px] font-mono">
+            <span className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 text-slate-600 font-bold text-xs font-mono">
               ×{top2[1]}
             </span>
           )}
           <button
             type="button"
             onClick={onOpenView}
-            className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 hover:bg-blue-100 hover:text-blue-700 text-slate-700 font-extrabold text-[10px] transition cursor-pointer border border-slate-200"
+            className="shrink-0 px-1.5 py-0.5 rounded-md bg-slate-100 hover:bg-blue-100 hover:text-blue-700 text-slate-700 font-extrabold text-xs transition cursor-pointer border border-slate-200"
             title="Click to view all itemized products in statement modal"
           >
             +{remainingCount} more
@@ -296,7 +298,7 @@ export default function InvoicesRegistryPage() {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       queryClient.invalidateQueries({ queryKey: ['dashboard-metrics'] });
     } catch (err: any) {
-      alert(err.message || 'Failed to issue invoice.');
+      notify(err.message || 'Failed to issue invoice.');
     }
   };
 
@@ -340,13 +342,13 @@ export default function InvoicesRegistryPage() {
               <FileText className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Total Invoices</p>
+          <p className="text-slate-500 font-extrabold text-xs uppercase tracking-wider">Total Invoices</p>
           {loading && invoices.length === 0 ? (
             <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
           ) : (
             <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{invoices.length}</h3>
           )}
-          <p className="text-[10px] text-emerald-700 font-extrabold flex items-center gap-0.5 mt-1">
+          <p className="text-xs text-emerald-700 font-extrabold flex items-center gap-0.5 mt-1">
             <TrendingUp className="w-3 h-3" /> Live records
           </p>
         </div>
@@ -358,13 +360,13 @@ export default function InvoicesRegistryPage() {
               <FileText className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Draft</p>
+          <p className="text-slate-500 font-extrabold text-xs uppercase tracking-wider">Draft</p>
           {loading && invoices.length === 0 ? (
             <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
           ) : (
             <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{counts.draft}</h3>
           )}
-          <p className="text-[10px] text-slate-400 font-bold mt-1">Draft state</p>
+          <p className="text-xs text-slate-400 font-bold mt-1">Draft state</p>
         </div>
 
         {/* Pending */}
@@ -374,13 +376,13 @@ export default function InvoicesRegistryPage() {
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Pending</p>
+          <p className="text-slate-500 font-extrabold text-xs uppercase tracking-wider">Pending</p>
           {loading && invoices.length === 0 ? (
             <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
           ) : (
             <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{counts.pending}</h3>
           )}
-          <p className="text-[10px] text-amber-700 font-bold mt-1">Awaiting payment</p>
+          <p className="text-xs text-amber-700 font-bold mt-1">Awaiting payment</p>
         </div>
 
         {/* Paid */}
@@ -390,13 +392,13 @@ export default function InvoicesRegistryPage() {
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Paid</p>
+          <p className="text-slate-500 font-extrabold text-xs uppercase tracking-wider">Paid</p>
           {loading && invoices.length === 0 ? (
             <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
           ) : (
             <h3 className="text-xl font-extrabold text-slate-900 mt-0.5">{counts.paid}</h3>
           )}
-          <p className="text-[10px] text-emerald-700 font-bold mt-1">Settled invoices</p>
+          <p className="text-xs text-emerald-700 font-bold mt-1">Settled invoices</p>
         </div>
 
         {/* Overdue */}
@@ -406,13 +408,13 @@ export default function InvoicesRegistryPage() {
               <AlertTriangle className="w-4 h-4" />
             </div>
           </div>
-          <p className="text-slate-500 font-extrabold text-[10px] uppercase tracking-wider">Overdue</p>
+          <p className="text-slate-500 font-extrabold text-xs uppercase tracking-wider">Overdue</p>
           {loading && invoices.length === 0 ? (
             <div className="h-6 w-12 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
           ) : (
             <h3 className="text-xl font-extrabold text-rose-600 mt-0.5">{counts.overdue}</h3>
           )}
-          <p className="text-[10px] text-rose-600 font-bold mt-1">Requires action</p>
+          <p className="text-xs text-rose-600 font-bold mt-1">Requires action</p>
         </div>
 
         {/* Outstanding Total */}
@@ -422,13 +424,13 @@ export default function InvoicesRegistryPage() {
               <DollarSign className="w-4 h-4 text-white" />
             </div>
           </div>
-          <p className="text-indigo-100 font-extrabold text-[10px] uppercase tracking-wider">Outstanding</p>
+          <p className="text-indigo-100 font-extrabold text-xs uppercase tracking-wider">Outstanding</p>
           {loading && invoices.length === 0 ? (
             <div className="h-6 w-20 bg-indigo-500/60 rounded-md animate-pulse mt-0.5" />
           ) : (
             <h3 className="text-xl font-extrabold text-white mt-0.5">₦{counts.outstandingTotal.toLocaleString()}</h3>
           )}
-          <p className="text-[10px] text-indigo-100 font-medium mt-1">Total receivables</p>
+          <p className="text-xs text-indigo-100 font-medium mt-1">Total receivables</p>
         </div>
       </div>
 
@@ -506,12 +508,12 @@ export default function InvoicesRegistryPage() {
                 <div key={inv.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-[10px] border border-blue-200 shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-xs border border-blue-200 shrink-0">
                         {getCustomerInitials(custName)}
                       </div>
                       <div>
                         <h4 className="font-extrabold text-slate-900 text-sm">{custName}</h4>
-                        <p className="text-[10px] text-slate-400 font-mono font-bold text-blue-600">{invNum}</p>
+                        <p className="text-xs text-slate-400 font-mono font-bold text-blue-600">{invNum}</p>
                       </div>
                     </div>
                     {/* Status Badge */}
@@ -528,16 +530,16 @@ export default function InvoicesRegistryPage() {
 
                   <div className="grid grid-cols-2 gap-3 text-xs pt-2 border-t border-slate-100">
                     <div>
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Issue Date</span>
-                      <span className="font-bold text-slate-800 text-[11px]">{dateStr}</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Issue Date</span>
+                      <span className="font-bold text-slate-800 text-xs">{dateStr}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-[9px] text-slate-400 font-bold uppercase block">Amount</span>
+                      <span className="text-xs text-slate-400 font-bold uppercase block">Amount</span>
                       <span className="font-extrabold text-slate-900 text-[13px]">
                         ₦{total.toLocaleString()}
                       </span>
                       {status === 'PARTIALLY_PAID' && (
-                        <span className="text-[10px] text-amber-700 font-bold block">
+                        <span className="text-xs text-amber-700 font-bold block">
                           Bal: ₦{balance.toLocaleString()}
                         </span>
                       )}
@@ -548,7 +550,7 @@ export default function InvoicesRegistryPage() {
                     {status === 'DRAFT' && (
                       <button
                         onClick={() => handleQuickIssueDraft(inv)}
-                        className="px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition font-bold text-[11px] flex items-center gap-1 shadow-xs cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition font-bold text-xs flex items-center gap-1 shadow-xs cursor-pointer"
                         title="Issue Invoice"
                       >
                         <Share2 className="w-3.5 h-3.5 text-blue-600" /> Issue
@@ -557,33 +559,33 @@ export default function InvoicesRegistryPage() {
                     {status !== 'PAID' && status !== 'DRAFT' && (
                       <Link
                         href={`/dashboard/sales/invoices/${inv.id}/pay`}
-                        className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition font-bold text-[11px] flex items-center gap-1 shadow-xs cursor-pointer"
+                        className="px-3 py-1.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 transition font-bold text-xs flex items-center gap-1 shadow-xs cursor-pointer"
                       >
                         <CreditCard className="w-3.5 h-3.5" /> Pay
                       </Link>
                     )}
                     <Link
                       href={`/dashboard/sales/invoices/${inv.id}/edit`}
-                      className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-xs flex items-center gap-1 cursor-pointer"
                     >
                       <Pencil className="w-3.5 h-3.5 text-slate-500" /> Edit
                     </Link>
                     <button
                       onClick={() => handlePrintInvoice(inv)}
-                      className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                      className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-xs flex items-center gap-1 cursor-pointer"
                     >
                       <Printer className="w-3.5 h-3.5" /> Print
                     </button>
                     <button
                       onClick={() => setShareModalInvoice(inv)}
-                      className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer shadow-xs"
+                      className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-xs flex items-center gap-1 cursor-pointer shadow-xs"
                       title="Share Invoice via WhatsApp, Email, or PDF"
                     >
                       <Share2 className="w-3.5 h-3.5" /> Share
                     </button>
                     <button
                       onClick={() => setInvoiceToDelete(inv)}
-                      className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                      className="p-1.5 rounded-lg border border-slate-200 text-slate-400 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition font-bold text-xs flex items-center gap-1 cursor-pointer"
                       title="Delete Invoice"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -598,7 +600,7 @@ export default function InvoicesRegistryPage() {
         {/* Desktop Table View (Hidden on mobile) */}
         <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
-            <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-[10px] border-b border-slate-200 tracking-wider">
+            <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
               <tr>
                 <th className="py-3 px-4">Invoice / Receipt #</th>
                 <th className="py-3 px-4">Customer</th>
@@ -657,7 +659,7 @@ export default function InvoicesRegistryPage() {
                       <td className="py-3.5 px-4 font-mono font-bold text-blue-600">{invNum}</td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-[10px] border border-blue-200">
+                          <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-xs border border-blue-200">
                             {getCustomerInitials(custName)}
                           </div>
                           <span className="font-extrabold text-slate-900">{custName}</span>
@@ -670,7 +672,7 @@ export default function InvoicesRegistryPage() {
                           ₦{total.toLocaleString()}
                         </div>
                         {status === 'PARTIALLY_PAID' && (
-                          <div className="text-[10px] text-amber-700 font-bold mt-0.5">
+                          <div className="text-xs text-amber-700 font-bold mt-0.5">
                             Paid: ₦{paid.toLocaleString()} • Bal: ₦{balance.toLocaleString()}
                           </div>
                         )}
@@ -987,7 +989,7 @@ export default function InvoicesRegistryPage() {
                                 {it.description || (dev ? `${dev.brand} ${dev.model}` : 'Hardware Item')}
                               </p>
                               {dev?.imei1 && (
-                                <p className="text-[11px] text-slate-500 font-mono">
+                                <p className="text-xs text-slate-500 font-mono">
                                   IMEI: {dev.imei1} {dev.color ? `• ${dev.color}` : ''} {dev.storageCapacity ? `• ${dev.storageCapacity}` : ''}
                                 </p>
                               )}
@@ -1049,7 +1051,7 @@ export default function InvoicesRegistryPage() {
                           Account Name: <span className="font-normal">{bank.accountName}</span>
                         </p>
                       )}
-                      <p className="text-blue-700 text-[11px] pt-1">
+                      <p className="text-blue-700 text-xs pt-1">
                         Payment Ref: <span className="font-mono font-bold">{viewModalInvoice.invoiceNumber || viewModalInvoice.id}</span>
                       </p>
                     </div>
@@ -1090,7 +1092,7 @@ export default function InvoicesRegistryPage() {
               </div>
 
               {/* Bottom Footer Bar */}
-              <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-[11px] text-slate-500 font-medium">
+              <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-1 text-xs text-slate-500 font-medium">
                 <div>
                   {viewModalInvoice.business?.name || 'NoxGuarda Retail Store'}
                   {viewModalInvoice.business?.phone ? ` • Phone: ${viewModalInvoice.business.phone}` : ''}
@@ -1126,17 +1128,17 @@ export default function InvoicesRegistryPage() {
 
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs text-slate-600">
               <div className="flex justify-between items-center">
-                <span className="text-slate-400 font-bold uppercase text-[10px]">Invoice #</span>
+                <span className="text-slate-400 font-bold uppercase text-xs">Invoice #</span>
                 <span className="font-mono font-bold text-blue-600">
                   {invoiceToDelete.invoiceNumber || invoiceToDelete.receiptNumber || invoiceToDelete.id}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-400 font-bold uppercase text-[10px]">Customer</span>
+                <span className="text-slate-400 font-bold uppercase text-xs">Customer</span>
                 <span className="font-bold text-slate-800">{invoiceToDelete.customer?.name || 'Retail Customer'}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-slate-400 font-bold uppercase text-[10px]">Total Amount</span>
+                <span className="text-slate-400 font-bold uppercase text-xs">Total Amount</span>
                 <span className="font-extrabold text-slate-900">
                   ₦{Number(invoiceToDelete.totalAmount || 0).toLocaleString()}
                 </span>

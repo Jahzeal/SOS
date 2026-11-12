@@ -4,9 +4,10 @@ import { VerificationController } from './verification.controller';
 import { DeviceIntelligenceService } from './device-intelligence.service';
 import { DeviceLookupService } from '../phones/device-lookup.service';
 import { PrismaModule } from '../prisma/prisma.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [PrismaModule],
+  imports: [PrismaModule, AuthModule],
   controllers: [VerificationController],
   providers: [VerificationService, DeviceIntelligenceService, DeviceLookupService],
   exports: [VerificationService, DeviceIntelligenceService, DeviceLookupService],

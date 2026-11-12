@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect } from 'react';
 import { api } from '@/lib/api';
 import {
@@ -228,7 +230,7 @@ export default function AdminSubscriptionsPage() {
       await api.adminReorderPlans(reorderPayload);
       invalidateAdminSubscriptions();
     } catch (err: any) {
-      alert(err.message || 'Failed to reorder plans');
+      notify(err.message || 'Failed to reorder plans');
     } finally {
       setIsReordering(false);
     }
@@ -239,7 +241,7 @@ export default function AdminSubscriptionsPage() {
       await api.adminUpdatePlan(plan.id, { isPublic: !plan.isPublic });
       invalidateAdminSubscriptions();
     } catch (err: any) {
-      alert(err.message || 'Failed to update visibility');
+      notify(err.message || 'Failed to update visibility');
     }
   };
 
@@ -267,19 +269,19 @@ export default function AdminSubscriptionsPage() {
       setShowPlanModal(false);
       invalidateAdminSubscriptions();
     } catch (err: any) {
-      alert(err.message || 'Failed to save plan');
+      notify(err.message || 'Failed to save plan');
     } finally {
       setSavingPlan(false);
     }
   };
 
   const handleDeletePlan = async (id: string, name: string) => {
-    if (!confirm(`Are you sure you want to delete the plan "${name}"?`)) return;
+    if (!await confirmDialog(`Are you sure you want to delete the plan "${name}"?`)) return;
     try {
       await api.adminDeletePlan(id);
       invalidateAdminSubscriptions();
     } catch (err: any) {
-      alert(err.message || 'Failed to delete plan');
+      notify(err.message || 'Failed to delete plan');
     }
   };
 
@@ -288,19 +290,19 @@ export default function AdminSubscriptionsPage() {
       await api.adminUpdateSubscriberPlan(businessId, newPlanCode);
       invalidateAdminSubscriptions();
     } catch (err: any) {
-      alert(err.message || 'Failed to update subscriber plan');
+      notify(err.message || 'Failed to update subscriber plan');
     }
   };
 
   const handleCancelPlan = async (businessId: string, businessName: string) => {
-    if (!confirm(`Are you sure you want to cancel the subscription plan for "${businessName}"?`)) {
+    if (!await confirmDialog(`Are you sure you want to cancel the subscription plan for "${businessName}"?`)) {
       return;
     }
     try {
       await api.adminCancelSubscriberPlan(businessId);
       invalidateAdminSubscriptions();
     } catch (err: any) {
-      alert(err.message || 'Failed to cancel subscriber plan');
+      notify(err.message || 'Failed to cancel subscriber plan');
     }
   };
 
@@ -360,43 +362,43 @@ export default function AdminSubscriptionsPage() {
       {/* KPI Bento Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-subtle">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
             Active Subscribers
           </span>
           <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">
             {summary.totalSubscribers}
           </div>
-          <span className="text-[11px] font-bold text-blue-600">Merchant accounts</span>
+          <span className="text-xs font-bold text-blue-600">Merchant accounts</span>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-subtle">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
             Monthly Recurring Revenue (MRR)
           </span>
           <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1 font-mono">
             ₦{summary.activeMRR.toLocaleString()}
           </div>
-          <span className="text-[11px] font-bold text-emerald-600">Live billings</span>
+          <span className="text-xs font-bold text-emerald-600">Live billings</span>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-subtle">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
             Projected ARR
           </span>
           <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1 font-mono">
             ₦{summary.projectedARR.toLocaleString()}
           </div>
-          <span className="text-[11px] font-bold text-amber-600">Annual run rate</span>
+          <span className="text-xs font-bold text-amber-600">Annual run rate</span>
         </div>
 
         <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-subtle">
-          <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
+          <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500 block mb-2">
             ARPU (Avg Revenue)
           </span>
           <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1 font-mono">
             ₦{summary.averageRevenuePerUser.toLocaleString()}
           </div>
-          <span className="text-[11px] font-bold text-purple-600">Per subscriber / mo</span>
+          <span className="text-xs font-bold text-purple-600">Per subscriber / mo</span>
         </div>
       </div>
 
@@ -454,14 +456,14 @@ export default function AdminSubscriptionsPage() {
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
                           {p.code}
                         </span>
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                        <span className="text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
                           Pos #{idx + 1}
                         </span>
                         {p.code === 'BUSINESS' && (
-                          <span className="text-[10px] font-extrabold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">
+                          <span className="text-xs font-extrabold text-teal-800 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-md">
                             ★ Popular
                           </span>
                         )}
@@ -491,7 +493,7 @@ export default function AdminSubscriptionsPage() {
                   </div>
 
                   {/* Public Page Arrangement & Visibility Toolbar */}
-                  <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-[11px]">
+                  <div className="flex items-center justify-between p-2 rounded-xl bg-slate-50 border border-slate-200/80 text-xs">
                     {/* Reorder Buttons */}
                     <div className="flex items-center gap-1">
                       <button
@@ -538,7 +540,7 @@ export default function AdminSubscriptionsPage() {
                       <span className="text-xs text-slate-500 font-bold">/ month</span>
                     </div>
                     {p.annualPriceNgn && (
-                      <span className="text-[11px] text-emerald-600 font-semibold block mt-0.5">
+                      <span className="text-xs text-emerald-600 font-semibold block mt-0.5">
                         ₦{p.annualPriceNgn.toLocaleString()} billed annually
                       </span>
                     )}
@@ -577,12 +579,12 @@ export default function AdminSubscriptionsPage() {
                   {/* Feature Checklist */}
                   {Array.isArray(p.features) && p.features.length > 0 && (
                     <div className="pt-2.5 border-t border-slate-100 space-y-1.5">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block">
+                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
                         Included Features ({p.features.length}):
                       </span>
                       <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
                         {p.features.map((f: string, fIdx: number) => (
-                          <div key={fIdx} className="flex items-start gap-1.5 text-[11px] text-slate-700 font-medium">
+                          <div key={fIdx} className="flex items-start gap-1.5 text-xs text-slate-700 font-medium">
                             <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                             <span className="leading-snug">{f}</span>
                           </div>
@@ -597,7 +599,7 @@ export default function AdminSubscriptionsPage() {
                     {summary.tierCounts[p.code.toLowerCase()] || 0} active subscriber(s)
                   </span>
                   <span
-                    className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${
+                    className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase ${
                       p.isActive
                         ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                         : 'bg-slate-100 text-slate-600'
@@ -652,7 +654,7 @@ export default function AdminSubscriptionsPage() {
         {/* Table */}
         <div className="overflow-x-auto border border-slate-100 rounded-xl">
           <table className="w-full text-left text-xs border-collapse">
-            <thead className="bg-slate-50/80 font-mono text-[11px] text-slate-500 uppercase tracking-wider border-b border-slate-200">
+            <thead className="bg-slate-50/80 font-mono text-xs text-slate-500 uppercase tracking-wider border-b border-slate-200">
               <tr>
                 <th className="py-3 px-4 font-semibold">Subscriber Store</th>
                 <th className="py-3 px-4 font-semibold">Assigned Tier</th>
@@ -668,7 +670,7 @@ export default function AdminSubscriptionsPage() {
                   <tr key={sub.id} className="hover:bg-slate-50 transition">
                     <td className="py-3 px-4">
                       <div className="font-bold text-slate-900">{sub.name || sub.businessName || 'Store'}</div>
-                      <div className="text-[11px] text-slate-400 font-mono">/{sub.slug}</div>
+                      <div className="text-xs text-slate-400 font-mono">/{sub.slug}</div>
                     </td>
                     <td className="py-3 px-4">
                       <select
@@ -689,12 +691,12 @@ export default function AdminSubscriptionsPage() {
                           ₦{((sub.planPrice ?? dbPlans.find((p) => p.code === sub.plan)?.monthlyPriceNgn) || 0).toLocaleString()} / mo
                         </span>
                         {sub.subscriptionStatus === 'TRIAL' && (
-                          <span className="text-[10px] font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                          <span className="text-xs font-bold text-amber-700 bg-amber-50 border border-amber-200/80 px-1.5 py-0.5 rounded uppercase tracking-wider">
                             (Trial)
                           </span>
                         )}
                         {sub.subscriptionStatus === 'CANCELLED' && (
-                          <span className="text-[10px] font-bold text-rose-700 bg-rose-50 border border-rose-200/80 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                          <span className="text-xs font-bold text-rose-700 bg-rose-50 border border-rose-200/80 px-1.5 py-0.5 rounded uppercase tracking-wider">
                             (Cancelled)
                           </span>
                         )}
@@ -705,16 +707,20 @@ export default function AdminSubscriptionsPage() {
                     </td>
                     <td className="py-3 px-4">
                       {sub.subscriptionStatus === 'ACTIVE' ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-emerald-50 text-emerald-700 border border-emerald-200">
                           Active (Paid)
                         </span>
                       ) : sub.subscriptionStatus === 'CANCELLED' ? (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-rose-50 text-rose-700 border border-rose-200">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-rose-50 text-rose-700 border border-rose-200">
                           Cancelled
                         </span>
                       ) : (
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
-                          14-Day Trial
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
+                          {sub.subscriptionStatus === 'TRIAL'
+                            ? 'Trial (old)'
+                            : sub.subscriptionStatus === 'EXPIRED' || sub.subscriptionStatus === 'PAST_DUE'
+                            ? 'Expired'
+                            : 'Free'}
                         </span>
                       )}
                     </td>
@@ -729,7 +735,7 @@ export default function AdminSubscriptionsPage() {
                             Cancel Plan
                           </button>
                         ) : (
-                          <span className="text-[11px] font-semibold text-slate-400 italic">Cancelled</span>
+                          <span className="text-xs font-semibold text-slate-400 italic">Cancelled</span>
                         )}
                       </div>
                     </td>
@@ -903,7 +909,7 @@ export default function AdminSubscriptionsPage() {
                     <label className="block font-bold text-slate-800 uppercase tracking-wider text-xs">
                       Included Platform Features ({planForm.features.length}/{ALL_CATALOG_FEATURES.length} Selected)
                     </label>
-                    <p className="text-[11px] text-slate-500 mt-0.5">
+                    <p className="text-xs text-slate-500 mt-0.5">
                       Check every capability included in this subscription tier.
                     </p>
                   </div>
@@ -912,14 +918,14 @@ export default function AdminSubscriptionsPage() {
                     <button
                       type="button"
                       onClick={() => setPlanForm({ ...planForm, features: [...ALL_CATALOG_FEATURES] })}
-                      className="text-[11px] font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200 cursor-pointer"
+                      className="text-xs font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-1 rounded-lg border border-blue-200 cursor-pointer"
                     >
                       Select All ({ALL_CATALOG_FEATURES.length})
                     </button>
                     <button
                       type="button"
                       onClick={() => setPlanForm({ ...planForm, features: [] })}
-                      className="text-[11px] font-bold text-slate-500 hover:text-slate-700 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 cursor-pointer"
+                      className="text-xs font-bold text-slate-500 hover:text-slate-700 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200 cursor-pointer"
                     >
                       Clear
                     </button>
@@ -949,14 +955,14 @@ export default function AdminSubscriptionsPage() {
                           <span className="font-bold text-xs text-slate-900 flex items-center gap-1.5">
                             <span>{cat.icon}</span>
                             <span>{cat.category}</span>
-                            <span className="text-[10px] text-slate-500 font-normal">
+                            <span className="text-xs text-slate-500 font-normal">
                               ({selectedInCat}/{cat.items.length})
                             </span>
                           </span>
                           <button
                             type="button"
                             onClick={toggleCat}
-                            className="text-[10px] font-bold text-blue-600 hover:underline cursor-pointer"
+                            className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
                           >
                             {allCatSelected ? 'Deselect Category' : 'Select All in Category'}
                           </button>
@@ -970,7 +976,7 @@ export default function AdminSubscriptionsPage() {
                                 key={feat}
                                 type="button"
                                 onClick={() => toggleFeature(feat)}
-                                className={`text-left p-1.5 rounded-lg text-[11px] font-semibold flex items-center gap-2 transition border cursor-pointer ${
+                                className={`text-left p-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition border cursor-pointer ${
                                   isSelected
                                     ? 'bg-blue-50 border-blue-200 text-blue-800 shadow-2xs'
                                     : 'bg-slate-50/60 border-slate-200/70 text-slate-600 hover:bg-slate-100'
@@ -1058,7 +1064,7 @@ export default function AdminSubscriptionsPage() {
             {/* Modal Header with Billing Switch */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
               <div>
-                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-[10px] font-extrabold uppercase tracking-wider mb-1">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-teal-50 border border-teal-200 text-teal-800 text-xs font-extrabold uppercase tracking-wider mb-1">
                   <Sparkles className="w-3 h-3 text-teal-600" />
                   <span>Interactive Public View Preview</span>
                 </div>
@@ -1092,7 +1098,7 @@ export default function AdminSubscriptionsPage() {
                     }`}
                   >
                     Annual
-                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">
+                    <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-extrabold">
                       -20%
                     </span>
                   </button>
@@ -1143,7 +1149,7 @@ export default function AdminSubscriptionsPage() {
                         }`}
                       >
                         {isPopular && (
-                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-teal-600 text-white text-[9px] font-extrabold uppercase tracking-widest shadow-xs">
+                          <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-teal-600 text-white text-xs font-extrabold uppercase tracking-widest shadow-xs">
                             MOST POPULAR
                           </div>
                         )}
@@ -1152,11 +1158,11 @@ export default function AdminSubscriptionsPage() {
                           <div>
                             <div className="flex items-center justify-between">
                               <h4 className="text-base font-extrabold text-slate-900">{plan.name}</h4>
-                              <span className="text-[10px] font-mono font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
+                              <span className="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">
                                 #{idx + 1}
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-500 font-medium mt-1 min-h-[30px] line-clamp-2">
+                            <p className="text-xs text-slate-500 font-medium mt-1 min-h-[30px] line-clamp-2">
                               {plan.description || 'Verified device tracking, POS checkout, and receipts.'}
                             </p>
                           </div>
@@ -1166,13 +1172,13 @@ export default function AdminSubscriptionsPage() {
                               <span className="text-2xl font-black text-slate-900 font-mono">
                                 ₦{displayPrice.toLocaleString()}
                               </span>
-                              <span className="text-[11px] text-slate-500 font-bold">
+                              <span className="text-xs text-slate-500 font-bold">
                                 {isFree ? '/ forever' : '/ mo'}
                               </span>
                             </div>
-                            <p className="text-[10px] text-slate-400 mt-0.5 font-medium">
+                            <p className="text-xs text-slate-400 mt-0.5 font-medium">
                               {isFree
-                                ? 'Zero credit card required'
+                                ? 'Free forever • No card needed'
                                 : previewBillingCycle === 'annual'
                                 ? `₦${annualPrice.toLocaleString()} / year (Save 20%)`
                                 : 'Billed monthly'}
@@ -1181,10 +1187,10 @@ export default function AdminSubscriptionsPage() {
 
                           {/* Features */}
                           <div className="space-y-2 pt-1">
-                            <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider block">
+                            <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
                               Included Features:
                             </span>
-                            <div className="space-y-1.5 text-[11px] text-slate-700 max-h-44 overflow-y-auto pr-1">
+                            <div className="space-y-1.5 text-xs text-slate-700 max-h-44 overflow-y-auto pr-1">
                               {Array.isArray(plan.features) && plan.features.length > 0 ? (
                                 plan.features.map((feat: string, fIdx: number) => (
                                   <div key={fIdx} className="flex items-start gap-1.5 font-medium">
@@ -1216,7 +1222,7 @@ export default function AdminSubscriptionsPage() {
                                 : 'bg-slate-900 text-white'
                             }`}
                           >
-                            Start 14-Day Free Trial →
+                            {isFree ? 'Start free →' : `Get ${plan.name} →`}
                           </button>
                         </div>
                       </div>

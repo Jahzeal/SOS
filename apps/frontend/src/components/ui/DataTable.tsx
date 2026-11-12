@@ -90,14 +90,14 @@ export function DataTable<T>({
               {columns.map((col, idx) => (
                 <th
                   key={idx}
-                  className={`px-4 py-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider ${
+                  className={`px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider ${
                     col.className || ''
                   }`}
                 >
                   {col.header}
                 </th>
               ))}
-              <th className="px-4 py-3 text-[11px] font-bold text-slate-600 uppercase tracking-wider text-right w-12">
+              <th className="px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider text-right w-12">
                 Actions
               </th>
             </tr>

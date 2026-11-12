@@ -3,10 +3,14 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateRepairTicketDto } from './dto/create-repair-ticket.dto';
 import { UpdateRepairStatusDto } from './dto/update-repair-status.dto';
 import { RepairStatus } from '@prisma/client';
+import { DocumentNumberService } from '../common/services/document-number.service';
 
 @Injectable()
 export class RepairsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly docNumbers: DocumentNumberService,
+  ) {}
 
   async findAll(businessId: string, query?: { search?: string; status?: RepairStatus }) {
     const where: any = { businessId };
@@ -70,9 +74,8 @@ export class RepairsService {
       });
     }
 
-    // 2. Generate unique Ticket Number (REP-XXXXXX)
-    const ref = Math.floor(1000 + Math.random() * 9000);
-    const ticketNumber = `REP-${ref}`;
+    // 2. Next ticket number for this store
+    const ticketNumber = await this.docNumbers.next(businessId, 'REPAIR');
 
     // 3. Create Repair Ticket
     return this.prisma.repairTicket.create({

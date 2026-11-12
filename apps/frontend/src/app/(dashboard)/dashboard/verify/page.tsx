@@ -104,7 +104,7 @@ export default function VerifyPhonePage() {
                 </div>
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full bg-rose-600 text-white font-extrabold text-[10px] tracking-wider uppercase">
+                    <span className="px-2.5 py-0.5 rounded-full bg-rose-600 text-white font-extrabold text-xs tracking-wider uppercase">
                       STOLEN / LOST MODE ACTIVE
                     </span>
                   </div>
@@ -165,7 +165,7 @@ export default function VerifyPhonePage() {
                   </p>
                 </div>
               </div>
-              <span className={`px-3 py-1 rounded-full text-white font-extrabold text-[10px] uppercase tracking-wider self-start sm:self-auto ${result.retailer ? 'bg-emerald-600' : 'bg-slate-600'}`}>
+              <span className={`px-3 py-1 rounded-full text-white font-extrabold text-xs uppercase tracking-wider self-start sm:self-auto ${result.retailer ? 'bg-emerald-600' : 'bg-slate-600'}`}>
                 {result.retailer ? 'AUTHORIZED DEALER' : 'UNREGISTERED'}
               </span>
             </div>
@@ -202,7 +202,7 @@ export default function VerifyPhonePage() {
               
               {/* Pillar 1: Theft Status */}
               <div className={`p-4 rounded-2xl border ${result.isStolen ? 'bg-rose-50/60 border-rose-200' : 'bg-slate-50 border-slate-200'} space-y-1`}>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Theft & Blacklist</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Theft & Blacklist</span>
                 <p className={`text-sm font-extrabold flex items-center gap-1.5 ${result.isStolen ? 'text-rose-700' : 'text-emerald-700'}`}>
                   {result.isStolen ? <ShieldAlert className="w-4 h-4 text-rose-600" /> : <ShieldCheck className="w-4 h-4 text-emerald-600" />}
                   {result.isStolen ? 'Blacklisted / Stolen' : 'Clean & Verified'}
@@ -211,7 +211,7 @@ export default function VerifyPhonePage() {
 
               {/* Pillar 2: Carrier Status */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Carrier Lock</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Carrier Lock</span>
                 <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
                   {result.carrierStatus === 'CARRIER_LOCKED' ? (
                     <>
@@ -229,7 +229,7 @@ export default function VerifyPhonePage() {
 
               {/* Pillar 3: Activation State */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400">Activation State</span>
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Activation State</span>
                 <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-teal-600" />
                   <span className="text-slate-800">

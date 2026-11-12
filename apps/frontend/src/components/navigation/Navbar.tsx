@@ -122,7 +122,7 @@ export function Navbar() {
             {/* Cryptographic Security Indicator Badge */}
             <div
               className="flex items-center gap-2.5 px-3 py-1.5 rounded-full bg-[#121417] border border-[#242A33] shadow-inner text-xs font-mono select-none hover:border-[#2E6F5E]/60 transition-colors"
-              title="Cryptographic Hardware Key Verified & Immutable Ledger Synced"
+              title="Connected and synced"
             >
               <div className="relative flex items-center justify-center w-2 h-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#2E6F5E] opacity-75" />
@@ -209,7 +209,7 @@ export function Navbar() {
             <div className="flex items-center justify-between px-3 py-2 rounded-xl bg-[#1A1D23] border border-[#242A33] text-xs font-mono">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-[#3B8B77] animate-pulse" />
-                <span className="text-slate-300 font-bold text-[11px]">CRYPTOGRAPHIC LEDGER</span>
+                <span className="text-slate-300 font-bold text-[11px]">CONNECTION</span>
               </div>
               <span className="text-[#3B8B77] text-[11px] font-extrabold">ONLINE</span>
             </div>

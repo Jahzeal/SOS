@@ -1,22 +1,53 @@
-import { Injectable, NotFoundException, UnauthorizedException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, ConflictException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateTheftReportDto, ResolveTheftReportDto } from './dto/create-theft-report.dto';
+import { CreateTheftReportDto } from './dto/create-theft-report.dto';
+import { VerifiedReporter } from './reporter.guard';
+
+/** 08012345678 -> 080******78. Enough to recognise your own number, not enough to call it. */
+export function maskPhone(phone?: string | null): string | null {
+  if (!phone) return null;
+  const clean = String(phone).trim();
+  if (clean.length <= 5) return '*'.repeat(clean.length);
+  return `${clean.slice(0, 3)}${'*'.repeat(clean.length - 5)}${clean.slice(-2)}`;
+}
 
 @Injectable()
 export class TheftReportsService {
   constructor(private prisma: PrismaService) {}
 
-  async createReport(dto: CreateTheftReportDto) {
-    const cleanImei1 = dto.imei1.trim();
+  /** What an anonymous member of the public may see about a report. */
+  toPublicReport(report: any) {
+    return {
+      id: report.id,
+      brand: report.brand,
+      model: report.model,
+      color: report.color,
+      status: report.status,
+      lostNote: report.lostNote,
+      bountyAmount: report.bountyAmount,
+      ownerPhoneMasked: maskPhone(report.ownerPhone),
+      reportedAt: report.createdAt,
+    };
+  }
+
+  async createReport(dto: CreateTheftReportDto, reporter: VerifiedReporter) {
+    const ownerEmail = reporter.email;
+    const ownerName = dto.ownerName?.trim() || reporter.name;
+    // Empty when the device has no IMEI (laptop, Wi-Fi tablet); never matched on.
+    const cleanImei1 = (dto.imei1 || '').trim();
     const cleanImei2 = dto.imei2?.trim() || null;
     const cleanSerial = dto.serialNumber?.trim() || null;
+
+    if (!cleanImei1 && !cleanSerial) {
+      throw new BadRequestException('Enter the IMEI, or the serial number if the device has no IMEI.');
+    }
 
     // Check if an ACTIVE theft report already exists for this identifier
     const existingActive = await this.prisma.theftReport.findFirst({
       where: {
         status: 'ACTIVE',
         OR: [
-          { imei1: cleanImei1 },
+          ...(cleanImei1 ? [{ imei1: cleanImei1 }] : []),
           ...(cleanImei2 ? [{ imei2: cleanImei2 }] : []),
           ...(cleanSerial ? [{ serialNumber: cleanSerial }] : []),
         ],
@@ -25,7 +56,7 @@ export class TheftReportsService {
 
     if (existingActive) {
       // If same owner, return existing report
-      if (existingActive.ownerEmail.toLowerCase() === dto.ownerEmail.toLowerCase()) {
+      if (existingActive.ownerEmail.toLowerCase() === ownerEmail) {
         return existingActive;
       }
       throw new ConflictException('This device is already actively reported as stolen in the registry.');
@@ -39,12 +70,13 @@ export class TheftReportsService {
         brand: dto.brand.trim(),
         model: dto.model.trim(),
         color: dto.color?.trim() || null,
-        ownerEmail: dto.ownerEmail.toLowerCase().trim(),
-        ownerName: dto.ownerName.trim(),
+        ownerEmail,
+        ownerName,
         ownerPhone: dto.ownerPhone.trim(),
         lostNote: dto.lostNote?.trim() || null,
         bountyAmount: dto.bountyAmount || 0,
-        verificationSource: dto.verificationSource || 'GOOGLE_AUTH',
+        // Set by the server from how the reporter proved who they are.
+        verificationSource: reporter.source,
         proofUrl: dto.proofUrl || null,
         policeCaseNo: dto.policeCaseNo?.trim() || null,
         status: 'ACTIVE',
@@ -55,7 +87,7 @@ export class TheftReportsService {
     await this.prisma.phoneRecord.updateMany({
       where: {
         OR: [
-          { imei1: cleanImei1 },
+          ...(cleanImei1 ? [{ imei1: cleanImei1 }] : []),
           ...(cleanImei2 ? [{ imei2: cleanImei2 }] : []),
           ...(cleanSerial ? [{ serialNumber: cleanSerial }] : []),
         ],
@@ -65,7 +97,7 @@ export class TheftReportsService {
         theftStatus: 'STOLEN',
         stolenAt: new Date(),
         theftReason: 'Reported lost/stolen by owner via Public Registry',
-        theftReportedBy: dto.ownerEmail.toLowerCase().trim(),
+        theftReportedBy: 'Device owner (verified)',
         lostNote: dto.lostNote?.trim() || null,
         contactPhone: dto.ownerPhone.trim(),
       },
@@ -76,7 +108,7 @@ export class TheftReportsService {
     return report;
   }
 
-  async resolveReport(reportId: string, dto: ResolveTheftReportDto) {
+  async resolveReport(reportId: string, reporter: VerifiedReporter, resolvedNote?: string) {
     const report = await this.prisma.theftReport.findUnique({
       where: { id: reportId },
     });
@@ -85,8 +117,12 @@ export class TheftReportsService {
       throw new NotFoundException('Theft report not found');
     }
 
-    if (report.ownerEmail.toLowerCase() !== dto.ownerEmail.toLowerCase().trim()) {
-      throw new UnauthorizedException('Only the original verified reporter can mark this device as recovered.');
+    if (report.ownerEmail.toLowerCase() !== reporter.email) {
+      throw new ForbiddenException('Only the original verified reporter can mark this device as recovered.');
+    }
+
+    if (report.status === 'RESOLVED') {
+      return report;
     }
 
     const updated = await this.prisma.theftReport.update({
@@ -94,7 +130,7 @@ export class TheftReportsService {
       data: {
         status: 'RESOLVED',
         resolvedAt: new Date(),
-        resolvedNote: dto.resolvedNote?.trim() || 'Marked as recovered by owner',
+        resolvedNote: resolvedNote?.trim() || 'Marked as recovered by owner',
       },
     });
 
@@ -104,7 +140,7 @@ export class TheftReportsService {
         id: { not: reportId },
         status: 'ACTIVE',
         OR: [
-          { imei1: report.imei1 },
+          ...(report.imei1 ? [{ imei1: report.imei1 }] : []),
           ...(report.imei2 ? [{ imei2: report.imei2 }] : []),
           ...(report.serialNumber ? [{ serialNumber: report.serialNumber }] : []),
         ],
@@ -115,7 +151,7 @@ export class TheftReportsService {
       await this.prisma.phoneRecord.updateMany({
         where: {
           OR: [
-            { imei1: report.imei1 },
+            ...(report.imei1 ? [{ imei1: report.imei1 }] : []),
             ...(report.imei2 ? [{ imei2: report.imei2 }] : []),
             ...(report.serialNumber ? [{ serialNumber: report.serialNumber }] : []),
           ],
@@ -148,6 +184,7 @@ export class TheftReportsService {
 
   async findActiveReportByIdentifier(identifier: string) {
     const cleanId = identifier.trim();
+    if (!cleanId) return null;
     return this.prisma.theftReport.findFirst({
       where: {
         status: 'ACTIVE',

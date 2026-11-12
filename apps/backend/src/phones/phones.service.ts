@@ -1,12 +1,18 @@
-import { Injectable, ConflictException, NotFoundException } from '@nestjs/common';
+import { Injectable, ConflictException, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterPhoneDto } from './dto/register-phone.dto';
 import { PhoneStatus, DeviceCategory, PhoneCondition } from '@prisma/client';
 import * as QRCode from 'qrcode';
+import { randomInt } from 'crypto';
+import { SubscriptionService } from '../common/services/subscription.service';
+import { UpdatePhoneDto, FlagStolenDto } from './dto/update-phone.dto';
 
 @Injectable()
 export class PhonesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private subscriptions: SubscriptionService,
+  ) {}
 
   async checkImei(businessId: string, imei: string) {
     const cleanImei = imei.trim();
@@ -123,8 +129,46 @@ export class PhonesService {
     };
   }
 
+  /** Identifies theft reports this store filed itself (see flagAsStolen). */
+  private ownReportFilter(business: { name: string; email: string | null }) {
+    return {
+      verificationSource: 'BUSINESS_VERIFIED',
+      ownerName: business.name,
+      ownerEmail: business.email || 'business@noxguarda.com',
+    };
+  }
+
+  /**
+   * A device with an ACTIVE theft report must never enter stock as a normal item.
+   */
+  private async assertNotReportedStolen(identifiers: Array<string | null | undefined>) {
+    const ids = identifiers.map((i) => i?.trim()).filter((i): i is string => !!i);
+    if (ids.length === 0) return;
+
+    const report = await this.prisma.theftReport.findFirst({
+      where: {
+        status: 'ACTIVE',
+        OR: [
+          { imei1: { in: ids } },
+          { imei2: { in: ids } },
+          ...ids.map((id) => ({ serialNumber: { equals: id, mode: 'insensitive' as const } })),
+        ],
+      },
+      select: { id: true },
+    });
+
+    if (report) {
+      throw new ConflictException(
+        'This device is listed as STOLEN in the NoxGuarda theft registry and cannot be added to inventory. Do not buy or sell it.',
+      );
+    }
+  }
+
   async registerPhone(businessId: string, userId: string, dto: RegisterPhoneDto) {
     let finalImei = dto.imei1?.trim();
+
+    await this.assertNotReportedStolen([dto.imei1, dto.imei2, dto.serialNumber]);
+    await this.subscriptions.assertCanAddDevice(businessId);
 
     // 1. If IMEI provided, check duplicate
     if (finalImei) {
@@ -138,7 +182,7 @@ export class PhonesService {
       }
     } else {
       // Auto-assign SKU/Barcode if non-phone item without IMEI
-      const randomSuffix = Math.floor(1000 + Math.random() * 9000);
+      const randomSuffix = randomInt(1000, 10000);
       finalImei = dto.serialNumber?.trim() || `SKU-${Date.now().toString().slice(-6)}-${randomSuffix}`;
     }
 
@@ -208,7 +252,7 @@ export class PhonesService {
         },
       });
 
-      const frontendUrl = process.env.FRONTEND_URL || 'https://sos-frontend-indol.vercel.app';
+      const frontendUrl = (process.env.FRONTEND_URL || 'https://sos-frontend-indol.vercel.app').replace(/\/$/, '');
       const verificationUrl = `${frontendUrl}/verify?imei=${encodeURIComponent(phoneRecord.imei1)}`;
       const qrCodeUrl = await QRCode.toDataURL(verificationUrl).catch(() => null);
 
@@ -299,7 +343,7 @@ export class PhonesService {
     });
   }
 
-  async flagAsStolen(businessId: string, id: string, dto: any) {
+  async flagAsStolen(businessId: string, id: string, dto: FlagStolenDto) {
     const phone = await this.prisma.phoneRecord.findFirst({
       where: { id, businessId },
       include: { business: true },
@@ -347,10 +391,33 @@ export class PhonesService {
   async clearStolenFlag(businessId: string, id: string) {
     const phone = await this.prisma.phoneRecord.findFirst({
       where: { id, businessId },
+      include: { business: { select: { name: true, email: true } } },
     });
 
     if (!phone) {
       throw new NotFoundException('Phone record not found');
+    }
+
+    const deviceMatch = {
+      OR: [
+        { imei1: phone.imei1 },
+        ...(phone.imei2 ? [{ imei2: phone.imei2 }] : []),
+        ...(phone.serialNumber ? [{ serialNumber: phone.serialNumber }] : []),
+      ],
+    };
+    const ownReport = this.ownReportFilter(phone.business);
+
+    // A store can withdraw only the report it filed itself. A report filed by the
+    // device's owner stays active until that owner (or an admin) resolves it.
+    const someoneElsesReport = await this.prisma.theftReport.findFirst({
+      where: { status: 'ACTIVE', ...deviceMatch, NOT: ownReport },
+      select: { id: true },
+    });
+
+    if (someoneElsesReport) {
+      throw new ForbiddenException(
+        'This device was reported stolen by its owner. Only the owner can mark it as recovered.',
+      );
     }
 
     const updated = await this.prisma.phoneRecord.update({
@@ -366,20 +433,12 @@ export class PhonesService {
       },
     });
 
-    // Resolve any active theft reports for this IMEI
     await this.prisma.theftReport.updateMany({
-      where: {
-        status: 'ACTIVE',
-        OR: [
-          { imei1: phone.imei1 },
-          ...(phone.imei2 ? [{ imei2: phone.imei2 }] : []),
-          ...(phone.serialNumber ? [{ serialNumber: phone.serialNumber }] : []),
-        ],
-      },
+      where: { status: 'ACTIVE', ...deviceMatch, ...ownReport },
       data: {
         status: 'RESOLVED',
         resolvedAt: new Date(),
-        resolvedNote: 'Cleared by verified retailer',
+        resolvedNote: 'Withdrawn by the reporting retailer',
       },
     }).catch(() => {});
 
@@ -409,7 +468,7 @@ export class PhonesService {
     return record;
   }
 
-  async update(businessId: string, id: string, dto: any) {
+  async update(businessId: string, id: string, dto: UpdatePhoneDto) {
     const record = await this.prisma.phoneRecord.findFirst({
       where: { id, businessId },
     });

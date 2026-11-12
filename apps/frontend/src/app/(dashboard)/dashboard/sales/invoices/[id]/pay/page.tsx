@@ -231,16 +231,16 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
 
           <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl text-xs space-y-2 text-left">
             <div className="flex justify-between">
-              <span className="text-slate-500 font-bold uppercase text-[10px]">Customer:</span>
+              <span className="text-slate-500 font-bold uppercase text-xs">Customer:</span>
               <span className="font-extrabold text-slate-900">{invoice.customer?.name || 'Customer'}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-slate-500 font-bold uppercase text-[10px]">Payment Method:</span>
+              <span className="text-slate-500 font-bold uppercase text-xs">Payment Method:</span>
               <span className="font-bold text-slate-900">{paymentMethod.replace('_', ' ')}</span>
             </div>
             {paymentReference && (
               <div className="flex justify-between">
-                <span className="text-slate-500 font-bold uppercase text-[10px]">Reference:</span>
+                <span className="text-slate-500 font-bold uppercase text-xs">Reference:</span>
                 <span className="font-mono font-bold text-blue-600">{paymentReference}</span>
               </div>
             )}
@@ -292,7 +292,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
                   }`}
                 >
                   <p className="font-extrabold text-xs text-slate-900">Full Settlement</p>
-                  <p className="text-[11px] text-emerald-700 font-mono font-bold mt-0.5">
+                  <p className="text-xs text-emerald-700 font-mono font-bold mt-0.5">
                     Pay entire ₦{remaining.toLocaleString()}
                   </p>
                 </button>
@@ -307,7 +307,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
                   }`}
                 >
                   <p className="font-extrabold text-xs text-slate-900">Partial Payment</p>
-                  <p className="text-[11px] text-slate-500 font-medium mt-0.5">
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
                     Custom installment amount
                   </p>
                 </button>
@@ -327,7 +327,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="text-[11px] text-slate-400 font-bold">Quick set:</span>
+                    <span className="text-xs text-slate-400 font-bold">Quick set:</span>
                     <button
                       type="button"
                       onClick={() => handleQuickPercent(25)}
@@ -434,7 +434,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
           <div className="lg:col-span-5 space-y-6">
             {/* Balance Overview Card */}
             <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-4">
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 block">
+              <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400 block">
                 INVOICE BALANCE SUMMARY
               </span>
 
@@ -447,11 +447,11 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
 
               <div className="pt-3 border-t border-slate-800 grid grid-cols-2 gap-4 text-xs">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Total Invoice</span>
+                  <span className="text-slate-400 block text-xs uppercase font-bold">Total Invoice</span>
                   <span className="font-bold text-slate-100 font-mono">₦{total.toLocaleString()}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Already Paid</span>
+                  <span className="text-slate-400 block text-xs uppercase font-bold">Already Paid</span>
                   <span className="font-bold text-emerald-400 font-mono">₦{paid.toLocaleString()}</span>
                 </div>
               </div>
@@ -491,9 +491,9 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
                         <div>
                           <p className="font-bold text-slate-900">{title}</p>
                           {it.phoneRecord?.imei1 && (
-                            <p className="text-[10px] text-slate-400 font-mono">IMEI: {it.phoneRecord.imei1}</p>
+                            <p className="text-xs text-slate-400 font-mono">IMEI: {it.phoneRecord.imei1}</p>
                           )}
-                          <p className="text-[10px] text-slate-500">Qty: {qty}</p>
+                          <p className="text-xs text-slate-500">Qty: {qty}</p>
                         </div>
                         <span className="font-mono font-bold text-slate-900 shrink-0">
                           ₦{(price * qty).toLocaleString()}

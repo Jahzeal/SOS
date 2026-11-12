@@ -45,7 +45,7 @@ const mainNavItems: NavItem[] = [
 
 const bottomNavItems: NavItem[] = [
   { name: 'Error Logs', href: '/admin/errors', icon: AlertTriangle },
-  { name: 'Notifications', href: '/admin/notifications', icon: Bell, badge: '4' },
+  { name: 'Notifications', href: '/admin/notifications', icon: Bell },
   { name: 'Support', href: '/admin/support', icon: HelpCircle },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
@@ -60,6 +60,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // The API already refuses non-admins; this keeps the admin screens themselves
+  // from being shown to store accounts or signed-out visitors.
+  const isAdmin = user?.role === 'ADMIN';
+  useEffect(() => {
+    if (!mounted || isAdmin) return;
+    router.replace(user ? '/dashboard' : '/login');
+  }, [mounted, isAdmin, user, router]);
 
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
@@ -116,7 +124,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span>{item.name}</span>
               </div>
               {item.badge && (
-                <span className="px-1.5 py-0.2 rounded-full text-[10px] font-extrabold bg-blue-100 text-blue-700 border border-blue-200">
+                <span className="px-1.5 py-0.2 rounded-full text-xs font-extrabold bg-blue-100 text-blue-700 border border-blue-200">
                   {item.badge}
                 </span>
               )}
@@ -126,6 +134,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </div>
     </div>
   );
+
+  if (!mounted || !isAdmin) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 text-sm font-semibold text-slate-500" role="status">
+        Checking access...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex bg-[#f7f9fb] text-[#191c1e] font-sans antialiased">
@@ -140,7 +156,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <span className="text-xs font-extrabold text-slate-900 truncate" suppressHydrationWarning>
               {mounted && user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Admin User'}
             </span>
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
               System Administrator
             </span>
           </div>
@@ -152,8 +168,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         </nav>
 
         {/* Version Footer & Sign Out */}
-        <div className="p-3 border-t border-slate-200 flex items-center justify-between text-[11px] bg-slate-50/60">
-          <span className="font-mono font-bold text-slate-400 text-[10px]">v2.4.0 (Enterprise)</span>
+        <div className="p-3 border-t border-slate-200 flex items-center justify-between text-xs bg-slate-50/60">
+          <span className="font-mono font-bold text-slate-400 text-xs">v2.4.0 (Enterprise)</span>
           <button
             onClick={handleLogout}
             className="flex items-center gap-1.5 px-2 py-1 rounded-md text-slate-500 hover:text-rose-600 hover:bg-rose-50 transition text-xs font-semibold"
@@ -219,7 +235,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                   <h3 className="font-bold text-xs text-slate-900" suppressHydrationWarning>
                     {mounted && user?.firstName ? `${user.firstName} ${user.lastName || ''}`.trim() : 'Admin User'}
                   </h3>
-                  <p className="text-[10px] text-slate-500 font-medium">System Administrator</p>
+                  <p className="text-xs text-slate-500 font-medium">System Administrator</p>
                 </div>
               </div>
               <button
@@ -233,7 +249,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               {renderNavLinks()}
             </nav>
             <div className="p-3 border-t border-slate-200 flex items-center justify-between text-xs bg-slate-50">
-              <span className="font-mono text-[10px] font-bold text-slate-400">v2.4.0</span>
+              <span className="font-mono text-xs font-bold text-slate-400">v2.4.0</span>
               <button
                 onClick={handleLogout}
                 className="flex items-center gap-1.5 text-rose-600 font-bold text-xs"
@@ -254,7 +270,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }`}
         >
           <LayoutDashboard className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">Overview</span>
+          <span className="text-xs mt-0.5">Overview</span>
         </Link>
         <Link
           href="/admin/businesses"
@@ -263,7 +279,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }`}
         >
           <Building2 className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">Businesses</span>
+          <span className="text-xs mt-0.5">Businesses</span>
         </Link>
         <Link
           href="/admin/subscriptions"
@@ -272,7 +288,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }`}
         >
           <CreditCard className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">Subs</span>
+          <span className="text-xs mt-0.5">Subs</span>
         </Link>
         <Link
           href="/admin/notifications"
@@ -281,7 +297,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }`}
         >
           <Bell className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">Alerts</span>
+          <span className="text-xs mt-0.5">Alerts</span>
         </Link>
         <Link
           href="/admin/support"
@@ -290,7 +306,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }`}
         >
           <HelpCircle className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">Support</span>
+          <span className="text-xs mt-0.5">Support</span>
         </Link>
         <Link
           href="/admin/settings"
@@ -299,7 +315,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           }`}
         >
           <Settings className="w-5 h-5" />
-          <span className="text-[10px] mt-0.5">Settings</span>
+          <span className="text-xs mt-0.5">Settings</span>
         </Link>
       </nav>
     </div>

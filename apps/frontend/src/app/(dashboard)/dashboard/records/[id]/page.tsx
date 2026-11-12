@@ -1,5 +1,7 @@
 'use client';
 
+
+import { notify, confirmDialog } from '@/lib/feedback';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
@@ -207,7 +209,7 @@ export default function PhoneRecordDetailPage() {
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Are you sure you want to delete ${record?.brand} ${record?.model} (${record?.imei1})? This action cannot be undone.`)) {
+    if (!await confirmDialog(`Are you sure you want to delete ${record?.brand} ${record?.model} (${record?.imei1})? This action cannot be undone.`)) {
       return;
     }
     setSaving(true);
@@ -222,7 +224,7 @@ export default function PhoneRecordDetailPage() {
 
       router.push('/dashboard/records');
     } catch (err: any) {
-      alert(err.message || 'Failed to delete record');
+      notify(err.message || 'Failed to delete record');
       setSaving(false);
     }
   };
@@ -384,7 +386,7 @@ export default function PhoneRecordDetailPage() {
                 </div>
               </div>
               {isEditing && (
-                <span className="px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase bg-amber-50 text-amber-800 border border-amber-200">
+                <span className="px-2.5 py-1 rounded-full text-xs font-extrabold uppercase bg-amber-50 text-amber-800 border border-amber-200">
                   Editing Mode
                 </span>
               )}
@@ -393,7 +395,7 @@ export default function PhoneRecordDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               {/* Brand */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Brand Name
                 </label>
                 {isEditing ? (
@@ -418,7 +420,7 @@ export default function PhoneRecordDetailPage() {
 
               {/* Model */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Model / Variant
                 </label>
                 {isEditing ? (
@@ -438,7 +440,7 @@ export default function PhoneRecordDetailPage() {
 
               {/* Color */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Color Finish
                 </label>
                 {isEditing ? (
@@ -458,7 +460,7 @@ export default function PhoneRecordDetailPage() {
 
               {/* Storage Capacity (Dropdown matching upload) */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Storage Capacity
                 </label>
                 {isEditing ? (
@@ -483,7 +485,7 @@ export default function PhoneRecordDetailPage() {
 
               {/* Condition */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Physical Condition
                 </label>
                 {isEditing ? (
@@ -505,7 +507,7 @@ export default function PhoneRecordDetailPage() {
 
               {/* Inventory Status */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Inventory Status
                 </label>
                 {isEditing ? (
@@ -534,7 +536,7 @@ export default function PhoneRecordDetailPage() {
                 {/* IMEI 1 */}
                 <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">Primary IMEI (1)</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase">Primary IMEI (1)</span>
                     <button
                       type="button"
                       onClick={() => handleCopy(record?.imei1, 'imei1')}
@@ -542,7 +544,7 @@ export default function PhoneRecordDetailPage() {
                       title="Copy IMEI 1"
                     >
                       {copiedField === 'imei1' ? (
-                        <span className="text-[10px] font-extrabold text-emerald-600">Copied!</span>
+                        <span className="text-xs font-extrabold text-emerald-600">Copied!</span>
                       ) : (
                         <Copy className="w-3.5 h-3.5" />
                       )}
@@ -556,7 +558,7 @@ export default function PhoneRecordDetailPage() {
                 {/* IMEI 2 */}
                 <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">Secondary IMEI (2)</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase">Secondary IMEI (2)</span>
                     {record?.imei2 && (
                       <button
                         type="button"
@@ -565,7 +567,7 @@ export default function PhoneRecordDetailPage() {
                         title="Copy IMEI 2"
                       >
                         {copiedField === 'imei2' ? (
-                          <span className="text-[10px] font-extrabold text-emerald-600">Copied!</span>
+                          <span className="text-xs font-extrabold text-emerald-600">Copied!</span>
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
@@ -590,7 +592,7 @@ export default function PhoneRecordDetailPage() {
                 {/* Serial Number */}
                 <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-slate-500 uppercase">Serial Number (SN)</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase">Serial Number (SN)</span>
                     {record?.serialNumber && (
                       <button
                         type="button"
@@ -599,7 +601,7 @@ export default function PhoneRecordDetailPage() {
                         title="Copy Serial Number"
                       >
                         {copiedField === 'sn' ? (
-                          <span className="text-[10px] font-extrabold text-emerald-600">Copied!</span>
+                          <span className="text-xs font-extrabold text-emerald-600">Copied!</span>
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
@@ -631,11 +633,11 @@ export default function PhoneRecordDetailPage() {
                 {/* Purchase Price */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
                       Purchase / Buyback Cost
                     </label>
                     {isEditing && formData.purchasePrice > 0 && (
-                      <span className="text-[10px] font-bold text-slate-400">
+                      <span className="text-xs font-bold text-slate-400">
                         ₦{Number(formData.purchasePrice).toLocaleString()}
                       </span>
                     )}
@@ -665,11 +667,11 @@ export default function PhoneRecordDetailPage() {
                 {/* Selling Price */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px]">
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
                       Retail Selling Price
                     </label>
                     {isEditing && formData.sellingPrice > 0 && (
-                      <span className="text-[10px] font-bold text-teal-600">
+                      <span className="text-xs font-bold text-teal-600">
                         ₦{Number(formData.sellingPrice).toLocaleString()}
                       </span>
                     )}
@@ -698,7 +700,7 @@ export default function PhoneRecordDetailPage() {
 
                 {/* Warranty Duration */}
                 <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1.5">
+                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                     Warranty Duration
                   </label>
                   {isEditing ? (
@@ -714,7 +716,7 @@ export default function PhoneRecordDetailPage() {
                   ) : (
                     <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-800 text-sm flex items-center justify-between">
                       <span>{record?.warrantyDurationMonths || 0} Months</span>
-                      <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-md ${isWarrantyActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                      <span className={`text-xs font-extrabold px-2 py-0.5 rounded-md ${isWarrantyActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
                         {isWarrantyActive ? 'Active' : 'Expired'}
                       </span>
                     </div>
@@ -735,13 +737,13 @@ export default function PhoneRecordDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               {/* Sales Link */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block">POS Receipt / Invoice</span>
+                <span className="text-xs font-bold text-slate-500 uppercase block">POS Receipt / Invoice</span>
                 {Array.isArray(record?.saleItems) && record.saleItems.length > 0 ? (
                   record.saleItems.map((si: any, idx: number) => (
                     <div key={idx} className="space-y-1 pt-1">
                       <div className="font-extrabold text-slate-900">Receipt #{si.sale?.receiptNumber || si.sale?.invoiceNumber || 'N/A'}</div>
                       <div className="text-slate-500">Sold for ₦{si.price?.toLocaleString()} on {new Date(si.sale?.createdAt).toLocaleDateString()}</div>
-                      <Link href={`/dashboard/receipts?search=${si.sale?.receiptNumber || ''}`} className="text-teal-600 font-bold hover:underline inline-flex items-center gap-1 text-[11px] pt-1">
+                      <Link href={`/dashboard/receipts?search=${si.sale?.receiptNumber || ''}`} className="text-teal-600 font-bold hover:underline inline-flex items-center gap-1 text-xs pt-1">
                         View Receipt →
                       </Link>
                     </div>
@@ -753,13 +755,13 @@ export default function PhoneRecordDetailPage() {
 
               {/* Repair Tickets */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">
-                <span className="text-[10px] font-bold text-slate-500 uppercase block">Repair Tickets</span>
+                <span className="text-xs font-bold text-slate-500 uppercase block">Repair Tickets</span>
                 {Array.isArray(record?.repairs) && record.repairs.length > 0 ? (
                   record.repairs.map((r: any, idx: number) => (
                     <div key={idx} className="space-y-1 pt-1">
                       <div className="font-extrabold text-slate-900">Ticket #{r.ticketNumber} ({r.status})</div>
                       <div className="text-slate-500">{r.issueDescription}</div>
-                      <Link href={`/dashboard/repairs?ticket=${r.ticketNumber}`} className="text-teal-600 font-bold hover:underline inline-flex items-center gap-1 text-[11px] pt-1">
+                      <Link href={`/dashboard/repairs?ticket=${r.ticketNumber}`} className="text-teal-600 font-bold hover:underline inline-flex items-center gap-1 text-xs pt-1">
                         View Ticket →
                       </Link>
                     </div>
@@ -783,7 +785,7 @@ export default function PhoneRecordDetailPage() {
                 <QrCode className="w-4 h-4 text-teal-600" />
                 <span>QR Origin Passport</span>
               </span>
-              <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="text-xs font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
                 100% Genuine
               </span>
             </div>
@@ -802,7 +804,7 @@ export default function PhoneRecordDetailPage() {
               )}
               <div className="text-center">
                 <p className="font-mono text-xs font-extrabold text-slate-800">{record?.imei1}</p>
-                <p className="text-[10px] text-slate-400 font-medium mt-0.5">Scannable by any smartphone camera</p>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">Scannable by any smartphone camera</p>
               </div>
             </div>
 
@@ -829,13 +831,13 @@ export default function PhoneRecordDetailPage() {
             <div className="space-y-3 text-xs">
               {/* Customer Name */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1">
                   Customer / Buyer Name
                 </label>
                 {isEditing ? (
                   <input
                     type="text"
-                    placeholder="e.g. John Doe"
+                    placeholder="e.g. Emeka Obi"
                     value={formData.customerName}
                     onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-teal-600 text-slate-900"
@@ -849,7 +851,7 @@ export default function PhoneRecordDetailPage() {
 
               {/* Customer Phone */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1">
                   Phone Number
                 </label>
                 {isEditing ? (
@@ -864,7 +866,7 @@ export default function PhoneRecordDetailPage() {
                   <div className="flex items-center justify-between font-mono font-semibold text-slate-700">
                     <span>{record?.customer?.phone || 'N/A'}</span>
                     {record?.customer?.phone && (
-                      <a href={`tel:${record.customer.phone}`} className="text-teal-600 hover:underline text-[11px] font-bold">
+                      <a href={`tel:${record.customer.phone}`} className="text-teal-600 hover:underline text-xs font-bold">
                         Call →
                       </a>
                     )}
@@ -874,7 +876,7 @@ export default function PhoneRecordDetailPage() {
 
               {/* Customer Email */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-[10px] mb-1">
+                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1">
                   Email Address
                 </label>
                 {isEditing ? (

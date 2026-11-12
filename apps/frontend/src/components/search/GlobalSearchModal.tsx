@@ -148,7 +148,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
           >
             <X className="w-5 h-5" />
           </button>
-          <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
+          <span className="hidden sm:inline-flex items-center gap-0.5 text-xs font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
             ESC
           </span>
         </div>
@@ -181,14 +181,14 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                       <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
                         {item.title}
                       </div>
-                      <div className="text-[11px] text-slate-500 dark:text-slate-400 truncate font-mono">
+                      <div className="text-xs text-slate-500 dark:text-slate-400 truncate font-mono">
                         {item.subtitle}
                       </div>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className="text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                       {item.badgeText}
                     </span>
                     <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 group-hover:translate-x-0.5 transition" />

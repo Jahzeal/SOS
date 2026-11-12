@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { SiteFooter } from '@/components/marketing/SiteFooter';
+import { useInitialPlans } from './InitialPlans';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import {
@@ -20,8 +22,8 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModal';
-import { PwaInstallButton } from '@/components/PwaInstallButton';
 import { Logo } from '@/components/ui/Logo';
+import { PwaInstallButton } from '@/components/PwaInstallButton';
 
 import { usePublicPlans } from '@/hooks/useDashboardQueries';
 
@@ -40,7 +42,11 @@ export default function DedicatedPricingPage() {
   };
 
   // Cached public plans query (instant 0ms)
-  const { data: plans = [], isLoading: loading } = usePublicPlans();
+  // Plans fetched on the server (see layout.tsx) are shown straight away, so the
+  // first HTML and link previews never contain a loading state.
+  const initialPlans = useInitialPlans();
+  const { data: plans = initialPlans ?? [], isLoading } = usePublicPlans();
+  const loading = isLoading && !initialPlans;
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -92,7 +98,7 @@ export default function DedicatedPricingPage() {
               </Link>
               <Link href="/onboarding">
                 <Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-700 text-white font-bold">
-                  Start Free Trial →
+                  Start free →
                 </Button>
               </Link>
             </>
@@ -114,7 +120,7 @@ export default function DedicatedPricingPage() {
               Flexible plans tailored to your retail scale
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-              Every plan includes a <strong className="text-slate-900">14-Day Free Trial</strong> with zero credit card required. Upgrade, downgrade, or switch billing cycles anytime.
+              The <strong className="text-slate-900">Free plan is free forever</strong> for up to 10 devices, with no card needed. Paid plans start as soon as you pay, and you can upgrade or switch billing cycles anytime.
             </p>
           </div>
 
@@ -138,7 +144,7 @@ export default function DedicatedPricingPage() {
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              Annual Billing
+              <span>Annual Billing</span>{' '}
               <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
                 Save 20%
               </span>
@@ -208,7 +214,7 @@ export default function DedicatedPricingPage() {
                       </div>
                       <p className="text-[10px] text-slate-500 mt-1 font-medium">
                         {isFree
-                          ? 'Zero credit card required'
+                          ? 'Free forever • No card needed'
                           : billingCycle === 'annual'
                           ? `₦${annualPrice.toLocaleString()} / year (Save 20%)`
                           : 'Billed monthly'}
@@ -251,8 +257,8 @@ export default function DedicatedPricingPage() {
                                   <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                                   <span>
                                     {plan.maxDevices && plan.maxDevices > 0
-                                      ? `Up to ${plan.maxDevices.toLocaleString()} Phone Registrations`
-                                      : 'Unlimited Phone Registrations'}
+                                      ? `Up to ${plan.maxDevices.toLocaleString()} Device Registrations`
+                                      : 'Unlimited Device Registrations'}
                                   </span>
                                 </li>
                                 <li className="flex items-start gap-2">
@@ -333,7 +339,7 @@ export default function DedicatedPricingPage() {
                               : 'bg-slate-900 hover:bg-slate-800 text-white'
                           }`}
                         >
-                          {isFree ? 'Start Free Forever →' : 'Start 14-Day Free Trial →'}
+                          {isFree ? 'Start free →' : `Get ${plan.name} →`}
                         </Button>
                       </Link>
                     )}
@@ -361,10 +367,7 @@ export default function DedicatedPricingPage() {
         />
       )}
 
-      {/* Footer */}
-      <footer className="py-6 border-t border-slate-200 bg-white text-center text-xs text-slate-500 font-medium">
-        © {new Date().getFullYear()} NoxGuarda Technologies Inc. All rights reserved.
-      </footer>
+      <SiteFooter />
 
     </div>
   );

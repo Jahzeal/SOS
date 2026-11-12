@@ -1,9 +1,14 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { SubscriptionService } from '../common/services/subscription.service';
+import { UpdateBusinessSettingsDto, UpdateTemplateSettingsDto } from './dto/business.dto';
 
 @Injectable()
 export class BusinessService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private subscriptions: SubscriptionService,
+  ) {}
 
   async getBusinessProfile(businessId: string) {
     const business = await this.prisma.business.findUnique({
@@ -26,10 +31,16 @@ export class BusinessService {
       throw new NotFoundException('Business not found');
     }
 
+    // A paid period that has run out shows up as EXPIRED so the dashboard asks to renew.
+    const expiredStatus = await this.subscriptions.syncExpiredStatus(business);
+    if (expiredStatus) {
+      business.subscriptionStatus = expiredStatus;
+    }
+
     return business;
   }
 
-  async updateBusinessProfile(businessId: string, data: any) {
+  async updateBusinessProfile(businessId: string, data: UpdateBusinessSettingsDto) {
     return this.prisma.business.update({
       where: { id: businessId },
       data: {
@@ -52,20 +63,28 @@ export class BusinessService {
     });
   }
 
+  /**
+   * A store may only move itself DOWN to the free plan here.
+   * Paid plans are granted exclusively by verified payment (PaymentsService)
+   * or by a platform admin.
+   */
   async updatePlan(businessId: string, planCode: any) {
-    const cleanPlan = (planCode || 'FREE').toUpperCase();
-    const subPlan = await this.prisma.subscriptionPlan.findUnique({
-      where: { code: cleanPlan },
-    });
+    const cleanPlan = String(planCode || '').toUpperCase();
+    if (cleanPlan !== 'FREE') {
+      throw new ForbiddenException('Paid plans can only be activated through checkout.');
+    }
 
-    const isFree = cleanPlan === 'FREE' || cleanPlan === 'BASIC';
+    const subPlan = await this.prisma.subscriptionPlan.findUnique({
+      where: { code: 'FREE' },
+    });
 
     return this.prisma.business.update({
       where: { id: businessId },
       data: {
-        plan: cleanPlan,
-        planId: subPlan ? subPlan.id : undefined,
-        subscriptionStatus: isFree ? 'FREE' : undefined,
+        plan: 'FREE',
+        planId: subPlan ? subPlan.id : null,
+        subscriptionStatus: 'FREE',
+        subscriptionEndsAt: null,
       },
       include: {
         subscriptionPlan: true,
@@ -108,7 +127,7 @@ export class BusinessService {
     return business;
   }
 
-  async updateTemplateSettings(businessId: string, data: any) {
+  async updateTemplateSettings(businessId: string, data: UpdateTemplateSettingsDto) {
     const updateData: any = {};
     if (data.name !== undefined) updateData.name = data.name;
     if (data.logoUrl !== undefined) updateData.logoUrl = data.logoUrl;

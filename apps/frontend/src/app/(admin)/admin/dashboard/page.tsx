@@ -108,7 +108,7 @@ export default function AdminOverviewDashboard() {
           {/* KPI 1: Total Businesses */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
             <div className="flex justify-between items-start mb-3">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
                 Total Businesses
               </span>
               <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
@@ -123,7 +123,7 @@ export default function AdminOverviewDashboard() {
                   {currentMetrics.totalBusinesses}
                 </div>
               )}
-              <div className="flex items-center gap-1 text-[11px] font-bold text-blue-600">
+              <div className="flex items-center gap-1 text-xs font-bold text-blue-600">
                 <TrendingUp className="w-3.5 h-3.5" />
                 <span>Active directory</span>
               </div>
@@ -133,7 +133,7 @@ export default function AdminOverviewDashboard() {
           {/* KPI 2: Active Businesses */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
             <div className="flex justify-between items-start mb-3">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
                 Active Stores
               </span>
               <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -148,7 +148,7 @@ export default function AdminOverviewDashboard() {
                   {currentMetrics.activeBusinesses}
                 </div>
               )}
-              <div className="flex items-center gap-1 text-[11px] font-bold text-emerald-600">
+              <div className="flex items-center gap-1 text-xs font-bold text-emerald-600">
                 <Activity className="w-3.5 h-3.5" />
                 <span>Public lookup active</span>
               </div>
@@ -158,7 +158,7 @@ export default function AdminOverviewDashboard() {
           {/* KPI 3: Registered Devices */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
             <div className="flex justify-between items-start mb-3">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
                 Registered Devices
               </span>
               <div className="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
@@ -173,7 +173,7 @@ export default function AdminOverviewDashboard() {
                   {currentMetrics.totalRegisteredPhones.toLocaleString()}
                 </div>
               )}
-              <div className="flex items-center gap-1 text-[11px] font-bold text-indigo-600">
+              <div className="flex items-center gap-1 text-xs font-bold text-indigo-600">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>IMEI secured</span>
               </div>
@@ -183,7 +183,7 @@ export default function AdminOverviewDashboard() {
           {/* KPI 4: Monthly Recurring Revenue (MRR) */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
             <div className="flex justify-between items-start mb-3">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
                 Active MRR
               </span>
               <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
@@ -198,7 +198,7 @@ export default function AdminOverviewDashboard() {
                   ₦{currentMetrics.calculatedMrr ? currentMetrics.calculatedMrr.toLocaleString() : '0'}
                 </div>
               )}
-              <div className="flex items-center gap-1 text-[11px] font-bold text-amber-600">
+              <div className="flex items-center gap-1 text-xs font-bold text-amber-600">
                 <TrendingUp className="w-3.5 h-3.5" />
                 <span>Live MRR billing</span>
               </div>
@@ -208,7 +208,7 @@ export default function AdminOverviewDashboard() {
           {/* KPI 5: System Health */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
             <div className="flex justify-between items-start mb-3">
-              <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
                 System Health
               </span>
               <div className="w-8 h-8 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
@@ -219,7 +219,7 @@ export default function AdminOverviewDashboard() {
               <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600 tracking-tight mb-1">
                 100%
               </div>
-              <div className="flex items-center gap-1 text-[11px] font-bold text-slate-600">
+              <div className="flex items-center gap-1 text-xs font-bold text-slate-600">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block animate-pulse" />
                 <span>All clusters operational</span>
               </div>
@@ -242,7 +242,7 @@ export default function AdminOverviewDashboard() {
               <h3 className="text-base font-extrabold text-slate-900">System Activity Stream</h3>
               <p className="text-xs text-slate-400 font-medium">Real-time platform logs & transactions</p>
             </div>
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
               Live Feed
             </span>
@@ -267,14 +267,14 @@ export default function AdminOverviewDashboard() {
                     <div>
                       <span className="font-mono font-bold text-slate-800">{log.code}</span>
                       {log.details && (
-                        <p className="text-[11px] text-slate-500 font-medium">{log.details}</p>
+                        <p className="text-xs text-slate-500 font-medium">{log.details}</p>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 text-slate-400 font-mono text-[11px]">
+                  <div className="flex items-center gap-3 text-slate-400 font-mono text-xs">
                     <span>{log.time}</span>
                     <span
-                      className={`px-2 py-0.5 rounded font-bold uppercase text-[10px] ${
+                      className={`px-2 py-0.5 rounded font-bold uppercase text-xs ${
                         log.status === 'Success'
                           ? 'bg-emerald-100 text-emerald-800'
                           : log.status === 'Failed'
@@ -298,7 +298,7 @@ export default function AdminOverviewDashboard() {
         {/* Quick Admin Navigation Card */}
         <div className="bg-gradient-to-br from-slate-900 to-blue-950 text-white rounded-2xl p-5 sm:p-6 shadow-xl flex flex-col justify-between">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/30 mb-3">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-blue-500/20 text-blue-300 border border-blue-400/30 mb-3">
               HQ Control Center
             </div>
             <h3 className="text-lg font-extrabold tracking-tight">Platform Operations</h3>

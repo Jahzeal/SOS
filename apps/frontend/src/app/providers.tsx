@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
 import { AuthProvider } from '@/lib/auth-context';
+import { FeedbackHost } from '@/components/ui/FeedbackHost';
 import { WifiOff, CheckCircle2 } from 'lucide-react';
 
 function NetworkStatusListener() {
@@ -97,6 +98,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <QueryClientProvider client={queryClient}>
           <AuthProvider>
             <NetworkStatusListener />
+            <FeedbackHost />
             {children}
           </AuthProvider>
         </QueryClientProvider>
@@ -112,6 +114,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <AuthProvider>
           <NetworkStatusListener />
+            <FeedbackHost />
           {children}
         </AuthProvider>
       </PersistQueryClientProvider>

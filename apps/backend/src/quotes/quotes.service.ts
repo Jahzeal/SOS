@@ -6,6 +6,7 @@ import { UpdateQuoteDto } from './dto/update-quote.dto';
 import { RecordQuotePaymentDto } from './dto/record-payment.dto';
 import { QuoteStatus, PhoneStatus, PaymentMethod } from '@prisma/client';
 import { generateQuotePdfBuffer } from './quote-pdf.generator';
+import { DocumentNumberService } from '../common/services/document-number.service';
 
 @Injectable()
 export class QuotesService {
@@ -14,6 +15,7 @@ export class QuotesService {
   constructor(
     private prisma: PrismaService,
     private mailService: MailService,
+    private docNumbers: DocumentNumberService,
   ) {}
 
   async create(businessId: string, userId: string, dto: CreateQuoteDto) {
@@ -92,9 +94,7 @@ export class QuotesService {
     }
 
     // 4. Generate Quote Number
-    const count = await this.prisma.quote.count({ where: { businessId } });
-    const year = new Date().getFullYear();
-    const quoteNumber = `QT-${year}-${String(count + 1).padStart(4, '0')}`;
+    const quoteNumber = await this.docNumbers.next(businessId, 'QUOTE');
 
     // 5. Fetch Business Defaults for terms/notes if not provided
     const business = await this.prisma.business.findUnique({
@@ -794,6 +794,7 @@ export class QuotesService {
       const soldDevice = await this.prisma.phoneRecord.findFirst({
         where: {
           id: { in: deviceItemIds },
+          businessId,
           status: PhoneStatus.SOLD,
         },
       });
@@ -806,9 +807,8 @@ export class QuotesService {
     }
 
     const isInvoice = payload?.asInvoice !== false; // Default to Commercial Invoice
-    const ref = Math.floor(100000 + Math.random() * 900000);
-    const invoiceNumber = `VF-INV-${ref}`;
-    const receiptNumber = isInvoice ? null : `VF-REC-${ref}`;
+    const invoiceNumber = await this.docNumbers.next(businessId, 'INVOICE');
+    const receiptNumber = isInvoice ? null : await this.docNumbers.next(businessId, 'RECEIPT');
 
     let combinedNotes = payload?.notes || quote.notes || '';
     if (isInvoice) {
@@ -829,6 +829,27 @@ export class QuotesService {
     const initialPaymentStatus = initialBalanceDue === 0 ? 'PAID' : (initialAmountPaid > 0 ? 'PARTIALLY_PAID' : (isInvoice ? 'PENDING' : 'PAID'));
 
     const result = await this.prisma.$transaction(async (tx) => {
+      // Claim the quote and its devices inside the transaction so a double click
+      // (or two staff members) cannot convert the same quote or sell a device twice.
+      const claimedQuote = await tx.quote.updateMany({
+        where: { id: quote.id, businessId, status: { not: QuoteStatus.CONVERTED } },
+        data: { status: QuoteStatus.CONVERTED },
+      });
+      if (claimedQuote.count !== 1) {
+        throw new BadRequestException('This quotation has already been converted into a sale.');
+      }
+
+      const uniqueDeviceIds = Array.from(new Set(deviceItemIds));
+      if (uniqueDeviceIds.length > 0) {
+        const claimedDevices = await tx.phoneRecord.updateMany({
+          where: { id: { in: uniqueDeviceIds }, businessId, status: { not: PhoneStatus.SOLD } },
+          data: { status: PhoneStatus.SOLD, customerId: quote.customerId },
+        });
+        if (claimedDevices.count !== uniqueDeviceIds.length) {
+          throw new BadRequestException('One of the devices on this quotation has just been sold in another transaction.');
+        }
+      }
+
       // 1. Create Sale inheriting quote balance & installment settings
       const newSale = await tx.sale.create({
         data: {
@@ -888,16 +909,6 @@ export class QuotesService {
         },
       });
 
-      // 2. Mark devices as SOLD
-      if (deviceItemIds.length > 0) {
-        await tx.phoneRecord.updateMany({
-          where: { id: { in: deviceItemIds } },
-          data: {
-            status: PhoneStatus.SOLD,
-            customerId: quote.customerId,
-          },
-        });
-      }
 
       // 3. Mark Quote as CONVERTED & link to Sale
       const updatedQuote = await tx.quote.update({

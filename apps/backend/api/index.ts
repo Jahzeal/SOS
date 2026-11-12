@@ -2,18 +2,19 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from '../src/app.module';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { assertRequiredEnv } from '../src/common/config/env';
+import { corsOptions, isAllowedOrigin } from '../src/common/config/cors';
 import { AllExceptionsFilter } from '../src/common/filters/all-exceptions.filter';
 
 let app: any;
 
 export default async function handler(req: any, res: any) {
-  // Set dynamic CORS headers for Vercel serverless functions
+  // CORS headers for the serverless function: only known frontends are echoed back.
   const origin = req.headers.origin;
-  if (origin) {
+  if (origin && isAllowedOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Origin, X-CSRF-Token');
@@ -25,7 +26,8 @@ export default async function handler(req: any, res: any) {
   }
 
   if (!app) {
-    app = await NestFactory.create(AppModule);
+    app = await NestFactory.create(AppModule, { rawBody: true });
+    assertRequiredEnv();
 
     const prismaService = app.get(PrismaService);
     app.useGlobalFilters(new AllExceptionsFilter(prismaService));
@@ -38,15 +40,7 @@ export default async function handler(req: any, res: any) {
       }),
     );
 
-    app.enableCors({
-      origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-        // Allow all origins (localhost, all *.vercel.app frontend domains, custom domains)
-        callback(null, true);
-      },
-      credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
-    });
+    app.enableCors(corsOptions);
 
     await app.init();
   }

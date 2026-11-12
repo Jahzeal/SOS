@@ -1,9 +1,10 @@
-import { IsNotEmpty, IsNumber, IsOptional, IsString, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsOptional, IsString, IsEnum, IsPositive } from 'class-validator';
 import { PaymentMethod } from '@prisma/client';
 
 export class RecordQuotePaymentDto {
   @IsNotEmpty()
   @IsNumber()
+  @IsPositive()
   amount: number;
 
   @IsOptional()
