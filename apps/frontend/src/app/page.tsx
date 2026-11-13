@@ -4,6 +4,7 @@ import { api } from '@/lib/api';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { SiteFooter } from '@/components/marketing/SiteFooter';
+import { DashboardShowcase } from '@/components/marketing/DashboardShowcase';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PwaInstallButton } from '@/components/PwaInstallButton';
@@ -94,7 +95,6 @@ export default function PublicLandingPageV2() {
   const [cameraError, setCameraError] = useState<string | null>(null);
 
   // Product Showcase Tab State (Section 8)
-  const [showcaseTab, setShowcaseTab] = useState<'dashboard' | 'verification' | 'inventory' | 'sales' | 'receipts' | 'reports'>('dashboard');
 
   // FAQ Accordion State (Section 12)
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(0);
@@ -1662,210 +1662,8 @@ export default function PublicLandingPageV2() {
         </div>
       </section>
 
-      {/* SECTION 8 — PRODUCT SHOWCASE (Interactive Tabs) */}
-      <section className="py-20 px-6 max-w-7xl mx-auto w-full space-y-8">
-        <div className="text-center max-w-2xl mx-auto space-y-2">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Explore the NoxGuarda Interface
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500">
-            Sample screens with example data, to show how each part of the app is laid out.
-          </p>
-        </div>
-
-        {/* Tab Switcher */}
-        <div className="flex flex-wrap justify-center gap-2 bg-slate-200/60 p-1.5 rounded-2xl max-w-3xl mx-auto text-xs font-bold">
-          {[
-            { id: 'dashboard', label: 'Dashboard' },
-            { id: 'verification', label: 'Verification Portal' },
-            { id: 'inventory', label: 'Inventory' },
-            { id: 'sales', label: 'Sales & Receipts' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setShowcaseTab(tab.id as any)}
-              className={`px-4 py-2 rounded-xl transition-all ${showcaseTab === tab.id
-                ? 'bg-slate-900 text-white shadow-md'
-                : 'text-slate-600 hover:text-slate-900'
-                }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Dynamic Screen Mockup */}
-        <div className="border border-slate-200 shadow-xl p-6 rounded-2xl bg-white max-w-5xl mx-auto">
-          {showcaseTab === 'dashboard' && (
-            <div className="space-y-4 animate-in fade-in duration-150">
-              <h4 className="text-base font-bold text-slate-900">Live Executive Store Dashboard</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="text-xs text-slate-500 font-semibold">Total Stock Value</div>
-                  <div className="text-2xl font-extrabold text-slate-900 mt-1">₦148,920,000</div>
-                </div>
-                <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
-                  <div className="text-xs text-emerald-700 font-semibold">Verified Devices</div>
-                  <div className="text-2xl font-extrabold text-emerald-900 mt-1">1,210</div>
-                </div>
-                <div className="p-4 rounded-xl bg-blue-50 border border-blue-200">
-                  <div className="text-xs text-blue-700 font-semibold">Active Warranties</div>
-                  <div className="text-2xl font-extrabold text-blue-900 mt-1">842</div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {showcaseTab === 'verification' && (
-            <div className="space-y-4 animate-in fade-in duration-150">
-              <h4 className="text-base font-bold text-slate-900">Instant Customer Verification Result</h4>
-              <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 space-y-2 text-xs">
-                <Badge variant="verified">VERIFIED GENUINE</Badge>
-                <div className="font-bold text-slate-900 text-sm">Apple iPhone 16 Pro 256GB</div>
-                <div className="text-slate-600">IMEI: 354892019283741 • Retailer: Zenith Gadgets, Ikeja</div>
-                <div className="text-emerald-700 font-semibold pt-1">Warranty Active until July 22, 2027</div>
-              </div>
-            </div>
-          )}
-
-          {showcaseTab === 'inventory' && (
-            <div className="space-y-4 animate-in fade-in duration-150 text-left">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200 pb-3">
-                <div>
-                  <h4 className="text-base font-extrabold text-slate-900">Serial & IMEI-Tracked Inventory Ledger</h4>
-                  <p className="text-xs text-slate-500 font-medium">Every unit listed by IMEI or serial number, with its stock status</p>
-                </div>
-                <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 text-xs font-extrabold flex items-center gap-1 self-start sm:self-auto">
-                  <Smartphone className="w-3.5 h-3.5" /> 1,420 Units Tracked
-                </span>
-              </div>
-
-              {/* Detailed Inventory Ledger Table Container */}
-              <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 space-y-3">
-
-                {/* Single Detailed Device Row Example */}
-                <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 hover:border-blue-300 transition space-y-3">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-black text-xs shadow-md">
-                        iP
-                      </div>
-                      <div>
-                        <h5 className="font-extrabold text-slate-900 text-sm">Apple iPhone 16 Pro Max (512GB)</h5>
-                        <p className="text-xs text-slate-500 font-medium">Natural Titanium • Model A3106 • Unlocked</p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-                        18 In Stock
-                      </span>
-                      <Badge variant="verified" size="sm">VERIFIED ORIGIN</Badge>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono bg-white p-3 rounded-xl border border-slate-200 text-slate-700 shadow-inner">
-                    <div><span className="font-extrabold text-slate-900 font-sans">Primary IMEI:</span> 354892019283741</div>
-                    <div><span className="font-extrabold text-slate-900 font-sans">Serial No:</span> SN-IP16P-908123</div>
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-slate-500 font-semibold pt-1">
-                    <span>Condition: New • 12-month store warranty</span>
-                    <span className="text-blue-600 font-extrabold flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> 100% IMEIs Verified & Scanned
-                    </span>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          )}
-
-          {showcaseTab === 'sales' && (
-            <div className="space-y-4 animate-in fade-in duration-150">
-              <h4 className="text-base font-bold text-slate-900">Thermal POS Receipt Generation</h4>
-
-              {/* Photo-Realistic 80mm Thermal Receipt Container */}
-              <div className="max-w-md bg-white border border-slate-300 shadow-2xl rounded-2xl p-6 font-mono text-xs text-slate-900 space-y-4 relative overflow-hidden">
-
-                {/* Store Header */}
-                <div className="text-center space-y-1">
-                  <div className="flex items-center justify-center gap-1.5 font-black text-slate-900 text-sm tracking-tight">
-                    <ShieldCheck className="w-4 h-4 text-blue-600" /> TECHWORLD MOBILE
-                  </div>
-                                    <p className="text-[10px] text-slate-400 font-mono">102 Tech Plaza • Tel: +1 (555) 019-2834</p>
-                </div>
-
-                <div className="border-b-2 border-dashed border-slate-300 py-1" />
-
-                {/* Receipt Meta */}
-                <div className="flex justify-between items-center text-[10px] text-slate-600 font-mono">
-                  <span>RECEIPT #: VF-REC-90812</span>
-                  <span>AUG 03, 2026 14:32</span>
-                </div>
-
-                <div className="border-b border-slate-200" />
-
-                {/* Item Details */}
-                <div className="space-y-2">
-                  <div className="flex justify-between font-extrabold text-slate-900 text-xs">
-                    <span>1x iPhone 16 Pro (512GB Titanium)</span>
-                    <span>₦1,199,000</span>
-                  </div>
-                  <div className="pl-3 space-y-0.5 text-[10px] text-slate-600 font-mono">
-                    <p><span className="font-bold text-slate-700">IMEI 1:</span> 354892019283741</p>
-                    <p><span className="font-bold text-slate-700">SERIAL:</span> SN-IP16P-908123</p>
-                    <p><span className="font-bold text-slate-700">COLOR:</span> Natural Titanium</p>
-                    <p className="text-emerald-700 font-bold flex items-center gap-1 mt-1">
-                      <CheckCircle2 className="w-3 h-3 text-emerald-600" /> 12-Month Verified Warranty Included
-                    </p>
-                  </div>
-                </div>
-
-                <div className="border-b-2 border-dashed border-slate-300 py-1" />
-
-                {/* Totals Breakdown */}
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between text-slate-600 text-[11px]">
-                    <span>SUBTOTAL</span>
-                    <span>₦1,199,000</span>
-                  </div>
-                  <div className="flex justify-between text-slate-600 text-[11px]">
-                    <span>SALES TAX (8.0%)</span>
-                    <span>₦95,920</span>
-                  </div>
-                  <div className="flex justify-between font-black text-sm text-slate-900 pt-1 border-t border-slate-200">
-                    <span>TOTAL PAID</span>
-                    <span>₦1,294,920</span>
-                  </div>
-                  <p className="text-[10px] text-slate-500 text-right pt-0.5">Paid via Visa Credit (•••• 4819)</p>
-                </div>
-
-                <div className="border-b-2 border-dashed border-slate-300 py-1" />
-
-                {/* Verification QR Code Section */}
-                <div className="pt-2 text-center space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
-                  <div className="w-20 h-20 bg-white p-1.5 border border-slate-300 rounded-lg mx-auto flex items-center justify-center shadow-inner">
-                    <QrCode className="w-full h-full text-slate-900" />
-                  </div>
-                  <div>
-                    <p className="text-[11px] font-extrabold text-blue-700 uppercase tracking-wider">
-                      SCAN QR TO VERIFY DEVICE ORIGIN
-                    </p>
-                    <p className="text-[9px] text-slate-500 font-sans mt-0.5">
-                      NoxGuarda Public Warranty & IMEI Ledger
-                    </p>
-                  </div>
-                  <div className="inline-flex items-center gap-1 bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full border border-emerald-300">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" /> VERIFIED GENUINE RECEIPT
-                  </div>
-                </div>
-
-              </div>
-            </div>
-          )}
-
-        </div>
-      </section>
+      {/* SECTION 8 — PRODUCT SHOWCASE (copy of the real dashboard) */}
+      <DashboardShowcase />
 
       {/* SECTION 9 — WHY VERIFYFLOW (Comparison Matrix) */}
       <section className="py-20 bg-slate-100/70 border-y border-slate-200 px-6">

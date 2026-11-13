@@ -14,7 +14,8 @@ const hex = (h, a) => {
   const rgb = `${(n >> 16) & 255} ${(n >> 8) & 255} ${n & 255}`;
   return a === undefined ? `rgb(${rgb})` : `rgb(${rgb} / ${a})`;
 };
-const S = c.slate;
+// Neutral (no blue tint) greys, so dark mode is charcoal rather than navy.
+const S = c.neutral;
 const SKIP = ':where(:not(.print-doc, .print-doc *))';
 const rules = [];
 // exact class token, plus its opacity variants ("bg-white/90")

@@ -15,6 +15,16 @@ const colors = require('tailwindcss/colors');
 // Historic overrides kept so existing `rose-*` / `amber-*` classes render exactly as before.
 const rose = { ...colors.rose, 50: '#fef2f2', 100: '#ffe4e6', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' };
 const amber = { ...colors.amber, 50: '#fffbe6' };
+// The darkest slate shades are navy blue, which made dark mode look blue. They are
+// replaced with neutral charcoal greys so dark mode is a true dark. Lighter shades
+// (text, borders, light surfaces) stay as they were.
+const slate = {
+  ...colors.slate,
+  700: colors.neutral[700], // #404040
+  800: colors.neutral[800], // #262626
+  900: colors.neutral[900], // #171717
+  950: colors.neutral[950], // #0a0a0a
+};
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
@@ -41,6 +51,7 @@ module.exports = {
         danger: rose,
         amber,
         rose,
+        slate,
       },
       borderRadius: {
         control: '10px', // buttons, inputs, selects, small chips

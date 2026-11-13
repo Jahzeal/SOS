@@ -4,69 +4,62 @@ import {
   DeviceLookupRequest,
   NormalizedLookupResponse,
 } from '../interfaces/device-lookup-provider.interface';
+import { TacSuggestionService, isValidImei } from '../tac-suggestion.service';
 
+/**
+ * Names a phone from its IMEI. There is no built-in list and nothing is guessed:
+ * the only source is phones that stores have already registered on NoxGuarda
+ * with the same first 8 digits (see TacSuggestionService).
+ */
 @Injectable()
 export class ImeiProvider implements IDeviceLookupProvider {
-  readonly providerName = 'gsma_imei';
+  readonly providerName = 'noxguarda_records';
 
-  private readonly tacDatabase: Record<string, { brand: string; model: string; specs: string }> = {
-    '35492911': { brand: 'Apple', model: 'iPhone 13 Pro Max (A2484 / A2643)', specs: '6GB RAM' },
-    '35304610': { brand: 'Apple', model: 'iPhone 12 Pro (A2341 / A2407)', specs: '6GB RAM' },
-    '35882311': { brand: 'Apple', model: 'iPhone 14 Pro (A2650 / A2889)', specs: '6GB RAM' },
-    '35213645': { brand: 'Apple', model: 'iPhone 15 Pro Max (A2849 / A3106)', specs: '8GB RAM' },
-    '35698411': { brand: 'Samsung', model: 'Galaxy S23 Ultra (SM-S918B/DS)', specs: '12GB RAM' },
-    '35412811': { brand: 'Samsung', model: 'Galaxy S22 Ultra (SM-S908B)', specs: '12GB RAM' },
-    '35987110': { brand: 'Samsung', model: 'Galaxy S21 5G (SM-G991B)', specs: '8GB RAM' },
-    '35198210': { brand: 'Google', model: 'Pixel 7 Pro (GE2AE / GP4BC)', specs: '12GB RAM' },
-    '35298111': { brand: 'Google', model: 'Pixel 8 Pro (GC3VE / G1MNW)', specs: '12GB RAM' },
-    '86123405': { brand: 'Xiaomi', model: '13 Pro (2210132G)', specs: '12GB RAM' },
-  };
+  constructor(private readonly tacSuggestions: TacSuggestionService) {}
+
+  private clean(identifier: string): string {
+    return String(identifier || '').replace(/[\s-]/g, '');
+  }
 
   supports(request: DeviceLookupRequest): boolean {
-    const id = (request.identifier || '').trim();
-    return /^\d{14,15}$/.test(id) || request.identifierType === 'imei';
+    if (request.deviceType === 'laptop') return false;
+    return /^\d{14,16}$/.test(this.clean(request.identifier)) || request.identifierType === 'imei';
   }
 
   async lookup(request: DeviceLookupRequest): Promise<NormalizedLookupResponse> {
-    const imei = request.identifier.trim();
-    const tac = imei.slice(0, 8);
+    const imei = this.clean(request.identifier);
 
-    const match = this.tacDatabase[tac];
-    if (match) {
+    if (!isValidImei(imei)) {
       return {
-        status: 'identified',
-        source: 'gsma_tac_registry',
-        confidence: 'high',
-        device: {
-          deviceType: 'phone',
-          manufacturer: match.brand,
-          productName: match.model,
-          modelNumber: match.model,
-          serialNumber: imei,
-          specs: match.specs,
-          warrantyStatus: 'unknown',
-        },
+        status: 'not_found',
+        source: this.providerName,
+        confidence: 'low',
+        message:
+          'This IMEI does not look right. Please check the digits against the phone (dial *#06#).',
       };
     }
 
-    // Default GSMA TAC heuristic
-    let brand = 'Generic Smartphone';
-    let model = '4G/5G LTE Smartphone';
-    if (/^(35|01|86)/.test(tac)) {
-      brand = 'GSM Smartphone';
-      model = 'GSM LTE / 5G Mobile Device';
+    const suggestion = await this.tacSuggestions.suggest(imei);
+    if (!suggestion) {
+      return {
+        status: 'not_found',
+        source: this.providerName,
+        confidence: 'low',
+        message: 'We do not know this phone yet. Please enter the brand and model.',
+      };
     }
 
     return {
       status: 'identified',
-      source: 'gsma_tac_registry',
-      confidence: 'medium',
+      source: this.providerName,
+      confidence: suggestion.confidence,
+      message: 'Suggested from phones already registered on NoxGuarda. Please confirm it is correct.',
       device: {
         deviceType: 'phone',
-        manufacturer: brand,
-        productName: model,
+        manufacturer: suggestion.brand,
+        productName: suggestion.model,
         serialNumber: imei,
-        specs: '128 GB Standard Storage',
+        specs: null,
         warrantyStatus: 'unknown',
       },
     };

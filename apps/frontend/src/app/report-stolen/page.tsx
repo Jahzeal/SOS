@@ -119,18 +119,9 @@ export default function ReportStolenPage() {
     const clean = value.replace(/\s+/g, '');
     setImei1(clean);
 
-    if (clean.length >= 8) {
-      const profile = parseImeiTac(clean);
-      setTacProfile(profile);
-      if (profile.brand) {
-        setBrand(profile.brand);
-      }
-      if (profile.model) {
-        setModel(profile.model);
-      }
-    } else {
-      setTacProfile(null);
-    }
+    // The brand and model are typed by the owner. They are not filled in from the
+    // IMEI, because its leading digits do not reliably say who made the phone.
+    setTacProfile(clean.length >= 8 ? parseImeiTac(clean) : null);
   };
 
   const handleSessionExpired = () => {
@@ -642,12 +633,6 @@ export default function ReportStolenPage() {
                         <label className="block text-xs font-extrabold text-slate-900">
                           IMEI Number <span className="text-slate-400 font-normal">(phones and tablets with a SIM)</span>
                         </label>
-                        {tacProfile?.brand && (
-                          <span className="text-[11px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-0.5 rounded-lg flex items-center gap-1 animate-in fade-in">
-                            <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                            Auto-filled: {tacProfile.brand} {tacProfile.model}
-                          </span>
-                        )}
                       </div>
                       <div className="relative">
                         <input

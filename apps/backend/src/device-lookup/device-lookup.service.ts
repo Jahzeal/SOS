@@ -53,14 +53,20 @@ export class DeviceLookupService {
     }
 
     // Find supporting provider
+    let notFoundMessage: string | undefined;
     for (const provider of this.providers) {
       if (provider.supports(request)) {
         try {
           const result = await provider.lookup(request);
           if (result && result.status !== 'not_found') {
-            this.cache.set(cacheKey, { data: result, timestamp: Date.now() });
+            // Phone answers come from stores' own records, which change as phones
+            // are registered, so they are looked up fresh every time.
+            if (provider !== this.imeiProvider) {
+              this.cache.set(cacheKey, { data: result, timestamp: Date.now() });
+            }
             return result;
           }
+          if (result?.message && !notFoundMessage) notFoundMessage = result.message;
         } catch (err: any) {
           this.logger.warn(`Provider ${provider.providerName} threw an error: ${err?.message}`);
         }
@@ -72,7 +78,7 @@ export class DeviceLookupService {
       status: 'not_found',
       source: 'device_lookup_engine',
       confidence: 'low',
-      message: "We couldn't identify this device automatically. You can enter details manually.",
+      message: notFoundMessage || "We couldn't identify this device automatically. You can enter details manually.",
     };
 
     return notFoundResult;

@@ -12,6 +12,7 @@ import { CustomersModule } from './customers/customers.module';
 import { RepairsModule } from './repairs/repairs.module';
 import { AdminModule } from './admin/admin.module';
 import { MailModule } from './mail/mail.module';
+import { ContactModule } from './contact/contact.module';
 import { PlansModule } from './plans/plans.module';
 import { PaymentsModule } from './payments/payments.module';
 import { TheftReportsModule } from './theft-reports/theft-reports.module';
@@ -40,6 +41,7 @@ import { AppController } from './app.controller';
     CustomersModule,
     RepairsModule,
     AdminModule,
+    ContactModule,
   ],
   controllers: [AppController],
 })

@@ -33,6 +33,7 @@ import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { ImeiCameraScanner } from '@/components/scanner/ImeiCameraScanner';
+import { validateLuhnIMEI } from '@/lib/imei-utils';
 import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 
 type RegistrationMode = 'PHONE' | 'ITEM';
@@ -160,6 +161,15 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
   const [isDetectedApplied, setIsDetectedApplied] = useState(false);
   const [isDetectedDismissed, setIsDetectedDismissed] = useState(false);
   const [isLookingUpDevice, setIsLookingUpDevice] = useState(false);
+  // Only the answer to the latest lookup is shown; a slow, older answer is ignored.
+  const lookupSeq = React.useRef(0);
+  // An IMEI the seller chose to keep even though its check digit does not match.
+  const [acceptedOddImei, setAcceptedOddImei] = useState('');
+
+  const isPhoneImeiMode = mode === 'PHONE' && deviceCategory === 'PHONE_TABLET';
+  const imeiLooksValid = imei.length === 15 && validateLuhnIMEI(imei);
+  const lookupSourceLabel = (source?: string) =>
+    source === 'noxguarda_records' ? 'From phones registered on NoxGuarda' : source || 'Device lookup';
 
   // Apply auto-detected hardware match into the registration form
   const handleApplyDetectedMatch = (modelOverride?: string) => {
@@ -204,6 +214,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
   // Perform device identification with optional product number
   const executeDeviceIdentification = async (rawIdentifier: string, prodNumber?: string) => {
     if (!rawIdentifier || rawIdentifier.length < 3) return;
+    const seq = ++lookupSeq.current;
     try {
       setIsLookingUpDevice(true);
       const devType = mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'laptop' : 'phone') : 'item';
@@ -213,6 +224,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
         productNumber: prodNumber || undefined,
         brandHint: brand.trim() || undefined,
       });
+      if (seq !== lookupSeq.current) return; // a newer lookup has started
 
       if (res && res.status) {
         setDetectedMatch({
@@ -238,6 +250,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
         setIsDetectedApplied(false);
       }
     } catch (err) {
+      if (seq !== lookupSeq.current) return;
       console.warn('Live device lookup offline:', err);
       setDetectedMatch({
         status: 'provider_unavailable',
@@ -246,7 +259,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
         confidence: 'low',
       });
     } finally {
-      setIsLookingUpDevice(false);
+      if (seq === lookupSeq.current) setIsLookingUpDevice(false);
     }
   };
 
@@ -257,8 +270,12 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
       rawIdentifier.length < 4 ||
       rawIdentifier.startsWith('PH-') ||
       rawIdentifier.startsWith('PC-') ||
-      rawIdentifier.startsWith('SKU-')
+      rawIdentifier.startsWith('SKU-') ||
+      // A phone is only looked up once the full, valid 15-digit IMEI is in.
+      (isPhoneImeiMode && !(rawIdentifier.length === 15 && validateLuhnIMEI(rawIdentifier)))
     ) {
+      lookupSeq.current++; // drop any answer still on its way
+      setIsLookingUpDevice(false);
       setDetectedMatch(null);
       setIsDetectedApplied(false);
       setIsDetectedDismissed(false);
@@ -331,6 +348,15 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
         }
         if (cleanImei.length !== 15 || !/^\d{15}$/.test(cleanImei)) {
           setErrorMessage(`IMEI must be exactly 15 numeric digits (currently ${cleanImei.length} digits).`);
+          return;
+        }
+        if (/^(\d)\1{14}$/.test(cleanImei)) {
+          setErrorMessage('This is not a real IMEI. Please enter the number shown on the phone (dial *#06#).');
+          return;
+        }
+        if (!validateLuhnIMEI(cleanImei) && acceptedOddImei !== cleanImei) {
+          setAcceptedOddImei(cleanImei);
+          setErrorMessage('This IMEI does not look right: one digit may be wrong. Check it against the phone (dial *#06#). If it is exactly what the phone shows, press Continue again.');
           return;
         }
       } else {
@@ -698,20 +724,20 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                     </label>
                     {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
                       <span className={`text-xs font-bold ${
-                        imei.length === 15 
+                        imeiLooksValid
                           ? 'text-success-600 flex items-center gap-1' 
                           : imei.length > 0 
                             ? 'text-warning-600' 
                             : 'text-slate-400'
                       }`}>
-                        {imei.length === 15 ? '✓ 15 / 15 digits (Valid)' : `(${imei.length}/15 digits)`}
+                        {imeiLooksValid ? '✓ 15 / 15 digits (Valid)' : imei.length === 15 ? '15 digits, please re-check the number' : `(${imei.length}/15 digits)`}
                       </span>
                     )}
                   </div>
                   <input id="dashboard-register-f1"
                     type="text"
                     value={imei}
-                    maxLength={mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' ? 15 : undefined}
+                    inputMode={isPhoneImeiMode ? 'numeric' : undefined}
                     onChange={(e) => {
                       let val = e.target.value;
                       if (mode === 'PHONE' && deviceCategory === 'PHONE_TABLET') {
@@ -721,9 +747,9 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                     }}
                     placeholder={mode === 'PHONE' ? "Enter 15-digit IMEI" : "e.g. 693420849102 or scan box"}
                     className={`w-full text-xs sm:text-sm px-3.5 py-2.5 sm:px-4 sm:py-3 bg-white border rounded-xl focus:outline-none font-mono font-semibold text-slate-900 placeholder:text-xs sm:placeholder:text-xs shadow-xs transition-colors ${
-                      mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && imei.length === 15
+                      isPhoneImeiMode && imeiLooksValid
                         ? 'border-success-500 focus:border-success-600 bg-success-50/20'
-                        : mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && imei.length > 0 && imei.length < 15
+                        : isPhoneImeiMode && imei.length > 0
                         ? 'border-warning-400 focus:border-warning-500'
                         : 'border-slate-200 focus:border-accent-600'
                     }`}
@@ -743,7 +769,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
               {isLookingUpDevice && (
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300 text-xs font-medium flex items-center gap-2.5 animate-pulse">
                   <div className="w-4 h-4 border-2 border-accent-600 border-t-transparent rounded-full animate-spin shrink-0" />
-                  <span>Looking up device specifications from manufacturer & hardware registry...</span>
+                  <span>{isPhoneImeiMode ? 'Checking phones already registered on NoxGuarda...' : 'Looking up device specifications from manufacturer & hardware registry...'}</span>
                 </div>
               )}
 
@@ -757,9 +783,9 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-black text-accent-950 dark:text-accent-200 uppercase tracking-wider">Device Found ✓</span>
+                          <span className="text-xs font-black text-accent-950 dark:text-accent-200 uppercase tracking-wider">{detectedMatch.source === 'noxguarda_records' ? 'Suggested' : 'Device Found ✓'}</span>
                           <span className="text-xs font-bold bg-accent-100 dark:bg-accent-900 text-accent-800 dark:text-accent-300 px-2 py-0.5 rounded-md border border-accent-200 dark:border-accent-800">
-                            {detectedMatch.source || 'Hardware Registry'}
+                            {lookupSourceLabel(detectedMatch.source)}
                           </span>
                           {detectedMatch.warrantyStatus && detectedMatch.warrantyStatus !== 'unknown' && (
                             <span className="text-xs font-bold bg-success-100 text-success-800 px-2 py-0.5 rounded-md">
@@ -870,7 +896,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 animate-in fade-in">
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium">
                     <Info className="w-4 h-4 text-slate-400 shrink-0" />
-                    <span>We couldn't identify this device automatically. You can enter details manually.</span>
+                    <span>{detectedMatch.message || "We couldn't identify this device automatically. You can enter details manually."}</span>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button variant="link"
@@ -1125,7 +1151,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-xs font-bold text-success-800 dark:text-success-300 bg-success-100/90 dark:bg-success-900/60 px-2 py-0.5 rounded-md border border-success-200 dark:border-success-800">
-                      {detectedMatch.source || 'Auto-Detected'}
+                      {lookupSourceLabel(detectedMatch.source)}
                     </span>
                     <Button variant="secondary" size="sm"
                       type="button"

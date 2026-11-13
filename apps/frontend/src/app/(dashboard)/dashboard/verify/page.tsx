@@ -218,11 +218,13 @@ export default function VerifyPhonePage() {
                       <Lock className="w-4 h-4 text-warning-600" />
                       <span className="text-warning-700">Locked ({result.lockedCarrier || 'Carrier'})</span>
                     </>
-                  ) : (
+                  ) : result.carrierStatus ? (
                     <>
                       <Unlock className="w-4 h-4 text-success-600" />
                       <span className="text-success-700">Factory Unlocked (All SIMs)</span>
                     </>
+                  ) : (
+                    <span className="text-slate-500">Not known</span>
                   )}
                 </p>
               </div>
@@ -231,9 +233,9 @@ export default function VerifyPhonePage() {
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Activation State</span>
                 <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-accent-600" />
-                  <span className="text-slate-800">
-                    {result.activationStatus ? result.activationStatus.replace(/_/g, ' ') : 'Ready for Setup'}
+                  {result.activationStatus && <CheckCircle2 className="w-4 h-4 text-accent-600" />}
+                  <span className={result.activationStatus ? 'text-slate-800' : 'text-slate-500'}>
+                    {result.activationStatus ? result.activationStatus.replace(/_/g, ' ') : 'Not known'}
                   </span>
                 </p>
               </div>

@@ -3,6 +3,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RegisterPhoneDto } from './dto/phone-record.dto';
 import { DeviceIntelligenceService } from './device-intelligence.service';
 import { DeviceLookupService } from '../phones/device-lookup.service';
+import { TacSuggestionService } from '../device-lookup/tac-suggestion.service';
 import { maskPhone } from '../theft-reports/theft-reports.service';
 import { frontendUrl } from '../common/config/env';
 import { SubscriptionService } from '../common/services/subscription.service';
@@ -14,6 +15,7 @@ export class VerificationService {
     private prisma: PrismaService,
     private deviceIntel: DeviceIntelligenceService,
     private deviceLookup: DeviceLookupService,
+    private tacSuggestions: TacSuggestionService,
     private subscriptions: SubscriptionService,
   ) {}
 
@@ -274,9 +276,11 @@ export class VerificationService {
     const ownerName = activeTheftReport?.ownerName || (phone?.theftReportedBy ? 'Verified Business Reporter' : null);
     const reportedAt = activeTheftReport?.createdAt || phone?.stolenAt || null;
 
-    const carrierStatus = phone?.carrierStatus || tacProfile.defaultCarrierStatus;
-    const lockedCarrier = phone?.lockedCarrier || tacProfile.likelyCarrier;
-    const activationStatus = phone?.activationStatus || (isStolen ? 'ACTIVATED' : (phone ? 'READY_FOR_SETUP' : tacProfile.defaultActivationStatus));
+    // Lock and activation are only known when a store recorded them. For a phone
+    // nobody registered they are left empty ("not known"), never assumed.
+    const carrierStatus = phone?.carrierStatus || null;
+    const lockedCarrier = phone?.lockedCarrier || null;
+    const activationStatus = phone?.activationStatus || (phone ? 'READY_FOR_SETUP' : null);
 
     // Log the verification attempt
     this.prisma.verificationLog.create({
@@ -326,16 +330,22 @@ export class VerificationService {
       };
     }
 
-    // Determine detected hardware details
-    const detectedBrand = activeTheftReport?.brand || (hardwareLookup?.found ? hardwareLookup.brand : null) || tacProfile.brand || (cleanId.length >= 8 ? 'Hardware Device' : 'Smartphone Device');
-    const detectedModel = activeTheftReport?.model || (hardwareLookup?.found ? hardwareLookup.model : null) || tacProfile.model || 'Mobile / PC Device';
-    const detectedSpecs = (hardwareLookup?.found ? hardwareLookup.specs : null) || tacProfile.hardwareVariant || null;
+    // Brand and model: from the theft report, a laptop serial lookup, or phones
+    // already registered on NoxGuarda with the same first 8 IMEI digits. Otherwise
+    // a neutral placeholder; the brand is never guessed from the number.
+    let learned: { brand: string; model: string } | null = null;
+    if (!activeTheftReport?.brand && !hardwareLookup?.found && tacProfile.isValidImei) {
+      learned = await this.tacSuggestions.suggest(cleanId).catch(() => null);
+    }
+    const detectedBrand = activeTheftReport?.brand || (hardwareLookup?.found ? hardwareLookup.brand : null) || learned?.brand || (cleanId.length >= 8 ? 'Hardware Device' : 'Smartphone Device');
+    const detectedModel = activeTheftReport?.model || (hardwareLookup?.found ? hardwareLookup.model : null) || learned?.model || 'Mobile / PC Device';
+    const detectedSpecs = (hardwareLookup?.found ? hardwareLookup.specs : null) || null;
 
     // If not registered by a merchant, return hardware profile + theft status
     return {
       verified: !isStolen,
       isRegisteredInNetwork: false,
-      hardwareDetected: Boolean(hardwareLookup?.found || tacProfile.isValidImei),
+      hardwareDetected: Boolean(hardwareLookup?.found || learned),
       theftStatus,
       isStolen,
       ownerMessage,

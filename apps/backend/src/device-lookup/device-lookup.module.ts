@@ -7,9 +7,11 @@ import { LenovoProvider } from './providers/lenovo.provider';
 import { DellProvider } from './providers/dell.provider';
 import { AppleProvider } from './providers/apple.provider';
 import { ImeiProvider } from './providers/imei.provider';
+import { TacSuggestionService } from './tac-suggestion.service';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
-  imports: [ConfigModule],
+  imports: [ConfigModule, AuthModule],
   controllers: [DeviceLookupController],
   providers: [
     DeviceLookupService,
@@ -18,7 +20,8 @@ import { ImeiProvider } from './providers/imei.provider';
     DellProvider,
     AppleProvider,
     ImeiProvider,
+    TacSuggestionService,
   ],
-  exports: [DeviceLookupService],
+  exports: [DeviceLookupService, TacSuggestionService],
 })
 export class DeviceLookupModule {}

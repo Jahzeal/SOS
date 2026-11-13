@@ -11,7 +11,7 @@
 }
 
 .dark {
-  --background: #020617; /* slate-950 */
+  --background: #0a0a0a; /* charcoal, no blue tint */
   --foreground: #f8fafc;
   --accent: #2dd4bf; /* teal-400 */
 }
@@ -52,20 +52,20 @@ body {
   border-radius: 4px;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #171717;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #cbd5e1;
   border-radius: 4px;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #404040;
 }
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
 .dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #475569;
+  background: #525252;
 }
 
 /* Card surface used by the shared Card component */
@@ -78,9 +78,9 @@ body {
 }
 
 .dark .vf-card:not(.bg-white) {
-  background: #0f172a;
-  border-color: #1e293b;
-  color: #f8fafc;
+  background: #171717;
+  border-color: #262626;
+  color: #fafafa;
   box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
 }
 
@@ -169,7 +169,7 @@ body {
 }
 
 .dark .animate-skeleton {
-  background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #1e293b 63%);
+  background: linear-gradient(90deg, #262626 25%, #404040 37%, #262626 63%);
   background-size: 200% 100%;
 }
 
@@ -278,4 +278,22 @@ summary:focus-visible,
 [tabindex]:not([tabindex="-1"]):focus-visible {
   outline: 2px solid var(--accent) !important;
   outline-offset: 2px !important;
+}
+
+/* Glass cards beside the home-page dashboard preview: a slow, small drift. */
+@keyframes ngGlassFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.ng-glass-float {
+  animation: ngGlassFloat 7s ease-in-out infinite;
+}
+.ng-glass-float-delayed {
+  animation: ngGlassFloat 7s ease-in-out 1.5s infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ng-glass-float,
+  .ng-glass-float-delayed {
+    animation: none;
+  }
 }

@@ -136,6 +136,22 @@ class ApiClient {
     });
   }
 
+  /** Public Contact Us form. Emailed to the NoxGuarda team. */
+  async sendContactMessage(payload: {
+    name: string;
+    email: string;
+    phone?: string;
+    storeName?: string;
+    topic: string;
+    message: string;
+    website?: string;
+  }) {
+    return this.request<{ success: boolean }>('/contact', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
   async forgotPassword(email: string) {
     return this.request<{ message: string }>('/auth/forgot-password', {
       method: 'POST',
