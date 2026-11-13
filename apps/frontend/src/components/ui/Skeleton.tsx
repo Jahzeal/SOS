@@ -54,7 +54,7 @@ export function SkeletonForm() {
         <Skeleton className="h-10 w-full" />
       </div>
       <div className="pt-2 flex justify-end">
-        <Skeleton className="h-10 w-28 rounded-button" />
+        <Skeleton className="h-10 w-28 rounded-control" />
       </div>
     </div>
   );

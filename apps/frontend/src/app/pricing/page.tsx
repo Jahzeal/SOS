@@ -79,9 +79,9 @@ export default function DedicatedPricingPage() {
       
       {/* Header Navigation */}
       <header className="h-16 border-b border-slate-200 bg-white px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30 shadow-subtle">
-        <Logo size="md" />
+        <Logo size="md" iconOnlyOnMobile />
 
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <PwaInstallButton variant="header" />
           {isLoggedIn ? (
             <Link href={dashboardUrl}>
@@ -92,12 +92,12 @@ export default function DedicatedPricingPage() {
           ) : (
             <>
               <Link href="/login">
-                <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold border-slate-200">
+                <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold border-slate-200 whitespace-nowrap">
                   Sign In
                 </Button>
               </Link>
               <Link href="/onboarding">
-                <Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-700 text-white font-bold">
+                <Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-700 text-white font-bold whitespace-nowrap">
                   Start free →
                 </Button>
               </Link>

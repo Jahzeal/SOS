@@ -2,34 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
-.font-editorial {
-  font-family: 'Instrument Serif', 'Playfair Display', Georgia, serif;
-}
-
+/* Design tokens. Colours, radius and fonts live in tailwind.config.js; see UI-GUIDE.md.
+   These variables only drive the page background and default text colour. */
 :root {
   --background: #fafafa;
   --foreground: #0f172a;
-  --card: #ffffff;
-  --card-foreground: #0f172a;
-  --border: #e2e8f0;
-  --primary-brand: #0f172a;
-  --primary-teal: #0d9488;
-  --accent-emerald: #059669;
-  --warning-amber: #d97706;
-  --danger-rose: #e11d48;
+  --accent: #0d9488; /* teal-600 */
 }
 
 .dark {
-  --background: #090d16;
+  --background: #020617; /* slate-950 */
   --foreground: #f8fafc;
-  --card: #0f172a;
-  --card-foreground: #f8fafc;
-  --border: #1e293b;
-  --primary-brand: #f8fafc;
-  --primary-teal: #14b8a6;
-  --accent-emerald: #10b981;
-  --warning-amber: #f59e0b;
-  --danger-rose: #f43f5e;
+  --accent: #2dd4bf; /* teal-400 */
 }
 
 html,
@@ -42,7 +26,7 @@ body {
   overflow-x: hidden;
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   touch-action: manipulation;
@@ -84,11 +68,11 @@ body {
   background: #475569;
 }
 
-/* VerifyFlow Premium Glass Cards & Elevators */
+/* Card surface used by the shared Card component */
 .vf-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  border-radius: 16px; /* = rounded-card */
   box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.03), 0 1px 2px 0 rgba(15, 23, 42, 0.02);
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
@@ -105,14 +89,14 @@ body {
 }
 
 .vf-card-interactive:hover {
-  border-color: #93c5fd;
-  box-shadow: 0 20px 30px -10px rgba(37, 99, 235, 0.12), 0 10px 15px -6px rgba(15, 23, 42, 0.04);
+  border-color: #5eead4;
+  box-shadow: 0 20px 30px -10px rgba(13, 148, 136, 0.12), 0 10px 15px -6px rgba(15, 23, 42, 0.04);
   transform: translateY(-4px);
 }
 
 .dark .vf-card-interactive:hover {
-  border-color: #3b82f6;
-  box-shadow: 0 20px 30px -10px rgba(59, 130, 246, 0.2), 0 10px 15px -6px rgba(0, 0, 0, 0.4);
+  border-color: #14b8a6;
+  box-shadow: 0 20px 30px -10px rgba(20, 184, 166, 0.2), 0 10px 15px -6px rgba(0, 0, 0, 0.4);
 }
 
 .vf-badge-pill {
@@ -184,6 +168,11 @@ body {
   animation: vf-shimmer 1.5s infinite ease-in-out;
 }
 
+.dark .animate-skeleton {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 37%, #1e293b 63%);
+  background-size: 200% 100%;
+}
+
 /* QR Camera Reticle & Laser Scan Bar Overlay */
 #qr-camera-scanner,
 #test-camera-scanner {
@@ -210,7 +199,7 @@ body {
 
 #qr-camera-scanner button,
 #test-camera-scanner button {
-  background: #2563eb !important;
+  background: #0d9488 !important;
   color: #ffffff !important;
   font-weight: 700 !important;
   padding: 8px 16px !important;
@@ -287,6 +276,6 @@ textarea:focus-visible,
 summary:focus-visible,
 [role="button"]:focus-visible,
 [tabindex]:not([tabindex="-1"]):focus-visible {
-  outline: 2px solid #0d9488 !important;
+  outline: 2px solid var(--accent) !important;
   outline-offset: 2px !important;
 }

@@ -31,6 +31,10 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { SearchInput, Select, Textarea, TextInput } from '@/components/ui/Input';
+import { Table, TableWrap, TBody, Td, Th, THead, Tr } from '@/components/ui/DataTable';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { Modal } from '@/components/ui/Modal';
 import { api } from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { usePhoneRecords, useInventorySummary, QUERY_KEYS } from '@/hooks/useDashboardQueries';
@@ -159,41 +163,41 @@ export default function PhoneRecordsPage() {
         </div>
 
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5">
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => {
               queryClient.invalidateQueries({ queryKey: ['records'] });
               queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
             }}
             title="Refresh Records"
-            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 text-slate-700 bg-white hover:bg-slate-50 shadow-xs"
+            aria-label="Refresh Records"
+            leftIcon={<RotateCw className="w-3.5 h-3.5" />}
           >
-            <RotateCw className="w-3.5 h-3.5 text-slate-500" />
             <span className="hidden sm:inline">Refresh</span>
-          </button>
+          </Button>
           <Link href="/report-stolen">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-rose-200 text-rose-600 bg-transparent hover:bg-rose-50 shadow-xs">
-              <ShieldAlert className="w-3.5 h-3.5" />
-              <span>Public Theft Registry</span>
-            </button>
+            <Button variant="dangerOutline" size="sm" className="whitespace-nowrap" leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}>
+              Public Theft Registry
+            </Button>
           </Link>
           <Link href="/dashboard/register">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-blue-600/30 text-blue-700 bg-blue-50/30 hover:bg-blue-50 sm:bg-blue-600 sm:text-white sm:border-blue-600 sm:hover:bg-blue-700 shadow-xs sm:shadow-md sm:shadow-blue-600/10">
-              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 sm:text-white" />
+            <Button variant="primary" size="sm" className="whitespace-nowrap" leftIcon={<Plus className="w-4 h-4" />}>
               <span className="hidden sm:inline">Register Phone / Item</span>
               <span className="inline sm:hidden">Register Item</span>
-            </button>
+            </Button>
           </Link>
         </div>
       </div>
 
       {/* Global Success / Alert Banner */}
       {actionSuccess && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center justify-between animate-in fade-in">
+        <div role="status" className="p-3.5 rounded-control bg-success-50 border border-success-200 text-success-800 text-xs font-semibold flex items-center justify-between animate-in fade-in">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-success-600 shrink-0" />
             <span>{actionSuccess}</span>
           </div>
-          <button onClick={() => setActionSuccess(null)} className="text-emerald-600 hover:text-emerald-900">
+          <button type="button" onClick={() => setActionSuccess(null)} aria-label="Dismiss message" className="text-success-600 hover:text-success-900 cursor-pointer">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -202,7 +206,7 @@ export default function PhoneRecordsPage() {
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-accent-50 border border-accent-100 flex items-center justify-center text-accent-600 shrink-0">
             <Smartphone className="w-5 h-5" />
           </div>
           <div>
@@ -216,7 +220,7 @@ export default function PhoneRecordsPage() {
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-success-50 border border-success-100 flex items-center justify-center text-success-600 shrink-0">
             <Package className="w-5 h-5" />
           </div>
           <div>
@@ -244,7 +248,7 @@ export default function PhoneRecordsPage() {
         </div>
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-danger-50 border border-danger-100 flex items-center justify-center text-danger-600 shrink-0">
             <ShieldAlert className="w-5 h-5" />
           </div>
           <div>
@@ -252,54 +256,48 @@ export default function PhoneRecordsPage() {
             {loading && records.length === 0 ? (
               <div className="h-6 w-14 bg-slate-200/60 rounded-md animate-pulse mt-0.5" />
             ) : (
-              <p className="text-xl font-extrabold text-rose-600">{records.filter((r) => r.isStolen || r.theftStatus === 'STOLEN').length}</p>
+              <p className="text-xl font-extrabold text-danger-600">{records.filter((r) => r.isStolen || r.theftStatus === 'STOLEN').length}</p>
             )}
           </div>
         </div>
       </div>
 
       {/* Main Table Card */}
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div className="bg-white rounded-card border border-slate-200 shadow-subtle overflow-hidden">
         
         {/* Filters Header */}
         <div className="p-4 border-b border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 bg-slate-50/40">
-          <div className="relative w-full sm:w-80">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
+          <div className="w-full sm:w-80">
+            <SearchInput
               placeholder="Search IMEI, Serial, Brand, Model..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
+              shortcutHint=""
             />
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-            >
-              <option value="ALL">All Statuses</option>
-              <option value="IN_STOCK">In Stock</option>
-              <option value="SOLD">Sold</option>
-              <option value="IN_REPAIR">In Repair</option>
-              <option value="RESERVED">Reserved</option>
-            </select>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex-1 sm:flex-none sm:w-40">
+              <Select aria-label="Filter by status" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                <option value="ALL">All Statuses</option>
+                <option value="IN_STOCK">In Stock</option>
+                <option value="SOLD">Sold</option>
+                <option value="IN_REPAIR">In Repair</option>
+                <option value="RESERVED">Reserved</option>
+              </Select>
+            </div>
 
-            <select
-              value={brandFilter}
-              onChange={(e) => setBrandFilter(e.target.value)}
-              className="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition"
-            >
-              <option value="ALL">All Brands</option>
-              <option value="Apple">Apple</option>
-              <option value="Samsung">Samsung</option>
-              <option value="Google">Google</option>
-              <option value="Tecno">Tecno</option>
-              <option value="Infinix">Infinix</option>
-              <option value="Xiaomi">Xiaomi</option>
-            </select>
+            <div className="flex-1 sm:flex-none sm:w-36">
+              <Select aria-label="Filter by brand" value={brandFilter} onChange={(e) => setBrandFilter(e.target.value)}>
+                <option value="ALL">All Brands</option>
+                <option value="Apple">Apple</option>
+                <option value="Samsung">Samsung</option>
+                <option value="Google">Google</option>
+                <option value="Tecno">Tecno</option>
+                <option value="Infinix">Infinix</option>
+                <option value="Xiaomi">Xiaomi</option>
+              </Select>
+            </div>
           </div>
         </div>
 
@@ -314,33 +312,33 @@ export default function PhoneRecordsPage() {
             </div>
           ) : error ? (
             <div className="py-16 text-center">
-              <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold text-xs">
+              <div className="flex items-center justify-center gap-2 text-danger-500 font-semibold text-xs">
                 <AlertTriangle className="w-5 h-5" />
                 {error}
               </div>
             </div>
           ) : records.length === 0 ? (
-            <div className="py-16 text-center text-slate-400 text-xs">
-              <Smartphone className="w-10 h-10 mx-auto mb-2 text-slate-300" />
-              <p className="font-bold text-slate-600">No records found</p>
-              <p>Try adjusting your filters or register a new phone.</p>
-            </div>
+            <EmptyState
+              icon={<Smartphone className="w-8 h-8" />}
+              title="No records found"
+              description="Try adjusting your filters or register a new phone."
+            />
           ) : (
             records.map((rec) => {
               const warrantyActive = isWarrantyActive(rec.warrantyExpiryDate);
               const isStolen = rec.isStolen || rec.theftStatus === 'STOLEN';
               return (
-                <div key={rec.id} className={`p-4 space-y-3 ${isStolen ? 'bg-rose-50/40 border-l-4 border-rose-500' : ''}`}>
+                <div key={rec.id} className={`p-4 space-y-3 ${isStolen ? 'bg-danger-50/40 border-l-4 border-danger-500' : ''}`}>
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isStolen ? 'bg-rose-100 text-rose-600' : 'bg-blue-50 border border-blue-100 text-blue-600'}`}>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isStolen ? 'bg-danger-100 text-danger-600' : 'bg-accent-50 border border-accent-100 text-accent-600'}`}>
                         {isStolen ? <ShieldAlert className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
                       </div>
                       <div>
                         <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
                           {rec.model}
                           {isStolen && (
-                            <span className="px-1.5 py-0.5 rounded bg-rose-600 text-white font-extrabold text-xs uppercase tracking-wider">
+                            <span className="px-1.5 py-0.5 rounded bg-danger-600 text-white font-extrabold text-xs uppercase tracking-wider">
                               STOLEN
                             </span>
                           )}
@@ -367,7 +365,7 @@ export default function PhoneRecordsPage() {
                       </span>
                     )}
                     {rec.carrierStatus && (
-                      <span className={`px-1.5 py-0.5 rounded font-bold text-xs ${rec.carrierStatus === 'UNLOCKED' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
+                      <span className={`px-1.5 py-0.5 rounded font-bold text-xs ${rec.carrierStatus === 'UNLOCKED' ? 'bg-success-50 text-success-700 border border-success-200' : 'bg-warning-50 text-warning-700 border border-warning-200'}`}>
                         {rec.carrierStatus === 'UNLOCKED' ? 'UNLOCKED' : `LOCKED (${rec.lockedCarrier || 'CARRIER'})`}
                       </span>
                     )}
@@ -378,7 +376,7 @@ export default function PhoneRecordsPage() {
                       <span className="text-xs text-slate-400 font-bold uppercase block">IMEI / SN</span>
                       <div className="flex items-center gap-1 font-mono font-bold text-slate-900 text-xs whitespace-nowrap">
                         <span>{rec.imei1}</span>
-                        <button onClick={() => handleCopy(rec.imei1)} title="Copy IMEI" className="text-slate-400 hover:text-slate-600">
+                        <button type="button" onClick={() => handleCopy(rec.imei1)} title="Copy IMEI" aria-label="Copy IMEI" className="text-slate-400 hover:text-slate-600 cursor-pointer">
                           <Copy className="w-3 h-3" />
                         </button>
                       </div>
@@ -394,26 +392,25 @@ export default function PhoneRecordsPage() {
                   <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
                     <div className="flex items-center gap-2">
                       {isStolen ? (
-                        <button
-                          onClick={() => handleClearStolen(rec)}
-                          className="px-2.5 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 font-bold text-xs"
-                        >
+                        <Button variant="secondary" size="sm" onClick={() => handleClearStolen(rec)}>
                           Clear Stolen Flag
-                        </button>
+                        </Button>
                       ) : (
-                        <button
+                        <Button
+                          variant="dangerOutline"
+                          size="sm"
                           onClick={() => setStolenModalRecord(rec)}
-                          className="px-2.5 py-1.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 hover:bg-rose-100 font-bold text-xs flex items-center gap-1"
+                          leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}
                         >
-                          <ShieldAlert className="w-3 h-3" /> Flag Stolen
-                        </button>
+                          Flag Stolen
+                        </Button>
                       )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Link href={`/dashboard/records/${rec.id}`}>
-                        <button className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 font-bold text-xs flex items-center gap-1">
-                          <Eye className="w-3.5 h-3.5" /> Detail
-                        </button>
+                        <Button variant="secondary" size="sm" leftIcon={<Eye className="w-3.5 h-3.5" />}>
+                          Detail
+                        </Button>
                       </Link>
                     </div>
                   </div>
@@ -424,73 +421,75 @@ export default function PhoneRecordsPage() {
         </div>
 
         {/* Desktop Table View */}
-        <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
+        <TableWrap className="hidden sm:block">
+          <Table className="sm:text-xs">
+            <THead>
               <tr>
-                <th className="py-3 px-4 w-10">
+                <Th className="w-10">
                   <input
                     type="checkbox"
                     onChange={handleSelectAll}
                     checked={selectedIds.length === records.length && records.length > 0}
-                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    aria-label="Select all records"
+                    className="rounded border-slate-300 accent-accent-600"
                   />
-                </th>
-                <th className="py-3 px-4">Device Info</th>
-                <th className="py-3 px-4">Identifiers</th>
-                <th className="py-3 px-4">Carrier & Activation</th>
-                <th className="py-3 px-4">Theft Status</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Price</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                </Th>
+                <Th>Device Info</Th>
+                <Th>Identifiers</Th>
+                <Th>Carrier & Activation</Th>
+                <Th>Theft Status</Th>
+                <Th align="center">Status</Th>
+                <Th align="right">Price</Th>
+                <Th align="right">Actions</Th>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+            </THead>
+            <TBody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center">
+                  <Td colSpan={8} align="center" className="py-16">
                     <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold">
                       <Loader2 className="w-5 h-5 animate-spin" />
                       Loading records...
                     </div>
-                  </td>
+                  </Td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center">
-                    <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold">
+                  <Td colSpan={8} align="center" className="py-16">
+                    <div className="flex items-center justify-center gap-2 text-danger-500 font-semibold">
                       <AlertTriangle className="w-5 h-5" />
                       {error}
                     </div>
-                  </td>
+                  </Td>
                 </tr>
               ) : records.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center">
-                    <div className="flex flex-col items-center gap-2 text-slate-400">
-                      <Smartphone className="w-10 h-10" />
-                      <p className="font-bold text-sm text-slate-600">No records found</p>
-                      <p className="text-xs">Try adjusting your filters or register a new phone.</p>
-                    </div>
-                  </td>
+                  <Td colSpan={8} align="center" className="py-16">
+                    <EmptyState
+                      icon={<Smartphone className="w-8 h-8" />}
+                      title="No records found"
+                      description="Try adjusting your filters or register a new phone."
+                    />
+                  </Td>
                 </tr>
               ) : (
                 records.map((rec) => {
                   const warrantyActive = isWarrantyActive(rec.warrantyExpiryDate);
                   const isStolen = rec.isStolen || rec.theftStatus === 'STOLEN';
                   return (
-                    <tr key={rec.id} className={`hover:bg-slate-50/80 transition group ${isStolen ? 'bg-rose-50/30' : ''}`}>
-                      <td className="py-3.5 px-4">
+                    <Tr key={rec.id} className={`group ${isStolen ? 'bg-danger-50/30' : ''}`}>
+                      <Td>
                         <input
                           type="checkbox"
                           checked={selectedIds.includes(rec.id)}
                           onChange={() => handleToggleSelect(rec.id)}
-                          className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                          aria-label={`Select ${rec.model}`}
+                          className="rounded border-slate-300 accent-accent-600"
                         />
-                      </td>
-                      <td className="py-3.5 px-4">
+                      </Td>
+                      <Td>
                         <div className="flex items-center gap-3">
-                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isStolen ? 'bg-rose-100 text-rose-600' : 'bg-blue-50 border border-blue-200/80 text-blue-600'}`}>
+                          <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isStolen ? 'bg-danger-100 text-danger-600' : 'bg-accent-50 border border-accent-200/80 text-accent-600'}`}>
                             {isStolen ? <ShieldAlert className="w-4 h-4" /> : <Smartphone className="w-4 h-4" />}
                           </div>
                           <div>
@@ -500,24 +499,24 @@ export default function PhoneRecordsPage() {
                             </p>
                           </div>
                         </div>
-                      </td>
-                      <td className="py-3.5 px-4">
+                      </Td>
+                      <Td>
                         <div className="flex items-center gap-1 font-mono font-bold text-slate-900">
                           <span>IMEI: {rec.imei1}</span>
-                          <button onClick={() => handleCopy(rec.imei1)} title="Copy IMEI" className="text-slate-400 hover:text-slate-600 ml-1">
+                          <button type="button" onClick={() => handleCopy(rec.imei1)} title="Copy IMEI" aria-label="Copy IMEI" className="text-slate-400 hover:text-slate-600 ml-1 cursor-pointer">
                             <Copy className="w-3 h-3" />
                           </button>
                           {copiedImei === rec.imei1 && (
-                            <span className="text-xs text-emerald-600 font-bold">Copied!</span>
+                            <span className="text-xs text-success-600 font-bold">Copied!</span>
                           )}
                         </div>
                         {rec.serialNumber && (
                           <p className="font-mono text-slate-500 text-xs font-medium">SN: {rec.serialNumber}</p>
                         )}
-                      </td>
-                      <td className="py-3.5 px-4">
+                      </Td>
+                      <Td>
                         <div className="flex flex-col gap-1">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold text-xs w-fit ${rec.carrierStatus === 'CARRIER_LOCKED' ? 'bg-amber-50 text-amber-800 border border-amber-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'}`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded font-bold text-xs w-fit ${rec.carrierStatus === 'CARRIER_LOCKED' ? 'bg-warning-50 text-warning-800 border border-warning-200' : 'bg-success-50 text-success-800 border border-success-200'}`}>
                             {rec.carrierStatus === 'CARRIER_LOCKED' ? (
                               <><Lock className="w-2.5 h-2.5" /> Locked ({rec.lockedCarrier || 'Carrier'})</>
                             ) : (
@@ -530,67 +529,60 @@ export default function PhoneRecordsPage() {
                             </span>
                           )}
                         </div>
-                      </td>
-                      <td className="py-3.5 px-4">
+                      </Td>
+                      <Td>
                         {isStolen ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-rose-100 text-rose-800 font-extrabold text-xs border border-rose-300 animate-pulse">
-                            <ShieldAlert className="w-3 h-3 text-rose-600" /> STOLEN / BLACKLISTED
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-danger-100 text-danger-800 font-extrabold text-xs border border-danger-300 animate-pulse">
+                            <ShieldAlert className="w-3 h-3 text-danger-600" /> STOLEN / BLACKLISTED
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200">
-                            <ShieldCheck className="w-3 h-3 text-emerald-600" /> Clean
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-success-50 text-success-700 font-bold text-xs border border-success-200">
+                            <ShieldCheck className="w-3 h-3 text-success-600" /> Clean
                           </span>
                         )}
-                      </td>
-                      <td className="py-3.5 px-4 text-center">
+                      </Td>
+                      <Td align="center">
                         {rec.status === 'IN_STOCK' && <Badge variant="verified" size="sm">IN STOCK</Badge>}
                         {rec.status === 'SOLD' && <Badge variant="sold" size="sm">SOLD</Badge>}
                         {rec.status === 'IN_REPAIR' && <Badge variant="business" size="sm">REPAIR</Badge>}
                         {rec.status === 'RESERVED' && <Badge variant="starter" size="sm">RESERVED</Badge>}
                         {rec.status === 'DISPOSED' && <Badge variant="sold" size="sm">DISPOSED</Badge>}
                         {rec.status === 'RETURNED' && <Badge variant="starter" size="sm">RETURNED</Badge>}
-                      </td>
-                      <td className="py-3.5 px-4 font-extrabold text-slate-900 text-right">
+                      </Td>
+                      <Td align="right" className="font-extrabold text-slate-900">
                         {rec.sellingPrice != null ? `₦${rec.sellingPrice.toLocaleString()}` : (rec.purchasePrice != null ? `₦${rec.purchasePrice.toLocaleString()}` : '—')}
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
+                      </Td>
+                      <Td align="right">
                         <div className="flex items-center justify-end gap-1.5">
                           {isStolen ? (
-                            <button
-                              onClick={() => handleClearStolen(rec)}
-                              className="px-2 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 hover:bg-emerald-100 transition font-bold text-xs"
-                              title="Clear Stolen Status"
-                            >
+                            <Button variant="secondary" size="sm" onClick={() => handleClearStolen(rec)} title="Clear Stolen Status">
                               Clear Flag
-                            </button>
+                            </Button>
                           ) : (
-                            <button
+                            <Button
+                              variant="ghostDanger"
+                              size="icon"
                               onClick={() => setStolenModalRecord(rec)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
                               title="Flag as Stolen / Looted"
-                            >
-                              <ShieldAlert className="w-4 h-4" />
-                            </button>
+                              aria-label="Flag as Stolen / Looted"
+                              leftIcon={<ShieldAlert className="w-4 h-4" />}
+                            />
                           )}
                           <Link href={`/dashboard/records/${rec.id}`}>
-                            <button className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition" title="View Details">
-                              <Eye className="w-4 h-4" />
-                            </button>
+                            <Button variant="ghost" size="icon" title="View Details" aria-label="View Details" leftIcon={<Eye className="w-4 h-4" />} />
                           </Link>
                           <Link href={`/dashboard/checkout?device=${rec.id}`}>
-                            <button className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 transition" title="Quick Sell">
-                              <ShoppingCart className="w-4 h-4" />
-                            </button>
+                            <Button variant="ghost" size="icon" title="Quick Sell" aria-label="Quick Sell" leftIcon={<ShoppingCart className="w-4 h-4" />} />
                           </Link>
                         </div>
-                      </td>
-                    </tr>
+                      </Td>
+                    </Tr>
                   );
                 })
               )}
-            </tbody>
-          </table>
-        </div>
+            </TBody>
+          </Table>
+        </TableWrap>
 
         {/* Footer */}
         <div className="p-4 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between text-xs text-slate-500 font-medium">
@@ -609,87 +601,62 @@ export default function PhoneRecordsPage() {
       </div>
 
       {/* Flag as Stolen Modal */}
-      {stolenModalRecord && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-150">
-            <div className="p-6 bg-rose-50/80 border-b border-rose-100 flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-rose-600/20">
-                  <ShieldAlert className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="font-extrabold text-slate-900 text-base">Flag Device as Stolen / Looted</h3>
-                  <p className="text-xs text-rose-700 font-medium mt-0.5">
-                    {stolenModalRecord.brand} {stolenModalRecord.model} • IMEI: {stolenModalRecord.imei1}
-                  </p>
-                </div>
-              </div>
-              <button
-                onClick={() => setStolenModalRecord(null)}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-white/80 transition"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleFlagStolenSubmit} className="p-6 space-y-4">
+      <Modal
+        isOpen={!!stolenModalRecord}
+        onClose={() => setStolenModalRecord(null)}
+        dismissible={!isSubmittingTheft}
+        size="lg"
+        title="Flag Device as Stolen / Looted"
+        description={
+          stolenModalRecord ? `${stolenModalRecord.brand} ${stolenModalRecord.model} • IMEI: ${stolenModalRecord.imei1}` : undefined
+        }
+        icon={
+          <div className="w-10 h-10 rounded-control bg-danger-600 text-white flex items-center justify-center shadow-md shadow-danger-600/20">
+            <ShieldAlert className="w-5 h-5" />
+          </div>
+        }
+      >
+            <form onSubmit={handleFlagStolenSubmit} className="space-y-4 pt-1">
               {actionError && (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+                <div role="alert" className="p-3 rounded-control bg-danger-50 border border-danger-200 text-danger-700 text-xs font-semibold flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   <span>{actionError}</span>
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Reason for Theft Report</label>
-                <select
-                  value={theftReason}
-                  onChange={(e) => setTheftReason(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition"
-                >
-                  <option value="Store Break-in / Looted">Store Break-in / Looted</option>
-                  <option value="In-Transit Cargo Loss">In-Transit Cargo Loss</option>
-                  <option value="Customer Payment Default / Fraud">Customer Payment Default / Fraud</option>
-                  <option value="Armed Robbery / Snatching">Armed Robbery / Snatching</option>
-                  <option value="Other Unlawful Loss">Other Unlawful Loss</option>
-                </select>
-              </div>
+              <Select label="Reason for Theft Report" value={theftReason} onChange={(e) => setTheftReason(e.target.value)}>
+                <option value="Store Break-in / Looted">Store Break-in / Looted</option>
+                <option value="In-Transit Cargo Loss">In-Transit Cargo Loss</option>
+                <option value="Customer Payment Default / Fraud">Customer Payment Default / Fraud</option>
+                <option value="Armed Robbery / Snatching">Armed Robbery / Snatching</option>
+                <option value="Other Unlawful Loss">Other Unlawful Loss</option>
+              </Select>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">
-                  Public Lost Note / Reward Message
-                </label>
-                <textarea
-                  rows={2}
-                  placeholder="e.g. This phone was looted from our store. Cash reward available for return. Call 080..."
-                  value={lostNote}
-                  onChange={(e) => setLostNote(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition"
+              <Textarea
+                label="Public Lost Note / Reward Message"
+                rows={2}
+                placeholder="e.g. This phone was looted from our store. Cash reward available for return. Call 080..."
+                value={lostNote}
+                onChange={(e) => setLostNote(e.target.value)}
+                helperText="This message will be visible to any buyer or shop scanning this IMEI."
+                className="min-h-[64px]"
+              />
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <TextInput
+                  label="Recovery Phone #"
+                  type="tel"
+                  placeholder="e.g. 08012345678"
+                  value={contactPhone}
+                  onChange={(e) => setContactPhone(e.target.value)}
                 />
-                <p className="text-xs text-slate-400 mt-1">This message will be visible to any buyer or shop scanning this IMEI.</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Recovery Phone #</label>
-                  <input
-                    type="tel"
-                    placeholder="e.g. 08012345678"
-                    value={contactPhone}
-                    onChange={(e) => setContactPhone(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Police Case # (Optional)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. CR-9082/2026"
-                    value={policeCaseNo}
-                    onChange={(e) => setPoliceCaseNo(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500 transition"
-                  />
-                </div>
+                <TextInput
+                  label="Police Case # (Optional)"
+                  type="text"
+                  placeholder="e.g. CR-9082/2026"
+                  value={policeCaseNo}
+                  onChange={(e) => setPoliceCaseNo(e.target.value)}
+                />
               </div>
 
               <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2.5">
@@ -702,19 +669,18 @@ export default function PhoneRecordsPage() {
                 >
                   Cancel
                 </Button>
-                <button
+                <Button
                   type="submit"
-                  disabled={isSubmittingTheft}
-                  className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md shadow-rose-600/20 flex items-center gap-1.5 transition disabled:opacity-50"
+                  variant="destructive"
+                  size="sm"
+                  isLoading={isSubmittingTheft}
+                  leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}
                 >
-                  {isSubmittingTheft ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShieldAlert className="w-3.5 h-3.5" />}
                   Confirm & Blacklist Device
-                </button>
+                </Button>
               </div>
             </form>
-          </div>
-        </div>
-      )}
+      </Modal>
 
     </div>
   );

@@ -1,3 +1,21 @@
+const colors = require('tailwindcss/colors');
+
+/**
+ * NoxGuarda design tokens. See UI-GUIDE.md for how to use them.
+ *
+ * Accent  : teal   -> `accent-*`  (buttons, links, active states, focus)
+ * Neutral : slate  -> `slate-*`   (text, borders, surfaces)
+ * Success : emerald -> `success-*`
+ * Warning : amber   -> `warning-*`
+ * Danger  : rose    -> `danger-*`
+ *
+ * Tailwind's built-in colour names keep working, so older pages are unaffected.
+ */
+
+// Historic overrides kept so existing `rose-*` / `amber-*` classes render exactly as before.
+const rose = { ...colors.rose, 50: '#fef2f2', 100: '#ffe4e6', 500: '#ef4444', 600: '#dc2626', 700: '#b91c1c' };
+const amber = { ...colors.amber, 50: '#fffbe6' };
+
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: 'class',
@@ -9,79 +27,25 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['"Plus Jakarta Sans"', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'sans-serif'],
+        // App font. Codes (IMEI, serials, amounts in tables) use Tailwind's default `font-mono`.
+        sans: ['"Plus Jakarta Sans"', '-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'sans-serif'],
+        // Brand wordmark only (Logo, BrandLogo, marketing Navbar).
         space: ['"Space Grotesk"', 'sans-serif'],
-        editorial: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
-        display: ['"Space Grotesk"', '"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
-        serif: ['"Instrument Serif"', '"Playfair Display"', 'Georgia', 'serif'],
+        // Marketing home page headline only.
+        editorial: ['"Instrument Serif"', 'Georgia', 'serif'],
       },
       colors: {
-        // NoxGuarda Core Brand Identity Colors
-        brand: {
-          forest: '#2E6F5E',
-          sage: '#3B8B77',
-          emerald: '#1A4339',
-          obsidian: '#121417',
-          surface: '#1A1D23',
-          border: '#242A33',
-        },
-        // Deep trustworthy primary blue
-        primary: {
-          50: '#f0f6ff',
-          100: '#e0edff',
-          200: '#bae0ff',
-          300: '#7cc2ff',
-          400: '#389eff',
-          500: '#0066ff',
-          600: '#0052cc',
-          700: '#1e40af',
-          800: '#1e293b',
-          900: '#0f172a',
-          950: '#0a0f1d',
-        },
-        // Slate gray secondary
-        slate: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-        },
-        // Emerald green for verification success
-        emerald: {
-          50: '#ecfdf5',
-          100: '#d1fae5',
-          200: '#a7f3d0',
-          500: '#10b981',
-          600: '#059669',
-          700: '#047857',
-        },
-        // Amber warning
-        amber: {
-          50: '#fffbe6',
-          100: '#fef3c7',
-          500: '#f59e0b',
-          600: '#d97706',
-          700: '#b45309',
-        },
-        // Soft red danger
-        rose: {
-          50: '#fef2f2',
-          100: '#ffe4e6',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-        },
+        accent: colors.teal,
+        success: colors.emerald,
+        warning: amber,
+        danger: rose,
+        amber,
+        rose,
       },
       borderRadius: {
-        'card': '14px',
-        'button': '10px',
-        'input': '10px',
+        control: '10px', // buttons, inputs, selects, small chips
+        card: '16px', // cards, panels, table containers
+        modal: '20px', // dialogs and pop-up sheets
       },
       boxShadow: {
         'subtle': '0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px 0 rgba(15, 23, 42, 0.02)',

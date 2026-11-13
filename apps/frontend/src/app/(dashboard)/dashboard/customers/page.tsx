@@ -23,6 +23,9 @@ import {
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { SearchInput } from '@/components/ui/Input';
+import { Table, TableWrap, TBody, Td, Th, THead, Tr } from '@/components/ui/DataTable';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { api } from '@/lib/api';
 import { useCustomers, useInventorySummary } from '@/hooks/useDashboardQueries';
 
@@ -105,18 +108,15 @@ export default function CustomersManagementPage() {
       {selectedCustomer && (
         <div className="md:hidden fixed inset-x-0 top-16 bottom-16 z-30 bg-white overflow-y-auto p-4 space-y-5 shadow-2xl">
           <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-            <button
-              onClick={() => setSelectedCustomer(null)}
-              className="flex items-center gap-1.5 text-xs font-extrabold text-blue-600 hover:text-blue-700"
-            >
-              <ChevronLeft className="w-4 h-4" /> Back to Directory
-            </button>
+            <Button variant="link" onClick={() => setSelectedCustomer(null)} leftIcon={<ChevronLeft className="w-4 h-4" />}>
+              Back to Directory
+            </Button>
             <span className="text-xs font-mono text-slate-400">{selectedCustomer.id}</span>
           </div>
 
           {/* Customer Identity */}
           <div className="text-center space-y-2">
-            <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-700 font-extrabold text-xl flex items-center justify-center border-2 border-slate-200 shadow-md mx-auto">
+            <div className="w-16 h-16 rounded-2xl bg-accent-100 text-accent-700 font-extrabold text-xl flex items-center justify-center border-2 border-slate-200 shadow-md mx-auto">
               {getCustomerInitials(selectedCustomer.name)}
             </div>
             <div>
@@ -126,7 +126,7 @@ export default function CustomersManagementPage() {
 
             <div className="flex items-center gap-2 justify-center pt-2">
               <Link href="/dashboard/sales/new" className="flex-1">
-                <Button variant="primary" fullWidth size="md" className="bg-blue-600 hover:bg-blue-500 font-bold">
+                <Button variant="primary" fullWidth size="md">
                   + New Sale
                 </Button>
               </Link>
@@ -137,14 +137,14 @@ export default function CustomersManagementPage() {
           <div className="grid grid-cols-2 gap-3 text-center text-xs">
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
               <p className="text-xs text-slate-400 font-bold uppercase">Lifetime Spend</p>
-              <p className="text-base font-extrabold text-blue-600 mt-0.5">
+              <p className="text-base font-extrabold text-accent-600 mt-0.5">
                 ₦{(selectedCustomer.totalSpending || 0).toLocaleString()}
               </p>
             </div>
 
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
               <p className="text-xs text-slate-400 font-bold uppercase">Devices Owned</p>
-              <p className="text-base font-extrabold text-emerald-600 mt-0.5">
+              <p className="text-base font-extrabold text-success-600 mt-0.5">
                 {selectedCustomer.devicesCount || 0}
               </p>
             </div>
@@ -159,7 +159,7 @@ export default function CustomersManagementPage() {
               {(selectedCustomer.phoneRecords || []).map((dev: any) => (
                 <div key={dev.id} className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-blue-600">
+                    <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-accent-600">
                       <Smartphone className="w-4 h-4" />
                     </div>
                     <div>
@@ -186,18 +186,13 @@ export default function CustomersManagementPage() {
         </div>
 
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 shrink-0">
-          <button
-            onClick={() => handleExport()}
-            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 text-slate-700 bg-transparent hover:bg-slate-50 shadow-xs"
-          >
-            <Download className="w-3.5 h-3.5 text-slate-600" />
-            <span>Export</span>
-          </button>
+          <Button variant="secondary" size="sm" onClick={() => handleExport()} leftIcon={<Download className="w-3.5 h-3.5" />}>
+            Export
+          </Button>
           <Link href="/dashboard/sales/new">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-blue-600/30 text-blue-700 bg-blue-50/30 hover:bg-blue-50 sm:bg-blue-600 sm:text-white sm:border-blue-600 sm:hover:bg-blue-700 shadow-xs sm:shadow-md sm:shadow-blue-600/10">
-              <ShoppingCart className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 sm:text-white" />
-              <span>New Sale Checkout</span>
-            </button>
+            <Button variant="primary" size="sm" leftIcon={<ShoppingCart className="w-4 h-4" />}>
+              New Sale Checkout
+            </Button>
           </Link>
         </div>
       </div>
@@ -206,7 +201,7 @@ export default function CustomersManagementPage() {
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center">
               <Users className="w-4 h-4" />
             </div>
           </div>
@@ -222,7 +217,7 @@ export default function CustomersManagementPage() {
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-success-50 text-success-600 flex items-center justify-center">
               <UserPlus className="w-4 h-4" />
             </div>
           </div>
@@ -240,7 +235,7 @@ export default function CustomersManagementPage() {
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-warning-50 text-warning-600 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
@@ -258,7 +253,7 @@ export default function CustomersManagementPage() {
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
@@ -276,7 +271,7 @@ export default function CustomersManagementPage() {
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-teal-50 text-teal-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center">
               <ShieldCheck className="w-4 h-4" />
             </div>
           </div>
@@ -288,7 +283,7 @@ export default function CustomersManagementPage() {
 
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-sm flex flex-col justify-between">
           <div className="flex items-center justify-between mb-2">
-            <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-danger-50 text-danger-600 flex items-center justify-center">
               <Wrench className="w-4 h-4" />
             </div>
           </div>
@@ -312,14 +307,12 @@ export default function CustomersManagementPage() {
             {/* Filter & Search Bar */}
             <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 text-xs">
 
-              <div className="relative w-full md:w-72">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
+              <div className="w-full md:w-72">
+                <SearchInput
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search name, phone, email..."
-                  className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  shortcutHint=""
                 />
               </div>
 
@@ -328,10 +321,12 @@ export default function CustomersManagementPage() {
                 {['ALL', 'VIP', 'REGULAR', 'NEW'].map((type) => (
                   <button
                     key={type}
+                    type="button"
+                    aria-pressed={selectedTypeFilter === type}
                     onClick={() => setSelectedTypeFilter(type)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition shrink-0 ${
+                    className={`px-3 py-1.5 rounded-control text-xs font-extrabold transition-colors shrink-0 cursor-pointer ${
                       selectedTypeFilter === type
-                        ? 'bg-blue-600 text-white shadow-sm'
+                        ? 'bg-accent-600 text-white shadow-sm'
                         : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                     }`}
                   >
@@ -352,7 +347,7 @@ export default function CustomersManagementPage() {
                 </div>
               ) : error ? (
                 <div className="py-16 text-center">
-                  <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold text-xs">
+                  <div className="flex items-center justify-center gap-2 text-danger-500 font-semibold text-xs">
                     <AlertTriangle className="w-5 h-5" />
                     {error}
                   </div>
@@ -371,12 +366,12 @@ export default function CustomersManagementPage() {
                       key={cust.id}
                       onClick={() => setSelectedCustomer(cust)}
                       className={`p-3.5 space-y-2.5 cursor-pointer transition ${
-                        isSelected ? 'bg-blue-50/80 border-l-4 border-l-blue-600' : 'hover:bg-slate-50/80'
+                        isSelected ? 'bg-accent-50/80 border-l-4 border-l-accent-600' : 'hover:bg-slate-50/80'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-3">
                         <div className="flex items-center gap-2.5 min-w-0">
-                          <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 text-blue-600 font-extrabold flex items-center justify-center shrink-0 text-xs">
+                          <div className="w-8 h-8 rounded-full bg-accent-50 border border-accent-200 text-accent-600 font-extrabold flex items-center justify-center shrink-0 text-xs">
                             {getCustomerInitials(cust.name)}
                           </div>
                           <div className="min-w-0">
@@ -397,7 +392,7 @@ export default function CustomersManagementPage() {
                         </div>
                         <div className="text-right">
                           <span className="text-xs text-slate-400 font-bold uppercase block">Lifetime Spend</span>
-                          <span className="font-extrabold text-blue-600 text-xs">
+                          <span className="font-extrabold text-accent-600 text-xs">
                             ₦{(cust.totalSpending || 0).toLocaleString()}
                           </span>
                         </div>
@@ -409,60 +404,63 @@ export default function CustomersManagementPage() {
             </div>
 
             {/* DESKTOP CUSTOMERS TABLE */}
-            <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-slate-50 text-slate-500 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
+            <TableWrap className="hidden sm:block">
+              <Table className="sm:text-xs">
+                <THead>
                   <tr>
-                    <th className="py-3 px-3">Customer Name</th>
-                    <th className="py-3 px-3">Contact Info</th>
-                    <th className="py-3 px-3 text-center">Devices</th>
-                    <th className="py-3 px-3 text-right">Lifetime Spend</th>
-                    <th className="py-3 px-3 text-right">Last Purchase</th>
+                    <Th>Customer Name</Th>
+                    <Th>Contact Info</Th>
+                    <Th align="center">Devices</Th>
+                    <Th align="right">Lifetime Spend</Th>
+                    <Th align="right">Last Purchase</Th>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
+                </THead>
+                <TBody>
                   {loading ? (
                     <tr>
-                      <td colSpan={5} className="py-16 text-center">
+                      <Td colSpan={5} align="center" className="py-16">
                         <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold">
                           <Loader2 className="w-5 h-5 animate-spin" />
                           Loading customers directory...
                         </div>
-                      </td>
+                      </Td>
                     </tr>
                   ) : error ? (
                     <tr>
-                      <td colSpan={5} className="py-16 text-center">
-                        <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold">
+                      <Td colSpan={5} align="center" className="py-16">
+                        <div className="flex items-center justify-center gap-2 text-danger-500 font-semibold">
                           <AlertTriangle className="w-5 h-5" />
                           {error}
                         </div>
-                      </td>
+                      </Td>
                     </tr>
                   ) : filteredCustomers.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-16 text-center">
-                        <div className="flex flex-col items-center gap-2 text-slate-400">
-                          <Users className="w-10 h-10" />
-                          <p className="font-bold text-sm text-slate-600">No customers found</p>
-                          <p className="text-xs">Customers are created automatically when completing checkout sales.</p>
-                        </div>
-                      </td>
+                      <Td colSpan={5} align="center" className="py-16">
+                        <EmptyState
+                          icon={<Users className="w-8 h-8" />}
+                          title="No customers found"
+                          description="Customers are created automatically when completing checkout sales."
+                        />
+                      </Td>
                     </tr>
                   ) : (
                     filteredCustomers.map((cust) => {
                       const isSelected = selectedCustomer?.id === cust.id;
                       return (
-                        <tr
+                        <Tr
                           key={cust.id}
                           onClick={() => setSelectedCustomer(cust)}
-                          className={`cursor-pointer transition ${
-                            isSelected ? 'bg-blue-50/80 font-semibold border-l-4 border-l-blue-600' : 'hover:bg-slate-50/80'
-                          }`}
+                          tabIndex={0}
+                          aria-selected={isSelected}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') setSelectedCustomer(cust);
+                          }}
+                          className={`cursor-pointer ${isSelected ? 'bg-accent-50 font-semibold border-l-4 border-l-accent-600' : ''}`}
                         >
-                          <td className="py-3.5 px-3">
+                          <Td>
                             <div className="flex items-center gap-3">
-                              <div className="w-9 h-9 rounded-full bg-blue-50 border border-blue-200 text-blue-600 font-extrabold flex items-center justify-center shrink-0 text-xs">
+                              <div className="w-9 h-9 rounded-full bg-accent-50 border border-accent-200 text-accent-600 font-extrabold flex items-center justify-center shrink-0 text-xs">
                                 {getCustomerInitials(cust.name)}
                               </div>
                               <div>
@@ -470,28 +468,28 @@ export default function CustomersManagementPage() {
                                 <p className="text-xs font-mono text-slate-400">{cust.id.slice(0, 8)}...</p>
                               </div>
                             </div>
-                          </td>
-                          <td className="py-3.5 px-3">
+                          </Td>
+                          <Td>
                             <p className="font-bold text-slate-800">{cust.phone}</p>
                             <p className="text-xs text-slate-400">{cust.email || 'No email'}</p>
-                          </td>
-                          <td className="py-3.5 px-3 text-center font-extrabold text-slate-900">
+                          </Td>
+                          <Td align="center" className="font-extrabold text-slate-900">
                             {cust.devicesCount || 0}
-                          </td>
-                          <td className="py-3.5 px-3 text-right font-extrabold text-slate-900">
+                          </Td>
+                          <Td align="right" className="font-extrabold text-slate-900">
                             ₦{(cust.totalSpending || 0).toLocaleString()}
-                          </td>
-                          <td className="py-3.5 px-3 text-right">
+                          </Td>
+                          <Td align="right">
                             <p className="font-bold text-slate-800">{cust.lastPurchaseDate}</p>
-                            <p className="text-xs text-blue-600 truncate max-w-[120px]">{cust.lastPurchaseItem}</p>
-                          </td>
-                        </tr>
+                            <p className="text-xs text-accent-600 truncate max-w-[120px]">{cust.lastPurchaseItem}</p>
+                          </Td>
+                        </Tr>
                       );
                     })
                   )}
-                </tbody>
-              </table>
-            </div>
+                </TBody>
+              </Table>
+            </TableWrap>
 
           </div>
 
@@ -505,17 +503,18 @@ export default function CustomersManagementPage() {
               {/* Close Action */}
               <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                 <span className="text-xs font-mono text-slate-400 uppercase font-bold">Customer Profile</span>
-                <button
+                <Button
+                  variant="ghost"
+                  size="icon"
                   onClick={() => setSelectedCustomer(null)}
-                  className="p-1 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100 transition"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                  aria-label="Close customer profile"
+                  leftIcon={<X className="w-4 h-4" />}
+                />
               </div>
 
               {/* Profile Header */}
               <div className="text-center space-y-2 border-b border-slate-100 pb-4">
-                <div className="w-16 h-16 rounded-2xl bg-blue-100 text-blue-700 font-extrabold text-xl flex items-center justify-center border-2 border-slate-200 shadow-md mx-auto">
+                <div className="w-16 h-16 rounded-2xl bg-accent-100 text-accent-700 font-extrabold text-xl flex items-center justify-center border-2 border-slate-200 shadow-md mx-auto">
                   {getCustomerInitials(selectedCustomer.name)}
                 </div>
 
@@ -527,7 +526,7 @@ export default function CustomersManagementPage() {
                 {/* Quick Action Triggers */}
                 <div className="flex items-center gap-2 justify-center pt-1">
                   <Link href="/dashboard/sales/new">
-                    <Button variant="primary" size="sm" className="bg-blue-600 hover:bg-blue-500 font-bold px-4">
+                    <Button variant="primary" size="sm">
                       + New Sale
                     </Button>
                   </Link>
@@ -538,14 +537,14 @@ export default function CustomersManagementPage() {
               <div className="grid grid-cols-2 gap-3 text-center">
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
                   <p className="text-xs text-slate-400 font-bold uppercase">Lifetime Spend</p>
-                  <p className="text-base font-extrabold text-blue-600 mt-0.5">
+                  <p className="text-base font-extrabold text-accent-600 mt-0.5">
                     ₦{(selectedCustomer.totalSpending || 0).toLocaleString()}
                   </p>
                 </div>
 
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
                   <p className="text-xs text-slate-400 font-bold uppercase">Devices Owned</p>
-                  <p className="text-base font-extrabold text-emerald-600 mt-0.5">
+                  <p className="text-base font-extrabold text-success-600 mt-0.5">
                     {selectedCustomer.devicesCount || 0}
                   </p>
                 </div>
@@ -566,7 +565,7 @@ export default function CustomersManagementPage() {
                     (selectedCustomer.phoneRecords || []).map((dev: any) => (
                       <div key={dev.id} className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-blue-600 shrink-0 font-bold">
+                          <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-accent-600 shrink-0 font-bold">
                             <Smartphone className="w-3.5 h-3.5" />
                           </div>
                           <div>

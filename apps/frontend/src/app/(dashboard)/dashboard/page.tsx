@@ -7,6 +7,7 @@ import { useAuth } from '@/lib/auth-context';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
+import { Modal } from '@/components/ui/Modal';
 import {
   ShieldCheck,
   Smartphone,
@@ -40,7 +41,6 @@ import {
   Copy,
   ExternalLink,
   MessageSquare,
-  X,
 } from 'lucide-react';
 
 import { useInventory, useInventorySummary } from '@/hooks/useDashboardQueries';
@@ -100,7 +100,7 @@ export default function BusinessDashboardPage() {
       {/* ========================================================================= */}
       <div className="p-4 sm:p-8 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6 relative overflow-hidden transition-colors duration-200 w-full max-w-full">
         {/* Background Subtle Gradient Glow */}
-        <div className="absolute -right-20 -top-20 w-80 h-80 bg-blue-500/5 dark:bg-teal-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-accent-500/5 dark:bg-accent-500/10 rounded-full blur-3xl pointer-events-none" />
 
         <div className="space-y-2 relative z-10 min-w-0 max-w-full">
           <div className="flex items-center gap-2 flex-wrap">
@@ -108,8 +108,9 @@ export default function BusinessDashboardPage() {
               <span className="hidden sm:inline">• </span>Main Downtown Branch
             </span>
             <button
+              type="button"
               onClick={() => setShowOnboardingModal(true)}
-              className="px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 text-xs font-bold border border-emerald-200 dark:border-emerald-800 transition flex items-center gap-1 cursor-pointer shadow-subtle"
+              className="px-3 py-1 rounded-full bg-success-50 dark:bg-success-950/40 text-success-700 dark:text-success-300 hover:bg-success-100 dark:hover:bg-success-900/60 text-xs font-bold border border-success-200 dark:border-success-800 transition flex items-center gap-1 cursor-pointer shadow-subtle"
             >
               <span>Setup Progress {livePhones.length > 0 ? '75%' : '50%'}</span>
               <ChevronDown className="w-3.5 h-3.5" />
@@ -127,20 +128,20 @@ export default function BusinessDashboardPage() {
         {/* Action Buttons */}
         <div className="flex flex-row items-center gap-2 sm:gap-2.5 relative z-10 shrink-0 w-full sm:w-auto min-w-0">
           <Link href="/dashboard/register" className="flex-1 sm:flex-none min-w-0">
-            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-teal-600/30 text-teal-700 dark:text-teal-300 bg-teal-50/30 dark:bg-teal-950/40 hover:bg-teal-50 dark:hover:bg-teal-900/40 sm:bg-teal-600 sm:text-white sm:border-teal-600 sm:hover:bg-teal-700 shadow-xs sm:shadow-md sm:shadow-teal-600/10">
-              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-teal-600 dark:text-teal-400 sm:text-white shrink-0" />
+            <Button variant="primary" fullWidth className="sm:w-auto" leftIcon={<Plus className="w-4 h-4" />}>
               <span className="hidden sm:inline whitespace-nowrap">Register Phone / Item</span>
               <span className="inline sm:hidden whitespace-nowrap">Register Item</span>
-            </button>
+            </Button>
           </Link>
           <Link href="/dashboard/verify" className="flex-1 sm:flex-none min-w-0">
-            <button className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-3 py-2 sm:px-4 sm:py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 bg-transparent hover:bg-slate-50 dark:hover:bg-slate-800 shadow-xs">
-              <Receipt className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-600 dark:text-slate-400 sm:text-teal-600 dark:sm:text-teal-400 shrink-0" />
+            <Button variant="secondary" fullWidth className="sm:w-auto" leftIcon={<Receipt className="w-4 h-4" />}>
               <span className="whitespace-nowrap">Record Sale</span>
-            </button>
+            </Button>
           </Link>
         </div>
-      </div>      {/* ========================================================================= */}
+      </div>
+
+      {/* ========================================================================= */}
       {/* 2. EXECUTIVE KPI STAT CARDS GRID (6 Cards with Profit Made)               */}
       {/* ========================================================================= */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
@@ -149,7 +150,7 @@ export default function BusinessDashboardPage() {
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Registered</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-accent-50 dark:bg-accent-950/50 border border-accent-100 dark:border-accent-900 text-accent-600 dark:text-accent-400 flex items-center justify-center">
               <Smartphone className="w-4 h-4" />
             </div>
           </div>
@@ -158,7 +159,7 @@ export default function BusinessDashboardPage() {
           ) : (
             <div className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">{metrics.totalRegistered.toLocaleString()}</div>
           )}
-          <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center gap-1 text-xs font-bold text-success-600 dark:text-success-400">
             <ArrowUpRight className="w-3.5 h-3.5" /> Real-time database ledger
           </div>
         </div>
@@ -167,7 +168,7 @@ export default function BusinessDashboardPage() {
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Phones Sold</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 border border-emerald-100 dark:border-emerald-900 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-success-50 dark:bg-success-950/50 border border-success-100 dark:border-success-900 text-success-600 dark:text-success-400 flex items-center justify-center">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
@@ -178,7 +179,7 @@ export default function BusinessDashboardPage() {
               {metrics.sold.toLocaleString()}
             </div>
           )}
-          <div className="flex items-center gap-1 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+          <div className="flex items-center gap-1 text-xs font-bold text-success-600 dark:text-success-400">
             <ArrowUpRight className="w-3.5 h-3.5" /> Completed transactions
           </div>
         </div>
@@ -187,7 +188,7 @@ export default function BusinessDashboardPage() {
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">In-Stock</span>
-            <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 border border-indigo-100 dark:border-indigo-900 text-indigo-600 dark:text-indigo-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-accent-50 dark:bg-accent-950/50 border border-accent-100 dark:border-accent-900 text-accent-600 dark:text-accent-400 flex items-center justify-center">
               <Package className="w-4 h-4" />
             </div>
           </div>
@@ -198,7 +199,7 @@ export default function BusinessDashboardPage() {
               {metrics.inStock.toLocaleString()}
             </div>
           )}
-          <div className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+          <div className="flex items-center gap-1 text-xs font-bold text-accent-600 dark:text-accent-400">
             <TrendingUp className="w-3.5 h-3.5" /> Ready for POS checkout
           </div>
         </div>
@@ -207,7 +208,7 @@ export default function BusinessDashboardPage() {
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Revenue</span>
-            <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/50 border border-blue-100 dark:border-blue-900 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-accent-50 dark:bg-accent-950/50 border border-accent-100 dark:border-accent-900 text-accent-600 dark:text-accent-400 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
@@ -218,25 +219,25 @@ export default function BusinessDashboardPage() {
               ₦{metrics.revenue.toLocaleString()}
             </div>
           )}
-          <div className="text-xs font-bold text-blue-600 dark:text-blue-400">Total settled sales</div>
+          <div className="text-xs font-bold text-accent-600 dark:text-accent-400">Total settled sales</div>
         </div>
 
         {/* Card 5: Profit Made */}
-        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-emerald-200 dark:border-emerald-800/80 shadow-sm space-y-2 relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/30 dark:from-slate-900 dark:to-emerald-950/20 transition-colors duration-200">
+        <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-success-200 dark:border-success-800/80 shadow-sm space-y-2 relative overflow-hidden bg-gradient-to-br from-white to-success-50/30 dark:from-slate-900 dark:to-success-950/20 transition-colors duration-200">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">Profit Made</span>
-            <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-400 flex items-center justify-center">
+            <span className="text-xs font-bold text-success-800 dark:text-success-300 uppercase tracking-wider">Profit Made</span>
+            <div className="w-8 h-8 rounded-xl bg-success-100 dark:bg-success-950/60 border border-success-200 dark:border-success-800 text-success-700 dark:text-success-400 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
           {isDataLoading ? (
             <div className="h-8 w-24 bg-slate-200/60 dark:bg-slate-800 rounded-lg animate-pulse my-0.5" />
           ) : (
-            <div className="text-xl font-extrabold text-emerald-700 dark:text-emerald-400 tracking-tight">
+            <div className="text-xl font-extrabold text-success-700 dark:text-success-400 tracking-tight">
               ₦{metrics.totalProfit.toLocaleString()}
             </div>
           )}
-          <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">
+          <div className="text-xs font-bold text-success-700 dark:text-success-400 flex items-center gap-1">
             <span>{metrics.profitMargin}% margin</span> • <span>Net profit realized</span>
           </div>
         </div>
@@ -245,7 +246,7 @@ export default function BusinessDashboardPage() {
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Stock Value</span>
-            <div className="w-8 h-8 rounded-xl bg-rose-50 dark:bg-rose-950/50 border border-rose-100 dark:border-rose-900 text-rose-600 dark:text-rose-400 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-xl bg-danger-50 dark:bg-danger-950/50 border border-danger-100 dark:border-danger-900 text-danger-600 dark:text-danger-400 flex items-center justify-center">
               <DollarSign className="w-4 h-4" />
             </div>
           </div>
@@ -269,9 +270,9 @@ export default function BusinessDashboardPage() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 sm:gap-3">
           <Link
             href="/dashboard/register"
-            className="p-3 sm:p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-2 sm:gap-3 group shadow-sm min-w-0"
+            className="p-3 sm:p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-accent-500 dark:hover:border-accent-400 transition-all flex items-center gap-2 sm:gap-3 group shadow-sm min-w-0"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-teal-50 dark:bg-teal-950/50 text-teal-600 dark:text-teal-400 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-accent-50 dark:bg-accent-950/50 text-accent-600 dark:text-accent-400 flex items-center justify-center group-hover:bg-accent-600 group-hover:text-white transition shrink-0">
               <Plus className="w-4 h-4" />
             </div>
             <div className="min-w-0 flex-1">
@@ -282,9 +283,9 @@ export default function BusinessDashboardPage() {
 
           <Link
             href="/dashboard/verify"
-            className="p-3 sm:p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-2 sm:gap-3 group shadow-sm min-w-0"
+            className="p-3 sm:p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-accent-500 dark:hover:border-accent-400 transition-all flex items-center gap-2 sm:gap-3 group shadow-sm min-w-0"
           >
-            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-success-50 dark:bg-success-950/50 text-success-600 dark:text-success-400 flex items-center justify-center group-hover:bg-success-600 group-hover:text-white transition shrink-0">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div className="min-w-0 flex-1">
@@ -295,9 +296,9 @@ export default function BusinessDashboardPage() {
 
           <Link
             href="/dashboard/records"
-            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-accent-500 dark:hover:border-accent-400 transition-all flex items-center gap-3 group shadow-sm"
           >
-            <div className="w-9 h-9 rounded-xl bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition">
+            <div className="w-9 h-9 rounded-xl bg-accent-50 dark:bg-accent-950/50 text-accent-600 dark:text-accent-400 flex items-center justify-center group-hover:bg-accent-600 group-hover:text-white transition">
               <Receipt className="w-4 h-4" />
             </div>
             <div>
@@ -308,9 +309,9 @@ export default function BusinessDashboardPage() {
 
           <Link
             href="/dashboard/records"
-            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-accent-500 dark:hover:border-accent-400 transition-all flex items-center gap-3 group shadow-sm"
           >
-            <div className="w-9 h-9 rounded-xl bg-amber-50 dark:bg-amber-950/50 text-amber-600 dark:text-amber-400 flex items-center justify-center group-hover:bg-amber-600 group-hover:text-white transition">
+            <div className="w-9 h-9 rounded-xl bg-warning-50 dark:bg-warning-950/50 text-warning-600 dark:text-warning-400 flex items-center justify-center group-hover:bg-warning-600 group-hover:text-white transition">
               <Users className="w-4 h-4" />
             </div>
             <div>
@@ -321,7 +322,7 @@ export default function BusinessDashboardPage() {
 
           <Link
             href="/dashboard/records"
-            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-accent-500 dark:hover:border-accent-400 transition-all flex items-center gap-3 group shadow-sm"
           >
             <div className="w-9 h-9 rounded-xl bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition">
               <BarChart3 className="w-4 h-4" />
@@ -334,9 +335,9 @@ export default function BusinessDashboardPage() {
 
           <Link
             href="/dashboard/settings"
-            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-teal-500 dark:hover:border-teal-400 transition-all flex items-center gap-3 group shadow-sm"
+            className="p-4 rounded-xl vf-card bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-accent-500 dark:hover:border-accent-400 transition-all flex items-center gap-3 group shadow-sm"
           >
-            <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center group-hover:bg-teal-600 group-hover:text-white transition">
+            <div className="w-9 h-9 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center group-hover:bg-accent-600 group-hover:text-white transition">
               <Sliders className="w-4 h-4" />
             </div>
             <div>
@@ -357,9 +358,9 @@ export default function BusinessDashboardPage() {
         <div className="vf-card bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
             <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-              <Package className="w-4 h-4 text-blue-600 dark:text-blue-400" /> Inventory Status
+              <Package className="w-4 h-4 text-accent-600 dark:text-accent-400" /> Inventory Status
             </h4>
-            <Link href="/dashboard/inventory" className="text-xs text-teal-600 dark:text-teal-400 font-bold hover:underline">
+            <Link href="/dashboard/inventory" className="text-xs text-accent-600 dark:text-accent-400 font-bold hover:underline">
               Manage →
             </Link>
           </div>
@@ -375,12 +376,12 @@ export default function BusinessDashboardPage() {
                 </div>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800">
-              <div className="text-emerald-800 dark:text-emerald-300 font-semibold">Sold Devices</div>
+            <div className="p-3 rounded-xl bg-success-50 dark:bg-success-950/40 border border-success-200 dark:border-success-800">
+              <div className="text-success-800 dark:text-success-300 font-semibold">Sold Devices</div>
               {isDataLoading ? (
                 <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse mt-1" />
               ) : (
-                <div className="text-xl font-extrabold text-emerald-950 dark:text-emerald-200 mt-1">
+                <div className="text-xl font-extrabold text-success-950 dark:text-success-200 mt-1">
                   {metrics.sold.toLocaleString()} Units
                 </div>
               )}
@@ -392,16 +393,20 @@ export default function BusinessDashboardPage() {
         <div className="vf-card bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
             <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> Sales & Profit
+              <BarChart3 className="w-4 h-4 text-success-600 dark:text-success-400" /> Sales & Profit
             </h4>
             <div className="flex bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg text-xs font-bold">
               <button
+                type="button"
+                aria-pressed={salesTimeframe === 'daily'}
                 onClick={() => setSalesTimeframe('daily')}
                 className={`px-2 py-0.5 rounded ${salesTimeframe === 'daily' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow' : 'text-slate-500 dark:text-slate-400'}`}
               >
                 Daily
               </button>
               <button
+                type="button"
+                aria-pressed={salesTimeframe === 'weekly'}
                 onClick={() => setSalesTimeframe('weekly')}
                 className={`px-2 py-0.5 rounded ${salesTimeframe === 'weekly' ? 'bg-white dark:bg-slate-900 text-slate-900 dark:text-white shadow' : 'text-slate-500 dark:text-slate-400'}`}
               >
@@ -411,28 +416,28 @@ export default function BusinessDashboardPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800 space-y-0.5">
-              <div className="text-xs font-bold text-blue-900 dark:text-blue-300">Revenue</div>
+            <div className="p-3 rounded-xl bg-accent-50/70 dark:bg-accent-950/40 border border-accent-200 dark:border-accent-800 space-y-0.5">
+              <div className="text-xs font-bold text-accent-900 dark:text-accent-300">Revenue</div>
               {isDataLoading ? (
                 <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse my-0.5" />
               ) : (
-                <div className="text-lg font-extrabold text-blue-950 dark:text-blue-200">
+                <div className="text-lg font-extrabold text-accent-950 dark:text-accent-200">
                   ₦{metrics.revenue.toLocaleString()}
                 </div>
               )}
-              <div className="text-xs text-blue-700 dark:text-blue-400 font-semibold">Gross sales</div>
+              <div className="text-xs text-accent-700 dark:text-accent-400 font-semibold">Gross sales</div>
             </div>
 
-            <div className="p-3 rounded-xl bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-0.5">
-              <div className="text-xs font-bold text-emerald-900 dark:text-emerald-300">Profit Made</div>
+            <div className="p-3 rounded-xl bg-success-50/70 dark:bg-success-950/40 border border-success-200 dark:border-success-800 space-y-0.5">
+              <div className="text-xs font-bold text-success-900 dark:text-success-300">Profit Made</div>
               {isDataLoading ? (
                 <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse my-0.5" />
               ) : (
-                <div className="text-lg font-extrabold text-emerald-950 dark:text-emerald-200">
+                <div className="text-lg font-extrabold text-success-950 dark:text-success-200">
                   ₦{metrics.totalProfit.toLocaleString()}
                 </div>
               )}
-              <div className="text-xs text-emerald-700 dark:text-emerald-400 font-semibold">{metrics.profitMargin}% margin</div>
+              <div className="text-xs text-success-700 dark:text-success-400 font-semibold">{metrics.profitMargin}% margin</div>
             </div>
           </div>
         </div>
@@ -441,27 +446,27 @@ export default function BusinessDashboardPage() {
         <div className="vf-card bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4 transition-colors duration-200">
           <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
             <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
-              <Lock className="w-4 h-4 text-amber-600 dark:text-amber-400" /> Warranty Tracking
+              <Lock className="w-4 h-4 text-warning-600 dark:text-warning-400" /> Warranty Tracking
             </h4>
-            <Link href="/dashboard/records" className="text-xs text-teal-600 dark:text-teal-400 font-bold hover:underline">
+            <Link href="/dashboard/records" className="text-xs text-accent-600 dark:text-accent-400 font-bold hover:underline">
               View All →
             </Link>
           </div>
 
           <div className="grid grid-cols-2 gap-3 text-xs">
-            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800">
-              <div className="text-amber-800 dark:text-amber-300 font-semibold">Active Guarantees</div>
+            <div className="p-3 rounded-xl bg-warning-50 dark:bg-warning-950/40 border border-warning-200 dark:border-warning-800">
+              <div className="text-warning-800 dark:text-warning-300 font-semibold">Active Guarantees</div>
               {isDataLoading ? (
                 <div className="h-6 w-16 bg-slate-200/60 dark:bg-slate-700 rounded animate-pulse mt-1" />
               ) : (
-                <div className="text-xl font-extrabold text-amber-950 dark:text-amber-200 mt-1">
+                <div className="text-xl font-extrabold text-warning-950 dark:text-warning-200 mt-1">
                   {metrics.warranties.toLocaleString()} Units
                 </div>
               )}
             </div>
-            <div className="p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800">
-              <div className="text-rose-800 dark:text-rose-300 font-semibold">Expiring Soon</div>
-              <div className="text-xl font-extrabold text-rose-950 dark:text-rose-200 mt-1">0 Devices</div>
+            <div className="p-3 rounded-xl bg-danger-50 dark:bg-danger-950/40 border border-danger-200 dark:border-danger-800">
+              <div className="text-danger-800 dark:text-danger-300 font-semibold">Expiring Soon</div>
+              <div className="text-xl font-extrabold text-danger-950 dark:text-danger-200 mt-1">0 Devices</div>
             </div>
           </div>
         </div>
@@ -470,25 +475,28 @@ export default function BusinessDashboardPage() {
       {/* Floating Help Widget */}
       <div className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40">
         <button
+          type="button"
           onClick={() => setShowSupportModal(!showSupportModal)}
-          className="w-12 h-12 rounded-full bg-teal-600 text-white shadow-2xl flex items-center justify-center hover:bg-teal-500 transition-all focus:outline-none focus:ring-4 focus:ring-teal-500/30"
+          className="w-12 h-12 rounded-full bg-accent-600 text-white shadow-2xl flex items-center justify-center hover:bg-accent-500 transition-colors cursor-pointer"
           title="Store Assistance"
+          aria-label="Store Assistance"
+          aria-expanded={showSupportModal}
         >
           <HelpCircle className="w-6 h-6" />
         </button>
 
         {showSupportModal && (
-          <div className="absolute bottom-16 right-0 w-72 bg-white rounded-2xl border border-slate-200 shadow-2xl p-4 space-y-3 text-xs animate-in fade-in duration-150">
+          <div className="absolute bottom-16 right-0 w-72 bg-white rounded-card border border-slate-200 shadow-2xl p-4 space-y-3 text-xs animate-in fade-in duration-150">
             <div className="font-extrabold text-slate-900 flex items-center justify-between border-b border-slate-100 pb-2">
               <span>NoxGuarda Support</span>
-              <span className="text-xs text-emerald-600 font-bold">ONLINE</span>
+              <span className="text-xs text-success-600 font-bold">ONLINE</span>
             </div>
             <p className="text-slate-600 font-medium">Need help configuring box QR printers or multi-branch stock transfers?</p>
             <div className="space-y-1.5 pt-1">
               <a href="#" className="block p-2 rounded-lg bg-slate-50 hover:bg-slate-100 font-bold text-slate-800">
                  Documentation & Guides
               </a>
-              <a href="#" className="block p-2 rounded-lg bg-teal-50 text-teal-700 font-bold hover:bg-teal-100">
+              <a href="#" className="block p-2 rounded-lg bg-accent-50 text-accent-700 font-bold hover:bg-accent-100">
                  Contact Store Support
               </a>
             </div>
@@ -497,60 +505,58 @@ export default function BusinessDashboardPage() {
       </div>
 
       {/* Onboarding Setup Progress Modal (Dismissible) */}
-      {showOnboardingModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 space-y-4 animate-in fade-in zoom-in duration-200 border border-slate-200">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="text-lg font-extrabold text-slate-900">Store Onboarding Setup</h3>
-                <p className="text-xs text-slate-500 font-medium">
-                  {livePhones.length > 0 ? '3 of 4 steps completed (75%)' : '2 of 4 steps completed (50%)'}
-                </p>
-              </div>
-              <button
-                onClick={() => setShowOnboardingModal(false)}
-                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
+      <Modal
+        isOpen={showOnboardingModal}
+        onClose={() => setShowOnboardingModal(false)}
+        size="lg"
+        title="Store Onboarding Setup"
+        description={livePhones.length > 0 ? '3 of 4 steps completed (75%)' : '2 of 4 steps completed (50%)'}
+        footer={
+          <div className="flex items-center justify-between gap-3 w-full">
+            <span className="text-xs text-slate-400 font-medium">Re-open anytime from the top bar</span>
+            <Button variant="secondary" size="md" onClick={() => setShowOnboardingModal(false)}>
+              Dismiss for Now
+            </Button>
+          </div>
+        }
+      >
+          <div className="space-y-4">
             <div className="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
               <div
-                className="bg-emerald-500 h-full rounded-full transition-all duration-500"
+                className="bg-success-500 h-full rounded-full transition-all duration-500"
                 style={{ width: livePhones.length > 0 ? '75%' : '50%' }}
               />
             </div>
 
             <div className="space-y-2.5 pt-1 text-xs">
-              <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-success-50/60 border border-success-200 flex items-center justify-between">
                 <div className="flex items-center gap-2.5 font-bold text-slate-900">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-success-600 shrink-0" />
                   <span>1. Create Business Workspace ({businessName})</span>
                 </div>
-                <span className="text-xs text-emerald-700 font-extrabold uppercase">COMPLETED</span>
+                <span className="text-xs text-success-700 font-extrabold uppercase">COMPLETED</span>
               </div>
 
-              <div className={`p-3.5 rounded-xl flex items-center justify-between ${livePhones.length > 0 ? 'bg-emerald-50/60 border border-emerald-200' : 'bg-blue-50/80 border border-blue-200'}`}>
+              <div className={`p-3.5 rounded-xl flex items-center justify-between ${livePhones.length > 0 ? 'bg-success-50/60 border border-success-200' : 'bg-accent-50/80 border border-accent-200'}`}>
                 <div className="flex items-center gap-2.5 font-bold text-slate-900">
-                  {livePhones.length > 0 ? <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" /> : <Clock className="w-4 h-4 text-blue-600 shrink-0" />}
+                  {livePhones.length > 0 ? <CheckCircle2 className="w-4 h-4 text-success-600 shrink-0" /> : <Clock className="w-4 h-4 text-accent-600 shrink-0" />}
                   <span>2. Register First Phone (IMEI & Box QR Code)</span>
                 </div>
                 {livePhones.length > 0 ? (
-                  <span className="text-xs text-emerald-700 font-extrabold uppercase">COMPLETED</span>
+                  <span className="text-xs text-success-700 font-extrabold uppercase">COMPLETED</span>
                 ) : (
-                  <Link href="/dashboard/register" onClick={() => setShowOnboardingModal(false)} className="text-xs font-bold text-blue-600 hover:underline">
+                  <Link href="/dashboard/register" onClick={() => setShowOnboardingModal(false)} className="text-xs font-bold text-accent-600 hover:underline">
                     Register Now →
                   </Link>
                 )}
               </div>
 
-              <div className="p-3.5 rounded-xl bg-emerald-50/60 border border-emerald-200 flex items-center justify-between">
+              <div className="p-3.5 rounded-xl bg-success-50/60 border border-success-200 flex items-center justify-between">
                 <div className="flex items-center gap-2.5 font-bold text-slate-900">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-success-600 shrink-0" />
                   <span>3. Customize Thermal QR Receipt & Logo</span>
                 </div>
-                <span className="text-xs text-emerald-700 font-extrabold uppercase">COMPLETED</span>
+                <span className="text-xs text-success-700 font-extrabold uppercase">COMPLETED</span>
               </div>
 
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
@@ -558,21 +564,14 @@ export default function BusinessDashboardPage() {
                   <Clock className="w-4 h-4 text-slate-500 shrink-0" />
                   <span>4. Record First Sale & Issue Digital Receipt</span>
                 </div>
-                <Link href="/dashboard/verify" onClick={() => setShowOnboardingModal(false)} className="text-xs font-bold text-blue-600 hover:underline">
+                <Link href="/dashboard/verify" onClick={() => setShowOnboardingModal(false)} className="text-xs font-bold text-accent-600 hover:underline">
                   Record Sale →
                 </Link>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-              <span className="text-xs text-slate-400 font-medium">Re-open anytime from the top bar</span>
-              <Button variant="secondary" size="md" onClick={() => setShowOnboardingModal(false)}>
-                Dismiss for Now
-              </Button>
-            </div>
           </div>
-        </div>
-      )}
+      </Modal>
 
     </div>
   );

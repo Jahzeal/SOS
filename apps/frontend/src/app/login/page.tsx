@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Mail, Lock, AlertCircle, ArrowRight, Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { TextInput } from '@/components/ui/Input';
 import { Logo } from '@/components/ui/Logo';
 import { PwaInstallButton } from '@/components/PwaInstallButton';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
@@ -19,8 +20,8 @@ function SessionExpiredAlert() {
   if (!isExpired) return null;
 
   return (
-    <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex items-start gap-2.5 shadow-sm">
-      <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+    <div className="p-3.5 rounded-control bg-warning-50 border border-warning-200 text-warning-900 text-xs flex items-start gap-2.5 shadow-sm">
+      <AlertCircle className="w-4 h-4 text-warning-600 shrink-0 mt-0.5" />
       <div className="font-medium">Your session has expired or is invalid. Please sign in again to access your workspace.</div>
     </div>
   );
@@ -32,7 +33,6 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -113,7 +113,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-teal-600 selection:text-white relative font-sans overflow-hidden">
+    <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col justify-between selection:bg-accent-600 selection:text-white relative font-sans overflow-hidden">
       <WatermarkBackground size="hero" opacity="opacity-[0.035]" />
 
 
@@ -127,7 +127,7 @@ export default function LoginPage() {
           <div className="hidden sm:flex items-center gap-2 text-xs xl:text-sm font-semibold">
             <span className="text-slate-500">No store account?</span>
             <Link href="/onboarding">
-              <Button variant="secondary" size="sm" className="bg-slate-100 hover:bg-slate-200 border-slate-200 text-slate-800 font-bold px-3 py-1.5 xl:px-4 xl:py-2 text-xs xl:text-sm rounded-xl">
+              <Button variant="secondary" size="sm">
                 Start free →
               </Button>
             </Link>
@@ -150,14 +150,14 @@ export default function LoginPage() {
           </div>
 
           {/* White Form Card */}
-          <div className="bg-white border border-slate-200 rounded-2xl xl:rounded-3xl p-6 sm:p-8 xl:p-10 shadow-xl space-y-5 xl:space-y-6">
+          <div className="bg-white border border-slate-200 rounded-card p-6 sm:p-8 xl:p-10 shadow-xl space-y-5 xl:space-y-6">
             <Suspense fallback={null}>
               <SessionExpiredAlert />
             </Suspense>
 
             {error && (
-              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs xl:text-sm flex items-start gap-2.5">
-                <AlertCircle className="w-4 h-4 xl:w-5 xl:h-5 text-rose-600 shrink-0 mt-0.5" />
+              <div className="p-3.5 rounded-control bg-danger-50 border border-danger-200 text-danger-700 text-xs xl:text-sm flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 xl:w-5 xl:h-5 text-danger-600 shrink-0 mt-0.5" />
                 <div className="font-medium">{error}</div>
               </div>
             )}
@@ -173,91 +173,60 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="relative flex items-center justify-center my-4">
               <div className="border-t border-slate-200 w-full" />
-              <span className="bg-white px-3 text-xs xl:text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
+              <span className="bg-white px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider whitespace-nowrap">
                 or sign in with email
               </span>
               <div className="border-t border-slate-200 w-full" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4 xl:space-y-5 text-xs xl:text-sm">
-              {/* Store Email */}
-              <div className="space-y-1.5">
-                <label className="block font-bold text-slate-800 text-xs xl:text-sm">Email Address</label>
-                <div className="relative">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="owner@store.com"
-                    required
-                    disabled={loading}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl xl:rounded-2xl px-3.5 py-2.5 xl:py-3.5 text-slate-900 text-xs xl:text-sm pl-9 xl:pl-10 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition disabled:opacity-75"
-                  />
-                  <Mail className="w-4 h-4 xl:w-5 xl:h-5 text-slate-400 absolute left-3 top-3 xl:top-3.5" />
-                </div>
-              </div>
+              <TextInput
+                label="Email Address"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="owner@store.com"
+                required
+                disabled={loading}
+                leftIcon={<Mail className="w-4 h-4" />}
+                className="py-2.5"
+              />
 
-              {/* Password with Eye Toggle */}
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="block font-bold text-slate-800 text-xs xl:text-sm">Password</label>
-                  <Link href="/forgot-password" className="text-xs xl:text-xs text-teal-600 font-bold hover:underline">
+              <TextInput
+                label="Password"
+                type="password"
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••••••"
+                required
+                disabled={loading}
+                leftIcon={<Lock className="w-4 h-4" />}
+                className="py-2.5"
+                labelAction={
+                  <Link href="/forgot-password" className="text-xs text-accent-600 font-bold hover:underline">
                     Forgot password?
                   </Link>
-                </div>
-                <div className="relative">
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••••••"
-                    required
-                    disabled={loading}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl xl:rounded-2xl px-3.5 py-2.5 xl:py-3.5 text-slate-900 text-xs xl:text-sm pl-9 xl:pl-10 pr-10 xl:pr-11 focus:outline-none focus:border-teal-600 focus:bg-white font-medium placeholder:text-slate-400 transition disabled:opacity-75"
-                  />
-                  <Lock className="w-4 h-4 xl:w-5 xl:h-5 text-slate-400 absolute left-3 top-3 xl:top-3.5" />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    tabIndex={-1}
-                    disabled={loading}
-                    className="absolute right-3 top-2.5 xl:top-3 text-slate-400 hover:text-slate-600 transition p-0.5 rounded focus:outline-none"
-                    title={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="w-4 h-4 xl:w-5 xl:h-5" />
-                    ) : (
-                      <Eye className="w-4 h-4 xl:w-5 xl:h-5" />
-                    )}
-                  </button>
-                </div>
-              </div>
+                }
+              />
 
-              {/* Submit Button with Clean Animated Spinner */}
               <Button
                 type="submit"
                 variant="primary"
-                size="md"
-                disabled={loading}
-                className="w-full py-2.5 xl:py-3.5 font-bold text-xs xl:text-sm bg-slate-900 hover:bg-slate-800 text-white border-none shadow-md mt-2 rounded-xl xl:rounded-2xl"
+                size="lg"
+                fullWidth
+                isLoading={loading}
+                rightIcon={<ArrowRight className="w-4 h-4" />}
+                className="mt-2 text-sm"
               >
-                {loading ? (
-                  <span className="flex items-center justify-center gap-2">
-                    <Loader2 className="w-4 h-4 animate-spin text-teal-400" />
-                    <span>Signing In...</span>
-                  </span>
-                ) : (
-                  <span className="flex items-center justify-center gap-1.5">
-                    <span>Sign In to Workspace</span>
-                    <ArrowRight className="w-4 h-4 xl:w-5 xl:h-5" />
-                  </span>
-                )}
+                {loading ? 'Signing In...' : 'Sign In to Workspace'}
               </Button>
 
               {/* Mobile & Card Registration Link */}
               <div className="pt-3 border-t border-slate-100 text-center text-xs xl:text-sm">
                 <span className="text-slate-500 font-medium">Don't have a store account? </span>
-                <Link href="/onboarding" className="text-teal-600 font-bold hover:underline block sm:inline mt-1 sm:mt-0">
+                <Link href="/onboarding" className="text-accent-600 font-bold hover:underline block sm:inline mt-1 sm:mt-0">
                   Create a business account →
                 </Link>
               </div>
@@ -268,7 +237,7 @@ export default function LoginPage() {
       </main>
 
       {/* Page Footer */}
-      <footer className="py-4 xl:py-6 text-center text-xs xl:text-xs text-slate-500 border-t border-slate-200 bg-white">
+      <footer className="py-4 xl:py-6 text-center text-xs text-slate-500 border-t border-slate-200 bg-white">
         © {new Date().getFullYear()} NoxGuarda Technologies Inc. All rights reserved.
       </footer>
     </div>

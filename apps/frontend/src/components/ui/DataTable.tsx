@@ -7,6 +7,64 @@ import { SkeletonRow } from '@/components/ui/Skeleton';
 import { EmptyState } from './EmptyState';
 import { Filter, ChevronLeft, ChevronRight, MoreHorizontal, Database } from 'lucide-react';
 
+/* ---------------------------------------------------------------------------
+   Table building blocks. Use these for any hand-laid table so every table shares
+   the same header, row spacing and hover. `DataTable` below is the ready-made
+   version with search and paging built in.
+
+   <TableWrap>
+     <Table>
+       <THead><tr><Th>Model</Th><Th align="right">Value</Th></tr></THead>
+       <TBody><Tr><Td>iPhone 13</Td><Td align="right">N450,000</Td></Tr></TBody>
+     </Table>
+   </TableWrap>
+--------------------------------------------------------------------------- */
+type Align = 'left' | 'center' | 'right';
+const ALIGN: Record<Align, string> = { left: 'text-left', center: 'text-center', right: 'text-right' };
+
+/** Scrolls sideways on narrow screens instead of breaking the page. */
+export function TableWrap({ className = '', ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={`overflow-x-auto custom-scrollbar ${className}`} {...props} />;
+}
+
+export function Table({ className = '', ...props }: React.TableHTMLAttributes<HTMLTableElement>) {
+  return <table className={`w-full text-left border-collapse text-xs sm:text-sm ${className}`} {...props} />;
+}
+
+export function THead({ className = '', ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
+  return <thead className={`bg-slate-50 border-b border-slate-200 ${className}`} {...props} />;
+}
+
+export function TBody({ className = '', ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
+  return <tbody className={`divide-y divide-slate-100 ${className}`} {...props} />;
+}
+
+export function Tr({ className = '', ...props }: React.HTMLAttributes<HTMLTableRowElement>) {
+  return <tr className={`hover:bg-slate-50 transition-colors ${className}`} {...props} />;
+}
+
+export function Th({
+  align = 'left',
+  className = '',
+  ...props
+}: React.ThHTMLAttributes<HTMLTableCellElement> & { align?: Align }) {
+  return (
+    <th
+      scope="col"
+      className={`px-4 py-3 text-xs font-bold text-slate-600 uppercase tracking-wider whitespace-nowrap ${ALIGN[align]} ${className}`}
+      {...props}
+    />
+  );
+}
+
+export function Td({
+  align = 'left',
+  className = '',
+  ...props
+}: React.TdHTMLAttributes<HTMLTableCellElement> & { align?: Align }) {
+  return <td className={`px-4 py-3 text-slate-700 ${ALIGN[align]} ${className}`} {...props} />;
+}
+
 export interface Column<T> {
   header: string;
   accessorKey?: keyof T;
@@ -137,6 +195,8 @@ export function DataTable<T>({
                   ))}
                   <td className="px-4 py-3 text-right">
                     <button
+                      type="button"
+                      aria-label="Row actions"
                       onClick={(e) => {
                         e.stopPropagation();
                       }}

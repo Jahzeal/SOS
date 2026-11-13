@@ -29,9 +29,11 @@ import {
   QrCode,
   ShieldCheck,
   ExternalLink,
+  X as XIcon,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { SearchInput, TextInput } from '@/components/ui/Input';
 import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
 import { A4SalesReceipt } from '@/components/receipt/A4SalesReceipt';
 import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
@@ -398,15 +400,15 @@ function CheckoutPOSContent() {
 
         {/* Step Indicator Badges */}
         <div className="flex items-center gap-1.5 text-xs sm:text-xs font-extrabold shrink-0">
-          <span className={`transition-colors duration-200 ${checkoutStep === 1 ? 'text-blue-600 font-extrabold font-sans' : 'text-slate-400'}`}>
+          <span className={`transition-colors duration-200 ${checkoutStep === 1 ? 'text-accent-600 font-extrabold font-sans' : 'text-slate-400'}`}>
             1. Items & Customer
           </span>
           <ChevronRight className="w-3 h-3 text-slate-300 animate-in fade-in" />
-          <span className={`transition-colors duration-200 ${checkoutStep === 2 ? 'text-blue-600 font-extrabold font-sans' : 'text-slate-400'}`}>
+          <span className={`transition-colors duration-200 ${checkoutStep === 2 ? 'text-accent-600 font-extrabold font-sans' : 'text-slate-400'}`}>
             2. Payment Method
           </span>
           <ChevronRight className="w-3 h-3 text-slate-300 animate-in fade-in" />
-          <span className={`transition-colors duration-200 ${checkoutStep === 3 ? 'text-emerald-600 font-extrabold font-sans' : 'text-slate-400'}`}>
+          <span className={`transition-colors duration-200 ${checkoutStep === 3 ? 'text-success-600 font-extrabold font-sans' : 'text-slate-400'}`}>
             3. Receipt & Archive
           </span>
         </div>
@@ -414,10 +416,10 @@ function CheckoutPOSContent() {
 
       {/* Error Message Banner */}
       {errorMessage && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-800 text-xs font-bold animate-in fade-in duration-200">
-          <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+        <div role="alert" className="p-4 bg-danger-50 border border-danger-200 rounded-control flex items-center gap-3 text-danger-800 text-xs font-bold animate-in fade-in duration-200">
+          <AlertTriangle className="w-5 h-5 text-danger-600 shrink-0" />
           <div className="flex-1">{errorMessage}</div>
-          <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 font-bold text-sm"></button>
+          <Button variant="ghostDanger" size="icon" onClick={() => setErrorMessage(null)} aria-label="Dismiss message" leftIcon={<XIcon className="w-4 h-4" />} />
         </div>
       )}
 
@@ -432,53 +434,36 @@ function CheckoutPOSContent() {
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                  <User className="w-4 h-4 text-blue-600" /> Customer Information
+                  <User className="w-4 h-4 text-accent-600" /> Customer Information
                 </h2>
                 <span className="text-xs text-slate-400 font-bold uppercase">Buyer Profile</span>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Customer Name</label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      placeholder="e.g. Emeka Obi"
-                      className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Phone Number</label>
-                  <div className="relative">
-                    <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="text"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      placeholder="e.g. +234 801 234 5678"
-                      className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700">Customer Email (Optional)</label>
-                  <div className="relative">
-                    <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                    <input
-                      type="email"
-                      value={customerEmail}
-                      onChange={(e) => setCustomerEmail(e.target.value)}
-                      placeholder="e.g. buyer@gmail.com"
-                      className="w-full text-xs pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                    />
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                <TextInput
+                  label="Customer Name"
+                  type="text"
+                  value={customerName}
+                  onChange={(e) => setCustomerName(e.target.value)}
+                  placeholder="e.g. Emeka Obi"
+                  leftIcon={<User className="w-4 h-4" />}
+                />
+                <TextInput
+                  label="Phone Number"
+                  type="text"
+                  value={customerPhone}
+                  onChange={(e) => setCustomerPhone(e.target.value)}
+                  placeholder="e.g. +234 801 234 5678"
+                  leftIcon={<Phone className="w-4 h-4" />}
+                />
+                <TextInput
+                  label="Customer Email (Optional)"
+                  type="email"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                  placeholder="e.g. buyer@gmail.com"
+                  leftIcon={<Mail className="w-4 h-4" />}
+                />
               </div>
             </div>
 
@@ -486,7 +471,7 @@ function CheckoutPOSContent() {
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h2 className="text-xs sm:text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                  <Smartphone className="w-4 h-4 text-blue-600" />
+                  <Smartphone className="w-4 h-4 text-accent-600" />
                   <span className="hidden sm:inline">Select In-Stock Device from Inventory</span>
                   <span className="inline sm:hidden">Select In-Stock Device</span>
                 </h2>
@@ -494,16 +479,13 @@ function CheckoutPOSContent() {
               </div>
 
               {/* Device Search Box */}
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={deviceSearch}
-                  onChange={(e) => setDeviceSearch(e.target.value)}
-                  placeholder="Search in-stock devices by IMEI, Model, or Brand..."
-                  className="w-full text-xs pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
-                />
-              </div>
+              <SearchInput
+                value={deviceSearch}
+                onChange={(e) => setDeviceSearch(e.target.value)}
+                placeholder="Search in-stock devices by IMEI, Model, or Brand..."
+                shortcutHint=""
+                className="py-2.5"
+              />
 
               {/* In-Stock Devices List */}
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
@@ -523,14 +505,14 @@ function CheckoutPOSContent() {
                       <div
                         key={phone.id}
                         onClick={() => !inCart && handleAddDeviceToCart(phone)}
-                        className={`p-3 rounded-xl border flex items-center justify-between gap-3 text-xs transition cursor-pointer ${
+                        className={`p-3 rounded-control border flex items-center justify-between gap-3 text-xs transition-colors cursor-pointer ${
                           inCart
-                            ? 'bg-emerald-50/60 border-emerald-300 opacity-80 cursor-default'
-                            : 'bg-slate-50 border-slate-200/90 hover:border-blue-500 hover:bg-blue-50/30'
+                            ? 'bg-success-50/60 border-success-300 opacity-80 cursor-default'
+                            : 'bg-slate-50 border-slate-200/90 hover:border-accent-500 hover:bg-accent-50/30'
                         }`}
                       >
                         <div className="flex items-center gap-3 min-w-0">
-                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold ${inCart ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-600'}`}>
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 font-bold ${inCart ? 'bg-success-100 text-success-700' : 'bg-accent-50 text-accent-600'}`}>
                             <Smartphone className="w-4 h-4" />
                           </div>
                           <div className="min-w-0">
@@ -544,25 +526,15 @@ function CheckoutPOSContent() {
                           <span className="font-extrabold text-slate-900 text-xs sm:text-sm">
                             ₦{(phone.sellingPrice ?? phone.purchasePrice ?? 0).toLocaleString()}
                           </span>
-                          <button
+                          <Button
                             type="button"
+                            size="sm"
+                            variant={inCart ? 'secondary' : 'primary'}
                             disabled={inCart}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
-                              inCart
-                                ? 'bg-emerald-600 text-white'
-                                : 'bg-blue-600 text-white hover:bg-blue-500 shadow-sm'
-                            }`}
+                            leftIcon={inCart ? <Check className="w-3.5 h-3.5" /> : <Plus className="w-3.5 h-3.5" />}
                           >
-                            {inCart ? (
-                              <>
-                                <Check className="w-3.5 h-3.5" /> Added
-                              </>
-                            ) : (
-                              <>
-                                <Plus className="w-3.5 h-3.5" /> Add
-                              </>
-                            )}
-                          </button>
+                            {inCart ? 'Added' : 'Add'}
+                          </Button>
                         </div>
                       </div>
                     );
@@ -574,34 +546,34 @@ function CheckoutPOSContent() {
             {/* Custom Item / Accessory Entry Section */}
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
               <h3 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-                <Package className="w-4 h-4 text-indigo-600" /> Custom Accessory / Service Entry
+                <Package className="w-4 h-4 text-accent-600" /> Custom Accessory / Service Entry
               </h3>
 
               <form onSubmit={handleAddCustomItem} className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                   <div className="sm:col-span-7">
-                    <input
+                    <TextInput
                       type="text"
                       required
+                      aria-label="Item / Service Name"
                       value={customItemName}
                       onChange={(e) => setCustomItemName(e.target.value)}
                       placeholder="Item / Service Name (e.g. Screen Protector)..."
-                      className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
                   <div className="sm:col-span-3">
-                    <input
+                    <TextInput
                       type="number"
                       step="0.01"
                       required
+                      aria-label="Price in naira"
                       value={customItemPrice}
                       onChange={(e) => setCustomItemPrice(e.target.value)}
                       placeholder="Price (₦)..."
-                      className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
                     />
                   </div>
                   <div className="sm:col-span-2">
-                    <Button type="submit" variant="secondary" fullWidth size="sm" className="h-full text-xs font-bold">
+                    <Button type="submit" variant="secondary" fullWidth size="md" className="whitespace-nowrap px-2">
                       + Add
                     </Button>
                   </div>
@@ -623,10 +595,10 @@ function CheckoutPOSContent() {
               <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-600 shadow-subtle">
-                    <User className="w-4 h-4 text-blue-600" />
+                    <User className="w-4 h-4 text-accent-600" />
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">Customer Profile</p>
+                    <p className="text-xs font-bold text-accent-600 uppercase tracking-wider">Customer Profile</p>
                     <p className="text-xs font-extrabold text-slate-900">{customerName.trim() || 'Retail Buyer'}</p>
                     <p className="text-xs text-slate-500 font-medium">{customerPhone.trim() || 'No Phone Specified'}</p>
                   </div>
@@ -646,7 +618,7 @@ function CheckoutPOSContent() {
                       className="p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 flex items-center justify-between gap-3 text-xs"
                     >
                       <div className="flex items-center gap-3 min-w-0 flex-1">
-                        <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 text-blue-600">
+                        <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 text-accent-600">
                           {item.isDevice ? <Smartphone className="w-4 h-4" /> : <Package className="w-4 h-4" />}
                         </div>
                         <div className="min-w-0">
@@ -662,15 +634,19 @@ function CheckoutPOSContent() {
                         {!item.isDevice && (
                           <div className="flex items-center bg-white border border-slate-200 rounded-lg p-0.5 shadow-subtle">
                             <button
+                              type="button"
+                              aria-label={`Decrease quantity of ${item.model}`}
                               onClick={() => updateQuantity(item.id, -1)}
-                              className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold"
+                              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold cursor-pointer rounded"
                             >
                               -
                             </button>
                             <span className="px-2 font-extrabold text-slate-900">{item.quantity}</span>
                             <button
+                              type="button"
+                              aria-label={`Increase quantity of ${item.model}`}
                               onClick={() => updateQuantity(item.id, 1)}
-                              className="w-5 h-5 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold"
+                              className="w-6 h-6 flex items-center justify-center text-slate-600 hover:text-slate-900 font-bold cursor-pointer rounded"
                             >
                               +
                             </button>
@@ -685,16 +661,18 @@ function CheckoutPOSContent() {
                             min="0"
                             value={item.price}
                             onChange={(e) => updateItemPrice(item.id, parseFloat(e.target.value) || 0)}
-                            className="w-16 font-extrabold text-slate-900 text-right bg-white border border-slate-200 rounded px-1 py-0.5 focus:outline-none focus:border-blue-600"
+                            aria-label={`Price of ${item.model} in naira`}
+                            className="w-16 font-extrabold text-slate-900 text-right bg-white border border-slate-200 rounded px-1 py-0.5 focus:outline-none focus:border-accent-600"
                           />
                         </div>
 
-                        <button
+                        <Button
+                          variant="ghostDanger"
+                          size="icon"
                           onClick={() => removeFromCart(item.id)}
-                          className="text-slate-400 hover:text-rose-600 p-1"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                          aria-label={`Remove ${item.model} from order`}
+                          leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                        />
                       </div>
                     </div>
                   ))
@@ -710,7 +688,7 @@ function CheckoutPOSContent() {
 
                 <div className="flex justify-between items-baseline pt-3 border-t border-slate-200 text-slate-900 font-extrabold">
                   <span className="text-sm">Grand Total</span>
-                  <span className="text-2xl text-blue-600 font-extrabold">₦{grandTotal.toLocaleString()}</span>
+                  <span className="text-2xl text-accent-600 font-extrabold">₦{grandTotal.toLocaleString()}</span>
                 </div>
               </div>
 
@@ -720,7 +698,7 @@ function CheckoutPOSContent() {
                 size="lg"
                 disabled={cart.length === 0}
                 onClick={() => setCheckoutStep(2)}
-                className="w-full bg-blue-600 hover:bg-blue-500 shadow-lg shadow-blue-600/20 font-bold h-14"
+                fullWidth
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
                 Proceed to Payment Method
@@ -743,7 +721,7 @@ function CheckoutPOSContent() {
               </div>
               <div className="text-right">
                 <p className="text-xs text-slate-400 font-extrabold uppercase">Total Amount Due</p>
-                <p className="text-lg sm:text-2xl font-extrabold text-blue-600">₦{grandTotal.toLocaleString()}</p>
+                <p className="text-lg sm:text-2xl font-extrabold text-accent-600">₦{grandTotal.toLocaleString()}</p>
               </div>
             </div>
 
@@ -751,10 +729,11 @@ function CheckoutPOSContent() {
             <div className="grid grid-cols-3 gap-3">
               <button
                 type="button"
+                aria-pressed={paymentMethod === 'CARD'}
                 onClick={() => setPaymentMethod('CARD')}
-                className={`p-4 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-2 ${
+                className={`p-4 rounded-card border text-center transition-colors flex flex-col items-center justify-center gap-2 cursor-pointer ${
                   paymentMethod === 'CARD'
-                    ? 'border-blue-600 bg-blue-50/80 text-blue-600 shadow-sm'
+                    ? 'border-accent-600 bg-accent-50 text-accent-700 shadow-sm'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -764,10 +743,11 @@ function CheckoutPOSContent() {
 
               <button
                 type="button"
+                aria-pressed={paymentMethod === 'CASH'}
                 onClick={() => setPaymentMethod('CASH')}
-                className={`p-4 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-2 ${
+                className={`p-4 rounded-card border text-center transition-colors flex flex-col items-center justify-center gap-2 cursor-pointer ${
                   paymentMethod === 'CASH'
-                    ? 'border-blue-600 bg-blue-50/80 text-blue-600 shadow-sm'
+                    ? 'border-accent-600 bg-accent-50 text-accent-700 shadow-sm'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -777,10 +757,11 @@ function CheckoutPOSContent() {
 
               <button
                 type="button"
+                aria-pressed={paymentMethod === 'BANK_TRANSFER'}
                 onClick={() => setPaymentMethod('BANK_TRANSFER')}
-                className={`p-4 rounded-2xl border text-center transition flex flex-col items-center justify-center gap-2 ${
+                className={`p-4 rounded-card border text-center transition-colors flex flex-col items-center justify-center gap-2 cursor-pointer ${
                   paymentMethod === 'BANK_TRANSFER'
-                    ? 'border-blue-600 bg-blue-50/80 text-blue-600 shadow-sm'
+                    ? 'border-accent-600 bg-accent-50 text-accent-700 shadow-sm'
                     : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                 }`}
               >
@@ -792,38 +773,33 @@ function CheckoutPOSContent() {
             {/* Cash Tendered Calculator (If Cash Selected) */}
             {paymentMethod === 'CASH' && (
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
-                <div className="flex justify-between items-center">
-                  <label className="font-bold text-slate-700">Cash Tendered (₦)</label>
-                  <button
-                    type="button"
-                    onClick={() => setCashTendered(grandTotal.toString())}
-                    className="text-xs text-blue-600 font-bold hover:underline"
-                  >
-                    Exact: ₦{grandTotal.toLocaleString()}
-                  </button>
-                </div>
-                <input
+                <TextInput
+                  label="Cash Tendered (₦)"
                   type="number"
                   step="0.01"
                   value={cashTendered}
                   onChange={(e) => setCashTendered(e.target.value)}
                   placeholder={`Enter amount (e.g. ${Math.ceil(grandTotal)})`}
-                  className="w-full text-sm px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                  labelAction={
+                    <Button type="button" variant="link" onClick={() => setCashTendered(grandTotal.toString())}>
+                      Exact: ₦{grandTotal.toLocaleString()}
+                    </Button>
+                  }
                 />
 
                 <div className="flex justify-between items-center border-t border-slate-200 pt-2 font-bold text-slate-900">
                   <span>Change Due to Customer</span>
-                  <span className="text-emerald-700 text-sm font-extrabold">₦{changeDue.toLocaleString()}</span>
+                  <span className="text-success-700 text-sm font-extrabold">₦{changeDue.toLocaleString()}</span>
                 </div>
               </div>
             )}
 
             {/* Store Bank Settlement Details (If Bank Transfer or Card Selected) */}
             {(paymentMethod === 'BANK_TRANSFER' || paymentMethod === 'CARD') && (
-              <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white space-y-3 text-xs shadow-md">
+              <div className="p-4 rounded-card bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-800 text-white space-y-3 text-xs shadow-md">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <div className="flex items-center gap-2">
-                    <Building2 className="w-4 h-4 text-teal-400" />
+                    <Building2 className="w-4 h-4 text-accent-400" />
                     <span className="font-extrabold text-white">Store Settlement Bank Account</span>
                   </div>
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
@@ -840,7 +816,7 @@ function CheckoutPOSContent() {
                       </div>
                       <div className="text-right">
                         <span className="text-xs text-slate-400 font-bold uppercase block">Transfer Amount</span>
-                        <span className="font-mono font-black text-emerald-400 text-base">₦{grandTotal.toLocaleString()}</span>
+                        <span className="font-mono font-black text-success-400 text-base">₦{grandTotal.toLocaleString()}</span>
                       </div>
                     </div>
 
@@ -857,8 +833,9 @@ function CheckoutPOSContent() {
                         )}
                       </div>
 
-                      <button
+                      <Button
                         type="button"
+                        size="sm"
                         onClick={() => {
                           if (storeBankDetails.accountNumber) {
                             navigator.clipboard.writeText(storeBankDetails.accountNumber);
@@ -866,20 +843,10 @@ function CheckoutPOSContent() {
                             setTimeout(() => setCopiedAccount(false), 2000);
                           }
                         }}
-                        className="px-3 py-1.5 rounded-lg bg-teal-600 hover:bg-teal-500 text-white font-bold text-xs flex items-center gap-1.5 transition cursor-pointer"
+                        leftIcon={copiedAccount ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                       >
-                        {copiedAccount ? (
-                          <>
-                            <Check className="w-3.5 h-3.5 text-white" />
-                            <span>Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-3.5 h-3.5" />
-                            <span>Copy</span>
-                          </>
-                        )}
-                      </button>
+                        {copiedAccount ? 'Copied!' : 'Copy'}
+                      </Button>
                     </div>
                   </div>
                 ) : (
@@ -888,7 +855,7 @@ function CheckoutPOSContent() {
                     <Link
                       href="/dashboard/settings"
                       target="_blank"
-                      className="text-teal-400 hover:underline font-bold"
+                      className="text-accent-400 hover:underline font-bold"
                     >
                       Set Up Account →
                     </Link>
@@ -898,19 +865,20 @@ function CheckoutPOSContent() {
             )}
 
             {/* Mandatory "I Have Confirmed / Seen Payment" Checkbox */}
-            <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/90 space-y-2">
-              <label className="flex items-start gap-3 cursor-pointer select-none">
+            <div className="p-4 rounded-2xl bg-warning-50/80 border border-warning-200/90 space-y-2">
+              <label htmlFor="confirm-payment-seen" className="flex items-start gap-3 cursor-pointer select-none">
                 <input
+                  id="confirm-payment-seen"
                   type="checkbox"
                   checked={seenPaymentConfirmed}
                   onChange={(e) => setSeenPaymentConfirmed(e.target.checked)}
-                  className="mt-0.5 w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 border-amber-400 cursor-pointer"
+                  className="mt-0.5 w-4 h-4 rounded accent-accent-600 cursor-pointer"
                 />
                 <div className="text-xs">
-                  <span className="font-extrabold text-amber-950 block">
+                  <span className="font-extrabold text-warning-950 block">
                     Confirm Receipt of Payment
                   </span>
-                  <span className="text-amber-900 font-medium leading-relaxed">
+                  <span className="text-warning-900 font-medium leading-relaxed">
                     I have verified and confirmed receipt of <strong>₦{grandTotal.toLocaleString()}</strong> in store account / cash in hand before issuing this receipt.
                   </span>
                 </div>
@@ -934,7 +902,6 @@ function CheckoutPOSContent() {
                 disabled={!seenPaymentConfirmed || isProcessing || (paymentMethod === 'CASH' && (Number(cashTendered) || 0) < grandTotal)}
                 isLoading={isProcessing}
                 onClick={handleConfirmPayment}
-                className="bg-emerald-600 hover:bg-emerald-500 font-bold px-6 shadow-md shadow-emerald-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 rightIcon={<CheckCircle2 className="w-4 h-4" />}
               >
                 Confirm Payment & Process Sale
@@ -950,14 +917,14 @@ function CheckoutPOSContent() {
         <div className="max-w-lg mx-auto space-y-6 animate-in zoom-in-95 duration-200">
 
           {/* Success Banner Card */}
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-3 shadow-xs">
+          <div className="p-4 rounded-2xl bg-success-50 border border-success-200 flex items-center justify-between gap-3 shadow-xs">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center shadow-xs shrink-0">
+              <div className="w-10 h-10 bg-success-600 text-white rounded-xl flex items-center justify-center shadow-xs shrink-0">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-sm font-extrabold text-emerald-950">Sale Processed & Archived!</h2>
-                <p className="text-xs text-emerald-800 font-medium">
+                <h2 className="text-sm font-extrabold text-success-950">Sale Processed & Archived!</h2>
+                <p className="text-xs text-success-800 font-medium">
                   Transaction logged to verified store ledger & anti-theft database.
                 </p>
               </div>
@@ -1016,7 +983,6 @@ function CheckoutPOSContent() {
                 size="md"
                 onClick={handlePrintReceipt}
                 leftIcon={<Printer className="w-4 h-4" />}
-                className="bg-blue-600 hover:bg-blue-500 font-bold shadow-sm"
               >
                 Print Sales Receipt
               </Button>
@@ -1025,8 +991,7 @@ function CheckoutPOSContent() {
                 variant="secondary"
                 size="md"
                 onClick={handleEmailReceipt}
-                leftIcon={<Mail className="w-4 h-4 text-blue-600" />}
-                className="font-bold"
+                leftIcon={<Mail className="w-4 h-4" />}
               >
                 Email to Customer
               </Button>
@@ -1037,8 +1002,7 @@ function CheckoutPOSContent() {
                 variant="secondary"
                 size="md"
                 onClick={handleCopyReceiptText}
-                leftIcon={copiedReceiptText ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4 text-slate-600" />}
-                className="font-bold"
+                leftIcon={copiedReceiptText ? <Check className="w-4 h-4 text-success-600" /> : <Copy className="w-4 h-4" />}
               >
                 {copiedReceiptText ? 'Copied to Clipboard!' : 'Copy for WhatsApp / SMS'}
               </Button>
@@ -1051,11 +1015,11 @@ function CheckoutPOSContent() {
             </div>
 
             <Button
-              variant="primary"
+              variant="secondary"
               fullWidth
               size="lg"
               onClick={resetForm}
-              className="bg-slate-900 hover:bg-slate-800 font-extrabold shadow-md mt-2"
+              className="mt-2"
             >
               + Start Next Walk-in Sale
             </Button>

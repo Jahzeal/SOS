@@ -11,6 +11,8 @@ export interface LogoProps {
   subtitle?: string;
   href?: string;
   className?: string;
+  /** Show only the icon on phones, to leave room for header buttons. */
+  iconOnlyOnMobile?: boolean;
 }
 
 export function Logo({
@@ -20,6 +22,7 @@ export function Logo({
   subtitle = 'Security Registry',
   href = '/',
   className = '',
+  iconOnlyOnMobile = false,
 }: LogoProps) {
   const sizeMap = {
     sm: 'w-7 h-7',
@@ -53,7 +56,7 @@ export function Logo({
         />
       </div>
 
-      <div className="min-w-0">
+      <div className={`min-w-0 ${iconOnlyOnMobile ? 'hidden sm:block' : ''}`}>
         <span className={`${textColor} leading-none block font-space font-extrabold uppercase ${titleSizes[size]}`}>
           NOXGUARDA
         </span>

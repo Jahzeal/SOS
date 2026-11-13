@@ -122,8 +122,14 @@ export class AuthService {
       throw new ServiceUnavailableException('Could not reach Google to verify your sign-in. Please try again.');
     }
 
-    if (String(data.aud || '') !== expectedAudience) {
-      this.logger.warn(`Google token audience mismatch (aud="${data.aud}")`);
+    // Accept NoxGuarda's own Google app ID as well as the configured one, so a
+    // mistyped GOOGLE_CLIENT_ID on the server cannot lock everyone out. Both are
+    // exact matches; a token made for any other app is still refused.
+    const tokenAudience = String(data.aud || '').trim();
+    if (tokenAudience !== expectedAudience && tokenAudience !== DEFAULT_GOOGLE_CLIENT_ID) {
+      this.logger.warn(
+        `Google token audience mismatch (aud="${data.aud}", expected="${expectedAudience}")`,
+      );
       throw new UnauthorizedException('Google token was not issued for this application.');
     }
 

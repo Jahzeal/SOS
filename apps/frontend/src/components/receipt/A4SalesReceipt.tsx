@@ -62,7 +62,7 @@ export function A4SalesReceipt({ data, id = 'printable-a4-receipt' }: { data: A4
   return (
     <div
       id={id}
-      className="bg-white text-slate-900 font-sans p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6 print:p-0 print:m-0 print:border-0 print:shadow-none print:w-full print:max-w-none print:space-y-4"
+      className="print-doc bg-white text-slate-900 font-sans p-6 sm:p-8 rounded-2xl border border-slate-200 shadow-sm max-w-3xl mx-auto space-y-6 print:p-0 print:m-0 print:border-0 print:shadow-none print:w-full print:max-w-none print:space-y-4"
     >
       {/* Top Slim Brand Accent Line */}
       <div className="h-1 bg-blue-600 rounded-full w-full print:h-1" />

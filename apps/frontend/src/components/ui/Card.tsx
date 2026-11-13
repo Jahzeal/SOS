@@ -56,7 +56,7 @@ export function StatCard({
       <div className="mt-3 flex items-baseline justify-between">
         <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{value}</span>
         {badgeText && (
-          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200/60">
+          <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-accent-50 text-accent-700 border border-accent-200/60">
             {badgeText}
           </span>
         )}
@@ -131,7 +131,7 @@ export function FeatureCard({ title, description, icon, badge }: FeatureCardProp
   return (
     <Card interactive className="p-6">
       <div className="flex items-center justify-between mb-4">
-        <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
+        <div className="w-11 h-11 rounded-2xl bg-accent-50 border border-accent-100 flex items-center justify-center text-accent-600">
           {icon}
         </div>
         {badge && (
@@ -171,11 +171,11 @@ export function PricingCard({
   return (
     <Card
       className={`p-6 flex flex-col justify-between relative ${
-        isPopular ? 'border-2 border-blue-600 shadow-card-hover' : ''
+        isPopular ? 'border-2 border-accent-600 shadow-card-hover' : ''
       }`}
     >
       {isPopular && (
-        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-blue-600 text-white shadow-sm">
+        <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-xs font-extrabold uppercase tracking-wider px-3 py-1 rounded-full bg-accent-600 text-white shadow-sm">
           Most Popular
         </span>
       )}

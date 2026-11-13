@@ -3,8 +3,8 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
-export type ButtonSize = 'sm' | 'md' | 'lg';
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'ghostDanger' | 'dangerOutline' | 'destructive' | 'link';
+export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
@@ -32,34 +32,47 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    // Base styles: 10px border radius, font-medium, focus ring, smooth transition
+    // The keyboard focus ring comes from globals.css (:focus-visible), so none is set here.
     const baseStyles =
-      'inline-flex items-center justify-center font-medium rounded-button transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed select-none text-xs sm:text-sm';
+      'inline-flex items-center justify-center font-semibold rounded-control transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed select-none cursor-pointer';
 
     const variants: Record<ButtonVariant, string> = {
       primary:
-        'bg-teal-600 text-white hover:bg-teal-500 active:bg-teal-700 focus:ring-teal-500 shadow-sm border border-teal-600',
+        'bg-accent-600 text-white hover:bg-accent-500 active:bg-accent-700 shadow-sm border border-accent-600 hover:border-accent-500',
       secondary:
-        'bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 border border-slate-200 focus:ring-slate-400 shadow-subtle',
+        'bg-white text-slate-700 hover:bg-slate-50 active:bg-slate-100 border border-slate-200 shadow-subtle',
       ghost:
-        'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 focus:ring-slate-300',
+        'bg-transparent text-slate-600 hover:text-slate-900 hover:bg-slate-100 active:bg-slate-200 border border-transparent',
       destructive:
-        'bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 focus:ring-rose-500 shadow-sm',
+        'bg-danger-600 text-white hover:bg-danger-700 active:bg-danger-800 shadow-sm border border-danger-600 hover:border-danger-700',
+      // Quiet until hovered, then red: sign out, remove row, clear.
+      ghostDanger:
+        'bg-transparent text-slate-500 hover:text-danger-600 hover:bg-danger-50 border border-transparent',
+      // Risky but secondary: flag stolen, remove, revoke.
+      dangerOutline:
+        'bg-white text-danger-600 hover:bg-danger-50 active:bg-danger-100 border border-danger-200 shadow-subtle',
+      // Text-only action inside a sentence, table row or card footer.
+      link: 'bg-transparent text-accent-600 hover:text-accent-700 hover:underline',
     };
 
     const sizes: Record<ButtonSize, string> = {
       sm: 'px-3 py-1.5 text-xs gap-1.5 min-h-[34px]',
       md: 'px-4 py-2 text-sm gap-2 min-h-[40px]',
       lg: 'px-5 py-2.5 text-base gap-2.5 min-h-[46px]',
+      // Square button holding a single icon. Always pass aria-label.
+      icon: 'p-2 text-sm min-h-[36px] min-w-[36px]',
     };
 
     const widthClass = fullWidth ? 'w-full' : '';
+    // Link buttons sit inline with text, so they take no padding or minimum height.
+    const sizeClass = variant === 'link' ? 'gap-1 text-xs' : sizes[size];
 
     return (
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${widthClass} ${className}`}
+        aria-busy={isLoading || undefined}
+        className={`${baseStyles} ${variants[variant]} ${sizeClass} ${widthClass} ${className}`}
         {...props}
       >
         {isLoading ? (
@@ -67,7 +80,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ) : (
           leftIcon && <span className="inline-flex shrink-0">{leftIcon}</span>
         )}
-        <span>{children}</span>
+        {children != null && children !== false && <span>{children}</span>}
         {!isLoading && rightIcon && <span className="inline-flex shrink-0">{rightIcon}</span>}
       </button>
     );
