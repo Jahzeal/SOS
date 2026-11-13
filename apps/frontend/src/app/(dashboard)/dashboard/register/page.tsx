@@ -892,7 +892,9 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
               )}
 
               {/* 4. Device Not Found State */}
-              {detectedMatch?.status === 'not_found' && !isDetectedDismissed && !isLookingUpDevice && (
+              {/* A valid phone IMEI with no suggestion shows nothing: the seller simply enters the
+                  brand and model in the next step. Only a mistyped IMEI gets a message here. */}
+              {detectedMatch?.status === 'not_found' && !isDetectedDismissed && !isLookingUpDevice && !(isPhoneImeiMode && imeiLooksValid) && (
                 <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 animate-in fade-in">
                   <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400 font-medium">
                     <Info className="w-4 h-4 text-slate-400 shrink-0" />

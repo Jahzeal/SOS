@@ -45,7 +45,7 @@ export class ImeiProvider implements IDeviceLookupProvider {
         status: 'not_found',
         source: this.providerName,
         confidence: 'low',
-        message: 'We do not know this phone yet. Please enter the brand and model.',
+        message: 'Enter the brand and model in the next step.',
       };
     }
 

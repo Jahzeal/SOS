@@ -1,152 +1,143 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
-import { RefreshCw, Sparkles, X, ArrowUpCircle, CheckCircle2, ShieldCheck, Zap } from 'lucide-react';
-import { Button } from '@/components/ui/Button';
+import { RefreshCw, X, ArrowUpCircle } from 'lucide-react';
 
+/** Changes on every deploy (see next.config.mjs), so the installed app can tell a new version is out. */
+const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || 'dev';
+const CHECK_EVERY_MS = 30 * 60 * 1000;
+
+/**
+ * Registers the app's background file (public/sw.js) and shows "A new version is
+ * ready" when a deploy is waiting. Nothing switches over until the person taps
+ * "Update now", then the page reloads on the new version.
+ */
 export function PwaRegister() {
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const [showUpdate, setShowUpdate] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const refreshingRef = useRef(false);
+  // Only reload when the person asked for the update (never on a first visit).
+  const updateRequestedRef = useRef(false);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
 
-    // Prevent infinite reload loop when controller changes
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (refreshingRef.current) return;
+    let interval: ReturnType<typeof setInterval> | undefined;
+
+    // When the new version takes over after "Update now", reload once so the page runs on it.
+    const onControllerChange = () => {
+      if (!updateRequestedRef.current || refreshingRef.current) return;
       refreshingRef.current = true;
       window.location.reload();
-    });
+    };
+    navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
 
-    const handleRegistration = (reg: ServiceWorkerRegistration) => {
+    const watch = (reg: ServiceWorkerRegistration) => {
       setRegistration(reg);
+      // A new version already downloaded and waiting (e.g. from a visit earlier today).
+      if (reg.waiting && navigator.serviceWorker.controller) setShowUpdate(true);
 
-      // 1. If there's already a worker waiting, show modal immediately
-      if (reg.waiting) {
-        setShowUpdateModal(true);
-      }
-
-      // 2. Listen for new updatefound events
       reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        if (!newWorker) return;
-
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            // New version installed & ready
-            setShowUpdateModal(true);
-          }
+        const incoming = reg.installing;
+        if (!incoming) return;
+        incoming.addEventListener('statechange', () => {
+          // "installed" while an older version is running = an update is ready.
+          if (incoming.state === 'installed' && navigator.serviceWorker.controller) setShowUpdate(true);
         });
       });
     };
 
-    window.addEventListener('load', () => {
+    const register = () => {
       navigator.serviceWorker
-        .register('/sw.js')
+        .register(`/sw.js?v=${encodeURIComponent(APP_VERSION)}`)
         .then((reg) => {
-          handleRegistration(reg);
-
-          // Periodically check for updates every 30 minutes
-          const interval = setInterval(() => {
-            reg.update().catch(() => {});
-          }, 30 * 60 * 1000);
-
-          // Also check when window regains focus or comes back online
-          window.addEventListener('focus', () => reg.update().catch(() => {}));
-          window.addEventListener('online', () => reg.update().catch(() => {}));
-
-          return () => clearInterval(interval);
+          watch(reg);
+          const check = () => reg.update().catch(() => {});
+          interval = setInterval(check, CHECK_EVERY_MS);
+          window.addEventListener('focus', check);
+          window.addEventListener('online', check);
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') check();
+          });
         })
-        .catch((err) => {
-          console.warn('[PWA] Service worker registration error:', err);
-        });
-    });
+        .catch((err) => console.warn('[PWA] Could not register the app worker:', err));
+    };
+
+    // Register now if the page has already finished loading, otherwise once it has.
+    if (document.readyState === 'complete') register();
+    else window.addEventListener('load', register, { once: true });
+
+    return () => {
+      if (interval) clearInterval(interval);
+      navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+      window.removeEventListener('load', register);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleApplyUpdate = () => {
+  const applyUpdate = () => {
     setIsUpdating(true);
-    if (registration?.waiting) {
-      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      registration.waiting.postMessage({ type: 'CLEAR_CACHE' });
+    updateRequestedRef.current = true;
+    const waiting = registration?.waiting;
+    if (waiting) {
+      // Old cached pages are cleared, then the new version takes over and the page reloads.
+      waiting.postMessage({ type: 'CLEAR_CACHE' });
+      waiting.postMessage({ type: 'SKIP_WAITING' });
     } else {
-      // Fallback reload
       window.location.reload();
     }
   };
 
-  const handleDismiss = () => {
-    setShowUpdateModal(false);
-  };
-
-  if (!showUpdateModal) return null;
+  if (!showUpdate) return null;
 
   return (
-    <div className="fixed inset-x-0 bottom-0 sm:bottom-6 sm:right-6 sm:left-auto z-[99999] p-4 max-w-md w-full animate-in fade-in slide-in-from-bottom-6 duration-300 pointer-events-auto font-sans">
-      <div className="bg-slate-900/95 backdrop-blur-md border border-slate-700/80 text-white rounded-2xl shadow-2xl p-5 space-y-4 ring-1 ring-white/10">
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-x-0 bottom-0 sm:bottom-6 sm:right-6 sm:left-auto z-[99999] p-4 max-w-sm w-full animate-in fade-in slide-in-from-bottom-6 duration-300 font-sans"
+    >
+      <div className="bg-white border border-slate-200 text-slate-900 rounded-2xl shadow-2xl shadow-slate-900/15 p-4 space-y-3">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/30">
-              <Zap className="w-5 h-5 text-white" />
+            <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center shrink-0">
+              <ArrowUpCircle className="w-5 h-5" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h4 className="font-extrabold text-sm text-white tracking-tight">
-                  New Version Available
-                </h4>
-                <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 border border-blue-400/30 rounded-full text-xs font-extrabold uppercase tracking-wider">
-                  Update
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 font-medium mt-0.5">
-                NoxGuarda Retail OS
-              </p>
+              <h4 className="font-extrabold text-sm tracking-tight">A new version of NoxGuarda is ready</h4>
+              <p className="text-xs text-slate-500 font-medium mt-0.5">Update now to get the latest fixes.</p>
             </div>
           </div>
           <button
             type="button"
-            onClick={handleDismiss}
-            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800 transition cursor-pointer"
-            title="Dismiss update for now"
+            onClick={() => setShowUpdate(false)}
+            className="w-7 h-7 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition cursor-pointer shrink-0"
+            aria-label="Not now"
+            title="Not now"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <p className="text-xs text-slate-300 leading-relaxed font-medium">
-          A newer update is available with invoice editing, print improvements, and performance upgrades. Update now to ensure seamless operation.
-        </p>
-
-        <div className="flex items-center gap-2 pt-1">
+        <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={handleDismiss}
-            className="w-1/3 py-2 px-3 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white text-xs font-bold transition cursor-pointer"
+            onClick={() => setShowUpdate(false)}
+            className="w-1/3 py-2 px-3 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition cursor-pointer"
           >
             Later
           </button>
           <button
             type="button"
             disabled={isUpdating}
-            onClick={handleApplyUpdate}
-            className="w-2/3 py-2 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/30 cursor-pointer disabled:opacity-60"
+            onClick={applyUpdate}
+            className="w-2/3 py-2 px-4 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm cursor-pointer disabled:opacity-60"
           >
-            {isUpdating ? (
-              <>
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                <span>Updating App...</span>
-              </>
-            ) : (
-              <>
-                <RefreshCw className="w-3.5 h-3.5" />
-                <span>Update & Refresh</span>
-              </>
-            )}
+            <RefreshCw className={`w-3.5 h-3.5 ${isUpdating ? 'animate-spin' : ''}`} />
+            <span>{isUpdating ? 'Updating...' : 'Update now'}</span>
           </button>
         </div>
       </div>
     </div>
   );
 }
-

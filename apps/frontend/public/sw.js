@@ -1,4 +1,7 @@
-const CACHE_NAME = 'noxguarda-pwa-v2';
+// The app registers this file as /sw.js?v=<deploy version>. A new deploy means a new
+// address, so phones and computers notice the update and the app offers "Update now".
+const APP_VERSION = new URL(self.location.href).searchParams.get('v') || 'dev';
+const CACHE_NAME = `noxguarda-pwa-${APP_VERSION}`;
 const PRECACHE_ASSETS = [
   '/',
   '/dashboard',
@@ -17,7 +20,8 @@ self.addEventListener('install', (event) => {
       return cache.addAll(PRECACHE_ASSETS);
     })
   );
-  self.skipWaiting();
+  // No automatic switch here: the new version waits until the person taps "Update now",
+  // so nobody is moved to a new version in the middle of a sale.
 });
 
 // Activate Event
