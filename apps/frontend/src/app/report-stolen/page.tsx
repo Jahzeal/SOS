@@ -303,7 +303,7 @@ export default function ReportStolenPage() {
                 </Link>
                 <Link href="/onboarding">
                   <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    Start free
+                    Get started
                   </Button>
                 </Link>
               </>
@@ -366,7 +366,7 @@ export default function ReportStolenPage() {
                   </Link>
                   <Link href="/onboarding" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="primary" fullWidth size="md">
-                      Start free
+                      Get started
                     </Button>
                   </Link>
                 </>

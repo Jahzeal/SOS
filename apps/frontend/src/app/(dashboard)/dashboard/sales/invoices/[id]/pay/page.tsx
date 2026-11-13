@@ -1,4 +1,5 @@
 'use client';
+import { TextInput } from '@/components/ui/Input';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
@@ -144,7 +145,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
   if (isLoading) {
     return (
       <div className="py-24 text-center space-y-3 font-sans">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-emerald-600" />
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-success-600" />
         <p className="font-bold text-slate-600 text-sm">Loading invoice billing details...</p>
       </div>
     );
@@ -153,7 +154,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
   if (loadError || !invoice) {
     return (
       <div className="max-w-xl mx-auto py-16 text-center space-y-4 font-sans">
-        <div className="w-12 h-12 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 bg-danger-50 border border-danger-100 text-danger-600 rounded-2xl flex items-center justify-center mx-auto">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <h2 className="text-xl font-extrabold text-slate-900">Invoice Not Found</h2>
@@ -176,7 +177,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-1">
-            <Link href="/dashboard/sales/invoices" className="hover:text-blue-600 transition flex items-center gap-1">
+            <Link href="/dashboard/sales/invoices" className="hover:text-accent-600 transition flex items-center gap-1">
               <ArrowLeft className="w-3.5 h-3.5" /> Invoices Registry
             </Link>
             <span>/</span>
@@ -217,8 +218,8 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
 
       {isSuccess ? (
         /* Success Screen */
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-xl p-8 sm:p-12 text-center max-w-2xl mx-auto space-y-6 animate-in zoom-in-95 duration-200">
-          <div className="w-20 h-20 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/10">
+        <div className="bg-white rounded-2xl border border-slate-200 shadow-xl p-8 sm:p-12 text-center max-w-2xl mx-auto space-y-6 animate-in zoom-in-95 duration-200">
+          <div className="w-20 h-20 rounded-full bg-success-50 text-success-600 border border-success-200 flex items-center justify-center mx-auto shadow-lg shadow-success-500/10">
             <CheckCircle2 className="w-10 h-10" />
           </div>
 
@@ -241,12 +242,12 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
             {paymentReference && (
               <div className="flex justify-between">
                 <span className="text-slate-500 font-bold uppercase text-xs">Reference:</span>
-                <span className="font-mono font-bold text-blue-600">{paymentReference}</span>
+                <span className="font-mono font-bold text-accent-600">{paymentReference}</span>
               </div>
             )}
             <div className="flex justify-between border-t border-slate-200 pt-2 font-bold">
               <span className="text-slate-700">New Outstanding Balance:</span>
-              <span className="font-mono text-emerald-700 font-extrabold text-sm">
+              <span className="font-mono text-success-700 font-extrabold text-sm">
                 ₦{Math.max(0, remaining - amountToPay).toLocaleString()}
               </span>
             </div>
@@ -269,8 +270,8 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
           {/* Left Form: Payment Setup */}
           <form onSubmit={handleRecordPayment} className="lg:col-span-7 space-y-6">
             {submitError && (
-              <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-xs font-bold flex items-center gap-3 animate-in fade-in">
-                <AlertTriangle className="w-5 h-5 shrink-0 text-rose-600" />
+              <div className="p-4 bg-danger-50 border border-danger-200 text-danger-700 rounded-2xl text-xs font-bold flex items-center gap-3 animate-in fade-in">
+                <AlertTriangle className="w-5 h-5 shrink-0 text-danger-600" />
                 <span>{submitError}</span>
               </div>
             )}
@@ -278,7 +279,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
             {/* Payment Mode (Full vs Partial) */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
               <h2 className="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-emerald-600" /> Settlement Type & Amount
+                <DollarSign className="w-4 h-4 text-success-600" /> Settlement Type & Amount
               </h2>
 
               <div className="grid grid-cols-2 gap-3">
@@ -287,12 +288,12 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
                   onClick={() => setPaymentMode('FULL')}
                   className={`p-3.5 rounded-xl border text-left transition cursor-pointer ${
                     paymentMode === 'FULL'
-                      ? 'border-emerald-600 bg-emerald-50/60 ring-2 ring-emerald-500/20'
+                      ? 'border-success-600 bg-success-50/60 ring-2 ring-success-500/20'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
                   <p className="font-extrabold text-xs text-slate-900">Full Settlement</p>
-                  <p className="text-xs text-emerald-700 font-mono font-bold mt-0.5">
+                  <p className="text-xs text-success-700 font-mono font-bold mt-0.5">
                     Pay entire ₦{remaining.toLocaleString()}
                   </p>
                 </button>
@@ -302,7 +303,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
                   onClick={() => setPaymentMode('PARTIAL')}
                   className={`p-3.5 rounded-xl border text-left transition cursor-pointer ${
                     paymentMode === 'PARTIAL'
-                      ? 'border-emerald-600 bg-emerald-50/60 ring-2 ring-emerald-500/20'
+                      ? 'border-success-600 bg-success-50/60 ring-2 ring-success-500/20'
                       : 'border-slate-200 bg-white hover:bg-slate-50'
                   }`}
                 >
@@ -316,39 +317,30 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
               {paymentMode === 'PARTIAL' && (
                 <div className="space-y-3 pt-2 animate-in fade-in">
                   <div className="space-y-1 text-xs">
-                    <label className="font-bold text-slate-700">Enter Payment Amount (₦) *</label>
-                    <input
+                    <TextInput label="Enter Payment Amount (₦)"
                       type="text"
                       value={customAmount}
                       onChange={(e) => setCustomAmount(e.target.value.replace(/[^0-9.]/g, ''))}
-                      placeholder="e.g. 50000"
-                      className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl font-mono text-base font-extrabold text-slate-900 focus:outline-none focus:border-emerald-600"
-                    />
+                      placeholder="e.g. 50000" className="font-mono" />
                   </div>
 
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-400 font-bold">Quick set:</span>
-                    <button
+                    <Button variant="secondary" size="sm"
                       type="button"
-                      onClick={() => handleQuickPercent(25)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition"
-                    >
+                      onClick={() => handleQuickPercent(25)}>
                       25%
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="secondary" size="sm"
                       type="button"
-                      onClick={() => handleQuickPercent(50)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition"
-                    >
+                      onClick={() => handleQuickPercent(50)}>
                       50%
-                    </button>
-                    <button
+                    </Button>
+                    <Button variant="secondary" size="sm"
                       type="button"
-                      onClick={() => handleQuickPercent(75)}
-                      className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition"
-                    >
+                      onClick={() => handleQuickPercent(75)}>
                       75%
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -357,7 +349,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
             {/* Payment Method Cards */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
               <h2 className="text-sm font-extrabold text-slate-900 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-emerald-600" /> Payment Channel
+                <CreditCard className="w-4 h-4 text-success-600" /> Payment Channel
               </h2>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 text-xs font-bold">
@@ -377,11 +369,11 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
                       onClick={() => setPaymentMethod(m.id as any)}
                       className={`p-3 rounded-xl border flex flex-col items-center justify-center gap-1.5 transition cursor-pointer ${
                         isSelected
-                          ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 ring-2 ring-emerald-500/20'
+                          ? 'border-success-600 bg-success-50/70 text-success-950 ring-2 ring-success-500/20'
                           : 'border-slate-200 bg-white text-slate-700 hover:bg-slate-50'
                       }`}
                     >
-                      <Icon className={`w-4 h-4 ${isSelected ? 'text-emerald-600' : 'text-slate-400'}`} />
+                      <Icon className={`w-4 h-4 ${isSelected ? 'text-success-600' : 'text-slate-400'}`} />
                       <span>{m.label}</span>
                     </button>
                   );
@@ -391,25 +383,19 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
               {/* Reference & Remarks */}
               <div className="space-y-3 pt-2 text-xs">
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700">Transaction Reference / Receipt #</label>
-                  <input
+                  <TextInput label="Transaction Reference / Receipt #"
                     type="text"
                     value={paymentReference}
                     onChange={(e) => setPaymentReference(e.target.value)}
-                    placeholder="e.g. NIP-TXN-893129 or POS Ref"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl font-mono text-xs font-semibold text-slate-900 focus:outline-none focus:border-emerald-600"
-                  />
+                    placeholder="e.g. NIP-TXN-893129 or POS Ref" className="font-mono" />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-700">Internal Audit Remarks</label>
-                  <input
+                  <TextInput label="Internal Audit Remarks"
                     type="text"
                     value={paymentNotes}
                     onChange={(e) => setPaymentNotes(e.target.value)}
-                    placeholder="e.g. Received by cashier in morning shift"
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
-                  />
+                    placeholder="e.g. Received by cashier in morning shift" />
                 </div>
               </div>
             </div>
@@ -422,7 +408,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
                 fullWidth
                 size="lg"
                 isLoading={isSubmitting}
-                className="bg-emerald-600 hover:bg-emerald-700 font-bold shadow-lg shadow-emerald-600/20"
+                className="bg-success-600 hover:bg-success-700 font-bold shadow-lg shadow-success-600/20"
                 leftIcon={<CheckCircle2 className="w-5 h-5" />}
               >
                 Confirm & Record ₦{amountToPay.toLocaleString()} Payment
@@ -433,7 +419,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
           {/* Right Summary Column: Ledger & Customer Details */}
           <div className="lg:col-span-5 space-y-6">
             {/* Balance Overview Card */}
-            <div className="bg-slate-900 text-white rounded-3xl p-6 shadow-xl space-y-4">
+            <div className="bg-slate-900 text-white rounded-2xl p-6 shadow-xl space-y-4">
               <span className="text-xs font-extrabold uppercase tracking-widest text-slate-400 block">
                 INVOICE BALANCE SUMMARY
               </span>
@@ -452,7 +438,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
                 </div>
                 <div>
                   <span className="text-slate-400 block text-xs uppercase font-bold">Already Paid</span>
-                  <span className="font-bold text-emerald-400 font-mono">₦{paid.toLocaleString()}</span>
+                  <span className="font-bold text-success-400 font-mono">₦{paid.toLocaleString()}</span>
                 </div>
               </div>
             </div>
@@ -460,7 +446,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
             {/* Billed Client Card */}
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-3 text-xs">
               <h4 className="font-extrabold text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
-                <User className="w-4 h-4 text-blue-600" /> Billed Customer
+                <User className="w-4 h-4 text-accent-600" /> Billed Customer
               </h4>
               <div className="space-y-1">
                 <p className="font-extrabold text-slate-900 text-sm">{invoice.customer?.name || 'Retail Customer'}</p>
@@ -512,7 +498,7 @@ export default function RecordInvoicePaymentPage({ params }: { params?: { id: st
 
       {/* Hidden Printable Invoice Portaled Directly to document.body for Guaranteed Clean A4 Output */}
       {typeof document !== 'undefined' && createPortal(
-        <div id="printable-portal" className="hidden print:block">
+        <div id="printable-portal" className="print-doc hidden print:block">
           <A4CommercialInvoice
             id="printable-a4-invoice-content"
             data={{

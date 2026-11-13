@@ -1,4 +1,5 @@
 'use client';
+import { TextInput } from '@/components/ui/Input';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -432,8 +433,8 @@ export default function OnboardingPage() {
           <div className="absolute inset-0 bg-slate-950/40 z-1 pointer-events-none" />
           
           {/* Background Ambient Hardware Lighting Accents */}
-          <div className="absolute -top-40 -left-40 w-[450px] xl:w-[600px] h-[450px] xl:h-[600px] bg-teal-500/20 rounded-full blur-[120px] pointer-events-none z-1" />
-          <div className="absolute -bottom-40 -right-40 w-[400px] xl:w-[550px] h-[400px] xl:h-[550px] bg-teal-600/20 rounded-full blur-[100px] pointer-events-none z-1" />
+          <div className="absolute -top-40 -left-40 w-[450px] xl:w-[600px] h-[450px] xl:h-[600px] bg-accent-500/20 rounded-full blur-[120px] pointer-events-none z-1" />
+          <div className="absolute -bottom-40 -right-40 w-[400px] xl:w-[550px] h-[400px] xl:h-[550px] bg-accent-600/20 rounded-full blur-[100px] pointer-events-none z-1" />
 
           {/* Top Logo Bar */}
           <div className="relative z-10 flex items-center justify-between">
@@ -455,14 +456,14 @@ export default function OnboardingPage() {
             {/* Testimonial Card */}
             <div className="p-3.5 xl:p-4 rounded-2xl bg-slate-900/80 border border-slate-800/90 text-xs space-y-2.5 shadow-xl backdrop-blur-md">
               <div className="flex items-center justify-between">
-                <div className="flex text-amber-400 gap-0.5 text-xs">★★★★★</div>
+                <div className="flex text-warning-400 gap-0.5 text-xs">★★★★★</div>
                 <span className="text-xs text-slate-400 font-extrabold uppercase tracking-wider">Store Owner Review</span>
               </div>
               <p className="text-slate-200 font-medium italic leading-relaxed text-xs xl:text-xs">
                 "Setting up our 3 store locations on NoxGuarda took less than 5 minutes. The IMEI receipt verification stopped warranty disputes instantly."
               </p>
               <div className="flex items-center gap-2.5 pt-1.5 border-t border-slate-800">
-                <div className="w-7 h-7 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center text-xs shadow-md shadow-teal-600/30">
+                <div className="w-7 h-7 rounded-full bg-accent-600 text-white font-bold flex items-center justify-center text-xs shadow-md shadow-accent-600/30">
                   M
                 </div>
                 <div>
@@ -491,18 +492,16 @@ export default function OnboardingPage() {
               <div className="flex items-center justify-between gap-2">
                 <Logo size="sm" showSubtitle={false} />
                 <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-                  <Link href="/login" className="text-xs font-bold text-teal-600 hover:underline">
+                  <Link href="/login" className="text-xs font-bold text-accent-600 hover:underline">
                     Sign In
                   </Link>
                   {currentStep > 1 && (
-                    <button
-                      onClick={handleBack}
-                      className="text-xs text-slate-600 hover:text-slate-900 font-bold flex items-center gap-1 bg-slate-100 px-2 py-1 rounded-lg border border-slate-200"
-                    >
+                    <Button variant="secondary" size="sm"
+                      onClick={handleBack}>
                       <ArrowLeft className="w-3 h-3" /> Back
-                    </button>
+                    </Button>
                   )}
-                  <span className="text-xs sm:text-xs font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-teal-200">
+                  <span className="text-xs sm:text-xs font-extrabold text-accent-700 bg-accent-50 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-accent-200">
                     Step {currentStep}/5
                   </span>
                 </div>
@@ -525,9 +524,9 @@ export default function OnboardingPage() {
                       <div
                         className={`h-1.5 rounded-full transition-all duration-300 ${
                           isCompleted
-                            ? 'bg-emerald-500 group-hover:bg-emerald-600'
+                            ? 'bg-success-500 group-hover:bg-success-600'
                             : isCurrent
-                            ? 'bg-blue-600 ring-2 ring-blue-500/20'
+                            ? 'bg-accent-600 ring-2 ring-accent-500/20'
                             : 'bg-slate-200 group-hover:bg-slate-300'
                         }`}
                       />
@@ -551,10 +550,10 @@ export default function OnboardingPage() {
 
               <div className="flex items-center gap-2.5 text-xs font-bold">
                 <span className="text-slate-500 uppercase tracking-wider text-xs xl:text-xs">
-                  Step <span className="text-teal-600 font-extrabold">{currentStep}</span> of 5
+                  Step <span className="text-accent-600 font-extrabold">{currentStep}</span> of 5
                 </span>
                 <span className="text-slate-300">•</span>
-                <Link href="/login" className="text-teal-600 hover:underline">
+                <Link href="/login" className="text-accent-600 hover:underline">
                   Already registered? Sign In →
                 </Link>
               </div>
@@ -583,18 +582,18 @@ export default function OnboardingPage() {
                     <div
                       className={`h-1.5 rounded-full transition-all duration-300 ${
                         isCompleted
-                          ? 'bg-emerald-500 group-hover:bg-emerald-600'
+                          ? 'bg-success-500 group-hover:bg-success-600'
                           : isCurrent
-                          ? 'bg-teal-600 ring-2 ring-teal-500/20'
+                          ? 'bg-accent-600 ring-2 ring-accent-500/20'
                           : 'bg-slate-200 group-hover:bg-slate-300'
                       }`}
                     />
                     <div
                       className={`text-xs font-bold transition-colors ${
                         isCompleted
-                          ? 'text-emerald-700 group-hover:text-emerald-800'
+                          ? 'text-success-700 group-hover:text-success-800'
                           : isCurrent
-                          ? 'text-teal-600 font-extrabold'
+                          ? 'text-accent-600 font-extrabold'
                           : 'text-slate-400 group-hover:text-slate-600'
                       }`}
                     >
@@ -608,7 +607,7 @@ export default function OnboardingPage() {
 
           {/* Main Card Content (Vertically Centered to Fit Screen) */}
           <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-md lg:max-w-lg'} mx-auto w-full my-auto py-1 sm:py-2`}>
-            <div className="vf-card bg-white p-4 sm:p-5 lg:p-5 xl:p-6 rounded-2xl xl:rounded-3xl border border-slate-200 shadow-lg shadow-slate-200/50 space-y-3 sm:space-y-3.5">
+            <div className="vf-card bg-white p-4 sm:p-5 lg:p-5 xl:p-6 rounded-2xl xl:rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50 space-y-3 sm:space-y-3.5">
               
               {/* =================================================================== */}
               {/* STEP 1: CREATE ACCOUNT                                             */}
@@ -642,56 +641,40 @@ export default function OnboardingPage() {
                   <div className="space-y-2.5 sm:space-y-3">
                     {/* Full Name */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Full Name <span className="text-rose-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <input
+                      <TextInput label="Full Name"
                           type="text"
                           value={accountForm.fullName}
                           onChange={(e) => setAccountForm({ ...accountForm, fullName: e.target.value })}
-                          placeholder="e.g. Chinedu Okafor"
-                          className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
-                        />
-                        <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
-                      </div>
+                          placeholder="e.g. Chinedu Okafor" leftIcon={<User className="w-4 h-4" />} />
                       {accountErrors.fullName && (
-                        <p className="text-xs text-rose-500 font-semibold mt-0.5">{accountErrors.fullName}</p>
+                        <p className="text-xs text-danger-500 font-semibold mt-0.5">{accountErrors.fullName}</p>
                       )}
                     </div>
 
                     {/* Work Email */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Work Email Address <span className="text-rose-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <input
+                      <TextInput label="Work Email Address"
                           type="email"
                           value={accountForm.email}
                           onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
-                          placeholder="chinedu@zenithgadgets.ng"
-                          className="w-full text-xs sm:text-sm pl-9 pr-3.5 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
-                        />
-                        <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
-                      </div>
+                          placeholder="chinedu@zenithgadgets.ng" leftIcon={<Mail className="w-4 h-4" />} />
                       {accountErrors.email && (
-                        <p className="text-xs text-rose-500 font-semibold mt-0.5">{accountErrors.email}</p>
+                        <p className="text-xs text-danger-500 font-semibold mt-0.5">{accountErrors.email}</p>
                       )}
                     </div>
 
                     {/* Password */}
                     <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                        Password <span className="text-rose-500">*</span>
+                      <label htmlFor="onboarding-f1" className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                        Password <span className="text-danger-500">*</span>
                       </label>
                       <div className="relative">
-                        <input
+                        <input id="onboarding-f1"
                           type={showPassword ? 'text' : 'password'}
                           value={accountForm.password}
                           onChange={(e) => setAccountForm({ ...accountForm, password: e.target.value })}
                           placeholder="At least 8 characters"
-                          className="w-full text-xs sm:text-sm pl-9 pr-9 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
+                          className="w-full text-xs sm:text-sm pl-9 pr-9 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-500/20 font-medium text-slate-900"
                         />
                         <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5 sm:top-3" />
                         <button
@@ -703,7 +686,7 @@ export default function OnboardingPage() {
                         </button>
                       </div>
                       {accountErrors.password && (
-                        <p className="text-xs text-rose-500 font-semibold mt-0.5">{accountErrors.password}</p>
+                        <p className="text-xs text-danger-500 font-semibold mt-0.5">{accountErrors.password}</p>
                       )}
                     </div>
 
@@ -714,17 +697,17 @@ export default function OnboardingPage() {
                         id="agreeTerms"
                         checked={accountForm.agreeTerms}
                         onChange={(e) => setAccountForm({ ...accountForm, agreeTerms: e.target.checked })}
-                        className="mt-0.5 w-3.5 h-3.5 rounded text-teal-600 focus:ring-teal-500"
+                        className="mt-0.5 w-3.5 h-3.5 rounded text-accent-600 focus:ring-accent-500"
                       />
                       <label htmlFor="agreeTerms" className="text-xs text-slate-600 font-medium leading-tight">
-                        I agree to the <a href="#" className="text-teal-600 font-bold hover:underline">Terms of Service</a> and <a href="#" className="text-teal-600 font-bold hover:underline">Privacy Policy</a>.
+                        I agree to the <a href="#" className="text-accent-600 font-bold hover:underline">Terms of Service</a> and <a href="#" className="text-accent-600 font-bold hover:underline">Privacy Policy</a>.
                       </label>
                     </div>
 
                     {/* Or Login CTA */}
                     <div className="pt-2 border-t border-slate-100 text-center text-xs">
                       <span className="text-slate-500 font-medium">Already have an account? </span>
-                      <Link href="/login" className="text-teal-600 font-bold hover:underline">
+                      <Link href="/login" className="text-accent-600 font-bold hover:underline">
                         Log In to your workspace →
                       </Link>
                     </div>
@@ -737,7 +720,7 @@ export default function OnboardingPage() {
               {/* =================================================================== */}
               {currentStep === 2 && (
                 <div className="space-y-4 text-center animate-in fade-in duration-200">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto shadow-subtle">
+                  <div className="w-12 h-12 rounded-2xl bg-success-50 border border-success-200 text-success-600 flex items-center justify-center mx-auto shadow-subtle">
                     <Mail className="w-6 h-6" />
                   </div>
 
@@ -749,7 +732,7 @@ export default function OnboardingPage() {
                   </div>
 
                   {otpError && (
-                    <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-start justify-center gap-2 max-w-md mx-auto">
+                    <div className="p-2.5 rounded-xl bg-danger-50 border border-danger-200 text-danger-700 text-xs flex items-start justify-center gap-2 max-w-md mx-auto">
                       <span className="font-semibold">{otpError}</span>
                     </div>
                   )}
@@ -766,7 +749,7 @@ export default function OnboardingPage() {
                         maxLength={1}
                         value={digit}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
-                        className="w-8 h-10 sm:w-10 sm:h-12 text-center text-base sm:text-xl font-extrabold bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-mono text-slate-900 shadow-inner"
+                        className="w-8 h-10 sm:w-10 sm:h-12 text-center text-base sm:text-xl font-extrabold bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-500/20 font-mono text-slate-900 shadow-inner"
                       />
                     ))}
                   </div>
@@ -774,7 +757,7 @@ export default function OnboardingPage() {
                   <div className="pt-2 text-xs font-semibold text-slate-500 space-y-1">
                     <div>
                       Didn't receive the code?{' '}
-                      <button
+                      <Button variant="link"
                         type="button"
                         onClick={async () => {
                           try {
@@ -787,13 +770,11 @@ export default function OnboardingPage() {
                           } finally {
                             setIsSubmitting(false);
                           }
-                        }}
-                        className="text-teal-600 font-bold hover:underline cursor-pointer"
-                      >
+                        }}>
                         Resend Code
-                      </button>
+                      </Button>
                       {otpResent && (
-                        <p className="text-emerald-600 text-xs font-bold mt-1 flex items-center justify-center gap-1">
+                        <p className="text-success-600 text-xs font-bold mt-1 flex items-center justify-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" />
                           <span>A fresh 6-digit verification code has been sent to your email.</span>
                         </p>
@@ -809,7 +790,7 @@ export default function OnboardingPage() {
               {currentStep === 3 && (
                 <div className="space-y-3 sm:space-y-3.5 animate-in fade-in duration-200">
                   <div>
-                    <h3 className="text-lg sm:text-xl font-extrabold text-teal-700">Complete Store Profile</h3>
+                    <h3 className="text-lg sm:text-xl font-extrabold text-accent-700">Complete Store Profile</h3>
                     <p className="text-xs text-slate-500 font-medium mt-0.5">
                       Tell us about your phone retail store or distribution network.
                     </p>
@@ -820,36 +801,20 @@ export default function OnboardingPage() {
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
                       {/* Store Name */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                          Store Name <span className="text-rose-500">*</span>
-                        </label>
-                        <div className="relative">
-                          <input
+                        <TextInput label="Store Name"
                             type="text"
                             value={businessForm.storeName}
                             onChange={(e) => setBusinessForm({ ...businessForm, storeName: e.target.value })}
-                            placeholder="e.g. Zenith Gadgets Ltd"
-                            className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
-                          />
-                          <Store className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
-                        </div>
+                            placeholder="e.g. Zenith Gadgets Ltd" leftIcon={<Store className="w-4 h-4" />} />
                       </div>
 
                       {/* Store Phone */}
                       <div>
-                        <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
-                          Contact Phone
-                        </label>
-                        <div className="relative">
-                          <input
+                        <TextInput label="Contact Phone"
                             type="tel"
                             value={businessForm.phone}
                             onChange={(e) => setBusinessForm({ ...businessForm, phone: e.target.value })}
-                            placeholder="e.g. +234 800 000 0000"
-                            className="w-full text-xs sm:text-sm pl-8 pr-3 py-2 sm:py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 font-medium text-slate-900"
-                          />
-                          <Smartphone className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5 sm:top-3" />
-                        </div>
+                            placeholder="e.g. +234 800 000 0000" leftIcon={<Smartphone className="w-4 h-4" />} />
                       </div>
                     </div>
 
@@ -871,7 +836,7 @@ export default function OnboardingPage() {
                             onClick={() => setBusinessForm({ ...businessForm, businessType: cat.id })}
                             className={`p-2.5 rounded-xl text-left border transition-all ${
                               businessForm.businessType === cat.id
-                                ? 'bg-teal-50/70 border-teal-600 text-teal-900 shadow-sm'
+                                ? 'bg-accent-50/70 border-accent-600 text-accent-900 shadow-sm'
                                 : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-slate-300'
                             }`}
                           >
@@ -895,8 +860,8 @@ export default function OnboardingPage() {
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Select Store Plan</h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-extrabold inline-flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="px-2.5 py-0.5 rounded-full bg-success-50 text-success-700 border border-success-200 text-xs font-extrabold inline-flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-success-600" />
                           Free plan is free forever
                         </span>
                       </div>
@@ -928,17 +893,15 @@ export default function OnboardingPage() {
                     /* DEDICATED ABOUT PLAN DETAIL VIEW */
                     <div className="p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 animate-in zoom-in duration-200">
                       <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <button
+                        <Button variant="secondary" size="sm"
                           type="button"
-                          onClick={() => setViewingPlanDetails(null)}
-                          className="inline-flex items-center gap-1.5 text-xs font-extrabold text-slate-700 hover:text-teal-700 bg-slate-100 hover:bg-teal-50 px-3 py-1.5 rounded-xl transition cursor-pointer"
-                        >
+                          onClick={() => setViewingPlanDetails(null)}>
                           <ArrowLeft className="w-4 h-4" />
                           <span>Back to All Plans</span>
-                        </button>
+                        </Button>
 
                         <div className="flex items-center gap-2">
-                          <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-teal-50 text-teal-700 border border-teal-200">
+                          <span className="px-3 py-1 rounded-full text-xs font-extrabold uppercase bg-accent-50 text-accent-700 border border-accent-200">
                             {viewingPlanDetails.code} Tier Specifications
                           </span>
                         </div>
@@ -947,7 +910,7 @@ export default function OnboardingPage() {
                       {/* Plan Header & Pricing Banner */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white shadow-sm">
                         <div className="space-y-1">
-                          <div className="flex items-center gap-1.5 text-teal-400 text-xs font-bold uppercase tracking-wider">
+                          <div className="flex items-center gap-1.5 text-accent-400 text-xs font-bold uppercase tracking-wider">
                             <Layers className="w-4 h-4" />
                             <span>Detailed Plan Capabilities</span>
                           </div>
@@ -969,7 +932,7 @@ export default function OnboardingPage() {
                               /{viewingPlanDetails.monthlyPriceNgn === 0 ? 'forever' : billingCycle === 'monthly' ? 'mo' : 'yr'}
                             </span>
                           </div>
-                          <div className="text-xs text-emerald-400 font-extrabold mt-0.5 flex items-center sm:justify-end gap-1">
+                          <div className="text-xs text-success-400 font-extrabold mt-0.5 flex items-center sm:justify-end gap-1">
                             <CheckCircle2 className="w-3.5 h-3.5" />
                             <span>{viewingPlanDetails.monthlyPriceNgn === 0 ? 'Free forever • No card needed' : 'Starts as soon as you pay'}</span>
                           </div>
@@ -979,7 +942,7 @@ export default function OnboardingPage() {
                       {/* Key Capabilities Highlights */}
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs text-slate-700">
                         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2.5">
-                          <div className="p-2 rounded-lg bg-teal-100 text-teal-700 shrink-0">
+                          <div className="p-2 rounded-lg bg-accent-100 text-accent-700 shrink-0">
                             <Smartphone className="w-4 h-4" />
                           </div>
                           <div>
@@ -995,7 +958,7 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2.5">
-                          <div className="p-2 rounded-lg bg-blue-100 text-blue-700 shrink-0">
+                          <div className="p-2 rounded-lg bg-accent-100 text-accent-700 shrink-0">
                             <Printer className="w-4 h-4" />
                           </div>
                           <div>
@@ -1009,7 +972,7 @@ export default function OnboardingPage() {
                         </div>
 
                         <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 flex items-start gap-2.5">
-                          <div className="p-2 rounded-lg bg-emerald-100 text-emerald-700 shrink-0">
+                          <div className="p-2 rounded-lg bg-success-100 text-success-700 shrink-0">
                             <ShieldCheck className="w-4 h-4" />
                           </div>
                           <div>
@@ -1024,14 +987,14 @@ export default function OnboardingPage() {
                       {/* Complete Features Checklist */}
                       <div className="space-y-2 pt-2 border-t border-slate-100">
                         <h4 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                          <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                          <CheckCircle2 className="w-4 h-4 text-accent-600" />
                           <span>Everything Included In {viewingPlanDetails.name}</span>
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/70">
                           {Array.isArray(viewingPlanDetails.features) && viewingPlanDetails.features.length > 0 ? (
                             viewingPlanDetails.features.map((feat: string, idx: number) => (
                               <div key={idx} className="flex items-start gap-2 text-xs text-slate-800">
-                                <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                                <Check className="w-4 h-4 text-success-600 shrink-0 mt-0.5" />
                                 <span className="font-medium">{feat}</span>
                               </div>
                             ))
@@ -1045,25 +1008,21 @@ export default function OnboardingPage() {
 
                       {/* Detail Footer CTA */}
                       <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-                        <button
+                        <Button variant="secondary" size="sm" fullWidth className="sm:w-auto"
                           type="button"
-                          onClick={() => setViewingPlanDetails(null)}
-                          className="w-full sm:w-auto px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 transition cursor-pointer text-center"
-                        >
+                          onClick={() => setViewingPlanDetails(null)}>
                           ← Back to All Plans
-                        </button>
+                        </Button>
 
-                        <button
+                        <Button variant="primary" size="sm" fullWidth className="sm:w-auto"
                           type="button"
                           onClick={() => {
                             setSelectedPlan(viewingPlanDetails.code.toUpperCase());
                             setViewingPlanDetails(null);
-                          }}
-                          className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-500 text-white text-xs font-extrabold shadow-sm transition flex items-center justify-center gap-2 cursor-pointer"
-                        >
+                          }}>
                           <span>Select {viewingPlanDetails.name} & Continue</span>
                           <ArrowRight className="w-4 h-4" />
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
@@ -1086,12 +1045,12 @@ export default function OnboardingPage() {
                               onClick={() => setSelectedPlan(planItem.code.toUpperCase())}
                               className={`p-3.5 sm:p-4 rounded-2xl border cursor-pointer transition-all duration-200 relative flex flex-col justify-between space-y-3 ${
                                 isSelected
-                                  ? 'border-2 border-teal-600 bg-teal-50/40 ring-4 ring-teal-500/15 shadow-md shadow-teal-600/10'
+                                  ? 'border-2 border-accent-600 bg-accent-50/40 ring-4 ring-accent-500/15 shadow-md shadow-accent-600/10'
                                   : 'border-slate-200 bg-white hover:border-slate-300 hover:shadow-sm'
                               }`}
                             >
                               {isRecommended && (
-                                <div className="absolute -top-2.5 right-3 bg-teal-600 text-white text-xs font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                                <div className="absolute -top-2.5 right-3 bg-accent-600 text-white text-xs font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
                                   RECOMMENDED
                                 </div>
                               )}
@@ -1103,13 +1062,13 @@ export default function OnboardingPage() {
                                       {planItem.name}
                                     </span>
                                     {isFree && (
-                                      <span className="text-xs font-extrabold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                                      <span className="text-xs font-extrabold px-1.5 py-0.5 rounded bg-success-100 text-success-800">
                                         FREE
                                       </span>
                                     )}
                                   </div>
                                   {isSelected && (
-                                    <span className="w-4 h-4 rounded-full bg-teal-600 text-white flex items-center justify-center text-xs font-bold">✓</span>
+                                    <span className="w-4 h-4 rounded-full bg-accent-600 text-white flex items-center justify-center text-xs font-bold">✓</span>
                                   )}
                                 </div>
 
@@ -1130,22 +1089,22 @@ export default function OnboardingPage() {
                                   {Array.isArray(planItem.features) && planItem.features.length > 0 ? (
                                     planItem.features.slice(0, 4).map((feat: string, fIdx: number) => (
                                       <div key={fIdx} className="flex items-start gap-1.5 leading-snug">
-                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                        <Check className="w-3.5 h-3.5 text-success-600 shrink-0 mt-0.5" />
                                         <span className="line-clamp-1">{feat}</span>
                                       </div>
                                     ))
                                   ) : (
                                     <>
                                       <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                        <Check className="w-3.5 h-3.5 text-success-600 shrink-0" />
                                         <span>Devices: <strong>{planItem.maxDevices ? `${planItem.maxDevices.toLocaleString()}` : 'Unlimited'}</strong></span>
                                       </div>
                                       <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                        <Check className="w-3.5 h-3.5 text-success-600 shrink-0" />
                                         <span>{planItem.customBranding ? 'Custom Receipt Logo' : 'Standard Thermal POS'}</span>
                                       </div>
                                       <div className="flex items-center gap-1.5">
-                                        <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                                        <Check className="w-3.5 h-3.5 text-success-600 shrink-0" />
                                         <span>IMEI Ledger & QR Origin</span>
                                       </div>
                                     </>
@@ -1154,22 +1113,20 @@ export default function OnboardingPage() {
                               </div>
 
                               <div className="space-y-1.5 pt-2 border-t border-slate-100">
-                                <button
+                                <Button variant="secondary" size="sm" fullWidth
                                   type="button"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setViewingPlanDetails(planItem);
-                                  }}
-                                  className="w-full text-center text-xs font-bold text-teal-600 hover:text-teal-700 hover:underline flex items-center justify-center gap-1 cursor-pointer py-1 bg-teal-50/50 hover:bg-teal-50 rounded-lg transition"
-                                >
+                                  }}>
                                   <Info className="w-3.5 h-3.5" />
                                   <span>About Plan Specs ({planItem.features?.length || 6} Features) →</span>
-                                </button>
+                                </Button>
 
                                 <div
                                   className={`py-1.5 px-3 rounded-xl text-center text-xs font-bold transition-all ${
                                     isSelected
-                                      ? 'bg-teal-600 text-white shadow-sm'
+                                      ? 'bg-accent-600 text-white shadow-sm'
                                       : 'bg-slate-100 text-slate-700 hover:bg-slate-200/80'
                                   }`}
                                 >
@@ -1197,17 +1154,17 @@ export default function OnboardingPage() {
               {/* =================================================================== */}
               {currentStep === 5 && (
                 <div className="space-y-3.5 text-center animate-in fade-in duration-300">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-md shadow-emerald-600/20">
+                  <div className="w-12 h-12 rounded-2xl bg-success-100 text-success-600 flex items-center justify-center mx-auto shadow-md shadow-success-600/20">
                     <CheckCircle2 className="w-7 h-7" />
                   </div>
 
                   <div className="space-y-0.5">
                     <h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">Setup Complete!</h3>
                     <p className="text-xs sm:text-sm text-slate-600 font-medium max-w-md mx-auto">
-                      Your store workspace <strong className="text-slate-900">{businessForm.storeName || 'Store Workspace'}</strong> is ready on the <strong className="text-teal-600">{activePlanName}</strong> plan.
+                      Your store workspace <strong className="text-slate-900">{businessForm.storeName || 'Store Workspace'}</strong> is ready on the <strong className="text-accent-600">{activePlanName}</strong> plan.
                     </p>
                     {paymentPending && (
-                      <p className="text-xs text-amber-700 font-semibold max-w-md mx-auto pt-1">
+                      <p className="text-xs text-warning-700 font-semibold max-w-md mx-auto pt-1">
                         Payment for the {checkoutPlan?.name || pendingPlanCode} plan was not completed, so your store is on the Free plan (free forever, up to 10 devices). You can upgrade anytime from{' '}
                         <Link href="/dashboard/settings?tab=subscription" className="underline font-bold">Settings → Subscription</Link>.
                       </p>
@@ -1237,13 +1194,11 @@ export default function OnboardingPage() {
               {/* Bottom Primary Action Button */}
               <div className="pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center justify-between gap-3">
                 {currentStep > 1 && currentStep < 5 && (
-                  <button
+                  <Button variant="ghost" size="sm"
                     type="button"
-                    onClick={handleBack}
-                    className="text-xs font-bold text-slate-600 hover:text-slate-900"
-                  >
+                    onClick={handleBack}>
                     Back
-                  </button>
+                  </Button>
                 )}
 
                 {currentStep === 4 ? (
@@ -1252,13 +1207,13 @@ export default function OnboardingPage() {
                     type="button"
                     disabled={isSubmitting}
                     onClick={handleNext}
-                    className="relative group overflow-hidden border-2 border-teal-600 bg-white hover:bg-teal-600 text-teal-700 hover:text-white font-extrabold text-xs sm:text-sm py-2.5 px-6 sm:px-8 rounded-xl sm:rounded-2xl transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-teal-600/25 active:scale-[0.98] ml-auto flex items-center gap-2 cursor-pointer"
+                    className="relative group overflow-hidden border-2 border-accent-600 bg-white hover:bg-accent-600 text-accent-700 hover:text-white font-extrabold text-xs sm:text-sm py-2.5 px-6 sm:px-8 rounded-xl sm:rounded-2xl transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-accent-600/25 active:scale-[0.98] ml-auto flex items-center gap-2 cursor-pointer"
                   >
                     {/* Shimmer Light Stripe that sweeps across on hover */}
-                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-teal-100/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
+                    <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-accent-100/50 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-out pointer-events-none" />
                     
                     <span className="relative z-10">
-                      {isSubmitting ? 'Please wait...' : selectedIsFree ? 'Start free' : paymentPending ? 'Continue to payment' : 'Create account & pay'}
+                      {isSubmitting ? 'Please wait...' : selectedIsFree ? 'Get started' : paymentPending ? 'Continue to payment' : 'Create account & pay'}
                     </span>
                     <ArrowRight className="w-4 h-4 relative z-10 transition-transform group-hover:translate-x-1" />
                   </button>
@@ -1270,7 +1225,7 @@ export default function OnboardingPage() {
                     isLoading={isSubmitting}
                     onClick={handleNext}
                     rightIcon={<ArrowRight className="w-3.5 h-3.5" />}
-                    className="shadow-sm bg-teal-600 hover:bg-teal-500 font-bold text-xs sm:text-sm py-2 sm:py-2.5 px-4 sm:px-6 rounded-xl ml-auto"
+                    className="shadow-sm bg-accent-600 hover:bg-accent-500 font-bold text-xs sm:text-sm py-2 sm:py-2.5 px-4 sm:px-6 rounded-xl ml-auto"
                   >
                     {currentStep === 1 && 'Create Account & Continue'}
                     {currentStep === 2 && 'Verify Email & Continue'}
@@ -1281,7 +1236,7 @@ export default function OnboardingPage() {
               </div>
 
               {submitError && (
-                <div role="alert" className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs font-semibold text-rose-700">
+                <div role="alert" className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-xs font-semibold text-danger-700">
                   {submitError}
                 </div>
               )}
@@ -1289,7 +1244,7 @@ export default function OnboardingPage() {
               {/* Mobile Social Proof Banner (block lg:hidden) */}
               <div className="block lg:hidden pt-2 border-t border-slate-100 text-center">
                 <p className="text-xs font-semibold text-slate-500 flex items-center justify-center gap-1 flex-wrap">
-                  <span className="text-amber-500 font-bold">★★★★★</span>
+                  <span className="text-warning-500 font-bold">★★★★★</span>
                   <span>"Setup took &lt;5 mins" — Marcus V.</span>
                 </p>
               </div>
@@ -1313,7 +1268,7 @@ export default function OnboardingPage() {
           {/* Right Bottom Footer Link */}
           <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-md lg:max-w-lg'} mx-auto w-full text-center text-xs font-medium text-slate-500 py-1 shrink-0`}>
             Need assistance with workspace setup?{' '}
-            <a href="#" className="text-teal-600 font-bold hover:underline">Contact Store Support</a>
+            <a href="#" className="text-accent-600 font-bold hover:underline">Contact Store Support</a>
           </div>
         </div>
 

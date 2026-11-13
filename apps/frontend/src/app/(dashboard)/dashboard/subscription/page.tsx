@@ -142,14 +142,14 @@ export default function BusinessSubscriptionPage() {
       {trialInfo && (
         <div className={`p-4 sm:p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in duration-200 ${
           trialInfo.isExpired
-            ? 'bg-rose-50 border-rose-200 text-rose-950'
+            ? 'bg-danger-50 border-danger-200 text-danger-950'
             : trialInfo.daysRemaining <= 3
-            ? 'bg-amber-50 border-amber-200 text-amber-950'
-            : 'bg-teal-50/80 border-teal-200 text-teal-950'
+            ? 'bg-warning-50 border-warning-200 text-warning-950'
+            : 'bg-accent-50/80 border-accent-200 text-accent-950'
         }`}>
           <div className="flex items-start sm:items-center gap-3.5">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
-              trialInfo.isExpired ? 'bg-rose-600 text-white' : trialInfo.daysRemaining <= 3 ? 'bg-amber-600 text-white' : 'bg-teal-600 text-white'
+              trialInfo.isExpired ? 'bg-danger-600 text-white' : trialInfo.daysRemaining <= 3 ? 'bg-warning-600 text-white' : 'bg-accent-600 text-white'
             }`}>
               <Clock className="w-5 h-5" />
             </div>
@@ -172,15 +172,13 @@ export default function BusinessSubscriptionPage() {
             </div>
           </div>
 
-          <button
+          <Button variant="primary" size="sm" className="shrink-0 whitespace-nowrap"
             onClick={() => {
               const target = activePlan || publicPlans[0];
               if (target) setSelectedPlanForCheckout(target);
-            }}
-            className="px-4 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-extrabold shadow-sm transition shrink-0 whitespace-nowrap"
-          >
+            }}>
             Activate Subscription →
-          </button>
+          </Button>
         </div>
       )}
 
@@ -196,12 +194,12 @@ export default function BusinessSubscriptionPage() {
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Current Plan</span>
                   <span className={`px-2 py-0.5 rounded-md text-xs font-black uppercase ${
                     subscriptionStatus === 'ACTIVE'
-                      ? 'bg-emerald-100 text-emerald-800'
+                      ? 'bg-success-100 text-success-800'
                       : subscriptionStatus === 'FREE'
-                      ? 'bg-teal-100 text-teal-800'
+                      ? 'bg-accent-100 text-accent-800'
                       : subscriptionStatus === 'TRIAL'
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'bg-rose-100 text-rose-800'
+                      ? 'bg-warning-100 text-warning-800'
+                      : 'bg-danger-100 text-danger-800'
                   }`}>
                     {subscriptionStatus}
                   </span>
@@ -215,7 +213,7 @@ export default function BusinessSubscriptionPage() {
               </div>
 
               <div className="text-right shrink-0">
-                <span className="text-xl sm:text-2xl font-black text-teal-600 block">
+                <span className="text-xl sm:text-2xl font-black text-accent-600 block">
                   ₦{monthlyPrice.toLocaleString()}
                 </span>
                 <span className="text-xs text-slate-400 font-bold uppercase block">Per Month</span>
@@ -229,27 +227,27 @@ export default function BusinessSubscriptionPage() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs text-slate-700 font-medium">
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0" />
                   <span>Up to <strong>{maxDevices > 0 ? maxDevices.toLocaleString() : 'Unlimited'}</strong> Registered Devices</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0" />
                   <span><strong>{maxUsers > 0 ? maxUsers : 'Unlimited'}</strong> Staff User Accounts</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0" />
                   <span>Full POS Checkout & Receipts</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0" />
                   <span>Direct WhatsApp PDF Invoices</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0" />
                   <span>IMEI & Barcode Camera Scanner</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0" />
                   <span>Custom Store Logo & Branding</span>
                 </div>
               </div>
@@ -260,7 +258,7 @@ export default function BusinessSubscriptionPage() {
             <div className="text-slate-500 font-medium">
               Store: <strong className="text-slate-900">{business?.name}</strong>
             </div>
-            <a href="#available-plans" className="text-teal-600 hover:text-teal-700 font-extrabold flex items-center gap-1">
+            <a href="#available-plans" className="text-accent-600 hover:text-accent-700 font-extrabold flex items-center gap-1">
               <span>Change or Upgrade Plan</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
@@ -274,7 +272,7 @@ export default function BusinessSubscriptionPage() {
               <h3 className="font-extrabold text-sm text-slate-200 uppercase tracking-wider">
                 Store Capacity Usage
               </h3>
-              <Badge variant="new" size="sm" className="bg-teal-500/20 text-teal-300 border-teal-500/30">
+              <Badge variant="new" size="sm" className="bg-accent-500/20 text-accent-300 border-accent-500/30">
                 Live Stats
               </Badge>
             </div>
@@ -284,16 +282,16 @@ export default function BusinessSubscriptionPage() {
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-300 flex items-center gap-1.5">
-                    <Smartphone className="w-3.5 h-3.5 text-teal-400" />
+                    <Smartphone className="w-3.5 h-3.5 text-accent-400" />
                     Device Stock Ingested
                   </span>
-                  <span className="text-teal-400 font-mono">
+                  <span className="text-accent-400 font-mono">
                     {deviceCount} / {maxDevices} ({Math.round((deviceCount / maxDevices) * 100)}%)
                   </span>
                 </div>
                 <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-teal-500 rounded-full transition-all duration-500"
+                    className="h-full bg-accent-500 rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(100, Math.round((deviceCount / maxDevices) * 100))}%` }}
                   />
                 </div>
@@ -303,16 +301,16 @@ export default function BusinessSubscriptionPage() {
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-300 flex items-center gap-1.5">
-                    <Users className="w-3.5 h-3.5 text-teal-400" />
+                    <Users className="w-3.5 h-3.5 text-accent-400" />
                     Active Staff Accounts
                   </span>
-                  <span className="text-teal-400 font-mono">
+                  <span className="text-accent-400 font-mono">
                     {staffCount} / {maxUsers} ({Math.round((staffCount / maxUsers) * 100)}%)
                   </span>
                 </div>
                 <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-teal-500 rounded-full transition-all duration-500"
+                    className="h-full bg-accent-500 rounded-full transition-all duration-500"
                     style={{ width: `${Math.min(100, Math.round((staffCount / maxUsers) * 100))}%` }}
                   />
                 </div>
@@ -322,22 +320,22 @@ export default function BusinessSubscriptionPage() {
               <div className="space-y-1.5">
                 <div className="flex justify-between text-xs font-bold">
                   <span className="text-slate-300 flex items-center gap-1.5">
-                    <Receipt className="w-3.5 h-3.5 text-teal-400" />
+                    <Receipt className="w-3.5 h-3.5 text-accent-400" />
                     Invoices & Receipts
                   </span>
-                  <span className="text-emerald-400 font-mono">
+                  <span className="text-success-400 font-mono">
                     {salesCount} Total (Unlimited)
                   </span>
                 </div>
                 <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-emerald-500 rounded-full w-full" />
+                  <div className="h-full bg-success-500 rounded-full w-full" />
                 </div>
               </div>
             </div>
           </div>
 
           <div className="p-3.5 rounded-xl bg-slate-800/80 border border-slate-700/80 flex items-center gap-3 text-xs text-slate-300 font-medium">
-            <ShieldCheck className="w-5 h-5 text-teal-400 shrink-0" />
+            <ShieldCheck className="w-5 h-5 text-accent-400 shrink-0" />
             <span>All records have permanent cryptographically signed QR codes and IMEI fraud checks.</span>
           </div>
         </div>
@@ -373,7 +371,7 @@ export default function BusinessSubscriptionPage() {
               }`}
             >
               Annual Billing
-              <span className="px-1.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
+              <span className="px-1.5 py-0.5 rounded-full bg-success-100 text-success-800 text-xs font-black">
                 Save 20%
               </span>
             </button>
@@ -393,12 +391,12 @@ export default function BusinessSubscriptionPage() {
                 key={plan.id || plan.code}
                 className={`rounded-2xl p-6 sm:p-7 flex flex-col justify-between transition-all relative ${
                   isCurrent
-                    ? 'bg-white border-2 border-teal-600 ring-4 ring-teal-500/10 shadow-md'
+                    ? 'bg-white border-2 border-accent-600 ring-4 ring-accent-500/10 shadow-md'
                     : 'bg-white border border-slate-200/90 hover:border-slate-300 shadow-sm'
                 }`}
               >
                 {isCurrent && (
-                  <span className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-teal-600 text-white text-xs font-black uppercase tracking-wider shadow-xs">
+                  <span className="absolute -top-3 left-6 px-3 py-0.5 rounded-full bg-accent-600 text-white text-xs font-black uppercase tracking-wider shadow-xs">
                     Your Active Plan
                   </span>
                 )}
@@ -407,7 +405,7 @@ export default function BusinessSubscriptionPage() {
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-black text-slate-900">{plan.name}</h3>
                     {plan.code === 'PRO' && (
-                      <span className="px-2 py-0.5 rounded-md bg-amber-100 text-amber-800 text-xs font-black uppercase">
+                      <span className="px-2 py-0.5 rounded-md bg-warning-100 text-warning-800 text-xs font-black uppercase">
                         Most Popular
                       </span>
                     )}
@@ -424,7 +422,7 @@ export default function BusinessSubscriptionPage() {
                       <span className="text-xs text-slate-400 font-bold">/ month</span>
                     </div>
                     {billingCycle === 'annual' && (
-                      <span className="text-xs text-emerald-700 font-bold block mt-0.5">
+                      <span className="text-xs text-success-700 font-bold block mt-0.5">
                         Billed annually (₦{annualPrice.toLocaleString()} / year)
                       </span>
                     )}
@@ -433,23 +431,23 @@ export default function BusinessSubscriptionPage() {
                   {/* Feature Checklist */}
                   <div className="mt-5 space-y-2.5 text-xs text-slate-700 font-medium">
                     <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-teal-600 shrink-0" />
+                      <Check className="w-4 h-4 text-accent-600 shrink-0" />
                       <span><strong>{plan.maxDevices || 100}</strong> Device Intake & Registration</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-teal-600 shrink-0" />
+                      <Check className="w-4 h-4 text-accent-600 shrink-0" />
                       <span><strong>{plan.maxUsers || 3}</strong> Staff User Logins</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-teal-600 shrink-0" />
+                      <Check className="w-4 h-4 text-accent-600 shrink-0" />
                       <span>Full POS Checkout & Receipts</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-teal-600 shrink-0" />
+                      <Check className="w-4 h-4 text-accent-600 shrink-0" />
                       <span>Direct WhatsApp PDF Share</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Check className="w-4 h-4 text-teal-600 shrink-0" />
+                      <Check className="w-4 h-4 text-accent-600 shrink-0" />
                       <span>Custom Store Branding & QR</span>
                     </div>
                   </div>
@@ -464,7 +462,7 @@ export default function BusinessSubscriptionPage() {
                     className={
                       isCurrent
                         ? 'font-extrabold text-xs bg-slate-100 hover:bg-slate-200 text-slate-800'
-                        : 'font-extrabold text-xs bg-teal-600 hover:bg-teal-500 text-white shadow-sm border-none'
+                        : 'font-extrabold text-xs bg-accent-600 hover:bg-accent-500 text-white shadow-sm border-none'
                     }
                   >
                     {isCurrent ? 'Renew / Extend Subscription' : `Upgrade to ${plan.name} →`}
@@ -479,7 +477,7 @@ export default function BusinessSubscriptionPage() {
       {/* Frequently Asked Questions */}
       <section className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-4">
         <div className="flex items-center gap-2.5">
-          <HelpCircle className="w-5 h-5 text-teal-600 shrink-0" />
+          <HelpCircle className="w-5 h-5 text-accent-600 shrink-0" />
           <h3 className="text-base sm:text-lg font-black text-slate-900">
             Frequently Asked Questions
           </h3>

@@ -128,7 +128,7 @@ export default function LoginPage() {
             <span className="text-slate-500">No store account?</span>
             <Link href="/onboarding">
               <Button variant="secondary" size="sm">
-                Start free →
+                Get started →
               </Button>
             </Link>
           </div>

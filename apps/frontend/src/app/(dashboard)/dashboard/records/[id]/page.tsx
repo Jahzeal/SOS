@@ -232,7 +232,7 @@ export default function PhoneRecordDetailPage() {
   if (loading) {
     return (
       <div className="py-24 text-center space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin text-teal-600 mx-auto" />
+        <Loader2 className="w-8 h-8 animate-spin text-accent-600 mx-auto" />
         <p className="text-xs font-bold text-slate-500">Loading device passport & records...</p>
       </div>
     );
@@ -241,7 +241,7 @@ export default function PhoneRecordDetailPage() {
   if (error && !record) {
     return (
       <div className="max-w-2xl mx-auto py-16 px-4 text-center space-y-4">
-        <div className="w-16 h-16 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center mx-auto">
+        <div className="w-16 h-16 rounded-2xl bg-danger-50 border border-danger-200 text-danger-600 flex items-center justify-center mx-auto">
           <AlertTriangle className="w-8 h-8" />
         </div>
         <h2 className="text-xl font-extrabold text-slate-900">Record Not Found</h2>
@@ -266,7 +266,7 @@ export default function PhoneRecordDetailPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-            <Link href="/dashboard/records" className="hover:text-teal-600 transition flex items-center gap-1">
+            <Link href="/dashboard/records" className="hover:text-accent-600 transition flex items-center gap-1">
               <ArrowLeft className="w-3.5 h-3.5" /> Records
             </Link>
             <span>/</span>
@@ -311,7 +311,7 @@ export default function PhoneRecordDetailPage() {
                 size="sm"
                 onClick={handleSave}
                 disabled={saving}
-                className="bg-teal-600 hover:bg-teal-700 text-white font-bold"
+                className="bg-accent-600 hover:bg-accent-700 text-white font-bold"
                 leftIcon={<Save className="w-3.5 h-3.5" />}
               >
                 {saving ? 'Saving...' : 'Save Changes'}
@@ -332,21 +332,19 @@ export default function PhoneRecordDetailPage() {
                   <Button
                     variant="primary"
                     size="sm"
-                    className="bg-teal-600 hover:bg-teal-700 text-white font-bold"
+                    className="bg-accent-600 hover:bg-accent-700 text-white font-bold"
                     leftIcon={<ShoppingCart className="w-3.5 h-3.5" />}
                   >
                     Quick Sell POS
                   </Button>
                 </Link>
               )}
-              <button
+              <Button variant="secondary" size="icon" aria-label="Delete Record"
                 onClick={handleDelete}
                 disabled={saving}
-                className="p-2 rounded-xl text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition border border-slate-200"
-                title="Delete Record"
-              >
+                title="Delete Record">
                 <Trash2 className="w-4 h-4" />
-              </button>
+              </Button>
             </>
           )}
         </div>
@@ -354,15 +352,15 @@ export default function PhoneRecordDetailPage() {
 
       {/* Notifications */}
       {successMessage && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 shadow-sm animate-in fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+        <div className="p-4 rounded-2xl bg-success-50 border border-success-200 text-success-800 text-xs font-bold flex items-center gap-2 shadow-sm animate-in fade-in">
+          <CheckCircle2 className="w-4 h-4 text-success-600 shrink-0" />
           <span>{successMessage}</span>
         </div>
       )}
 
       {error && (
-        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2 shadow-sm animate-in fade-in">
-          <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+        <div className="p-4 rounded-2xl bg-danger-50 border border-danger-200 text-danger-800 text-xs font-bold flex items-center gap-2 shadow-sm animate-in fade-in">
+          <AlertTriangle className="w-4 h-4 text-danger-600 shrink-0" />
           <span>{error}</span>
         </div>
       )}
@@ -374,10 +372,10 @@ export default function PhoneRecordDetailPage() {
         <div className="lg:col-span-8 space-y-6">
 
           {/* Primary Hardware Specs Card */}
-          <div className="bg-white p-5 sm:p-7 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-6">
             <div className="flex items-center justify-between border-b border-slate-100 pb-4">
               <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center font-bold">
+                <div className="w-10 h-10 rounded-xl bg-accent-50 border border-accent-200 text-accent-700 flex items-center justify-center font-bold">
                   <Smartphone className="w-5 h-5" />
                 </div>
                 <div>
@@ -386,7 +384,7 @@ export default function PhoneRecordDetailPage() {
                 </div>
               </div>
               {isEditing && (
-                <span className="px-2.5 py-1 rounded-full text-xs font-extrabold uppercase bg-amber-50 text-amber-800 border border-amber-200">
+                <span className="px-2.5 py-1 rounded-full text-xs font-extrabold uppercase bg-warning-50 text-warning-800 border border-warning-200">
                   Editing Mode
                 </span>
               )}
@@ -395,14 +393,14 @@ export default function PhoneRecordDetailPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               {/* Brand */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
+                <label htmlFor="shboard-records-id-f1" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Brand Name
                 </label>
                 {isEditing ? (
-                  <select
+                  <select id="shboard-records-id-f1"
                     value={formData.brand}
                     onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:border-teal-600 text-slate-900 cursor-pointer"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 rounded-control border border-slate-200 shadow-subtle focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
                   >
                     {!POPULAR_BRANDS.includes(formData.brand) && formData.brand && (
                       <option value={formData.brand}>{formData.brand}</option>
@@ -420,16 +418,16 @@ export default function PhoneRecordDetailPage() {
 
               {/* Model */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
+                <label htmlFor="shboard-records-id-f2" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Model / Variant
                 </label>
                 {isEditing ? (
-                  <input
+                  <input id="shboard-records-id-f2"
                     type="text"
                     required
                     value={formData.model}
                     onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-teal-600 focus:ring-2 focus:ring-teal-500/20 text-slate-900"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
                   />
                 ) : (
                   <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-900 text-sm">
@@ -440,16 +438,16 @@ export default function PhoneRecordDetailPage() {
 
               {/* Color */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
+                <label htmlFor="shboard-records-id-f3" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Color Finish
                 </label>
                 {isEditing ? (
-                  <input
+                  <input id="shboard-records-id-f3" aria-label="e.g. Space Gray, Titanium, Black"
                     type="text"
                     placeholder="e.g. Space Gray, Titanium, Black"
                     value={formData.color}
                     onChange={(e) => setFormData({ ...formData, color: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-teal-600 text-slate-900"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
                   />
                 ) : (
                   <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-semibold text-slate-800">
@@ -460,14 +458,14 @@ export default function PhoneRecordDetailPage() {
 
               {/* Storage Capacity (Dropdown matching upload) */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
+                <label htmlFor="shboard-records-id-f4" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Storage Capacity
                 </label>
                 {isEditing ? (
-                  <select
+                  <select id="shboard-records-id-f4"
                     value={formData.storageCapacity}
                     onChange={(e) => setFormData({ ...formData, storageCapacity: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:border-teal-600 text-slate-900 cursor-pointer"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 rounded-control border border-slate-200 shadow-subtle focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
                   >
                     {!STORAGE_OPTIONS.includes(formData.storageCapacity) && formData.storageCapacity && (
                       <option value={formData.storageCapacity}>{formData.storageCapacity}</option>
@@ -485,14 +483,14 @@ export default function PhoneRecordDetailPage() {
 
               {/* Condition */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
+                <label htmlFor="shboard-records-id-f5" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Physical Condition
                 </label>
                 {isEditing ? (
-                  <select
+                  <select id="shboard-records-id-f5"
                     value={formData.condition}
                     onChange={(e) => setFormData({ ...formData, condition: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:border-teal-600 text-slate-900 cursor-pointer"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 rounded-control border border-slate-200 shadow-subtle focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
                   >
                     {CONDITION_OPTIONS.map((c) => (
                       <option key={c.value} value={c.value}>{c.label}</option>
@@ -507,14 +505,14 @@ export default function PhoneRecordDetailPage() {
 
               {/* Inventory Status */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
+                <label htmlFor="shboard-records-id-f6" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                   Inventory Status
                 </label>
                 {isEditing ? (
-                  <select
+                  <select id="shboard-records-id-f6"
                     value={formData.status}
                     onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                    className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:border-teal-600 text-slate-900 cursor-pointer"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 rounded-control border border-slate-200 shadow-subtle focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
                   >
                     {STATUS_OPTIONS.map((s) => (
                       <option key={s.value} value={s.value}>{s.label}</option>
@@ -537,18 +535,16 @@ export default function PhoneRecordDetailPage() {
                 <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-1">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-500 uppercase">Primary IMEI (1)</span>
-                    <button
+                    <Button variant="ghost" size="md"
                       type="button"
                       onClick={() => handleCopy(record?.imei1, 'imei1')}
-                      className="text-slate-400 hover:text-teal-600 cursor-pointer"
-                      title="Copy IMEI 1"
-                    >
+                      title="Copy IMEI 1">
                       {copiedField === 'imei1' ? (
-                        <span className="text-xs font-extrabold text-emerald-600">Copied!</span>
+                        <span className="text-xs font-extrabold text-success-600">Copied!</span>
                       ) : (
                         <Copy className="w-3.5 h-3.5" />
                       )}
-                    </button>
+                    </Button>
                   </div>
                   <div className="font-mono font-extrabold text-slate-900 text-xs sm:text-sm tracking-wide">
                     {record?.imei1}
@@ -560,27 +556,25 @@ export default function PhoneRecordDetailPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-500 uppercase">Secondary IMEI (2)</span>
                     {record?.imei2 && (
-                      <button
+                      <Button variant="ghost" size="md"
                         type="button"
                         onClick={() => handleCopy(record?.imei2, 'imei2')}
-                        className="text-slate-400 hover:text-teal-600 cursor-pointer"
-                        title="Copy IMEI 2"
-                      >
+                        title="Copy IMEI 2">
                         {copiedField === 'imei2' ? (
-                          <span className="text-xs font-extrabold text-emerald-600">Copied!</span>
+                          <span className="text-xs font-extrabold text-success-600">Copied!</span>
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
-                      </button>
+                      </Button>
                     )}
                   </div>
                   {isEditing ? (
-                    <input
+                    <input aria-label="Optional IMEI 2"
                       type="text"
                       placeholder="Optional IMEI 2"
                       value={formData.imei2}
                       onChange={(e) => setFormData({ ...formData, imei2: e.target.value })}
-                      className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg font-mono text-xs outline-none focus:border-teal-600"
+                      className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed font-mono"
                     />
                   ) : (
                     <div className="font-mono font-bold text-slate-800 text-xs">
@@ -594,27 +588,25 @@ export default function PhoneRecordDetailPage() {
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-bold text-slate-500 uppercase">Serial Number (SN)</span>
                     {record?.serialNumber && (
-                      <button
+                      <Button variant="ghost" size="md"
                         type="button"
                         onClick={() => handleCopy(record?.serialNumber, 'sn')}
-                        className="text-slate-400 hover:text-teal-600 cursor-pointer"
-                        title="Copy Serial Number"
-                      >
+                        title="Copy Serial Number">
                         {copiedField === 'sn' ? (
-                          <span className="text-xs font-extrabold text-emerald-600">Copied!</span>
+                          <span className="text-xs font-extrabold text-success-600">Copied!</span>
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
-                      </button>
+                      </Button>
                     )}
                   </div>
                   {isEditing ? (
-                    <input
+                    <input aria-label="Optional Serial"
                       type="text"
                       placeholder="Optional Serial"
                       value={formData.serialNumber}
                       onChange={(e) => setFormData({ ...formData, serialNumber: e.target.value })}
-                      className="w-full px-2 py-1 bg-white border border-slate-200 rounded-lg font-mono text-xs outline-none focus:border-teal-600"
+                      className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed font-mono"
                     />
                   ) : (
                     <div className="font-mono font-bold text-slate-800 text-xs">
@@ -633,7 +625,7 @@ export default function PhoneRecordDetailPage() {
                 {/* Purchase Price */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
+                    <label htmlFor="shboard-records-id-f7" className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
                       Purchase / Buyback Cost
                     </label>
                     {isEditing && formData.purchasePrice > 0 && (
@@ -645,7 +637,7 @@ export default function PhoneRecordDetailPage() {
                   {isEditing ? (
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-slate-400 font-extrabold text-xs">₦</span>
-                      <input
+                      <input id="shboard-records-id-f7" aria-label="0"
                         type="text"
                         inputMode="decimal"
                         value={formatNumberWithCommas(formData.purchasePrice)}
@@ -654,7 +646,7 @@ export default function PhoneRecordDetailPage() {
                           setFormData({ ...formData, purchasePrice: Number(raw) || 0 });
                         }}
                         placeholder="0"
-                        className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-teal-600 text-slate-900 text-xs"
+                        className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed pl-7 pr-3 font-mono"
                       />
                     </div>
                   ) : (
@@ -667,11 +659,11 @@ export default function PhoneRecordDetailPage() {
                 {/* Selling Price */}
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
+                    <label htmlFor="shboard-records-id-f8" className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
                       Retail Selling Price
                     </label>
                     {isEditing && formData.sellingPrice > 0 && (
-                      <span className="text-xs font-bold text-teal-600">
+                      <span className="text-xs font-bold text-accent-600">
                         ₦{Number(formData.sellingPrice).toLocaleString()}
                       </span>
                     )}
@@ -679,7 +671,7 @@ export default function PhoneRecordDetailPage() {
                   {isEditing ? (
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-slate-400 font-extrabold text-xs">₦</span>
-                      <input
+                      <input id="shboard-records-id-f8" aria-label="0"
                         type="text"
                         inputMode="decimal"
                         value={formatNumberWithCommas(formData.sellingPrice)}
@@ -688,11 +680,11 @@ export default function PhoneRecordDetailPage() {
                           setFormData({ ...formData, sellingPrice: Number(raw) || 0 });
                         }}
                         placeholder="0"
-                        className="w-full pl-7 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-teal-600 text-slate-900 text-xs"
+                        className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed pl-7 pr-3 font-mono"
                       />
                     </div>
                   ) : (
-                    <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono font-extrabold text-teal-700 text-sm">
+                    <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-mono font-extrabold text-accent-700 text-sm">
                       ₦{record?.sellingPrice?.toLocaleString() || 0}
                     </div>
                   )}
@@ -700,14 +692,14 @@ export default function PhoneRecordDetailPage() {
 
                 {/* Warranty Duration */}
                 <div>
-                  <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
+                  <label htmlFor="shboard-records-id-f9" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">
                     Warranty Duration
                   </label>
                   {isEditing ? (
-                    <select
+                    <select id="shboard-records-id-f9"
                       value={formData.warrantyDurationMonths}
                       onChange={(e) => setFormData({ ...formData, warrantyDurationMonths: Number(e.target.value) || 0 })}
-                      className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-semibold outline-none focus:border-teal-600 text-slate-900 cursor-pointer"
+                      className="w-full text-sm px-3 py-2 bg-white text-slate-900 rounded-control border border-slate-200 shadow-subtle focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:cursor-not-allowed"
                     >
                       {WARRANTY_OPTIONS.map((w) => (
                         <option key={w.value} value={w.value}>{w.label}</option>
@@ -716,7 +708,7 @@ export default function PhoneRecordDetailPage() {
                   ) : (
                     <div className="p-3 bg-slate-50 border border-slate-100 rounded-xl font-bold text-slate-800 text-sm flex items-center justify-between">
                       <span>{record?.warrantyDurationMonths || 0} Months</span>
-                      <span className={`text-xs font-extrabold px-2 py-0.5 rounded-md ${isWarrantyActive ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'}`}>
+                      <span className={`text-xs font-extrabold px-2 py-0.5 rounded-md ${isWarrantyActive ? 'bg-success-100 text-success-800' : 'bg-danger-100 text-danger-800'}`}>
                         {isWarrantyActive ? 'Active' : 'Expired'}
                       </span>
                     </div>
@@ -728,9 +720,9 @@ export default function PhoneRecordDetailPage() {
           </div>
 
           {/* Linked Sales & Repairs History */}
-          <div className="bg-white p-5 sm:p-7 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white p-5 sm:p-7 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
-              <Receipt className="w-4 h-4 text-teal-600" />
+              <Receipt className="w-4 h-4 text-accent-600" />
               <span>Transaction & Service Records</span>
             </h3>
 
@@ -743,7 +735,7 @@ export default function PhoneRecordDetailPage() {
                     <div key={idx} className="space-y-1 pt-1">
                       <div className="font-extrabold text-slate-900">Receipt #{si.sale?.receiptNumber || si.sale?.invoiceNumber || 'N/A'}</div>
                       <div className="text-slate-500">Sold for ₦{si.price?.toLocaleString()} on {new Date(si.sale?.createdAt).toLocaleDateString()}</div>
-                      <Link href={`/dashboard/receipts?search=${si.sale?.receiptNumber || ''}`} className="text-teal-600 font-bold hover:underline inline-flex items-center gap-1 text-xs pt-1">
+                      <Link href={`/dashboard/receipts?search=${si.sale?.receiptNumber || ''}`} className="text-accent-600 font-bold hover:underline inline-flex items-center gap-1 text-xs pt-1">
                         View Receipt →
                       </Link>
                     </div>
@@ -761,7 +753,7 @@ export default function PhoneRecordDetailPage() {
                     <div key={idx} className="space-y-1 pt-1">
                       <div className="font-extrabold text-slate-900">Ticket #{r.ticketNumber} ({r.status})</div>
                       <div className="text-slate-500">{r.issueDescription}</div>
-                      <Link href={`/dashboard/repairs?ticket=${r.ticketNumber}`} className="text-teal-600 font-bold hover:underline inline-flex items-center gap-1 text-xs pt-1">
+                      <Link href={`/dashboard/repairs?ticket=${r.ticketNumber}`} className="text-accent-600 font-bold hover:underline inline-flex items-center gap-1 text-xs pt-1">
                         View Ticket →
                       </Link>
                     </div>
@@ -779,13 +771,13 @@ export default function PhoneRecordDetailPage() {
         <div className="lg:col-span-4 space-y-6">
 
           {/* Digital QR Origin Passport */}
-          <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 text-center">
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4 text-center">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
-                <QrCode className="w-4 h-4 text-teal-600" />
+                <QrCode className="w-4 h-4 text-accent-600" />
                 <span>QR Origin Passport</span>
               </span>
-              <span className="text-xs font-extrabold uppercase px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+              <span className="text-xs font-extrabold uppercase px-2 py-0.5 rounded bg-success-50 text-success-700 border border-success-200">
                 100% Genuine
               </span>
             </div>
@@ -812,7 +804,7 @@ export default function PhoneRecordDetailPage() {
               href={`/verify?imei=${record?.imei1}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-teal-600 hover:text-teal-700 hover:underline py-1"
+              className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-accent-600 hover:text-accent-700 hover:underline py-1"
             >
               <span>Open Public Verification Page</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -820,10 +812,10 @@ export default function PhoneRecordDetailPage() {
           </div>
 
           {/* Customer Association Card */}
-          <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white p-5 sm:p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <span className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
-                <User className="w-4 h-4 text-teal-600" />
+                <User className="w-4 h-4 text-accent-600" />
                 <span>Customer Profile</span>
               </span>
             </div>
@@ -831,16 +823,16 @@ export default function PhoneRecordDetailPage() {
             <div className="space-y-3 text-xs">
               {/* Customer Name */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1">
+                <label htmlFor="shboard-records-id-f10" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1">
                   Customer / Buyer Name
                 </label>
                 {isEditing ? (
-                  <input
+                  <input id="shboard-records-id-f10" aria-label="e.g. Emeka Obi"
                     type="text"
                     placeholder="e.g. Emeka Obi"
                     value={formData.customerName}
                     onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-teal-600 text-slate-900"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
                   />
                 ) : (
                   <div className="font-bold text-slate-900 text-sm">
@@ -851,22 +843,22 @@ export default function PhoneRecordDetailPage() {
 
               {/* Customer Phone */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1">
+                <label htmlFor="shboard-records-id-f11" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1">
                   Phone Number
                 </label>
                 {isEditing ? (
-                  <input
+                  <input id="shboard-records-id-f11" aria-label="e.g. +234 800 000 0000"
                     type="tel"
                     placeholder="e.g. +234 800 000 0000"
                     value={formData.customerPhone}
                     onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-teal-600 text-slate-900"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
                   />
                 ) : (
                   <div className="flex items-center justify-between font-mono font-semibold text-slate-700">
                     <span>{record?.customer?.phone || 'N/A'}</span>
                     {record?.customer?.phone && (
-                      <a href={`tel:${record.customer.phone}`} className="text-teal-600 hover:underline text-xs font-bold">
+                      <a href={`tel:${record.customer.phone}`} className="text-accent-600 hover:underline text-xs font-bold">
                         Call →
                       </a>
                     )}
@@ -876,16 +868,16 @@ export default function PhoneRecordDetailPage() {
 
               {/* Customer Email */}
               <div>
-                <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1">
+                <label htmlFor="shboard-records-id-f12" className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1">
                   Email Address
                 </label>
                 {isEditing ? (
-                  <input
+                  <input id="shboard-records-id-f12" aria-label="e.g. customer@example.com"
                     type="email"
                     placeholder="e.g. customer@example.com"
                     value={formData.customerEmail}
                     onChange={(e) => setFormData({ ...formData, customerEmail: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium outline-none focus:border-teal-600 text-slate-900"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
                   />
                 ) : (
                   <div className="font-medium text-slate-600">
@@ -897,7 +889,7 @@ export default function PhoneRecordDetailPage() {
           </div>
 
           {/* Audit & Registration Metadata */}
-          <div className="bg-white p-5 rounded-3xl border border-slate-200 shadow-sm space-y-2.5 text-xs text-slate-500 font-medium">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-2.5 text-xs text-slate-500 font-medium">
             <div className="flex items-center justify-between">
               <span>Registered On:</span>
               <span className="font-bold text-slate-800">{new Date(record?.createdAt).toLocaleDateString()}</span>

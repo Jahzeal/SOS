@@ -1,4 +1,5 @@
 'use client';
+import { Table, THead, TBody, Tr, Th, Td } from '@/components/ui/DataTable';
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
@@ -133,10 +134,10 @@ export default function ReceiptsArchivePage() {
         {/* Total Sales Count */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+            <div className="p-2 bg-accent-50 text-accent-600 rounded-xl">
               <Receipt className="w-4 h-4" />
             </div>
-            <span className="text-emerald-700 font-extrabold text-xs bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 flex items-center gap-0.5">
+            <span className="text-success-700 font-extrabold text-xs bg-success-50 px-2 py-0.5 rounded-full border border-success-200 flex items-center gap-0.5">
               <TrendingUp className="w-3 h-3" /> Live
             </span>
           </div>
@@ -154,10 +155,10 @@ export default function ReceiptsArchivePage() {
         {/* Revenue Total */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <div className="p-2 bg-emerald-50 text-emerald-600 rounded-xl">
+            <div className="p-2 bg-success-50 text-success-600 rounded-xl">
               <DollarSign className="w-4 h-4" />
             </div>
-            <span className="text-emerald-700 font-extrabold text-xs bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+            <span className="text-success-700 font-extrabold text-xs bg-success-50 px-2 py-0.5 rounded-full border border-success-200">
               Live Revenue
             </span>
           </div>
@@ -175,7 +176,7 @@ export default function ReceiptsArchivePage() {
         {/* Average Sale */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <div className="p-2 bg-amber-50 text-amber-600 rounded-xl">
+            <div className="p-2 bg-warning-50 text-warning-600 rounded-xl">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
@@ -195,7 +196,7 @@ export default function ReceiptsArchivePage() {
         {/* Active Store */}
         <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center justify-between mb-3">
-            <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
+            <div className="p-2 bg-accent-50 text-accent-600 rounded-xl">
               <CheckCircle2 className="w-4 h-4" />
             </div>
           </div>
@@ -216,12 +217,12 @@ export default function ReceiptsArchivePage() {
 
         <div className="p-4 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 bg-slate-50/50">
           <div className="relative w-full sm:w-80">
-            <input
+            <input aria-label="Search receipt #, customer, or IMEI"
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search receipt #, customer, or IMEI..."
-              className="w-full text-xs pl-9 pr-3 py-2 bg-white border border-slate-200 rounded-xl font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
+              className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed pl-9 pr-3"
             />
             <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5" />
           </div>
@@ -233,7 +234,7 @@ export default function ReceiptsArchivePage() {
                 onClick={() => setPaymentMethodFilter(method)}
                 className={`px-3 py-1.5 rounded-full font-bold transition-all ${
                   paymentMethodFilter === method
-                    ? 'bg-blue-600 text-white shadow-sm'
+                    ? 'bg-accent-600 text-white shadow-sm'
                     : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
                 }`}
               >
@@ -254,7 +255,7 @@ export default function ReceiptsArchivePage() {
             </div>
           ) : error ? (
             <div className="py-16 text-center">
-              <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold text-xs">
+              <div className="flex items-center justify-center gap-2 text-danger-500 font-semibold text-xs">
                 <AlertTriangle className="w-5 h-5" />
                 {error}
               </div>
@@ -279,12 +280,12 @@ export default function ReceiptsArchivePage() {
                 <div key={rcp.id} className="p-4 space-y-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-xs border border-blue-200 shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-accent-50 text-accent-600 font-extrabold flex items-center justify-center text-xs border border-accent-200 shrink-0">
                         {getCustomerInitials(customerName)}
                       </div>
                       <div>
                         <h4 className="font-extrabold text-slate-900 text-sm">{customerName}</h4>
-                        <p className="text-xs text-slate-400 font-mono font-bold text-blue-600">{displayNum}</p>
+                        <p className="text-xs text-slate-400 font-mono font-bold text-accent-600">{displayNum}</p>
                       </div>
                     </div>
                     {/* Status & Method Badges */}
@@ -312,12 +313,12 @@ export default function ReceiptsArchivePage() {
                   </div>
 
                   <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100 text-xs">
-                    <button onClick={() => handlePrintReceipt(rcp)} className="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition font-bold text-xs flex items-center gap-1">
+                    <Button variant="secondary" size="sm" onClick={() => handlePrintReceipt(rcp)}>
                       <Printer className="w-3.5 h-3.5" /> Print
-                    </button>
-                    <button onClick={() => handleShareReceipt(rcp)} className="px-3 py-1.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 transition font-bold text-xs flex items-center gap-1 shadow-xs" title="Share Receipt via WhatsApp, Email, or PDF">
+                    </Button>
+                    <Button variant="primary" size="sm" onClick={() => handleShareReceipt(rcp)} title="Share Receipt via WhatsApp, Email, or PDF">
                       <Share2 className="w-3.5 h-3.5" /> Share
-                    </button>
+                    </Button>
                   </div>
                 </div>
               );
@@ -327,47 +328,47 @@ export default function ReceiptsArchivePage() {
 
         {/* Desktop Table View (Hidden on mobile) */}
         <div className="hidden sm:block overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
-            <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
+          <Table>
+            <THead>
               <tr>
-                <th className="py-3 px-4">Receipt / Invoice #</th>
-                <th className="py-3 px-4">Customer</th>
-                <th className="py-3 px-4">Items Summary</th>
-                <th className="py-3 px-4">Amount</th>
-                <th className="py-3 px-4">Payment Method</th>
-                <th className="py-3 px-4">Date</th>
-                <th className="py-3 px-4 text-center">Status</th>
-                <th className="py-3 px-4 text-right">Actions</th>
+                <Th>Receipt / Invoice #</Th>
+                <Th>Customer</Th>
+                <Th>Items Summary</Th>
+                <Th>Amount</Th>
+                <Th>Payment Method</Th>
+                <Th>Date</Th>
+                <Th align="center">Status</Th>
+                <Th align="right">Actions</Th>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100">
+            </THead>
+            <TBody>
               {loading ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center">
+                  <Td align="center" colSpan={8}>
                     <div className="flex items-center justify-center gap-2 text-slate-400 font-semibold">
                       <Loader2 className="w-5 h-5 animate-spin" />
                       Loading receipts archive...
                     </div>
-                  </td>
+                  </Td>
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center">
-                    <div className="flex items-center justify-center gap-2 text-rose-500 font-semibold">
+                  <Td align="center" colSpan={8}>
+                    <div className="flex items-center justify-center gap-2 text-danger-500 font-semibold">
                       <AlertTriangle className="w-5 h-5" />
                       {error}
                     </div>
-                  </td>
+                  </Td>
                 </tr>
               ) : filteredReceipts.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="py-16 text-center">
+                  <Td align="center" colSpan={8}>
                     <div className="flex flex-col items-center gap-2 text-slate-400">
                       <Receipt className="w-10 h-10" />
                       <p className="font-bold text-sm text-slate-600">No receipts found</p>
                       <p className="text-xs">Process a new sale at the POS terminal to generate receipts.</p>
                     </div>
-                  </td>
+                  </Td>
                 </tr>
               ) : (
                 filteredReceipts.map((rcp) => {
@@ -380,57 +381,51 @@ export default function ReceiptsArchivePage() {
                   });
 
                   return (
-                    <tr
+                    <Tr className="cursor-pointer group"
                       key={rcp.id}
-                      onClick={() => setSelectedReceipt(rcp)}
-                      className="hover:bg-slate-50/80 transition cursor-pointer group"
-                    >
-                      <td className="py-3.5 px-4 font-mono font-bold text-blue-600">{displayNum}</td>
-                      <td className="py-3.5 px-4">
+                      onClick={() => setSelectedReceipt(rcp)}>
+                      <Td className="font-mono font-bold text-accent-600">{displayNum}</Td>
+                      <Td>
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 font-extrabold flex items-center justify-center text-xs border border-blue-200">
+                          <div className="w-7 h-7 rounded-full bg-accent-50 text-accent-600 font-extrabold flex items-center justify-center text-xs border border-accent-200">
                             {getCustomerInitials(customerName)}
                           </div>
                           <span className="font-extrabold text-slate-900">{customerName}</span>
                         </div>
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-600 font-medium">{getItemSummary(rcp.items)}</td>
-                      <td className="py-3.5 px-4 font-extrabold text-slate-900">
+                      </Td>
+                      <Td className="text-slate-600 font-medium">{getItemSummary(rcp.items)}</Td>
+                      <Td className="font-extrabold text-slate-900">
                         ₦{rcp.totalAmount ? rcp.totalAmount.toLocaleString() : '0'}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-700 font-semibold flex items-center gap-1.5">
+                      </Td>
+                      <Td className="text-slate-700 font-semibold flex items-center gap-1.5">
                         <CreditCard className="w-3.5 h-3.5 text-slate-400" /> {rcp.paymentMethod || 'CASH'}
-                      </td>
-                      <td className="py-3.5 px-4 text-slate-500 font-medium">{dateStr}</td>
-                      <td className="py-3.5 px-4 text-center">
+                      </Td>
+                      <Td className="text-slate-500 font-medium">{dateStr}</Td>
+                      <Td align="center">
                         <Badge variant={rcp.paymentStatus === 'PAID' ? 'verified' : rcp.paymentStatus === 'PENDING' ? 'business' : 'error'} size="sm">
                           {rcp.paymentStatus || 'PAID'}
                         </Badge>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
+                      </Td>
+                      <Td align="right">
                         <div className="flex items-center justify-end gap-1 text-slate-400 opacity-80 group-hover:opacity-100">
-                          <button
+                          <Button variant="ghost" size="icon" aria-label="Print A4 Receipt"
                             onClick={(e) => { e.stopPropagation(); handlePrintReceipt(rcp); }}
-                            className="p-1.5 hover:text-blue-600 rounded"
-                            title="Print A4 Receipt"
-                          >
+                            title="Print A4 Receipt">
                             <Printer className="w-3.5 h-3.5" />
-                          </button>
-                          <button
+                          </Button>
+                          <Button variant="ghost" size="icon" aria-label="Share Receipt via WhatsApp, Email, or PDF"
                             onClick={(e) => { e.stopPropagation(); handleShareReceipt(rcp); }}
-                            className="p-1.5 hover:text-blue-600 rounded"
-                            title="Share Receipt via WhatsApp, Email, or PDF"
-                          >
+                            title="Share Receipt via WhatsApp, Email, or PDF">
                             <Share2 className="w-3.5 h-3.5" />
-                          </button>
+                          </Button>
                         </div>
-                      </td>
-                    </tr>
+                      </Td>
+                    </Tr>
                   );
                 })
               )}
-            </tbody>
-          </table>
+            </TBody>
+          </Table>
         </div>
 
         {/* Table Footer */}
@@ -452,17 +447,17 @@ export default function ReceiptsArchivePage() {
 
       {/* Slide-over Receipt Details Modal */}
       {selectedReceipt && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
-          <div className="w-full max-w-3xl bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          <div className="w-full max-w-3xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
             {/* Modal Header */}
             <div className="p-4 sm:p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+                <div className="p-2 bg-accent-50 text-accent-600 rounded-xl">
                   <Receipt className="w-5 h-5" />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-slate-900 text-sm sm:text-base">Sales Receipt Preview</h3>
-                  <p className="text-xs text-slate-400 font-mono font-bold text-blue-600">
+                  <p className="text-xs text-slate-400 font-mono font-bold text-accent-600">
                     {selectedReceipt.receiptNumber || selectedReceipt.invoiceNumber || selectedReceipt.id}
                   </p>
                 </div>
@@ -519,7 +514,7 @@ export default function ReceiptsArchivePage() {
         if (!rcp || typeof document === 'undefined') return null;
 
         return createPortal(
-          <div id="printable-portal" className="hidden print:block">
+          <div id="printable-portal" className="print-doc hidden print:block">
             <A4SalesReceipt
               id="printable-a4-receipt-content"
               data={{

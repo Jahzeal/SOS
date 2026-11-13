@@ -910,7 +910,7 @@ export default function PublicLandingPageV2() {
                 </Link>
                 <Link href="/onboarding">
                   <Button variant="primary" size="sm" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                    Start free
+                    Get started
                   </Button>
                 </Link>
               </>
@@ -992,7 +992,7 @@ export default function PublicLandingPageV2() {
                   </Link>
                   <Link href="/onboarding" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="primary" fullWidth size="md">
-                      Start free
+                      Get started
                     </Button>
                   </Link>
                 </>
@@ -1025,7 +1025,7 @@ export default function PublicLandingPageV2() {
                 rightIcon={<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1.5" />}
                 className="w-full sm:w-auto sm:min-w-[320px] px-9 py-4 rounded-2xl border-2 border-teal-500/50 ring-4 ring-teal-500/15 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-teal-950/15 hover:shadow-xl transition-all group justify-center tracking-tight"
               >
-                Start free
+                Get started
               </Button>
             </Link>
           </div>
@@ -2060,7 +2060,7 @@ export default function PublicLandingPageV2() {
                 rightIcon={<ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1.5" />}
                 className="w-full sm:w-auto sm:min-w-[320px] px-9 py-4 rounded-2xl border-2 border-teal-500/50 ring-4 ring-teal-500/15 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-sm sm:text-base shadow-lg shadow-teal-950/15 hover:shadow-xl transition-all group justify-center tracking-tight"
               >
-                Start free
+                Get started
               </Button>
             </Link>
           </div>

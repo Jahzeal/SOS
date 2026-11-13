@@ -372,16 +372,16 @@ export function ImeiCameraScanner({
   const scannerContent = (
     <div className={`space-y-3 ${className}`}>
       {cameraError ? (
-        <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/80 text-amber-900 text-xs space-y-3">
+        <div className="p-4 rounded-2xl bg-warning-50 border border-warning-200/80 text-warning-900 text-xs space-y-3">
           <div className="flex items-start gap-2.5">
-            <ShieldAlert className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <ShieldAlert className="w-4 h-4 text-warning-600 shrink-0 mt-0.5" />
             <p className="font-medium leading-relaxed">{cameraError}</p>
           </div>
           {onClose && (
             <button
               type="button"
               onClick={onClose}
-              className="w-full py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl transition text-xs shadow-sm"
+              className="w-full py-2 bg-warning-600 hover:bg-warning-700 text-white font-bold rounded-xl transition text-xs shadow-sm"
             >
               Close Camera
             </button>
@@ -407,11 +407,11 @@ export function ImeiCameraScanner({
               <div
                 className={`px-3 py-1.5 rounded-full text-xs font-extrabold shadow-lg backdrop-blur-md transition-all flex items-center justify-center gap-1.5 ${
                   cameraGuidance.type === 'dark'
-                    ? 'bg-amber-500 text-slate-950 animate-pulse border border-amber-300'
+                    ? 'bg-warning-500 text-slate-950 animate-pulse border border-warning-300'
                     : cameraGuidance.type === 'warning'
-                    ? 'bg-slate-900/90 text-amber-400 border border-amber-500/40'
+                    ? 'bg-slate-900/90 text-warning-400 border border-warning-500/40'
                     : cameraGuidance.type === 'success'
-                    ? 'bg-emerald-600 text-white border border-emerald-300'
+                    ? 'bg-success-600 text-white border border-success-300'
                     : 'bg-slate-900/80 text-white border border-slate-700'
                 }`}
               >
@@ -421,7 +421,7 @@ export function ImeiCameraScanner({
 
             {/* SCANNER OVERLAY RETICLE FRAME */}
             <div ref={reticleRef} className="scanner-overlay-reticle flex flex-col items-center justify-between p-2">
-              <span className="text-xs uppercase tracking-widest font-extrabold text-emerald-400 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30 shadow-sm">
+              <span className="text-xs uppercase tracking-widest font-extrabold text-success-400 bg-slate-950/80 px-2.5 py-0.5 rounded-full border border-success-500/30 shadow-sm">
                 Scan Barcode / Label
               </span>
               <span className="text-xs font-semibold text-slate-200 bg-slate-950/70 px-2 py-0.5 rounded-full">
@@ -437,7 +437,7 @@ export function ImeiCameraScanner({
                   type="button"
                   onClick={handleSnapAndScanText}
                   disabled={isOcrProcessing}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30 disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-2 bg-accent-600 hover:bg-accent-500 text-white font-extrabold rounded-full shadow-2xl transition border border-accent-400/40 flex items-center gap-1.5 text-xs shadow-accent-600/30 disabled:opacity-50 cursor-pointer"
                 >
                   <Camera className="w-3.5 h-3.5" />
                   {isOcrProcessing ? 'Reading Text...' : 'Capture & Read Frame'}
@@ -459,11 +459,11 @@ export function ImeiCameraScanner({
                     }}
                     className={`absolute -translate-x-1/2 -translate-y-1/2 px-2.5 py-1 rounded-full transition-all duration-200 transform hover:scale-110 flex items-center gap-1 text-xs font-mono font-black border shadow-2xl ${
                       pill.type === 'IMEI'
-                        ? 'bg-emerald-600 text-white border-emerald-300 ring-4 ring-emerald-400/70 shadow-emerald-600/60 animate-bounce z-40'
-                        : 'bg-blue-600 text-white border-blue-300 ring-4 ring-blue-400/70 shadow-blue-600/50 z-30'
+                        ? 'bg-success-600 text-white border-success-300 ring-4 ring-success-400/70 shadow-success-600/60 animate-bounce z-40'
+                        : 'bg-accent-600 text-white border-accent-300 ring-4 ring-accent-400/70 shadow-accent-600/50 z-30'
                     }`}
                   >
-                    {pill.type === 'IMEI' && <span className="w-2 h-2 rounded-full bg-emerald-300 animate-ping" />}
+                    {pill.type === 'IMEI' && <span className="w-2 h-2 rounded-full bg-success-300 animate-ping" />}
                     <span className="truncate max-w-[150px]">{pill.value}</span>
                   </button>
                 ))}
@@ -475,21 +475,17 @@ export function ImeiCameraScanner({
           <div className="flex items-center justify-between gap-2 pt-1 text-xs text-slate-500 font-medium">
             {isCameraFrozen ? (
               <div className="flex items-center gap-2 w-full">
-                <button
+                <Button variant="primary" size="md" className="flex-1"
                   type="button"
-                  onClick={resumeCameraScanning}
-                  className="flex-1 py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                >
+                  onClick={resumeCameraScanning}>
                   <RefreshCw className="w-3.5 h-3.5" /> Scan Another
-                </button>
+                </Button>
                 {onClose && (
-                  <button
+                  <Button variant="primary" size="md" className="flex-1"
                     type="button"
-                    onClick={onClose}
-                    className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition flex items-center justify-center gap-1.5 shadow-sm cursor-pointer"
-                  >
+                    onClick={onClose}>
                     <Check className="w-3.5 h-3.5" /> Use Scanned
-                  </button>
+                  </Button>
                 )}
               </div>
             ) : (
@@ -505,11 +501,11 @@ export function ImeiCameraScanner({
 
   if (mode === 'modal') {
     return (
-      <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
+      <div role="dialog" aria-modal="true" className="fixed inset-0 bg-slate-950/70 backdrop-blur-md z-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 space-y-4 border border-slate-200 animate-in zoom-in duration-200">
           <div className="flex items-center justify-between border-b border-slate-100 pb-3">
             <div className="flex items-center gap-2">
-              <Camera className="w-5 h-5 text-blue-600" />
+              <Camera className="w-5 h-5 text-accent-600" />
               <h3 className="font-extrabold text-slate-900 text-base">{title}</h3>
             </div>
             {onClose && (

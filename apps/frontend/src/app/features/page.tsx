@@ -60,7 +60,7 @@ export default function FeaturesPage() {
             </Link>
             <Link href="/onboarding">
               <Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-700 font-bold text-xs shadow-sm shadow-teal-600/20">
-                Start free
+                Get started
               </Button>
             </Link>
           </div>
@@ -90,7 +90,7 @@ export default function FeaturesPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link href="/onboarding" className="w-full sm:w-auto">
               <Button size="lg" className="w-full bg-teal-600 hover:bg-teal-700 font-extrabold text-sm shadow-md shadow-teal-600/20 px-8 py-3.5">
-                Start free
+                Get started
               </Button>
             </Link>
             <Link href="/pricing" className="w-full sm:w-auto">
@@ -412,7 +412,7 @@ export default function FeaturesPage() {
             <div className="pt-2">
               <Link href="/onboarding">
                 <Button size="md" className="bg-teal-600 hover:bg-teal-500 font-bold text-xs text-white" rightIcon={<ArrowRight className="w-3.5 h-3.5" />}>
-                  Start free
+                  Get started
                 </Button>
               </Link>
             </div>
@@ -546,7 +546,7 @@ export default function FeaturesPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
             <Link href="/onboarding" className="w-full sm:w-auto">
               <Button size="lg" className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black px-8 py-3.5">
-                Start free
+                Get started
               </Button>
             </Link>
             <Link href="/pricing" className="w-full sm:w-auto">

@@ -55,7 +55,8 @@ looks wrong; an explicit `dark:` class always wins.
 - The file is generated. Change `scripts/gen-dark-fallback.mjs`, then run `node scripts/gen-dark-fallback.mjs`.
 - Anything inside an element with the class `print-doc` is left alone. Receipts and invoices carry
   it so paper stays white. Add it to any new printed document.
-- `bg-white` on a `rounded-full` element (switch knobs, avatars) is not changed.
+- `bg-white` on a `rounded-full` element with no text and no horizontal padding (switch knobs, dots) stays white. Round pills with text go dark like everything else.
+- The rules only apply on screen, so printing from dark mode still prints on white.
 
 ## 3. Which component for what
 
@@ -145,27 +146,25 @@ grep -cE "<button|<input|<select|<textarea|<table" "src/app/(dashboard)/dashboar
 - `dashboard/customers/page.tsx`
 - `dashboard/settings/page.tsx`
 
-**Not yet converted** (they work and follow dark mode through the fallback, but still mix colours and hand-built controls)
+**Converted by script on 2026-11-13** (colours, most buttons, label+field pairs, tables, label links; reviewed by automated check, not line by line)
 
-- `dashboard/analytics`
-- `dashboard/checkout`
-- `dashboard/invoices`, `dashboard/invoices/new`
-- `dashboard/laptops`
-- `dashboard/quotes`, `dashboard/quotes/new`, `dashboard/quotes/[id]`
-- `dashboard/receipts`
-- `dashboard/records/[id]`
-- `dashboard/register`
-- `dashboard/repairs`
-- `dashboard/reports`
-- `dashboard/sales/invoices`, `sales/invoices/new`, `sales/invoices/[id]/edit`, `sales/invoices/[id]/pay`
-- `dashboard/sales/receipts`
-- `dashboard/subscription`
-- `dashboard/verify`, `dashboard/verification/register`, `dashboard/verification/verify`
+- `dashboard/register`, `verify`, `records/[id]`, `repairs`, `reports`, `subscription`
+- `dashboard/quotes`, `quotes/new`, `quotes/[id]`
+- `dashboard/sales/invoices`, `sales/invoices/new`, `sales/invoices/[id]/edit`, `sales/invoices/[id]/pay`, `sales/receipts`
 - `onboarding`, `forgot-password`, `reset-password`
-- Shared pieces used inside the dashboard: `components/search/GlobalSearchModal.tsx`,
-  `components/subscription/*`, `components/sales/EmailReceiptModal.tsx`,
-  `components/billing/PaystackCheckoutModal.tsx`, `components/PwaInstallButton.tsx`,
-  `components/theme/ThemeToggle.tsx`
+- `components/search/GlobalSearchModal`, `components/subscription/*`, `components/sales/EmailReceiptModal`,
+  `components/billing/PaystackCheckoutModal`, `components/PwaInstallButton`, `components/theme/ThemeToggle`,
+  `components/sharing/ShareDocumentModal`, `components/scanner/ImeiCameraScanner`
+
+(`analytics`, `checkout`, `invoices`, `receipts`, `laptops`, `verification/*` under `dashboard/` are short redirects; nothing to convert.)
+
+**Still to do by hand on those pages**
+
+- Hand-built pop-ups (`fixed inset-0` overlays, 16 of them) have dialog markup but are not yet the shared `Modal`:
+  no Escape key or focus handling. Find them with `grep -rn 'role="dialog"' src`.
+- Buttons whose classes change with state (tabs, toggles, step chips) and card-shaped buttons were left as plain `<button>`.
+- Fields that are not directly under their label kept their markup and got the shared look plus a label link.
+- Blue and teal status chips now share the accent colour; where two statuses sit side by side, pick `slate` for one.
 
 **Deliberately left alone**: marketing pages (`app/page.tsx`, `pricing`, `features`, `laptops`,
 `report-stolen`, `privacy`, `terms`), the admin area, `components/receipt`, `components/invoice`,

@@ -1,4 +1,6 @@
 'use client';
+import { Table, THead, TBody, Tr, Th, Td } from '@/components/ui/DataTable';
+import { TextInput, Select, Textarea } from '@/components/ui/Input';
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { createPortal } from 'react-dom';
@@ -347,7 +349,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
   if (isLoading) {
     return (
       <div className="py-24 text-center space-y-3">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto text-blue-600" />
+        <Loader2 className="w-8 h-8 animate-spin mx-auto text-accent-600" />
         <p className="font-bold text-slate-600 text-sm">Loading invoice for editing...</p>
       </div>
     );
@@ -356,7 +358,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
   if (loadError) {
     return (
       <div className="max-w-xl mx-auto py-16 text-center space-y-4">
-        <div className="w-12 h-12 bg-rose-50 border border-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 bg-danger-50 border border-danger-100 text-danger-600 rounded-2xl flex items-center justify-center mx-auto">
           <AlertTriangle className="w-6 h-6" />
         </div>
         <h2 className="text-xl font-extrabold text-slate-900">Invoice Error</h2>
@@ -376,7 +378,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500 mb-1">
-            <Link href="/dashboard/sales/invoices" className="hover:text-blue-600 transition flex items-center gap-1">
+            <Link href="/dashboard/sales/invoices" className="hover:text-accent-600 transition flex items-center gap-1">
               <ArrowLeft className="w-3.5 h-3.5" /> Invoices Registry
             </Link>
             <ChevronRight className="w-3 h-3 text-slate-400" />
@@ -420,15 +422,15 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
       </div>
 
       {errorMessage && (
-        <div className="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-xs font-bold flex items-center gap-3 animate-in fade-in">
-          <AlertTriangle className="w-5 h-5 shrink-0 text-rose-600" />
+        <div className="p-4 bg-danger-50 border border-danger-200 text-danger-700 rounded-2xl text-xs font-bold flex items-center gap-3 animate-in fade-in">
+          <AlertTriangle className="w-5 h-5 shrink-0 text-danger-600" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-2xl text-xs font-bold flex items-center gap-3 animate-in fade-in">
-          <CheckCircle2 className="w-5 h-5 shrink-0 text-emerald-600" />
+        <div className="p-4 bg-success-50 border border-success-200 text-success-800 rounded-2xl text-xs font-bold flex items-center gap-3 animate-in fade-in">
+          <CheckCircle2 className="w-5 h-5 shrink-0 text-success-600" />
           <span>{successMessage}</span>
         </div>
       )}
@@ -441,53 +443,41 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                <User className="w-4 h-4 text-blue-600" /> Customer Information
+                <User className="w-4 h-4 text-accent-600" /> Customer Information
               </h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Customer Name *</label>
-                <input
+                <TextInput label="Customer Name"
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="e.g. Emeka Obi or Zenith Gadgets Ltd"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
-                />
+                  placeholder="e.g. Emeka Obi or Zenith Gadgets Ltd" />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Customer Phone</label>
-                <input
+                <TextInput label="Customer Phone"
                   type="text"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="e.g. +234 800 000 0000"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
-                />
+                  placeholder="e.g. +234 800 000 0000" />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Customer Email</label>
-                <input
+                <TextInput label="Customer Email"
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="e.g. customer@example.com"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
-                />
+                  placeholder="e.g. customer@example.com" />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Billing Address</label>
-                <input
+                <TextInput label="Billing Address"
                   type="text"
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
-                  placeholder="e.g. Suite 4B, Victoria Island, Lagos"
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-semibold text-slate-900 focus:outline-none focus:border-blue-600"
-                />
+                  placeholder="e.g. Suite 4B, Victoria Island, Lagos" />
               </div>
             </div>
           </div>
@@ -496,30 +486,24 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                <Package className="w-4 h-4 text-blue-600" /> Line Items & Devices ({items.length})
+                <Package className="w-4 h-4 text-accent-600" /> Line Items & Devices ({items.length})
               </h2>
             </div>
 
             {/* Inventory Quick Add Device */}
             <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2">
-              <label className="text-xs font-bold text-slate-700 block">Add from In-Stock Device Inventory</label>
-              <div className="relative">
-                <input
+              <TextInput label="Add from In-Stock Device Inventory"
                   type="text"
                   value={deviceSearch}
                   onChange={(e) => setDeviceSearch(e.target.value)}
-                  placeholder="Search available devices by brand, model, or IMEI..."
-                  className="w-full text-xs pl-8 pr-3 py-2 bg-white border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-blue-600"
-                />
-                <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
-              </div>
+                  placeholder="Search available devices by brand, model, or IMEI..." leftIcon={<Search className="w-4 h-4" />} />
 
               {inStockDevices.length > 0 && (
                 <div className="max-h-40 overflow-y-auto divide-y divide-slate-100 bg-white border border-slate-200 rounded-xl shadow-xs mt-2">
                   {inStockDevices.map((phone) => (
                     <div
                       key={phone.id}
-                      className="p-2.5 hover:bg-blue-50/50 flex items-center justify-between gap-2 text-xs transition"
+                      className="p-2.5 hover:bg-accent-50/50 flex items-center justify-between gap-2 text-xs transition"
                     >
                       <div>
                         <p className="font-extrabold text-slate-900">
@@ -531,13 +515,11 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                         <span className="font-mono font-bold text-slate-800">
                           ₦{Number(phone.sellingPrice || phone.purchasePrice || 0).toLocaleString()}
                         </span>
-                        <button
+                        <Button variant="primary" size="sm"
                           type="button"
-                          onClick={() => handleAddDeviceToInvoice(phone)}
-                          className="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold text-xs flex items-center gap-1 shadow-xs cursor-pointer"
-                        >
+                          onClick={() => handleAddDeviceToInvoice(phone)}>
                           <Plus className="w-3 h-3" /> Add
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ))}
@@ -547,70 +529,68 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
 
             {/* Custom Line Item Form */}
             <form onSubmit={handleAddCustomItem} className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl space-y-2">
-              <label className="text-xs font-bold text-slate-700 block">Add Custom Product or Service</label>
+              <label htmlFor="s-invoices-id-edit-f1" className="text-xs font-bold text-slate-700 block">Add Custom Product or Service</label>
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
-                <input
+                <input id="s-invoices-id-edit-f1"
                   type="text"
                   value={newItemDesc}
                   onChange={(e) => setNewItemDesc(e.target.value)}
                   placeholder="Item description (e.g. 20W Power Adapter, Screen Protector)"
-                  className="sm:col-span-6 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="sm:col-span-6 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-accent-600"
                 />
                 <input
                   type="text"
                   value={newItemImei}
                   onChange={(e) => setNewItemImei(e.target.value)}
                   placeholder="Serial / IMEI (optional)"
-                  className="sm:col-span-3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-600"
+                  className="sm:col-span-3 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-accent-600"
                 />
                 <input
                   type="text"
                   value={newItemPrice}
                   onChange={(e) => setNewItemPrice(formatNumberWithCommas(e.target.value))}
                   placeholder="Unit Price ₦"
-                  className="sm:col-span-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-blue-600 font-mono"
+                  className="sm:col-span-2 px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:border-accent-600 font-mono"
                 />
-                <button
+                <Button variant="primary" size="icon" className="sm:col-span-1" aria-label="Add Line Item"
                   type="submit"
-                  className="sm:col-span-1 px-3 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold flex items-center justify-center cursor-pointer shadow-xs"
-                  title="Add Line Item"
-                >
+                  title="Add Line Item">
                   <Plus className="w-4 h-4" />
-                </button>
+                </Button>
               </div>
             </form>
 
             {/* Existing Items Table */}
             <div className="border border-slate-200 rounded-xl overflow-hidden shadow-xs">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider text-xs border-b border-slate-200">
+              <Table>
+                <THead>
                   <tr>
-                    <th className="py-2.5 px-3">Item Description</th>
-                    <th className="py-2.5 px-3 w-20 text-center">Qty</th>
-                    <th className="py-2.5 px-3 w-32 text-right">Unit Price</th>
-                    <th className="py-2.5 px-3 w-32 text-right">Total</th>
-                    <th className="py-2.5 px-3 w-10 text-center"></th>
+                    <Th>Item Description</Th>
+                    <Th align="center" className="w-20">Qty</Th>
+                    <Th align="right" className="w-32">Unit Price</Th>
+                    <Th align="right" className="w-32">Total</Th>
+                    <Th align="center" className="w-10"></Th>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
+                </THead>
+                <TBody>
                   {items.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="py-8 text-center text-slate-400 font-medium">
+                      <Td align="center" className="text-slate-400 font-medium" colSpan={5}>
                         No items added yet. Search devices above or add custom products.
-                      </td>
+                      </Td>
                     </tr>
                   ) : (
                     items.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-slate-50/50">
-                        <td className="py-3 px-3">
+                      <Tr key={idx}>
+                        <Td>
                           <p className="font-extrabold text-slate-900">{item.description}</p>
                           {item.imei && item.imei !== 'N/A' && (
                             <p className="text-xs text-slate-400 font-mono font-bold mt-0.5">
                               IMEI/SN: {item.imei}
                             </p>
                           )}
-                        </td>
-                        <td className="py-3 px-3 text-center">
+                        </Td>
+                        <Td align="center">
                           <input
                             type="number"
                             min="1"
@@ -618,10 +598,10 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                             onChange={(e) =>
                               handleUpdateItem(idx, 'quantity', Math.max(1, parseInt(e.target.value) || 1))
                             }
-                            className="w-14 py-1 px-1.5 text-center bg-white border border-slate-200 rounded-lg font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                            className="w-14 py-1 px-1.5 text-center bg-white border border-slate-200 rounded-lg font-bold text-slate-900 focus:outline-none focus:border-accent-600"
                           />
-                        </td>
-                        <td className="py-3 px-3 text-right">
+                        </Td>
+                        <Td align="right">
                           <input
                             type="number"
                             min="0"
@@ -629,26 +609,24 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                             onChange={(e) =>
                               handleUpdateItem(idx, 'unitPrice', Math.max(0, parseFloat(e.target.value) || 0))
                             }
-                            className="w-24 py-1 px-1.5 text-right font-mono bg-white border border-slate-200 rounded-lg font-bold text-slate-900 focus:outline-none focus:border-blue-600"
+                            className="w-24 py-1 px-1.5 text-right font-mono bg-white border border-slate-200 rounded-lg font-bold text-slate-900 focus:outline-none focus:border-accent-600"
                           />
-                        </td>
-                        <td className="py-3 px-3 text-right font-mono font-extrabold text-slate-900">
+                        </Td>
+                        <Td align="right" className="font-mono font-extrabold text-slate-900">
                           ₦{(item.unitPrice * item.quantity).toLocaleString()}
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <button
+                        </Td>
+                        <Td align="center">
+                          <Button variant="ghostDanger" size="icon" aria-label="Remove item"
                             type="button"
-                            onClick={() => handleRemoveItem(idx)}
-                            className="p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded transition cursor-pointer"
-                          >
+                            onClick={() => handleRemoveItem(idx)}>
                             <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
-                      </tr>
+                          </Button>
+                        </Td>
+                      </Tr>
                     ))
                   )}
-                </tbody>
-              </table>
+                </TBody>
+              </Table>
             </div>
           </div>
 
@@ -656,7 +634,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
           <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-blue-600" /> Bank Remittance & Notes
+                <Building2 className="w-4 h-4 text-accent-600" /> Bank Remittance & Notes
               </h2>
             </div>
 
@@ -667,7 +645,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                   id="customBank"
                   checked={useCustomBank}
                   onChange={(e) => setUseCustomBank(e.target.checked)}
-                  className="rounded text-blue-600 focus:ring-blue-500"
+                  className="rounded text-accent-600 focus:ring-accent-500"
                 />
                 <label htmlFor="customBank" className="font-bold text-slate-700 cursor-pointer">
                   Specify or override bank account details on this invoice
@@ -677,47 +655,35 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
               {useCustomBank && (
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl animate-in fade-in">
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-600 text-xs">Bank Name</label>
-                    <input
+                    <TextInput label="Bank Name"
                       type="text"
                       value={bankName}
                       onChange={(e) => setBankName(e.target.value)}
-                      placeholder="e.g. Zenith Bank"
-                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg font-medium text-slate-900 focus:outline-none focus:border-blue-600"
-                    />
+                      placeholder="e.g. Zenith Bank" />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-600 text-xs">Account Number</label>
-                    <input
+                    <TextInput label="Account Number"
                       type="text"
                       value={accountNumber}
                       onChange={(e) => setAccountNumber(e.target.value)}
-                      placeholder="e.g. 1012345678"
-                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg font-mono font-medium text-slate-900 focus:outline-none focus:border-blue-600"
-                    />
+                      placeholder="e.g. 1012345678" className="font-mono" />
                   </div>
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-600 text-xs">Account Name</label>
-                    <input
+                    <TextInput label="Account Name"
                       type="text"
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
-                      placeholder="e.g. Retail Store Ltd"
-                      className="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg font-medium text-slate-900 focus:outline-none focus:border-blue-600"
-                    />
+                      placeholder="e.g. Retail Store Ltd" />
                   </div>
                 </div>
               )}
 
               <div className="space-y-1 pt-2">
-                <label className="font-bold text-slate-700">Remarks & Customer Notes</label>
-                <textarea
+                <Textarea label="Remarks & Customer Notes"
                   rows={2}
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="Thank you for your business. Please remit before due date..."
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-medium text-slate-900 text-xs focus:outline-none focus:border-blue-600"
-                />
+                  placeholder="Thank you for your business. Please remit before due date..." />
               </div>
             </div>
           </div>
@@ -739,7 +705,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                   onClick={() => setPaymentStatus('PENDING')}
                   className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                     paymentStatus === 'PENDING'
-                      ? 'bg-amber-500 text-white border-amber-600 shadow-sm'
+                      ? 'bg-warning-500 text-white border-warning-600 shadow-sm'
                       : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
@@ -750,7 +716,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                   onClick={() => setPaymentStatus('PAID')}
                   className={`py-2 px-3 rounded-xl border text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                     paymentStatus === 'PAID'
-                      ? 'bg-emerald-600 text-white border-emerald-700 shadow-sm'
+                      ? 'bg-success-600 text-white border-success-700 shadow-sm'
                       : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
                   }`}
                 >
@@ -758,7 +724,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                 </button>
               </div>
               {paymentStatus === 'DRAFT' && (
-                <p className="text-xs text-amber-600 font-bold mt-1">
+                <p className="text-xs text-warning-600 font-bold mt-1">
                   Currently saved as DRAFT. Select PENDING or PAID above to issue active invoice.
                 </p>
               )}
@@ -767,37 +733,28 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
             {/* Date Settings */}
             <div className="space-y-3 text-xs pt-2 border-t border-slate-100">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Issue Date</label>
-                <input
+                <TextInput label="Issue Date"
                   type="date"
                   value={issueDate}
-                  onChange={(e) => setIssueDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-blue-600"
-                />
+                  onChange={(e) => setIssueDate(e.target.value)} />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Due Date</label>
-                <input
+                <TextInput label="Due Date"
                   type="date"
                   value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-blue-600"
-                />
+                  onChange={(e) => setDueDate(e.target.value)} />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Payment Terms</label>
-                <select
+                <Select label="Payment Terms"
                   value={paymentTerms}
-                  onChange={(e) => setPaymentTerms(e.target.value)}
-                  className="w-full px-3 py-2 border border-slate-200 rounded-xl font-bold text-slate-800 focus:outline-none focus:border-blue-600"
-                >
+                  onChange={(e) => setPaymentTerms(e.target.value)}>
                   <option value="DUE_ON_RECEIPT">Due on Receipt</option>
                   <option value="NET_7">Net 7 Days</option>
                   <option value="NET_15">Net 15 Days</option>
                   <option value="NET_30">Net 30 Days</option>
-                </select>
+                </Select>
               </div>
             </div>
 
@@ -815,7 +772,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
               </div>
               <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 text-sm font-black">
                 <span className="text-slate-900">TOTAL DUE:</span>
-                <span className="text-blue-600 font-mono text-base font-extrabold">
+                <span className="text-accent-600 font-mono text-base font-extrabold">
                   ₦{totalAmount.toLocaleString()}
                 </span>
               </div>
@@ -829,7 +786,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
                 size="md"
                 isLoading={isSaving}
                 onClick={() => handleSaveInvoice(paymentStatus === 'DRAFT' ? 'PENDING' : paymentStatus)}
-                className="bg-blue-600 hover:bg-blue-700 font-bold shadow-md shadow-blue-600/20"
+                className="bg-accent-600 hover:bg-accent-700 font-bold shadow-md shadow-accent-600/20"
                 leftIcon={<Save className="w-4 h-4" />}
               >
                 {paymentStatus === 'DRAFT' ? 'Issue Active Invoice (Pending)' : 'Save Changes'}
@@ -857,7 +814,7 @@ export default function EditInvoicePage({ params }: { params?: { id: string } })
 
       {/* Hidden Printable Invoice Portaled Directly to document.body for Guaranteed Clean A4 Output */}
       {typeof document !== 'undefined' && createPortal(
-        <div id="printable-portal" className="hidden print:block">
+        <div id="printable-portal" className="print-doc hidden print:block">
           <A4CommercialInvoice
             id="printable-a4-invoice-content"
             data={{

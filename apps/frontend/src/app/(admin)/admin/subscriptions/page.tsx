@@ -1222,7 +1222,7 @@ export default function AdminSubscriptionsPage() {
                                 : 'bg-slate-900 text-white'
                             }`}
                           >
-                            {isFree ? 'Start free →' : `Get ${plan.name} →`}
+                            {isFree ? 'Get started →' : `Get ${plan.name} →`}
                           </button>
                         </div>
                       </div>

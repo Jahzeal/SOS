@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui/Button';
 
 import React, { useState } from 'react';
 import {
@@ -132,9 +133,11 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
+      role="dialog"
+      aria-modal="true"
       className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200 font-sans"
     >
-      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 animate-in zoom-in duration-200 flex flex-col max-h-[90vh]">
+      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 animate-in zoom-in duration-200 flex flex-col max-h-[90vh]">
         
         {/* Header - Fixed Top */}
         <div className="p-5 sm:p-6 bg-gradient-to-br from-slate-900 to-slate-800 text-white relative shrink-0">
@@ -146,7 +149,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
             <X className="w-4 h-4" />
           </button>
 
-          <div className="flex items-center gap-2 text-teal-400 font-bold text-xs uppercase tracking-wider mb-1.5">
+          <div className="flex items-center gap-2 text-accent-400 font-bold text-xs uppercase tracking-wider mb-1.5">
             <CreditCard className="w-4 h-4" />
             <span>Upgrade Store Subscription</span>
           </div>
@@ -163,7 +166,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
           {/* Success State */}
           {successData ? (
             <div className="text-center py-6 space-y-4 animate-in zoom-in duration-200">
-              <div className="w-16 h-16 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto border border-emerald-200 shadow-lg shadow-emerald-500/10">
+              <div className="w-16 h-16 bg-success-50 text-success-600 rounded-2xl flex items-center justify-center mx-auto border border-success-200 shadow-lg shadow-success-500/10">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <div>
@@ -172,12 +175,10 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                   Your store has been successfully upgraded to the <strong>{plan.name}</strong> tier.
                 </p>
               </div>
-              <button
-                onClick={onClose}
-                className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold transition shadow-md cursor-pointer"
-              >
+              <Button variant="primary" size="lg" fullWidth
+                onClick={onClose}>
                 Return to Dashboard
-              </button>
+              </Button>
             </div>
           ) : (
             <>
@@ -205,7 +206,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                 >
                   <span>Annual Billing</span>
                   {savingsNgn > 0 && (
-                    <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs bg-emerald-100 text-emerald-800 font-extrabold">
+                    <span className="ml-1 px-1.5 py-0.5 rounded-full text-xs bg-success-100 text-success-800 font-extrabold">
                       Save ₦{savingsNgn.toLocaleString()}
                     </span>
                   )}
@@ -224,7 +225,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-xs font-extrabold uppercase px-2.5 py-1 rounded-full bg-teal-50 text-teal-700 border border-teal-200">
+                  <div className="text-xs font-extrabold uppercase px-2.5 py-1 rounded-full bg-accent-50 text-accent-700 border border-accent-200">
                     {plan.maxDevices ? `${plan.maxDevices.toLocaleString()} Devices Limit` : 'Unlimited Devices'}
                   </div>
                 </div>
@@ -240,7 +241,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                   <div className="max-h-40 overflow-y-auto space-y-1.5 pr-1.5 border border-slate-100 p-2.5 rounded-xl bg-slate-50/60 divide-y divide-slate-100/80">
                     {plan.features.map((feat, idx) => (
                       <div key={idx} className="flex items-center gap-2 text-xs text-slate-700 pt-1.5 first:pt-0">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+                        <CheckCircle2 className="w-3.5 h-3.5 text-success-500 shrink-0" />
                         <span className="font-medium text-slate-700 leading-snug">{feat}</span>
                       </div>
                     ))}
@@ -250,21 +251,19 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
 
               {/* Error Message */}
               {errorMessage && (
-                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-xl flex items-center justify-between">
+                <div className="p-3 bg-danger-50 border border-danger-200 text-danger-800 text-xs font-bold rounded-xl flex items-center justify-between">
                   <span>{errorMessage}</span>
-                  <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 p-1">
+                  <Button variant="ghostDanger" size="icon" aria-label="Dismiss message" onClick={() => setErrorMessage(null)}>
                     <X className="w-3.5 h-3.5" />
-                  </button>
+                  </Button>
                 </div>
               )}
 
               {/* Payment CTA */}
               <div className="space-y-2.5 pt-1">
-                <button
+                <Button variant="primary" size="lg" fullWidth
                   onClick={handlePayWithPaystack}
-                  disabled={isInitializing || isVerifying}
-                  className="w-full py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-extrabold transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-                >
+                  disabled={isInitializing || isVerifying}>
                   {isInitializing || isVerifying ? (
                     <>
                       <RefreshCw className="w-4 h-4 animate-spin" />
@@ -277,7 +276,7 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: Pays
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
-                </button>
+                </Button>
 
                 <div className="flex items-center justify-center gap-1.5 text-xs text-slate-400 font-medium">
                   <Lock className="w-3 h-3 text-slate-400" />

@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui/Button';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -119,7 +120,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
       >
         {/* Search Header Input */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center gap-2 sm:gap-3">
-          <Search className="w-5 h-5 text-teal-600 dark:text-teal-400 shrink-0" />
+          <Search className="w-5 h-5 text-accent-600 dark:text-accent-400 shrink-0" />
           <input
             autoFocus
             type="text"
@@ -128,26 +129,22 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
             onChange={(e) => setQuery(e.target.value)}
             className="w-full text-sm sm:text-base bg-transparent text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none font-medium"
           />
-          {loading && <Loader2 className="w-4 h-4 text-teal-600 dark:text-teal-400 animate-spin shrink-0" />}
+          {loading && <Loader2 className="w-4 h-4 text-accent-600 dark:text-accent-400 animate-spin shrink-0" />}
           {query && (
-            <button
+            <Button variant="secondary" size="sm" className="shrink-0"
               type="button"
               onClick={() => setQuery('')}
-              className="text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition cursor-pointer shrink-0 font-medium"
-              title="Clear search text"
-            >
+              title="Clear search text">
               Clear
-            </button>
+            </Button>
           )}
-          <button
+          <Button variant="ghost" size="icon" className="shrink-0"
             type="button"
             onClick={onClose}
             aria-label="Close search modal"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition cursor-pointer shrink-0 flex items-center justify-center"
-            title="Close modal (Esc)"
-          >
+            title="Close modal (Esc)">
             <X className="w-5 h-5" />
-          </button>
+          </Button>
           <span className="hidden sm:inline-flex items-center gap-0.5 text-xs font-mono px-1.5 py-0.5 rounded bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400">
             ESC
           </span>
@@ -168,7 +165,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                   className="w-full p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/70 border border-transparent hover:border-slate-200 dark:hover:border-slate-700 flex items-center justify-between text-left transition group cursor-pointer"
                 >
                   <div className="flex items-center gap-3 min-w-0 flex-1 mr-2">
-                    <div className="w-8 h-8 rounded-lg bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-400 flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-lg bg-accent-50 dark:bg-accent-950/60 text-accent-700 dark:text-accent-400 flex items-center justify-center shrink-0">
                       {item.type === 'PHONE' || item.type === 'IMEI' ? (
                         <Smartphone className="w-4 h-4" />
                       ) : item.type === 'CUSTOMER' ? (
@@ -191,7 +188,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                     <span className="text-xs font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
                       {item.badgeText}
                     </span>
-                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-teal-600 dark:group-hover:text-teal-400 group-hover:translate-x-0.5 transition" />
+                    <ArrowRight className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500 group-hover:text-accent-600 dark:group-hover:text-accent-400 group-hover:translate-x-0.5 transition" />
                   </div>
                 </button>
               ))}

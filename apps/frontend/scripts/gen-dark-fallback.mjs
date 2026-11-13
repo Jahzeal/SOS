@@ -28,7 +28,11 @@ const neutrals = ['slate', 'gray', 'zinc', 'neutral'];
 const n = (prefix, shades) => neutrals.flatMap((name) => shades.map((s) => `${prefix}-${name}-${s}`));
 
 // ---- Neutral surfaces
-add(['bg-white'], `background-color: ${hex(S[900])};`, { extra: ':where(:not(.rounded-full))' });
+// White stays white only on round shapes with no text in them (switch knobs, dots).
+// Round pills and chips that carry text must go dark, or their lightened text vanishes.
+add(['bg-white'], `background-color: ${hex(S[900])};`, {
+  extra: ':where(:not(.rounded-full:not([class*="text-"]):not([class*="px-"])))',
+});
 add(n('bg', [50]), `background-color: ${hex(S[800], 0.5)};`);
 add(n('bg', [100]), `background-color: ${hex(S[800])};`);
 add(n('bg', [200]), `background-color: ${hex(S[700])};`);
@@ -38,7 +42,6 @@ add(n('text', [950, 900, 800]), `color: ${hex(S[100])};`);
 add(n('text', [700]), `color: ${hex(S[200])};`);
 add(n('text', [600]), `color: ${hex(S[300])};`);
 add(n('text', [500]), `color: ${hex(S[400])};`);
-add(n('text', [300]), `color: ${hex(S[600])};`);
 // ---- Neutral borders and dividers
 add(n('border', [100]), `border-color: ${hex(S[800])};`);
 add(n('border', [200]), `border-color: ${hex(S[700], 0.8)};`);
@@ -85,6 +88,6 @@ for (const h of [...hues, ...Object.keys(aliases)]) {
 const header = `/* GENERATED FILE - do not edit by hand. Edit scripts/gen-dark-fallback.mjs and run:
      node scripts/gen-dark-fallback.mjs
    Dark-mode equivalents for light-only Tailwind classes. An explicit \`dark:\` class on an
-   element always wins over these. Content inside \`.print-doc\` is never touched. */\n`;
-writeFileSync(new URL('../src/app/dark-fallback.css', import.meta.url), header + rules.join('\n') + '\n');
+   element always wins over these. Content inside \`.print-doc\` is never touched, and nothing applies when printing. */\n`;
+writeFileSync(new URL('../src/app/dark-fallback.css', import.meta.url), header + '@media screen {\n' + rules.join('\n') + '\n}\n');
 console.log(`wrote ${rules.length} rules`);

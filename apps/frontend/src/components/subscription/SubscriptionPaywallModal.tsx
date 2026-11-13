@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui/Button';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -176,8 +177,8 @@ export function SubscriptionPaywallModal() {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="bg-white border border-slate-200 rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 animate-in zoom-in duration-200 flex flex-col max-h-[92vh]">
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden text-slate-900 animate-in zoom-in duration-200 flex flex-col max-h-[92vh]">
         
         {/* ========================================================================= */}
         {/* VIEW 1: PAY & ACTIVATE REGISTERED PLAN (Default)                          */}
@@ -185,7 +186,7 @@ export function SubscriptionPaywallModal() {
         {viewMode === 'PAY_PLAN' && (
           <>
             {/* Header Ribbon with Brand Teal Theme */}
-            <div className="p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-white relative shrink-0 border-b border-teal-500/20">
+            <div className="p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-accent-950 text-white relative shrink-0 border-b border-accent-500/20">
               <button
                 onClick={closePaywall}
                 className="absolute top-5 right-5 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 transition cursor-pointer"
@@ -194,7 +195,7 @@ export function SubscriptionPaywallModal() {
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-extrabold uppercase tracking-wider mb-2.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-warning-500/20 text-warning-300 border border-warning-500/30 text-xs font-extrabold uppercase tracking-wider mb-2.5">
                 <Clock className="w-3.5 h-3.5" />
                 <span>{isLegacyTrial ? 'Trial Ended' : 'Plan Expired'}</span>
               </div>
@@ -205,12 +206,12 @@ export function SubscriptionPaywallModal() {
               <p className="text-xs text-slate-300 font-medium mt-1 leading-relaxed">
                 {isLegacyTrial ? (
                   <>
-                    Your trial of the <strong className="text-teal-300">{planName} Plan</strong> ended on{' '}
-                    <strong className="text-amber-200">{formattedTrialEndDate}</strong>.
+                    Your trial of the <strong className="text-accent-300">{planName} Plan</strong> ended on{' '}
+                    <strong className="text-warning-200">{formattedTrialEndDate}</strong>.
                   </>
                 ) : (
                   <>
-                    Your <strong className="text-teal-300">{planName} Plan</strong> is no longer active.
+                    Your <strong className="text-accent-300">{planName} Plan</strong> is no longer active.
                   </>
                 )}{' '}
                 Pay for the plan {getActionReason()}, or move to the Free plan (free forever, up to 10 devices).
@@ -223,7 +224,7 @@ export function SubscriptionPaywallModal() {
               {/* Success Payment State */}
               {successPayment ? (
                 <div className="text-center py-6 space-y-4 animate-in zoom-in duration-200">
-                  <div className="w-16 h-16 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mx-auto border border-teal-200 shadow-lg shadow-teal-500/10">
+                  <div className="w-16 h-16 bg-accent-50 text-accent-600 rounded-2xl flex items-center justify-center mx-auto border border-accent-200 shadow-lg shadow-accent-500/10">
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <div>
@@ -232,12 +233,10 @@ export function SubscriptionPaywallModal() {
                       Your store subscription for <strong>{planName}</strong> has been successfully activated.
                     </p>
                   </div>
-                  <button
-                    onClick={closePaywall}
-                    className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-extrabold transition shadow-md cursor-pointer"
-                  >
+                  <Button variant="primary" size="lg" fullWidth
+                    onClick={closePaywall}>
                     Continue Working
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <>
@@ -265,7 +264,7 @@ export function SubscriptionPaywallModal() {
                     >
                       <span>Annual Billing</span>
                       {savingsNgn > 0 && (
-                        <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-xs bg-teal-100 text-teal-800 font-extrabold">
+                        <span className="ml-1.5 px-1.5 py-0.5 rounded-full text-xs bg-accent-100 text-accent-800 font-extrabold">
                           Save ₦{savingsNgn.toLocaleString()}
                         </span>
                       )}
@@ -273,10 +272,10 @@ export function SubscriptionPaywallModal() {
                   </div>
 
                   {/* Selected Plan Summary Card with Brand Teal Scheme */}
-                  <div className="p-4 bg-teal-50/40 border-2 border-teal-200/90 rounded-2xl space-y-3">
+                  <div className="p-4 bg-accent-50/40 border-2 border-accent-200/90 rounded-2xl space-y-3">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-xs font-black uppercase text-teal-800 bg-teal-100/90 px-2 py-0.5 rounded tracking-wider">
+                        <span className="text-xs font-black uppercase text-accent-800 bg-accent-100/90 px-2 py-0.5 rounded tracking-wider">
                           Your Plan
                         </span>
                         <h3 className="text-base font-extrabold text-slate-900 mt-1">{planName} Plan</h3>
@@ -291,21 +290,21 @@ export function SubscriptionPaywallModal() {
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-teal-100 grid grid-cols-2 gap-2 text-xs text-slate-700 font-medium">
+                    <div className="pt-2 border-t border-accent-100 grid grid-cols-2 gap-2 text-xs text-slate-700 font-medium">
                       <div className="flex items-center gap-1.5">
-                        <Check className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-accent-600 shrink-0" />
                         <span>{selectedPlan.maxDevices ? `${selectedPlan.maxDevices.toLocaleString()} Devices Limit` : 'Unlimited Devices'}</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Check className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-accent-600 shrink-0" />
                         <span>Thermal POS Receipts</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Check className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-accent-600 shrink-0" />
                         <span>Digital Warranty QR</span>
                       </div>
                       <div className="flex items-center gap-1.5">
-                        <Check className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+                        <Check className="w-3.5 h-3.5 text-accent-600 shrink-0" />
                         <span>Commercial Quotes</span>
                       </div>
                     </div>
@@ -313,23 +312,21 @@ export function SubscriptionPaywallModal() {
 
                   {/* Error Message */}
                   {errorMessage && (
-                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-xl flex items-center justify-between">
+                    <div className="p-3 bg-danger-50 border border-danger-200 text-danger-800 text-xs font-bold rounded-xl flex items-center justify-between">
                       <span>{errorMessage}</span>
-                      <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800">
+                      <Button variant="ghostDanger" size="icon" aria-label="Dismiss message" onClick={() => setErrorMessage(null)}>
                         <X className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     </div>
                   )}
 
                   {/* Action Buttons */}
                   <div className="space-y-3 pt-1">
                     {/* Primary CTA: Pay for selected plan */}
-                    <button
+                    <Button variant="primary" size="lg" fullWidth
                       type="button"
                       onClick={handlePayWithPaystack}
-                      disabled={isInitializing || isVerifying}
-                      className="w-full py-3.5 bg-teal-600 hover:bg-teal-500 active:scale-[0.99] text-white rounded-xl text-xs font-extrabold transition shadow-lg shadow-teal-600/20 flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-                    >
+                      disabled={isInitializing || isVerifying}>
                       {isInitializing || isVerifying ? (
                         <>
                           <RefreshCw className="w-4 h-4 animate-spin" />
@@ -342,20 +339,18 @@ export function SubscriptionPaywallModal() {
                           <ArrowRight className="w-4 h-4" />
                         </>
                       )}
-                    </button>
+                    </Button>
 
                     {/* Secondary Option: Learn about and use the Free plan */}
                     <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-2">
-                      <button
+                      <Button variant="secondary" size="sm" fullWidth
                         type="button"
                         onClick={() => {
                           setErrorMessage(null);
                           setViewMode('FREE_DETAILS');
-                        }}
-                        className="w-full py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
-                      >
+                        }}>
                         <span>Use the Free plan →</span>
-                      </button>
+                      </Button>
                       <span className="text-xs text-slate-400 font-medium text-center">
                         See what the Free plan includes and its limits before deciding.
                       </span>
@@ -366,7 +361,7 @@ export function SubscriptionPaywallModal() {
                       <Link
                         href="/dashboard/settings?tab=subscription"
                         onClick={closePaywall}
-                        className="text-xs font-bold text-teal-700 hover:text-teal-900 hover:underline inline-flex items-center gap-1"
+                        className="text-xs font-bold text-accent-700 hover:text-accent-900 hover:underline inline-flex items-center gap-1"
                       >
                         <span>Need a different tier? Explore All Plans</span>
                         <ChevronRight className="w-3 h-3" />
@@ -391,7 +386,7 @@ export function SubscriptionPaywallModal() {
         {viewMode === 'FREE_DETAILS' && (
           <>
             {/* Header Ribbon with Brand Teal Theme */}
-            <div className="p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-teal-950 text-white relative shrink-0 border-b border-teal-500/20">
+            <div className="p-6 bg-gradient-to-br from-slate-950 via-slate-900 to-accent-950 text-white relative shrink-0 border-b border-accent-500/20">
               <button
                 onClick={closePaywall}
                 className="absolute top-5 right-5 p-2 rounded-xl bg-white/10 hover:bg-white/20 text-white/80 transition cursor-pointer"
@@ -400,7 +395,7 @@ export function SubscriptionPaywallModal() {
                 <X className="w-4 h-4" />
               </button>
 
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-teal-500/20 text-teal-300 border border-teal-500/30 text-xs font-extrabold uppercase tracking-wider mb-2.5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent-500/20 text-accent-300 border border-accent-500/30 text-xs font-extrabold uppercase tracking-wider mb-2.5">
                 <Gift className="w-3.5 h-3.5" />
                 <span>Free Plan Overview</span>
               </div>
@@ -418,7 +413,7 @@ export function SubscriptionPaywallModal() {
 
               {successDowngrade ? (
                 <div className="text-center py-6 space-y-4 animate-in zoom-in duration-200">
-                  <div className="w-16 h-16 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mx-auto border border-teal-200 shadow-lg shadow-teal-500/10">
+                  <div className="w-16 h-16 bg-accent-50 text-accent-600 rounded-2xl flex items-center justify-center mx-auto border border-accent-200 shadow-lg shadow-accent-500/10">
                     <CheckCircle2 className="w-8 h-8" />
                   </div>
                   <div>
@@ -427,27 +422,25 @@ export function SubscriptionPaywallModal() {
                       Your store has been switched to the <strong>Free</strong> plan. All your past records, devices, and receipts remain safe.
                     </p>
                   </div>
-                  <button
-                    onClick={closePaywall}
-                    className="w-full py-3.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-extrabold transition shadow-md cursor-pointer"
-                  >
+                  <Button variant="primary" size="lg" fullWidth
+                    onClick={closePaywall}>
                     Continue to Dashboard
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <>
                   {/* Included Features Card */}
-                  <div className="p-4 bg-teal-50/60 border border-teal-200/80 rounded-2xl space-y-3">
+                  <div className="p-4 bg-accent-50/60 border border-accent-200/80 rounded-2xl space-y-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-2 h-2 rounded-full bg-teal-600 animate-pulse" />
-                      <span className="text-xs font-extrabold uppercase tracking-wider text-teal-900">
+                      <span className="w-2 h-2 rounded-full bg-accent-600 animate-pulse" />
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-accent-900">
                         Included in the Free plan:
                       </span>
                     </div>
 
                     <div className="space-y-2 text-xs text-slate-700">
                       <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0 mt-0.5" />
                         <div>
                           <strong className="text-slate-900">Up to 10 Devices:</strong>
                           <span className="text-slate-600"> Full IMEI & SKU inventory tracking.</span>
@@ -455,7 +448,7 @@ export function SubscriptionPaywallModal() {
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0 mt-0.5" />
                         <div>
                           <strong className="text-slate-900">POS Thermal Receipts:</strong>
                           <span className="text-slate-600"> 58mm & 80mm sales receipts & customer lookup.</span>
@@ -463,7 +456,7 @@ export function SubscriptionPaywallModal() {
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0 mt-0.5" />
                         <div>
                           <strong className="text-slate-900">Digital Warranty & Anti-Theft QR:</strong>
                           <span className="text-slate-600"> Public `/verify` lookups and verification passports.</span>
@@ -471,7 +464,7 @@ export function SubscriptionPaywallModal() {
                       </div>
 
                       <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0 mt-0.5" />
+                        <CheckCircle2 className="w-4 h-4 text-accent-600 shrink-0 mt-0.5" />
                         <div>
                           <strong className="text-slate-900">All Existing Data Kept:</strong>
                           <span className="text-slate-600"> All your past records and sales stay completely safe.</span>
@@ -483,7 +476,7 @@ export function SubscriptionPaywallModal() {
                   {/* Paused / Restricted Features Comparison */}
                   <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
                     <div className="flex items-center gap-2">
-                      <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                      <AlertTriangle className="w-3.5 h-3.5 text-warning-600" />
                       <span className="text-xs font-extrabold uppercase tracking-wider text-slate-700">
                         Paused from your {planName} Plan:
                       </span>
@@ -491,19 +484,19 @@ export function SubscriptionPaywallModal() {
 
                     <div className="space-y-1.5 text-xs text-slate-600">
                       <div className="flex items-center gap-2">
-                        <XCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                        <XCircle className="w-3.5 h-3.5 text-danger-500 shrink-0" />
                         <span>More than 10 devices in your stock records</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <XCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                        <XCircle className="w-3.5 h-3.5 text-danger-500 shrink-0" />
                         <span>Commercial Price Quotations generator (PDF)</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <XCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                        <XCircle className="w-3.5 h-3.5 text-danger-500 shrink-0" />
                         <span>Custom store logo & branding on verification seals</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <XCircle className="w-3.5 h-3.5 text-rose-500 shrink-0" />
+                        <XCircle className="w-3.5 h-3.5 text-danger-500 shrink-0" />
                         <span>Multi-staff cashier and technician accounts</span>
                       </div>
                     </div>
@@ -511,22 +504,20 @@ export function SubscriptionPaywallModal() {
 
                   {/* Error Message */}
                   {errorMessage && (
-                    <div className="p-3 bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold rounded-xl flex items-center justify-between">
+                    <div className="p-3 bg-danger-50 border border-danger-200 text-danger-800 text-xs font-bold rounded-xl flex items-center justify-between">
                       <span>{errorMessage}</span>
-                      <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800">
+                      <Button variant="ghostDanger" size="icon" aria-label="Dismiss message" onClick={() => setErrorMessage(null)}>
                         <X className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     </div>
                   )}
 
                   {/* Action Buttons */}
                   <div className="space-y-2.5 pt-1">
-                    <button
+                    <Button variant="primary" size="lg" fullWidth
                       type="button"
                       onClick={handleConfirmSwitchToFree}
-                      disabled={isDowngrading}
-                      className="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-extrabold transition shadow-md flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60"
-                    >
+                      disabled={isDowngrading}>
                       {isDowngrading ? (
                         <>
                           <RefreshCw className="w-4 h-4 animate-spin" />
@@ -538,16 +529,14 @@ export function SubscriptionPaywallModal() {
                           <span>Confirm & Switch to the Free Plan</span>
                         </>
                       )}
-                    </button>
+                    </Button>
 
-                    <button
+                    <Button variant="secondary" size="sm" fullWidth
                       type="button"
-                      onClick={() => setViewMode('PAY_PLAN')}
-                      className="w-full py-2.5 bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
+                      onClick={() => setViewMode('PAY_PLAN')}>
                       <ArrowLeft className="w-3.5 h-3.5" />
                       <span>Back to Pay for {planName} Plan (₦{currentPrice.toLocaleString()}{billingCycle === 'ANNUAL' ? '/yr' : '/mo'})</span>
-                    </button>
+                    </Button>
                   </div>
                 </>
               )}

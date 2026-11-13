@@ -1,4 +1,6 @@
 'use client';
+import { Table, THead, TBody, Tr, Th, Td } from '@/components/ui/DataTable';
+import { TextInput, Select } from '@/components/ui/Input';
 
 
 import { notify, confirmDialog } from '@/lib/feedback';
@@ -230,17 +232,17 @@ export default function QuotesRegistryPage() {
       case 'DRAFT':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-slate-100 text-slate-700 border border-slate-200">DRAFT</span>;
       case 'SENT':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-blue-50 text-blue-700 border border-blue-200">SENT</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-accent-50 text-accent-700 border border-accent-200">SENT</span>;
       case 'PARTIALLY_PAID':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 text-amber-800 border border-amber-300">PARTIAL DEPOSIT</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-warning-50 text-warning-800 border border-warning-300">PARTIAL DEPOSIT</span>;
       case 'ACCEPTED':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">ACCEPTED</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-success-50 text-success-700 border border-success-200">ACCEPTED</span>;
       case 'CONVERTED':
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-purple-50 text-purple-700 border border-purple-200">CONVERTED</span>;
       case 'DECLINED':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-rose-50 text-rose-700 border border-rose-200">DECLINED</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-danger-50 text-danger-700 border border-danger-200">DECLINED</span>;
       case 'EXPIRED':
-        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-50 text-amber-700 border border-amber-200">EXPIRED</span>;
+        return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-warning-50 text-warning-700 border border-warning-200">EXPIRED</span>;
       default:
         return <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-slate-100 text-slate-700">{status}</span>;
     }
@@ -257,7 +259,7 @@ export default function QuotesRegistryPage() {
             <ChevronRight className="w-3.5 h-3.5" />
             <span className="text-slate-900 font-bold">Sales & Invoices</span>
             <ChevronRight className="w-3.5 h-3.5" />
-            <span className="text-blue-600 font-bold">Quotations & Estimates</span>
+            <span className="text-accent-600 font-bold">Quotations & Estimates</span>
           </nav>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             Quotations & Commercial Estimates
@@ -269,13 +271,13 @@ export default function QuotesRegistryPage() {
 
         <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5 shrink-0">
           <Link href="/dashboard/templates">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-slate-200 text-slate-700 bg-transparent hover:bg-slate-50 shadow-xs">
+            <Button variant="secondary" size="sm">
               Customize Template
-            </button>
+            </Button>
           </Link>
           <Link href="/dashboard/quotes/new">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-blue-600/30 text-blue-700 bg-blue-50/30 hover:bg-blue-50 sm:bg-blue-600 sm:text-white sm:border-blue-600 sm:hover:bg-blue-700 shadow-xs sm:shadow-md sm:shadow-blue-600/10">
-              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-blue-600 sm:text-white" />
+            <button className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-xl text-xs font-bold transition cursor-pointer border border-accent-600/30 text-accent-700 bg-accent-50/30 hover:bg-accent-50 sm:bg-accent-600 sm:text-white sm:border-accent-600 sm:hover:bg-accent-700 shadow-xs sm:shadow-md sm:shadow-accent-600/10">
+              <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-accent-600 sm:text-white" />
               <span>Create New Quote</span>
             </button>
           </Link>
@@ -299,11 +301,11 @@ export default function QuotesRegistryPage() {
         </div>
 
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
-          <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Accepted / Won</span>
+          <span className="text-xs font-bold text-success-600 uppercase tracking-wider">Accepted / Won</span>
           {loading && !stats ? (
             <div className="h-7 w-24 bg-slate-200/60 rounded-md animate-pulse my-1" />
           ) : (
-            <p className="text-xl sm:text-2xl font-black text-emerald-600 font-mono">
+            <p className="text-xl sm:text-2xl font-black text-success-600 font-mono">
               ₦{(stats?.acceptedAmount || 0).toLocaleString()}
             </p>
           )}
@@ -313,11 +315,11 @@ export default function QuotesRegistryPage() {
         </div>
 
         <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-1">
-          <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Active / Pending</span>
+          <span className="text-xs font-bold text-accent-600 uppercase tracking-wider">Active / Pending</span>
           {loading && !stats ? (
             <div className="h-7 w-16 bg-slate-200/60 rounded-md animate-pulse my-1" />
           ) : (
-            <p className="text-xl sm:text-2xl font-black text-blue-600 font-mono">
+            <p className="text-xl sm:text-2xl font-black text-accent-600 font-mono">
               {stats?.activeCount || 0}
             </p>
           )}
@@ -345,12 +347,12 @@ export default function QuotesRegistryPage() {
       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 bg-white p-3 rounded-2xl border border-slate-200 shadow-xs">
         <div className="relative flex-1">
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
+          <input aria-label="Search by quote number, subject, customer name, phone, or email"
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search by quote number, subject, customer name, phone, or email..."
-            className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition"
+            className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed pl-9 pr-4"
           />
         </div>
 
@@ -370,13 +372,11 @@ export default function QuotesRegistryPage() {
             </button>
           ))}
 
-          <button
+          <Button variant="secondary" size="icon" className="shrink-0 ml-auto" aria-label="Refresh Quotes"
             onClick={() => loadQuotes()}
-            title="Refresh Quotes"
-            className="p-2 rounded-xl bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200 transition shrink-0 ml-auto"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-blue-600' : ''}`} />
-          </button>
+            title="Refresh Quotes">
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-accent-600' : ''}`} />
+          </Button>
         </div>
       </div>
 
@@ -384,12 +384,12 @@ export default function QuotesRegistryPage() {
       <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         {loading ? (
           <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-3">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-accent-600" />
             <p className="text-xs font-bold">Loading quotations registry...</p>
           </div>
         ) : quotes.length === 0 ? (
           <div className="py-16 text-center px-4 space-y-3">
-            <div className="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center mx-auto">
+            <div className="w-12 h-12 rounded-2xl bg-accent-50 text-accent-600 flex items-center justify-center mx-auto">
               <FileSpreadsheet className="w-6 h-6" />
             </div>
             <h3 className="text-base font-extrabold text-slate-900">No quotations found</h3>
@@ -432,7 +432,7 @@ export default function QuotesRegistryPage() {
                         <div className="flex items-center gap-2">
                           <Link
                             href={`/dashboard/quotes/${quote.id}`}
-                            className="font-black text-blue-600 hover:text-blue-700 font-mono text-sm"
+                            className="font-black text-accent-600 hover:text-accent-700 font-mono text-sm"
                           >
                             {quote.quoteNumber}
                           </Link>
@@ -451,17 +451,17 @@ export default function QuotesRegistryPage() {
                           ₦{quote.totalAmount.toLocaleString()}
                         </span>
                         {quote.amountPaid > 0 && (
-                          <span className="text-xs text-emerald-600 font-mono font-bold block">
+                          <span className="text-xs text-success-600 font-mono font-bold block">
                             Paid: ₦{quote.amountPaid.toLocaleString()}
                           </span>
                         )}
                         {quote.balanceDue > 0 && quote.amountPaid > 0 && (
-                          <span className="text-xs text-amber-700 font-mono font-bold block">
+                          <span className="text-xs text-warning-700 font-mono font-bold block">
                             Due: ₦{quote.balanceDue.toLocaleString()}
                           </span>
                         )}
                         {quote.discount > 0 && (
-                          <span className="text-xs text-rose-500 font-mono block">
+                          <span className="text-xs text-danger-500 font-mono block">
                             Disc: -₦{quote.discount.toLocaleString()}
                           </span>
                         )}
@@ -479,11 +479,11 @@ export default function QuotesRegistryPage() {
                       </div>
                       {quote.hasInstallments && quote.installments && quote.installments.length > 0 && (
                         <div className="pt-1 border-t border-slate-200/60 flex items-center justify-between text-xs">
-                          <span className="text-blue-700 font-bold">
+                          <span className="text-accent-700 font-bold">
                             Installments: {quote.installments.filter(i => i.status === 'PAID').length}/{quote.installments.length} Paid
                           </span>
                           {quote.balanceDue > 0 && (
-                            <span className="text-amber-700 font-bold">
+                            <span className="text-warning-700 font-bold">
                               Balance: ₦{quote.balanceDue.toLocaleString()}
                             </span>
                           )}
@@ -502,45 +502,39 @@ export default function QuotesRegistryPage() {
                             disabled={convertingQuoteId === quote.id}
                             leftIcon={
                               convertingQuoteId === quote.id ? (
-                                <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-accent-600" />
                               ) : (
-                                <Receipt className="w-3.5 h-3.5 text-blue-600" />
+                                <Receipt className="w-3.5 h-3.5 text-accent-600" />
                               )
                             }
-                            className="text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100 py-1.5 px-2.5 h-auto"
+                            className="text-xs font-bold text-accent-700 bg-accent-50/80 hover:bg-accent-100 py-1.5 px-2.5 h-auto"
                             title="Convert to Invoice"
                           >
                             Convert
                           </Button>
                         )}
                         {!isConverted && quote.balanceDue > 0 && (
-                          <button
+                          <Button variant="secondary" size="sm"
                             onClick={() => {
                               setSelectedQuoteForPayment(quote);
                               setPaymentAmount(quote.balanceDue.toString());
                             }}
-                            className="px-2.5 py-1.5 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 transition"
-                            title="Record Deposit or Installment Payment"
-                          >
+                            title="Record Deposit or Installment Payment">
                             + Pay
-                          </button>
+                          </Button>
                         )}
                         {!isConverted && quote.balanceDue > 0 && (
-                          <button
+                          <Button variant="secondary" size="md"
                             onClick={() => handleSendReminderSubmit(quote)}
-                            className="p-1.5 rounded-lg text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 transition"
-                            title="Send Payment Reminder"
-                          >
+                            title="Send Payment Reminder">
                             🔔
-                          </button>
+                          </Button>
                         )}
-                        <button
+                        <Button variant="secondary" size="icon" aria-label="Share Quote via WhatsApp, Email, or PDF"
                           onClick={() => setSelectedQuoteForShare(quote)}
-                          className="p-2 rounded-lg text-slate-500 hover:text-blue-600 bg-slate-100 hover:bg-blue-50 transition"
-                          title="Share Quote via WhatsApp, Email, or PDF"
-                        >
+                          title="Share Quote via WhatsApp, Email, or PDF">
                           <Share2 className="w-3.5 h-3.5" />
-                        </button>
+                        </Button>
                         <a
                           href={api.getQuotePdfDownloadUrl(quote.id)}
                 onClick={(e) => api.handlePdfLinkClick(e, api.getQuotePdfDownloadUrl(quote.id), `Quotation-${quote.quoteNumber || quote.id}.pdf`)}
@@ -560,13 +554,11 @@ export default function QuotesRegistryPage() {
                         >
                           View Details →
                         </Link>
-                        <button
+                        <Button variant="secondary" size="icon" aria-label="Delete Quotation"
                           onClick={() => setQuoteToDelete(quote)}
-                          className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 border border-slate-200 transition cursor-pointer"
-                          title="Delete Quotation"
-                        >
-                          <Trash2 className="w-3.5 h-3.5 text-rose-500" />
-                        </button>
+                          title="Delete Quotation">
+                          <Trash2 className="w-3.5 h-3.5 text-danger-500" />
+                        </Button>
                       </div>
                     </div>
                   </div>
@@ -576,19 +568,19 @@ export default function QuotesRegistryPage() {
 
             {/* Desktop Table View (Visible on md and above) */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
+              <Table>
+                <THead>
                   <tr className="bg-slate-50/80 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-xs">
-                    <th className="py-3 px-4">Quote #</th>
-                    <th className="py-3 px-4">Customer</th>
-                    <th className="py-3 px-4">Subject / Devices</th>
-                    <th className="py-3 px-4">Dates & Validity</th>
-                    <th className="py-3 px-4 text-right">Amount & Payments</th>
-                    <th className="py-3 px-4 text-center">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <Th>Quote #</Th>
+                    <Th>Customer</Th>
+                    <Th>Subject / Devices</Th>
+                    <Th>Dates & Validity</Th>
+                    <Th align="right">Amount & Payments</Th>
+                    <Th align="center">Status</Th>
+                    <Th align="right">Actions</Th>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-medium">
+                </THead>
+                <TBody className="font-medium">
                   {quotes.map((quote) => {
                     const isConverted = quote.status === 'CONVERTED';
                     const formattedDate = new Date(quote.quoteDate).toLocaleDateString('en-US', {
@@ -605,69 +597,69 @@ export default function QuotesRegistryPage() {
                       : 'N/A';
 
                     return (
-                      <tr key={quote.id} className="hover:bg-slate-50/60 transition group">
+                      <Tr className="group" key={quote.id}>
                         {/* Quote Number */}
-                        <td className="py-3 px-4 whitespace-nowrap">
-                          <Link href={`/dashboard/quotes/${quote.id}`} className="font-extrabold text-blue-600 hover:text-blue-700 hover:underline font-mono">
+                        <Td className="whitespace-nowrap">
+                          <Link href={`/dashboard/quotes/${quote.id}`} className="font-extrabold text-accent-600 hover:text-accent-700 hover:underline font-mono">
                             {quote.quoteNumber}
                           </Link>
                           {quote.hasInstallments && (
-                            <span className="block text-xs font-bold text-blue-700 bg-blue-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
+                            <span className="block text-xs font-bold text-accent-700 bg-accent-50 px-1.5 py-0.5 rounded w-fit mt-0.5">
                               {quote.installments?.length || 0} Installments
                             </span>
                           )}
-                        </td>
+                        </Td>
 
                         {/* Customer */}
-                        <td className="py-3 px-4">
+                        <Td>
                           <p className="font-bold text-slate-900">{quote.customer?.name || 'Walk-in / General Client'}</p>
                           {quote.customer?.phone && (
                             <p className="text-xs text-slate-400 font-mono">{quote.customer.phone}</p>
                           )}
-                        </td>
+                        </Td>
 
                         {/* Subject & Item Summary */}
-                        <td className="py-3 px-4 max-w-xs truncate">
+                        <Td className="max-w-xs truncate">
                           <p className="font-bold text-slate-800 truncate">{quote.subject || quote.items[0]?.description || 'Equipment Quote'}</p>
                           <p className="text-xs text-slate-400">
                             {quote.items.length} {quote.items.length === 1 ? 'item' : 'items'}
                             {quote.items.some((i) => i.phoneRecord) ? ' • Includes verified hardware' : ''}
                           </p>
-                        </td>
+                        </Td>
 
                         {/* Dates */}
-                        <td className="py-3 px-4 whitespace-nowrap text-slate-600 text-xs">
+                        <Td className="whitespace-nowrap text-slate-600 text-xs">
                           <div>Issued: <span className="font-bold text-slate-800">{formattedDate}</span></div>
                           <div className="text-xs text-slate-400">Valid to: {expiryDateStr}</div>
-                        </td>
+                        </Td>
 
                         {/* Amount & Payments */}
-                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <Td align="right" className="whitespace-nowrap">
                           <span className="font-black text-slate-900 font-mono text-sm block">
                             ₦{quote.totalAmount.toLocaleString()}
                           </span>
                           {quote.amountPaid > 0 && (
-                            <span className="text-xs text-emerald-600 font-mono font-bold block">
+                            <span className="text-xs text-success-600 font-mono font-bold block">
                               Deposit: ₦{quote.amountPaid.toLocaleString()}
                             </span>
                           )}
                           {quote.balanceDue > 0 && quote.amountPaid > 0 && (
-                            <span className="text-xs text-amber-700 font-mono font-bold block">
+                            <span className="text-xs text-warning-700 font-mono font-bold block">
                               Due: ₦{quote.balanceDue.toLocaleString()}
                             </span>
                           )}
                           {quote.discount > 0 && (
-                            <p className="text-xs text-rose-500 font-mono">Disc: -₦{quote.discount.toLocaleString()}</p>
+                            <p className="text-xs text-danger-500 font-mono">Disc: -₦{quote.discount.toLocaleString()}</p>
                           )}
-                        </td>
+                        </Td>
 
                         {/* Status */}
-                        <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <Td align="center" className="whitespace-nowrap">
                           {getStatusBadge(quote.status)}
-                        </td>
+                        </Td>
 
                         {/* Actions */}
-                        <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <Td align="right" className="whitespace-nowrap">
                           <div className="flex items-center justify-end gap-1.5">
                             {/* Quick Convert Button for Accepted or Sent Quotes */}
                             {!isConverted && (
@@ -678,12 +670,12 @@ export default function QuotesRegistryPage() {
                                 disabled={convertingQuoteId === quote.id}
                                 leftIcon={
                                   convertingQuoteId === quote.id ? (
-                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-600" />
+                                    <Loader2 className="w-3.5 h-3.5 animate-spin text-accent-600" />
                                   ) : (
-                                    <Receipt className="w-3.5 h-3.5 text-blue-600" />
+                                    <Receipt className="w-3.5 h-3.5 text-accent-600" />
                                   )
                                 }
-                                className="text-xs font-bold text-blue-700 bg-blue-50/80 hover:bg-blue-100"
+                                className="text-xs font-bold text-accent-700 bg-accent-50/80 hover:bg-accent-100"
                                 title="Convert to Invoice"
                               >
                                 Convert
@@ -692,37 +684,31 @@ export default function QuotesRegistryPage() {
 
                             {/* Record Payment Button */}
                             {!isConverted && quote.balanceDue > 0 && (
-                              <button
+                              <Button variant="secondary" size="sm"
                                 onClick={() => {
                                   setSelectedQuoteForPayment(quote);
                                   setPaymentAmount(quote.balanceDue.toString());
                                 }}
-                                className="px-2.5 py-1 rounded-lg text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition"
-                                title="Record Deposit or Part Payment"
-                              >
+                                title="Record Deposit or Part Payment">
                                 + Pay
-                              </button>
+                              </Button>
                             )}
 
                             {/* Send Reminder Button */}
                             {!isConverted && quote.balanceDue > 0 && (
-                              <button
+                              <Button variant="secondary" size="md"
                                 onClick={() => handleSendReminderSubmit(quote)}
-                                className="p-1.5 rounded-lg text-amber-600 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 transition"
-                                title="Send Installment / Payment Reminder"
-                              >
+                                title="Send Installment / Payment Reminder">
                                 🔔
-                              </button>
+                              </Button>
                             )}
 
                             {/* Share Quote Button */}
-                            <button
+                            <Button variant="ghost" size="icon" aria-label="Share Quote via WhatsApp, Email, or PDF"
                               onClick={() => setSelectedQuoteForShare(quote)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition"
-                              title="Share Quote via WhatsApp, Email, or PDF"
-                            >
+                              title="Share Quote via WhatsApp, Email, or PDF">
                               <Share2 className="w-4 h-4" />
-                            </button>
+                            </Button>
 
                             {/* Download PDF */}
                             <a
@@ -746,20 +732,18 @@ export default function QuotesRegistryPage() {
                             </Link>
 
                             {/* Delete Button */}
-                            <button
+                            <Button variant="ghostDanger" size="icon" aria-label="Delete Quotation"
                               onClick={() => setQuoteToDelete(quote)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
-                              title="Delete Quotation"
-                            >
-                              <Trash2 className="w-4 h-4 text-slate-400 hover:text-rose-600" />
-                            </button>
+                              title="Delete Quotation">
+                              <Trash2 className="w-4 h-4 text-slate-400 hover:text-danger-600" />
+                            </Button>
                           </div>
-                        </td>
-                      </tr>
+                        </Td>
+                      </Tr>
                     );
                   })}
-                </tbody>
-              </table>
+                </TBody>
+              </Table>
             </div>
           </div>
         )}
@@ -767,23 +751,21 @@ export default function QuotesRegistryPage() {
 
       {/* Record Payment Modal */}
       {selectedQuoteForPayment && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
-                  <Receipt className="w-4 h-4 text-emerald-600" /> Record Deposit / Installment Payment
+                  <Receipt className="w-4 h-4 text-success-600" /> Record Deposit / Installment Payment
                 </h3>
                 <p className="text-xs text-slate-500">
                   Quote #{selectedQuoteForPayment.quoteNumber} • {selectedQuoteForPayment.customer?.name || 'Client'}
                 </p>
               </div>
-              <button
-                onClick={() => setSelectedQuoteForPayment(null)}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
+              <Button variant="ghost" size="md"
+                onClick={() => setSelectedQuoteForPayment(null)}>
                 ✕
-              </button>
+              </Button>
             </div>
 
             <div className="p-3 bg-slate-50 rounded-xl border border-slate-100 grid grid-cols-3 gap-2 text-center text-xs">
@@ -792,63 +774,51 @@ export default function QuotesRegistryPage() {
                 <span className="font-mono font-bold text-slate-900">₦{selectedQuoteForPayment.totalAmount.toLocaleString()}</span>
               </div>
               <div>
-                <span className="text-xs text-emerald-600 font-bold block">Already Paid</span>
-                <span className="font-mono font-bold text-emerald-700">₦{selectedQuoteForPayment.amountPaid.toLocaleString()}</span>
+                <span className="text-xs text-success-600 font-bold block">Already Paid</span>
+                <span className="font-mono font-bold text-success-700">₦{selectedQuoteForPayment.amountPaid.toLocaleString()}</span>
               </div>
               <div>
-                <span className="text-xs text-amber-700 font-bold block">Balance Due</span>
-                <span className="font-mono font-bold text-amber-800">₦{selectedQuoteForPayment.balanceDue.toLocaleString()}</span>
+                <span className="text-xs text-warning-700 font-bold block">Balance Due</span>
+                <span className="font-mono font-bold text-warning-800">₦{selectedQuoteForPayment.balanceDue.toLocaleString()}</span>
               </div>
             </div>
 
             <div className="space-y-3 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Amount Received Today (₦) *</label>
-                <input
+                <TextInput label="Amount Received Today (₦)"
                   type="number"
                   step="0.01"
                   max={selectedQuoteForPayment.balanceDue}
                   value={paymentAmount}
                   onChange={(e) => setPaymentAmount(e.target.value)}
-                  placeholder="e.g. 50000"
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono text-slate-900 focus:outline-none focus:border-emerald-600"
-                />
+                  placeholder="e.g. 50000" className="font-mono" />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Payment Channel / Method</label>
-                <select
+                <Select label="Payment Channel / Method"
                   value={paymentMethod}
-                  onChange={(e) => setPaymentMethod(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-emerald-600"
-                >
+                  onChange={(e) => setPaymentMethod(e.target.value)}>
                   <option value="TRANSFER">Bank Transfer</option>
                   <option value="CASH">Cash in Hand</option>
                   <option value="CARD">POS / Card Terminal</option>
                   <option value="OTHER">Other Remittance</option>
-                </select>
+                </Select>
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Payment Reference / Transaction ID (Optional)</label>
-                <input
+                <TextInput label="Payment Reference / Transaction ID (Optional)"
                   type="text"
                   value={paymentRef}
                   onChange={(e) => setPaymentRef(e.target.value)}
-                  placeholder="e.g. GTB/TRF/9812401"
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
-                />
+                  placeholder="e.g. GTB/TRF/9812401" />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Internal Audit Note (Optional)</label>
-                <input
+                <TextInput label="Internal Audit Note (Optional)"
                   type="text"
                   value={paymentNotes}
                   onChange={(e) => setPaymentNotes(e.target.value)}
-                  placeholder="e.g. Received first 50% installment deposit"
-                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:border-emerald-600"
-                />
+                  placeholder="e.g. Received first 50% installment deposit" />
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
@@ -866,7 +836,7 @@ export default function QuotesRegistryPage() {
                   onClick={handleRecordPaymentSubmit}
                   disabled={isRecordingPayment || !paymentAmount}
                   leftIcon={isRecordingPayment ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
-                  className="bg-emerald-600 hover:bg-emerald-500 font-bold"
+                  className="bg-success-600 hover:bg-success-500 font-bold"
                 >
                   {isRecordingPayment ? 'Recording...' : 'Confirm & Issue Payment Receipt'}
                 </Button>
@@ -878,7 +848,7 @@ export default function QuotesRegistryPage() {
 
       {/* Reminder Dispatch Result Modal */}
       {selectedQuoteForReminder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
@@ -889,26 +859,24 @@ export default function QuotesRegistryPage() {
                   Quote #{selectedQuoteForReminder.quoteNumber} • {selectedQuoteForReminder.customer?.name}
                 </p>
               </div>
-              <button
+              <Button variant="ghost" size="md"
                 onClick={() => {
                   setSelectedQuoteForReminder(null);
                   setReminderResult(null);
-                }}
-                className="text-slate-400 hover:text-slate-700 p-1"
-              >
+                }}>
                 ✕
-              </button>
+              </Button>
             </div>
 
             {isSendingReminder ? (
               <div className="py-8 text-center text-slate-500 space-y-2">
-                <Loader2 className="w-6 h-6 animate-spin text-blue-600 mx-auto" />
+                <Loader2 className="w-6 h-6 animate-spin text-accent-600 mx-auto" />
                 <p className="text-xs font-bold">Dispatching payment reminder...</p>
               </div>
             ) : reminderResult ? (
               <div className="space-y-4 text-xs">
-                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 font-bold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                <div className="p-3 bg-success-50 border border-success-200 rounded-xl text-success-800 font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-success-600 shrink-0" />
                   {reminderResult.message || 'Reminder processed successfully!'}
                 </div>
 
@@ -916,7 +884,7 @@ export default function QuotesRegistryPage() {
                   <p><strong>Customer:</strong> {selectedQuoteForReminder.customer?.name}</p>
                   <p><strong>Outstanding Balance:</strong> ₦{selectedQuoteForReminder.balanceDue.toLocaleString()}</p>
                   {reminderResult.emailSent && (
-                    <p className="text-emerald-700 font-bold">✓ Email statement sent to {selectedQuoteForReminder.customer?.email}</p>
+                    <p className="text-success-700 font-bold">✓ Email statement sent to {selectedQuoteForReminder.customer?.email}</p>
                   )}
                 </div>
 
@@ -926,7 +894,7 @@ export default function QuotesRegistryPage() {
                       href={reminderResult.whatsAppShareUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition"
+                      className="w-full py-2.5 px-4 rounded-xl bg-success-600 hover:bg-success-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition"
                     >
                       <span>💬 Open in WhatsApp Web / Mobile</span>
                     </a>
@@ -977,10 +945,10 @@ export default function QuotesRegistryPage() {
 
       {/* Delete Quote Confirmation Modal */}
       {quoteToDelete && (
-        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
+        <div role="dialog" aria-modal="true" className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 space-y-4 animate-in zoom-in-95 duration-150 overflow-hidden">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-danger-50 border border-danger-100 text-danger-600 flex items-center justify-center shrink-0">
                 <Trash2 className="w-5 h-5" />
               </div>
               <div className="min-w-0">
@@ -990,8 +958,8 @@ export default function QuotesRegistryPage() {
             </div>
 
             {deleteQuoteError && (
-              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-xs text-rose-700 font-semibold flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+              <div className="p-3 bg-danger-50 border border-danger-200 rounded-xl text-xs text-danger-700 font-semibold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 text-danger-600" />
                 <span className="truncate">{deleteQuoteError}</span>
               </div>
             )}
@@ -999,7 +967,7 @@ export default function QuotesRegistryPage() {
             <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-100 space-y-1.5 text-xs text-slate-600">
               <div className="flex justify-between items-center">
                 <span className="text-slate-400 font-bold uppercase text-xs">Quote #</span>
-                <span className="font-mono font-bold text-blue-600 truncate ml-2">
+                <span className="font-mono font-bold text-accent-600 truncate ml-2">
                   {quoteToDelete.quoteNumber}
                 </span>
               </div>
@@ -1034,12 +1002,10 @@ export default function QuotesRegistryPage() {
               >
                 Cancel
               </Button>
-              <button
+              <Button variant="destructive" size="sm"
                 type="button"
                 disabled={isDeletingQuote}
-                onClick={handleConfirmDelete}
-                className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white rounded-xl font-bold text-xs flex items-center gap-1.5 transition shadow-sm shadow-rose-600/20 cursor-pointer"
-              >
+                onClick={handleConfirmDelete}>
                 {isDeletingQuote ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -1051,7 +1017,7 @@ export default function QuotesRegistryPage() {
                     <span>Delete Quote</span>
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 'use client';
+import { Button } from '@/components/ui/Button';
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Sun, Moon, Laptop, Check } from 'lucide-react';
@@ -47,7 +48,7 @@ export function ThemeToggle({ variant = 'simple', className = '' }: ThemeToggleP
         aria-label="Toggle theme"
       >
         {isDark ? (
-          <Sun className="w-4 h-4 text-amber-400 group-hover:rotate-45 transition-transform duration-300" />
+          <Sun className="w-4 h-4 text-warning-400 group-hover:rotate-45 transition-transform duration-300" />
         ) : (
           <Moon className="w-4 h-4 text-slate-600 group-hover:-rotate-12 transition-transform duration-300" />
         )}
@@ -58,8 +59,8 @@ export function ThemeToggle({ variant = 'simple', className = '' }: ThemeToggleP
   // Compact badge selector for settings / mobile menu
   if (variant === 'compact') {
     const options: { mode: ThemeMode; label: string; icon: React.ReactNode }[] = [
-      { mode: 'light', label: 'Light', icon: <Sun className="w-3.5 h-3.5 text-amber-500" /> },
-      { mode: 'dark', label: 'Dark', icon: <Moon className="w-3.5 h-3.5 text-blue-400" /> },
+      { mode: 'light', label: 'Light', icon: <Sun className="w-3.5 h-3.5 text-warning-500" /> },
+      { mode: 'dark', label: 'Dark', icon: <Moon className="w-3.5 h-3.5 text-accent-400" /> },
       { mode: 'system', label: 'Auto', icon: <Laptop className="w-3.5 h-3.5 text-slate-400" /> },
     ];
 
@@ -87,19 +88,17 @@ export function ThemeToggle({ variant = 'simple', className = '' }: ThemeToggleP
   // Full Dropdown with options
   return (
     <div ref={dropdownRef} className={`relative ${className}`}>
-      <button
+      <Button variant="secondary" size="icon"
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-9 h-9 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition shadow-subtle cursor-pointer"
         title="Theme Settings"
-        aria-label="Theme menu"
-      >
+        aria-label="Theme menu">
         {resolvedTheme === 'dark' ? (
-          <Moon className="w-4 h-4 text-blue-400" />
+          <Moon className="w-4 h-4 text-accent-400" />
         ) : (
-          <Sun className="w-4 h-4 text-amber-500" />
+          <Sun className="w-4 h-4 text-warning-500" />
         )}
-      </button>
+      </Button>
 
       {isOpen && (
         <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl p-1.5 z-50 animate-in fade-in slide-in-from-top-2 duration-150 text-xs">
@@ -115,15 +114,15 @@ export function ThemeToggle({ variant = 'simple', className = '' }: ThemeToggleP
             }}
             className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl font-bold transition text-left cursor-pointer ${
               theme === 'light'
-                ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400'
+                ? 'bg-accent-50 dark:bg-accent-950/40 text-accent-700 dark:text-accent-400'
                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
             <div className="flex items-center gap-2">
-              <Sun className="w-4 h-4 text-amber-500" />
+              <Sun className="w-4 h-4 text-warning-500" />
               <span>Light Mode</span>
             </div>
-            {theme === 'light' && <Check className="w-3.5 h-3.5 text-teal-600" />}
+            {theme === 'light' && <Check className="w-3.5 h-3.5 text-accent-600" />}
           </button>
 
           <button
@@ -134,15 +133,15 @@ export function ThemeToggle({ variant = 'simple', className = '' }: ThemeToggleP
             }}
             className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl font-bold transition text-left cursor-pointer ${
               theme === 'dark'
-                ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400'
+                ? 'bg-accent-50 dark:bg-accent-950/40 text-accent-700 dark:text-accent-400'
                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
             <div className="flex items-center gap-2">
-              <Moon className="w-4 h-4 text-blue-400" />
+              <Moon className="w-4 h-4 text-accent-400" />
               <span>Dark Mode</span>
             </div>
-            {theme === 'dark' && <Check className="w-3.5 h-3.5 text-teal-600" />}
+            {theme === 'dark' && <Check className="w-3.5 h-3.5 text-accent-600" />}
           </button>
 
           <button
@@ -153,7 +152,7 @@ export function ThemeToggle({ variant = 'simple', className = '' }: ThemeToggleP
             }}
             className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl font-bold transition text-left cursor-pointer ${
               theme === 'system'
-                ? 'bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400'
+                ? 'bg-accent-50 dark:bg-accent-950/40 text-accent-700 dark:text-accent-400'
                 : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800'
             }`}
           >
@@ -161,7 +160,7 @@ export function ThemeToggle({ variant = 'simple', className = '' }: ThemeToggleP
               <Laptop className="w-4 h-4 text-slate-400" />
               <span>System Auto</span>
             </div>
-            {theme === 'system' && <Check className="w-3.5 h-3.5 text-teal-600" />}
+            {theme === 'system' && <Check className="w-3.5 h-3.5 text-accent-600" />}
           </button>
         </div>
       )}

@@ -23,7 +23,7 @@ export default function LaptopsPage() {
           </div>
           <div className="flex items-center gap-3">
             <Link href="/login"><Button variant="secondary" size="sm" className="font-bold text-xs">Log In</Button></Link>
-            <Link href="/onboarding"><Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-700 font-bold text-xs shadow-sm shadow-teal-600/20">Start free</Button></Link>
+            <Link href="/onboarding"><Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-700 font-bold text-xs shadow-sm shadow-teal-600/20">Get started</Button></Link>
           </div>
         </div>
       </nav>
@@ -43,7 +43,7 @@ export default function LaptopsPage() {
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link href="/onboarding" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full bg-teal-600 hover:bg-teal-700 font-extrabold text-sm shadow-md shadow-teal-600/20 px-8 py-3.5">Start free</Button>
+              <Button size="lg" className="w-full bg-teal-600 hover:bg-teal-700 font-extrabold text-sm shadow-md shadow-teal-600/20 px-8 py-3.5">Get started</Button>
             </Link>
             <Link href="/pricing" className="w-full sm:w-auto">
               <Button variant="secondary" size="lg" className="w-full font-bold text-sm border-slate-300 px-7 py-3.5">Compare Pricing Plans</Button>

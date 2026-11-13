@@ -1,4 +1,6 @@
 'use client';
+import { Table, THead, TBody, Tr, Th, Td } from '@/components/ui/DataTable';
+import { TextInput, Select } from '@/components/ui/Input';
 
 
 import { notify, confirmDialog } from '@/lib/feedback';
@@ -348,21 +350,21 @@ export default function CreateInvoicePage() {
       <div className="flex sm:hidden items-center justify-between border-b border-slate-200/80 pb-3 mb-2 text-xs font-extrabold text-slate-400">
         <button
           onClick={() => setMobileStep(1)}
-          className={`pb-1 border-b-2 transition ${mobileStep === 1 ? 'border-blue-600 text-blue-600' : 'border-transparent'}`}
+          className={`pb-1 border-b-2 transition ${mobileStep === 1 ? 'border-accent-600 text-accent-600' : 'border-transparent'}`}
         >
           1. Customer Details
         </button>
         <button
           onClick={() => setMobileStep(2)}
           disabled={customerName.trim() === ''}
-          className={`pb-1 border-b-2 transition ${mobileStep === 2 ? 'border-blue-600 text-blue-600' : 'border-transparent'} disabled:opacity-50`}
+          className={`pb-1 border-b-2 transition ${mobileStep === 2 ? 'border-accent-600 text-accent-600' : 'border-transparent'} disabled:opacity-50`}
         >
           2. Invoice Items
         </button>
         <button
           onClick={() => setMobileStep(3)}
           disabled={items.length === 0}
-          className={`pb-1 border-b-2 transition ${mobileStep === 3 ? 'border-blue-600 text-blue-600' : 'border-transparent'} disabled:opacity-50`}
+          className={`pb-1 border-b-2 transition ${mobileStep === 3 ? 'border-accent-600 text-accent-600' : 'border-transparent'} disabled:opacity-50`}
         >
           3. Summary & Terms
         </button>
@@ -370,10 +372,10 @@ export default function CreateInvoicePage() {
 
       {/* Error Message Banner */}
       {errorMessage && (
-        <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl flex items-center gap-3 text-rose-800 text-xs font-bold animate-in fade-in duration-200">
-          <AlertTriangle className="w-5 h-5 text-rose-600 shrink-0" />
+        <div className="p-4 bg-danger-50 border border-danger-200 rounded-2xl flex items-center gap-3 text-danger-800 text-xs font-bold animate-in fade-in duration-200">
+          <AlertTriangle className="w-5 h-5 text-danger-600 shrink-0" />
           <div className="flex-1">{errorMessage}</div>
-          <button onClick={() => setErrorMessage(null)} className="text-rose-500 hover:text-rose-800 font-bold text-sm"></button>
+          <Button variant="ghostDanger" size="md" onClick={() => setErrorMessage(null)}></Button>
         </div>
       )}
 
@@ -387,48 +389,36 @@ export default function CreateInvoicePage() {
           <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 overflow-hidden ${mobileStep === 1 ? 'block' : 'hidden sm:block'}`}>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <label className="text-xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Customer / Business Name *</label>
-                <input
+                <TextInput label="Customer / Business Name"
                   type="text"
                   required
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
-                  placeholder="e.g. Zenith Gadgets Ltd or Emeka Obi..."
-                  className="w-full text-xs sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
-                />
+                  placeholder="e.g. Zenith Gadgets Ltd or Emeka Obi..." />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Email Address</label>
-                <input
+                <TextInput label="Email Address"
                   type="email"
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
-                  placeholder="e.g. client@example.com"
-                  className="w-full text-xs sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
-                />
+                  placeholder="e.g. client@example.com" />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Phone Number</label>
-                <input
+                <TextInput label="Phone Number"
                   type="text"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
-                  placeholder="e.g. +1 (555) 234-5678"
-                  className="w-full text-xs sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
-                />
+                  placeholder="e.g. +1 (555) 234-5678" />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs sm:text-xs font-bold text-slate-500 uppercase tracking-wider">Billing Address</label>
-                <input
+                <TextInput label="Billing Address"
                   type="text"
                   value={billingAddress}
                   onChange={(e) => setBillingAddress(e.target.value)}
-                  placeholder="e.g. 123 Corporate Blvd, New York, NY"
-                  className="w-full text-xs sm:text-xs px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
-                />
+                  placeholder="e.g. 123 Corporate Blvd, New York, NY" />
               </div>
             </div>
 
@@ -440,7 +430,7 @@ export default function CreateInvoicePage() {
                 size="md"
                 onClick={() => setMobileStep(2)}
                 disabled={customerName.trim() === ''}
-                className="bg-blue-600 hover:bg-blue-500 font-bold"
+                className="bg-accent-600 hover:bg-accent-500 font-bold"
                 rightIcon={<ChevronRight className="w-4 h-4" />}
               >
                 Next: Add Items
@@ -452,19 +442,19 @@ export default function CreateInvoicePage() {
           <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 overflow-hidden ${mobileStep === 2 ? 'block' : 'hidden sm:block'}`}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                <Smartphone className="w-4 h-4 text-blue-600" /> Select In-Stock Device from Inventory
+                <Smartphone className="w-4 h-4 text-accent-600" /> Select In-Stock Device from Inventory
               </h2>
               <span className="text-xs text-slate-400 font-bold uppercase">Available Inventory</span>
             </div>
 
             <div className="relative">
               <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
+              <input aria-label="Search by IMEI, Model, or Brand"
                 type="text"
                 value={deviceSearch}
                 onChange={(e) => setDeviceSearch(e.target.value)}
                 placeholder="Search by IMEI, Model, or Brand..."
-                className="w-full text-xs sm:text-xs pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 focus:outline-none focus:border-blue-600 focus:bg-white placeholder-slate-400 placeholder:text-xs"
+                className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed pl-8 pr-3"
               />
             </div>
 
@@ -486,12 +476,12 @@ export default function CreateInvoicePage() {
                       onClick={() => !inInvoice && handleAddDeviceToInvoice(phone)}
                       className={`p-2 rounded-xl border flex items-center justify-between gap-2.5 transition cursor-pointer ${
                         inInvoice
-                          ? 'bg-emerald-50/60 border-emerald-300 opacity-80 cursor-default'
-                          : 'bg-slate-50 border-slate-200/90 hover:border-blue-500 hover:bg-blue-50/30'
+                          ? 'bg-success-50/60 border-success-300 opacity-80 cursor-default'
+                          : 'bg-slate-50 border-slate-200/90 hover:border-accent-500 hover:bg-accent-50/30'
                       }`}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-bold ${inInvoice ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-50 text-blue-600'}`}>
+                        <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-bold ${inInvoice ? 'bg-success-100 text-success-700' : 'bg-accent-50 text-accent-600'}`}>
                           <Smartphone className="w-3.5 h-3.5" />
                         </div>
                         <div className="min-w-0">
@@ -508,7 +498,7 @@ export default function CreateInvoicePage() {
                           type="button"
                           disabled={inInvoice}
                           className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
-                            inInvoice ? 'bg-emerald-600 text-white' : 'bg-blue-600 text-white hover:bg-blue-500'
+                            inInvoice ? 'bg-success-600 text-white' : 'bg-accent-600 text-white hover:bg-accent-500'
                           }`}
                         >
                           {inInvoice ? <><Check className="w-3.5 h-3.5" /> Added</> : <><Plus className="w-3.5 h-3.5" /> Add</>}
@@ -525,7 +515,7 @@ export default function CreateInvoicePage() {
           <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 overflow-hidden ${mobileStep === 2 ? 'block' : 'hidden sm:block'}`}>
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                <FileText className="w-4 h-4 text-blue-600" /> Invoice Line Items & Services
+                <FileText className="w-4 h-4 text-accent-600" /> Invoice Line Items & Services
               </h2>
               <Badge variant="starter" size="sm">{items.length} ITEMS</Badge>
             </div>
@@ -544,12 +534,10 @@ export default function CreateInvoicePage() {
                         <p className="font-extrabold text-slate-900">{item.description}</p>
                         <p className="text-xs font-mono text-slate-500">IMEI: {item.imei}</p>
                       </div>
-                      <button
-                        onClick={() => removeItem(item.id)}
-                        className="text-slate-400 hover:text-rose-600 p-1 shrink-0"
-                      >
+                      <Button variant="ghostDanger" size="icon" aria-label="Remove item" className="shrink-0"
+                        onClick={() => removeItem(item.id)}>
                         <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      </Button>
                     </div>
 
                     <div className="flex items-center justify-between text-xs pt-1.5 border-t border-slate-100">
@@ -583,31 +571,31 @@ export default function CreateInvoicePage() {
 
             {/* Desktop Table View (Hidden on mobile) */}
             <div className="hidden sm:block overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
-                <thead className="bg-slate-50 text-slate-600 uppercase font-bold text-xs border-b border-slate-200 tracking-wider">
+              <Table>
+                <THead>
                   <tr>
-                    <th className="py-2.5 px-3">Description</th>
-                    <th className="py-2.5 px-3">IMEI / Serial</th>
-                    <th className="py-2.5 px-3 text-center">Qty</th>
-                    <th className="py-2.5 px-3 text-right">Price (₦)</th>
-                    <th className="py-2.5 px-3 text-right">Total</th>
-                    <th className="py-2.5 px-3 text-center">Action</th>
+                    <Th>Description</Th>
+                    <Th>IMEI / Serial</Th>
+                    <Th align="center">Qty</Th>
+                    <Th align="right">Price (₦)</Th>
+                    <Th align="right">Total</Th>
+                    <Th align="center">Action</Th>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
+                </THead>
+                <TBody>
                   {items.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400 font-medium">
+                      <Td align="center" className="text-slate-400 font-medium" colSpan={6}>
                         No items added to invoice yet. Select a device above or add a custom item below.
-                      </td>
+                      </Td>
                     </tr>
                   ) : (
                     items.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/80 transition">
-                        <td className="py-3 px-3 font-extrabold text-slate-900">{item.description}</td>
-                        <td className="py-3 px-3 font-mono text-slate-500 text-xs">{item.imei}</td>
-                        <td className="py-3 px-3 text-center font-bold text-slate-800">{item.quantity}</td>
-                        <td className="py-3 px-3 text-right font-semibold text-slate-800">
+                      <Tr key={item.id}>
+                        <Td className="font-extrabold text-slate-900">{item.description}</Td>
+                        <Td className="font-mono text-slate-500 text-xs">{item.imei}</Td>
+                        <Td align="center" className="font-bold text-slate-800">{item.quantity}</Td>
+                        <Td align="right" className="font-semibold text-slate-800">
                           <input
                             type="number"
                             step="0.01"
@@ -616,23 +604,21 @@ export default function CreateInvoicePage() {
                             onChange={(e) => updateItemPrice(item.id, parseFloat(e.target.value) || 0)}
                             className="w-20 text-right font-bold text-slate-900 bg-white border border-slate-200 rounded px-1.5 py-0.5"
                           />
-                        </td>
-                        <td className="py-3 px-3 text-right font-extrabold text-slate-900">
+                        </Td>
+                        <Td align="right" className="font-extrabold text-slate-900">
                           ₦{(item.unitPrice * item.quantity).toLocaleString()}
-                        </td>
-                        <td className="py-3 px-3 text-center">
-                          <button
-                            onClick={() => removeItem(item.id)}
-                            className="text-slate-400 hover:text-rose-600 p-1"
-                          >
+                        </Td>
+                        <Td align="center">
+                          <Button variant="ghostDanger" size="icon" aria-label="Remove item"
+                            onClick={() => removeItem(item.id)}>
                             <Trash2 className="w-3.5 h-3.5" />
-                          </button>
-                        </td>
-                      </tr>
+                          </Button>
+                        </Td>
+                      </Tr>
                     ))
                   )}
-                </tbody>
-              </table>
+                </TBody>
+              </Table>
             </div>
 
             {/* Add Custom Line Item Form */}
@@ -640,37 +626,37 @@ export default function CreateInvoicePage() {
               <p className="text-xs font-bold text-slate-700">Add Custom Item / Service</p>
               <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
                 <div className="sm:col-span-5">
-                  <input
+                  <input aria-label="Description (e.g. Repair)"
                     type="text"
                     required
                     value={newItemDesc}
                     onChange={(e) => setNewItemDesc(e.target.value)}
                     placeholder="Description (e.g. Repair)..."
-                    className="w-full text-xs sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-xs"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div className="sm:col-span-3">
-                  <input
+                  <input aria-label="IMEI (Optional)"
                     type="text"
                     value={newItemImei}
                     onChange={(e) => setNewItemImei(e.target.value)}
                     placeholder="IMEI (Optional)..."
-                    className="w-full font-mono text-xs sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-xs"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed font-mono"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <input
+                  <input aria-label="Qty"
                     type="number"
                     min="1"
                     required
                     value={newItemQty}
                     onChange={(e) => setNewItemQty(e.target.value)}
                     placeholder="Qty..."
-                    className="w-full text-xs sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 text-center placeholder-slate-400 placeholder:text-xs"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed text-center"
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <input
+                  <input aria-label="Rate (₦)"
                     type="text"
                     inputMode="decimal"
                     required
@@ -680,7 +666,7 @@ export default function CreateInvoicePage() {
                       setNewItemPrice(raw);
                     }}
                     placeholder="Rate (₦)..."
-                    className="w-full text-xs sm:text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-semibold text-slate-800 focus:outline-none focus:border-blue-600 placeholder-slate-400 placeholder:text-xs"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -706,7 +692,7 @@ export default function CreateInvoicePage() {
                 fullWidth
                 onClick={() => setMobileStep(3)}
                 disabled={items.length === 0}
-                className="bg-blue-600 hover:bg-blue-500 font-bold"
+                className="bg-accent-600 hover:bg-accent-500 font-bold"
                 rightIcon={<ChevronRight className="w-4 h-4" />}
               >
                 Next: Summary
@@ -718,7 +704,7 @@ export default function CreateInvoicePage() {
           <div className={`p-4 sm:p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4 overflow-hidden ${mobileStep === 3 ? 'block' : 'hidden sm:block'}`}>
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shrink-0">
+                <div className="w-8 h-8 rounded-lg bg-accent-50 text-accent-600 flex items-center justify-center border border-accent-100 shrink-0">
                   <Building2 className="w-4 h-4" />
                 </div>
                 <div className="min-w-0">
@@ -745,11 +731,11 @@ export default function CreateInvoicePage() {
                   }}
                   className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 text-center ${
                     !useCustomBank
-                      ? 'bg-white text-blue-700 shadow-xs'
+                      ? 'bg-white text-accent-700 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <Building2 className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <Building2 className="w-3.5 h-3.5 text-accent-600 shrink-0" />
                   <span className="truncate">Template Account</span>
                 </button>
                 <button
@@ -757,11 +743,11 @@ export default function CreateInvoicePage() {
                   onClick={() => setUseCustomBank(true)}
                   className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 text-center ${
                     useCustomBank
-                      ? 'bg-white text-blue-700 shadow-xs'
+                      ? 'bg-white text-accent-700 shadow-xs'
                       : 'text-slate-600 hover:text-slate-900'
                   }`}
                 >
-                  <CreditCard className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <CreditCard className="w-3.5 h-3.5 text-accent-600 shrink-0" />
                   <span className="truncate">Custom Account</span>
                 </button>
               </div>
@@ -771,16 +757,16 @@ export default function CreateInvoicePage() {
             {!useCustomBank ? (
               <div className="space-y-3">
                 {templateBank?.accountNumber ? (
-                  <div className="p-4 rounded-xl bg-blue-50/60 border border-blue-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="p-4 rounded-xl bg-accent-50/60 border border-accent-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-extrabold text-blue-950 text-sm">{templateBank.bankName}</span>
-                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-800 border border-blue-200">
+                        <span className="font-extrabold text-accent-950 text-sm">{templateBank.bankName}</span>
+                        <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-accent-100 text-accent-800 border border-accent-200">
                           Template Default
                         </span>
                       </div>
                       <p className="text-slate-700 font-mono font-bold text-xs">
-                        Account #: <span className="text-blue-900">{templateBank.accountNumber}</span>
+                        Account #: <span className="text-accent-900">{templateBank.accountNumber}</span>
                       </p>
                       {templateBank.accountName && (
                         <p className="text-slate-600 font-medium text-xs truncate">
@@ -793,41 +779,37 @@ export default function CreateInvoicePage() {
                       <Link
                         href="/dashboard/templates"
                         target="_blank"
-                        className="px-3 py-1.5 rounded-lg border border-blue-200 bg-white hover:bg-blue-50 text-blue-700 font-bold text-xs transition"
+                        className="px-3 py-1.5 rounded-lg border border-accent-200 bg-white hover:bg-accent-50 text-accent-700 font-bold text-xs transition"
                       >
                         Edit in Templates →
                       </Link>
-                      <button
+                      <Button variant="primary" size="sm"
                         type="button"
-                        onClick={() => setUseCustomBank(true)}
-                        className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition cursor-pointer"
-                      >
+                        onClick={() => setUseCustomBank(true)}>
                         Override / Change
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="p-4 rounded-xl bg-warning-50 border border-warning-200 text-warning-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <p className="font-bold">No Default Bank Account in Templates</p>
-                      <p className="text-xs text-amber-800">
+                      <p className="text-xs text-warning-800">
                         You have not configured store bank details in /dashboard/templates yet.
                       </p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <Link
                         href="/dashboard/templates"
-                        className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition"
+                        className="px-3 py-1.5 rounded-lg bg-warning-600 hover:bg-warning-700 text-white font-bold text-xs transition"
                       >
                         Set up in Templates
                       </Link>
-                      <button
+                      <Button variant="secondary" size="sm"
                         type="button"
-                        onClick={() => setUseCustomBank(true)}
-                        className="px-3 py-1.5 rounded-lg border border-amber-300 bg-white hover:bg-amber-50 text-amber-900 font-bold text-xs transition cursor-pointer"
-                      >
+                        onClick={() => setUseCustomBank(true)}>
                         Enter Custom Account
-                      </button>
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -840,52 +822,41 @@ export default function CreateInvoicePage() {
                     Custom Remittance Account Details
                   </span>
                   {templateBank?.accountNumber && (
-                    <button
+                    <Button variant="link"
                       type="button"
                       onClick={() => {
                         setBankName(templateBank.bankName);
                         setAccountNumber(templateBank.accountNumber);
                         setAccountName(templateBank.accountName);
-                      }}
-                      className="text-xs text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1 cursor-pointer"
-                    >
+                      }}>
                       <RefreshCw className="w-3 h-3" />
                       <span>Fill Template Values</span>
-                    </button>
+                    </Button>
                   )}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-700">Bank Name</label>
-                    <input
+                    <TextInput label="Bank Name"
                       type="text"
                       value={bankName}
                       onChange={(e) => setBankName(e.target.value)}
-                      placeholder="e.g. Access Bank / Zenith"
-                      className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-800 focus:outline-none focus:border-blue-600"
-                    />
+                      placeholder="e.g. Access Bank / Zenith" />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-700">Account Number</label>
-                    <input
+                    <TextInput label="Account Number"
                       type="text"
                       inputMode="numeric"
                       value={accountNumber}
                       onChange={(e) => setAccountNumber(e.target.value.replace(/[^\d]/g, ''))}
-                      placeholder="e.g. 0123456789"
-                      className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-mono font-bold text-slate-800 focus:outline-none focus:border-blue-600"
-                    />
+                      placeholder="e.g. 0123456789" className="font-mono" />
                   </div>
                   <div className="space-y-1">
-                    <label className="block text-xs font-bold text-slate-700">Account / Beneficiary Name</label>
-                    <input
+                    <TextInput label="Account / Beneficiary Name"
                       type="text"
                       value={accountName}
                       onChange={(e) => setAccountName(e.target.value)}
-                      placeholder="e.g. Store Trade Ltd"
-                      className="w-full text-xs px-3 py-2 bg-white border border-slate-200 rounded-lg font-bold text-slate-800 focus:outline-none focus:border-blue-600"
-                    />
+                      placeholder="e.g. Store Trade Ltd" />
                   </div>
                 </div>
               </div>
@@ -901,7 +872,7 @@ export default function CreateInvoicePage() {
               rows={3}
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-800 focus:outline-none focus:border-blue-600 leading-relaxed"
+              className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed"
             />
           </div>
 
@@ -917,27 +888,21 @@ export default function CreateInvoicePage() {
 
             <div className="space-y-3 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Issue Date</label>
-                <input
+                <TextInput label="Issue Date"
                   type="date"
                   value={issueDate}
-                  onChange={(e) => setIssueDate(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900"
-                />
+                  onChange={(e) => setIssueDate(e.target.value)} />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-700">Payment Terms</label>
-                <select
+                <Select label="Payment Terms"
                   value={paymentTerms}
-                  onChange={(e) => setPaymentTerms(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900"
-                >
+                  onChange={(e) => setPaymentTerms(e.target.value)}>
                   <option value="DUE_ON_RECEIPT">Due on Receipt</option>
                   <option value="NET_7">Net 7 Days</option>
                   <option value="NET_15">Net 15 Days</option>
                   <option value="NET_30">Net 30 Days</option>
-                </select>
+                </Select>
               </div>
 
               <div className="space-y-1.5">
@@ -945,8 +910,8 @@ export default function CreateInvoicePage() {
                   <span>Payment Status</span>
                   <span className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                     invoicePaymentStatus === 'PAID'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-amber-100 text-amber-800'
+                      ? 'bg-success-100 text-success-800'
+                      : 'bg-warning-100 text-warning-800'
                   }`}>
                     {invoicePaymentStatus === 'PAID' ? 'PAID (Settled)' : 'PENDING (Unpaid)'}
                   </span>
@@ -957,11 +922,11 @@ export default function CreateInvoicePage() {
                     onClick={() => setInvoicePaymentStatus('PENDING')}
                     className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                       invoicePaymentStatus === 'PENDING'
-                        ? 'bg-white text-amber-700 shadow-xs border border-amber-200'
+                        ? 'bg-white text-warning-700 shadow-xs border border-warning-200'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                    <Clock className="w-3.5 h-3.5 text-warning-600 shrink-0" />
                     <span>Pending</span>
                   </button>
                   <button
@@ -969,17 +934,17 @@ export default function CreateInvoicePage() {
                     onClick={() => setInvoicePaymentStatus('PAID')}
                     className={`py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 cursor-pointer ${
                       invoicePaymentStatus === 'PAID'
-                        ? 'bg-white text-emerald-700 shadow-xs border border-emerald-200'
+                        ? 'bg-white text-success-700 shadow-xs border border-success-200'
                         : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-success-600 shrink-0" />
                     <span>Paid</span>
                   </button>
                 </div>
               </div>
 
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-blue-900 font-bold flex flex-wrap justify-between items-center gap-1">
+              <div className="p-3 bg-accent-50 border border-accent-200 rounded-xl text-accent-900 font-bold flex flex-wrap justify-between items-center gap-1">
                 <span>Calculated Due Date:</span>
                 <span className="font-extrabold">{dueDate}</span>
               </div>
@@ -993,7 +958,7 @@ export default function CreateInvoicePage() {
               </div>
               <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 text-slate-900 font-extrabold">
                 <span className="text-sm">Total Due</span>
-                <span className="text-2xl text-blue-600 font-extrabold">₦{totalAmount.toLocaleString()}</span>
+                <span className="text-2xl text-accent-600 font-extrabold">₦{totalAmount.toLocaleString()}</span>
               </div>
             </div>
 
@@ -1005,7 +970,7 @@ export default function CreateInvoicePage() {
                 size="md"
                 isLoading={isSaving}
                 onClick={() => handleIssueInvoice('ISSUED')}
-                className="bg-blue-600 hover:bg-blue-500 font-bold shadow-lg shadow-blue-600/20"
+                className="bg-accent-600 hover:bg-accent-500 font-bold shadow-lg shadow-accent-600/20"
                 leftIcon={<Share2 className="w-4 h-4" />}
               >
                 Issue & Share Invoice
@@ -1066,7 +1031,7 @@ export default function CreateInvoicePage() {
       {showSuccessModal && createdInvoice && (
         <div className="fixed -inset-1 z-[100] bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 text-center space-y-4 border border-slate-200 animate-in fade-in zoom-in duration-200">
-            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto border border-blue-200">
+            <div className="w-16 h-16 bg-accent-50 text-accent-600 rounded-full flex items-center justify-center mx-auto border border-accent-200">
               <FileText className="w-8 h-8" />
             </div>
 
@@ -1086,34 +1051,32 @@ export default function CreateInvoicePage() {
                 <span>Payment Status</span>
                 <span className={`font-bold px-2 py-0.5 rounded text-xs ${
                   invoicePaymentStatus === 'PAID'
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-amber-100 text-amber-800'
+                    ? 'bg-success-100 text-success-800'
+                    : 'bg-warning-100 text-warning-800'
                 }`}>
                   {invoicePaymentStatus === 'PAID' ? 'PAID' : 'PENDING'}
                 </span>
               </div>
               <div className="flex justify-between font-bold text-slate-900 text-sm pt-1">
                 <span>Total Amount Owed</span>
-                <span className="text-blue-600 font-extrabold">₦{Number(createdInvoice.totalAmount || 0).toLocaleString()}</span>
+                <span className="text-accent-600 font-extrabold">₦{Number(createdInvoice.totalAmount || 0).toLocaleString()}</span>
               </div>
             </div>
 
             {emailNotice && (
-              <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-xs font-bold text-center animate-in fade-in">
+              <div className="p-3 bg-success-50 border border-success-200 text-success-800 rounded-xl text-xs font-bold text-center animate-in fade-in">
                 {emailNotice}
               </div>
             )}
 
             <div className="space-y-2 pt-2">
-              <button
+              <Button variant="secondary" size="sm" fullWidth
                 type="button"
-                onClick={handleCopyLink}
-                className="w-full py-2.5 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 font-bold text-xs text-slate-700 transition flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-              >
+                onClick={handleCopyLink}>
                 {copiedLink ? (
                   <>
-                    <Check className="w-4 h-4 text-emerald-600" />
-                    <span className="text-emerald-700">Link Copied to Clipboard!</span>
+                    <Check className="w-4 h-4 text-success-600" />
+                    <span className="text-success-700">Link Copied to Clipboard!</span>
                   </>
                 ) : (
                   <>
@@ -1121,7 +1084,7 @@ export default function CreateInvoicePage() {
                     <span>Copy Shareable Invoice Link</span>
                   </>
                 )}
-              </button>
+              </Button>
 
               <div className="grid grid-cols-2 gap-2">
                 <Button variant="primary" size="md" onClick={handlePrintPDF} leftIcon={<Printer className="w-4 h-4" />}>
@@ -1144,7 +1107,7 @@ export default function CreateInvoicePage() {
 
       {/* Hidden Printable Invoice Portaled Directly to document.body for Guaranteed Clean A4 Output */}
       {typeof document !== 'undefined' && createPortal(
-        <div id="printable-portal" className="hidden print:block">
+        <div id="printable-portal" className="print-doc hidden print:block">
           <A4CommercialInvoice
             id="printable-a4-invoice-content"
             data={{

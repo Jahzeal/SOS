@@ -162,12 +162,12 @@ For warranty or device verification, present this receipt.`;
 
   return (
     <div className="fixed -inset-1 z-[100] flex items-center justify-center p-4 bg-slate-950/75 backdrop-blur-sm">
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden flex flex-col max-h-[92vh]">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden flex flex-col max-h-[92vh]">
         
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center border border-blue-100 shadow-xs">
+            <div className="w-10 h-10 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center border border-accent-100 shadow-xs">
               <Mail className="w-5 h-5" />
             </div>
             <div>
@@ -188,37 +188,37 @@ For warranty or device verification, present this receipt.`;
           
           {/* Customer Email Input */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+            <label htmlFor="ilreceiptmodal-tsx-f1" className="text-xs font-bold text-slate-700 flex items-center justify-between">
               <span>Customer Email Address</span>
               {!emailInput && (
-                <span className="text-xs text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs text-warning-600 font-semibold bg-warning-50 px-2 py-0.5 rounded-full">
                   Recipient required
                 </span>
               )}
             </label>
             <div className="relative">
               <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
+              <input id="ilreceiptmodal-tsx-f1" aria-label="customer@example.com"
                 type="email"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
                 placeholder="customer@example.com"
-                className="w-full text-xs pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-900 focus:outline-none focus:border-blue-600 transition"
+                className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed pl-10 pr-4"
                 autoFocus
               />
             </div>
           </div>
 
           {/* PDF Attachment Notice */}
-          <div className="p-3 rounded-xl bg-blue-50/80 border border-blue-200 text-xs text-blue-950 space-y-1">
-            <div className="flex items-center gap-1.5 font-bold text-blue-900">
-              <FileText className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+          <div className="p-3 rounded-xl bg-accent-50/80 border border-accent-200 text-xs text-accent-950 space-y-1">
+            <div className="flex items-center gap-1.5 font-bold text-accent-900">
+              <FileText className="w-3.5 h-3.5 text-accent-600 shrink-0" />
               <span>Official PDF Document Attached:</span>
             </div>
-            <p className="text-blue-800/90 font-mono text-xs pl-5">
+            <p className="text-accent-800/90 font-mono text-xs pl-5">
               Receipt-{receiptNum}.pdf
             </p>
-            <p className="text-xs text-blue-700/80 pl-5 pt-0.5">
+            <p className="text-xs text-accent-700/80 pl-5 pt-0.5">
               Customer will receive the official store receipt breakdown along with an A4 PDF attachment.
             </p>
           </div>
@@ -251,15 +251,13 @@ For warranty or device verification, present this receipt.`;
           </div>
 
           {/* Copy Receipt Text Button */}
-          <button
+          <Button variant="secondary" size="sm" fullWidth
             type="button"
-            onClick={handleCopyReceipt}
-            className="w-full py-2.5 px-4 rounded-xl border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100/80 text-slate-700 font-bold text-xs flex items-center justify-center gap-2 transition"
-          >
+            onClick={handleCopyReceipt}>
             {copied ? (
               <>
-                <Check className="w-4 h-4 text-emerald-600" />
-                <span className="text-emerald-700 font-extrabold">Receipt Copied to Clipboard!</span>
+                <Check className="w-4 h-4 text-success-600" />
+                <span className="text-success-700 font-extrabold">Receipt Copied to Clipboard!</span>
               </>
             ) : (
               <>
@@ -267,19 +265,19 @@ For warranty or device verification, present this receipt.`;
                 <span>Copy Formatted Receipt Text (WhatsApp / SMS)</span>
               </>
             )}
-          </button>
+          </Button>
 
           {/* Feedback Status */}
           {statusMessage && (
-            <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="p-3 rounded-xl bg-success-50 border border-success-200 text-success-800 text-xs font-bold flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-success-600 shrink-0" />
               <span>{statusMessage}</span>
             </div>
           )}
 
           {errorMessage && (
-            <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-bold flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+            <div className="p-3 rounded-xl bg-danger-50 border border-danger-200 text-danger-800 text-xs font-bold flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-danger-600 shrink-0" />
               <span>{errorMessage}</span>
             </div>
           )}
@@ -288,13 +286,11 @@ For warranty or device verification, present this receipt.`;
 
         {/* Footer */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-          <button
+          <Button variant="ghost" size="sm"
             type="button"
-            onClick={onClose}
-            className="text-xs font-bold text-slate-600 hover:text-slate-900 transition"
-          >
+            onClick={onClose}>
             Cancel
-          </button>
+          </Button>
           <div className="flex items-center gap-2">
             <Button
               variant="secondary"
@@ -310,7 +306,7 @@ For warranty or device verification, present this receipt.`;
               isLoading={isSendingDirect}
               onClick={handleSendDirectEmail}
               leftIcon={<Send className="w-3.5 h-3.5" />}
-              className="bg-blue-600 hover:bg-blue-500 font-bold"
+              className="bg-accent-600 hover:bg-accent-500 font-bold"
             >
               Send Direct Email
             </Button>

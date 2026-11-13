@@ -1,4 +1,5 @@
 'use client';
+import { Table, THead, TBody, Tr, Th, Td } from '@/components/ui/DataTable';
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
@@ -69,7 +70,7 @@ export default function AnalyticsReportsPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
           <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-            <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 shrink-0" /> Analytics Dashboard
+            <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-accent-600 shrink-0" /> Analytics Dashboard
           </h1>
           <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium max-w-2xl mt-1 leading-relaxed">
             Understand your business performance, discover revenue trends, and make data-driven decisions.
@@ -96,7 +97,7 @@ export default function AnalyticsReportsPage() {
             size="md"
             onClick={() => window.print()}
             leftIcon={<Download className="w-4 h-4" />}
-            className="bg-blue-600 hover:bg-blue-500 shadow-md shadow-blue-600/20 font-bold"
+            className="bg-accent-600 hover:bg-accent-500 shadow-md shadow-accent-600/20 font-bold"
           >
             Export
           </Button>
@@ -106,13 +107,13 @@ export default function AnalyticsReportsPage() {
       {loading ? (
         <div className="py-24 text-center">
           <div className="flex flex-col items-center justify-center gap-2 text-slate-400 font-semibold">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-accent-600" />
             Generating analytics reports...
           </div>
         </div>
       ) : error ? (
         <div className="py-16 text-center">
-          <div className="flex flex-col items-center justify-center gap-2 text-rose-500 font-semibold">
+          <div className="flex flex-col items-center justify-center gap-2 text-danger-500 font-semibold">
             <AlertTriangle className="w-8 h-8" />
             {error}
           </div>
@@ -126,12 +127,12 @@ export default function AnalyticsReportsPage() {
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
                 <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Total Revenue</p>
-                <h3 className="text-2xl font-extrabold text-blue-900 mt-1">
+                <h3 className="text-2xl font-extrabold text-accent-900 mt-1">
                   ₦{(kpis.totalRevenue || 0).toLocaleString()}
                 </h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-success-600 flex items-center gap-0.5">
                   <TrendingUp className="w-3.5 h-3.5" /> Sales & Repairs
                 </span>
               </div>
@@ -141,10 +142,10 @@ export default function AnalyticsReportsPage() {
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
                 <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Total Sales</p>
-                <h3 className="text-2xl font-extrabold text-blue-900 mt-1">{kpis.totalSalesCount || 0}</h3>
+                <h3 className="text-2xl font-extrabold text-accent-900 mt-1">{kpis.totalSalesCount || 0}</h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-success-600 flex items-center gap-0.5">
                   <ShoppingCart className="w-3.5 h-3.5" /> Completed
                 </span>
               </div>
@@ -154,10 +155,10 @@ export default function AnalyticsReportsPage() {
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
                 <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Devices Sold</p>
-                <h3 className="text-2xl font-extrabold text-blue-900 mt-1">{kpis.devicesSoldCount || 0}</h3>
+                <h3 className="text-2xl font-extrabold text-accent-900 mt-1">{kpis.devicesSoldCount || 0}</h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-success-600 flex items-center gap-0.5">
                   <Smartphone className="w-3.5 h-3.5" /> Units
                 </span>
               </div>
@@ -167,7 +168,7 @@ export default function AnalyticsReportsPage() {
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
                 <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Avg. Order Value</p>
-                <h3 className="text-2xl font-extrabold text-blue-900 mt-1">
+                <h3 className="text-2xl font-extrabold text-accent-900 mt-1">
                   ₦{(kpis.avgOrderValue || 0).toLocaleString()}
                 </h3>
               </div>
@@ -182,10 +183,10 @@ export default function AnalyticsReportsPage() {
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
                 <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">New Customers</p>
-                <h3 className="text-2xl font-extrabold text-blue-900 mt-1">{kpis.newCustomersCount || 0}</h3>
+                <h3 className="text-2xl font-extrabold text-accent-900 mt-1">{kpis.newCustomersCount || 0}</h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-emerald-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-success-600 flex items-center gap-0.5">
                   <Users className="w-3.5 h-3.5" /> Signups
                 </span>
               </div>
@@ -195,12 +196,12 @@ export default function AnalyticsReportsPage() {
             <div className="bg-white border border-slate-200/90 p-4 rounded-2xl shadow-subtle flex flex-col justify-between space-y-3">
               <div>
                 <p className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Repair Revenue</p>
-                <h3 className="text-2xl font-extrabold text-blue-900 mt-1">
+                <h3 className="text-2xl font-extrabold text-accent-900 mt-1">
                   ₦{(kpis.repairRevenue || 0).toLocaleString()}
                 </h3>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-xs font-extrabold text-blue-600 flex items-center gap-0.5">
+                <span className="text-xs font-extrabold text-accent-600 flex items-center gap-0.5">
                   <Wrench className="w-3.5 h-3.5" /> Service
                 </span>
               </div>
@@ -222,13 +223,13 @@ export default function AnalyticsReportsPage() {
                     <p className="text-xs text-slate-500 font-medium">Sales vs Service Repair Revenue Breakdown</p>
                   </div>
                   <div className="flex gap-2">
-                    <div className="flex items-center gap-1.5 px-3 py-1 bg-blue-50 rounded-full border border-blue-100">
-                      <div className="w-2 h-2 rounded-full bg-blue-600" />
-                      <span className="text-xs font-extrabold text-blue-700 uppercase">Sales</span>
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-accent-50 rounded-full border border-accent-100">
+                      <div className="w-2 h-2 rounded-full bg-accent-600" />
+                      <span className="text-xs font-extrabold text-accent-700 uppercase">Sales</span>
                     </div>
-                    <div className="flex items-center gap-1.5 px-3 py-1 bg-emerald-50 rounded-full border border-emerald-100">
-                      <div className="w-2 h-2 rounded-full bg-emerald-600" />
-                      <span className="text-xs font-extrabold text-emerald-700 uppercase">Repairs</span>
+                    <div className="flex items-center gap-1.5 px-3 py-1 bg-success-50 rounded-full border border-success-100">
+                      <div className="w-2 h-2 rounded-full bg-success-600" />
+                      <span className="text-xs font-extrabold text-success-700 uppercase">Repairs</span>
                     </div>
                   </div>
                 </div>
@@ -236,13 +237,13 @@ export default function AnalyticsReportsPage() {
                 <div className="space-y-3 pt-2">
                   <div className="flex justify-between text-xs font-bold">
                     <span className="text-slate-600 uppercase">Direct Sales Revenue</span>
-                    <span className="text-blue-600 font-mono font-extrabold">
+                    <span className="text-accent-600 font-mono font-extrabold">
                       ₦{(kpis.salesRevenue || 0).toLocaleString()}
                     </span>
                   </div>
                   <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-blue-600 rounded-full transition-all duration-1000"
+                      className="h-full bg-accent-600 rounded-full transition-all duration-1000"
                       style={{
                         width: `${kpis.totalRevenue > 0 ? Math.min(100, Math.round((kpis.salesRevenue / kpis.totalRevenue) * 100)) : 100}%`,
                       }}
@@ -251,13 +252,13 @@ export default function AnalyticsReportsPage() {
 
                   <div className="flex justify-between text-xs font-bold pt-2">
                     <span className="text-slate-600 uppercase">Service Repair Revenue</span>
-                    <span className="text-emerald-600 font-mono font-extrabold">
+                    <span className="text-success-600 font-mono font-extrabold">
                       ₦{(kpis.repairRevenue || 0).toLocaleString()}
                     </span>
                   </div>
                   <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-emerald-600 rounded-full transition-all duration-1000"
+                      className="h-full bg-success-600 rounded-full transition-all duration-1000"
                       style={{
                         width: `${kpis.totalRevenue > 0 ? Math.min(100, Math.round((kpis.repairRevenue / kpis.totalRevenue) * 100)) : 0}%`,
                       }}
@@ -274,43 +275,43 @@ export default function AnalyticsReportsPage() {
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-100/70 text-slate-500 uppercase tracking-wider font-mono text-xs border-b border-slate-200/80">
+                  <Table>
+                    <THead>
                       <tr>
-                        <th className="px-4 py-3">Model Name</th>
-                        <th className="px-4 py-3">Category</th>
-                        <th className="px-4 py-3 text-center">Units Sold</th>
-                        <th className="px-4 py-3 text-right">Total Revenue</th>
+                        <Th>Model Name</Th>
+                        <Th>Category</Th>
+                        <Th align="center">Units Sold</Th>
+                        <Th align="right">Total Revenue</Th>
                       </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 font-medium">
+                    </THead>
+                    <TBody className="font-medium">
                       {topSellingModels.length === 0 ? (
                         <tr>
-                          <td colSpan={4} className="py-10 text-center text-slate-400">
+                          <Td align="center" className="text-slate-400" colSpan={4}>
                             No sales recorded within selected time range.
-                          </td>
+                          </Td>
                         </tr>
                       ) : (
                         topSellingModels.map((m: any, idx: number) => (
-                          <tr key={idx} className="hover:bg-slate-50 transition">
-                            <td className="px-4 py-3.5">
+                          <Tr key={idx}>
+                            <Td>
                               <div className="flex items-center gap-2.5">
-                                <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                                <div className="w-8 h-8 rounded-lg bg-accent-50 text-accent-600 flex items-center justify-center shrink-0">
                                   <Smartphone className="w-4 h-4" />
                                 </div>
                                 <span className="font-extrabold text-slate-900">{m.model}</span>
                               </div>
-                            </td>
-                            <td className="px-4 py-3.5 text-slate-600">{m.category}</td>
-                            <td className="px-4 py-3.5 font-mono font-bold text-center text-slate-900">{m.units}</td>
-                            <td className="px-4 py-3.5 font-mono font-bold text-right text-slate-900">
+                            </Td>
+                            <Td className="text-slate-600">{m.category}</Td>
+                            <Td align="center" className="font-mono font-bold text-slate-900">{m.units}</Td>
+                            <Td align="right" className="font-mono font-bold text-slate-900">
                               ₦{m.revenue.toLocaleString()}
-                            </td>
-                          </tr>
+                            </Td>
+                          </Tr>
                         ))
                       )}
-                    </tbody>
-                  </table>
+                    </TBody>
+                  </Table>
                 </div>
               </div>
 
@@ -326,19 +327,19 @@ export default function AnalyticsReportsPage() {
                 <div className="space-y-2 text-xs font-bold text-slate-700">
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-slate-600">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" /> Completed / Ready
+                      <span className="w-2 h-2 rounded-full bg-success-500" /> Completed / Ready
                     </span>
                     <span className="font-mono text-slate-900">{repairBreakdown.completed || 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-slate-600">
-                      <span className="w-2 h-2 rounded-full bg-blue-600" /> Pending / Diagnosing
+                      <span className="w-2 h-2 rounded-full bg-accent-600" /> Pending / Diagnosing
                     </span>
                     <span className="font-mono text-slate-900">{repairBreakdown.pending || 0}</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="flex items-center gap-1.5 text-slate-600">
-                      <span className="w-2 h-2 rounded-full bg-rose-500" /> Delayed / Waiting
+                      <span className="w-2 h-2 rounded-full bg-danger-500" /> Delayed / Waiting
                     </span>
                     <span className="font-mono text-slate-900">{repairBreakdown.delayed || 0}</span>
                   </div>
@@ -346,7 +347,7 @@ export default function AnalyticsReportsPage() {
 
                 <div className="pt-3 border-t border-slate-100 flex justify-between items-center text-xs">
                   <span className="text-slate-500 font-bold">Total Tickets</span>
-                  <span className="text-blue-600 font-mono font-extrabold">{repairBreakdown.total || 0} Tickets</span>
+                  <span className="text-accent-600 font-mono font-extrabold">{repairBreakdown.total || 0} Tickets</span>
                 </div>
               </div>
 
@@ -363,7 +364,7 @@ export default function AnalyticsReportsPage() {
               </div>
               <div className="text-right">
                 <span className="text-xs font-extrabold text-slate-400 uppercase">Value at Risk (90+ Days)</span>
-                <p className="text-xl font-extrabold font-mono text-rose-600">
+                <p className="text-xl font-extrabold font-mono text-danger-600">
                   ₦{(inventoryAgeing.totalValueAtRisk || 0).toLocaleString()}
                 </p>
               </div>
@@ -379,7 +380,7 @@ export default function AnalyticsReportsPage() {
                 </div>
                 <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-emerald-600 rounded-full transition-all duration-1000"
+                    className="h-full bg-success-600 rounded-full transition-all duration-1000"
                     style={{
                       width: `${inventoryTotal > 0 ? Math.round(((inventoryAgeing.age0_30 || 0) / inventoryTotal) * 100) : 0}%`,
                     }}
@@ -396,7 +397,7 @@ export default function AnalyticsReportsPage() {
                 </div>
                 <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-blue-600 rounded-full transition-all duration-1000"
+                    className="h-full bg-accent-600 rounded-full transition-all duration-1000"
                     style={{
                       width: `${inventoryTotal > 0 ? Math.round(((inventoryAgeing.age31_60 || 0) / inventoryTotal) * 100) : 0}%`,
                     }}
@@ -413,7 +414,7 @@ export default function AnalyticsReportsPage() {
                 </div>
                 <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-amber-500 rounded-full transition-all duration-1000"
+                    className="h-full bg-warning-500 rounded-full transition-all duration-1000"
                     style={{
                       width: `${inventoryTotal > 0 ? Math.round(((inventoryAgeing.age61_90 || 0) / inventoryTotal) * 100) : 0}%`,
                     }}
@@ -424,13 +425,13 @@ export default function AnalyticsReportsPage() {
               <div className="space-y-1">
                 <div className="flex justify-between text-xs font-bold text-slate-600 uppercase">
                   <span>90+ Days</span>
-                  <span className="font-mono text-rose-600">
+                  <span className="font-mono text-danger-600">
                     ₦{(inventoryAgeing.age90_plus || 0).toLocaleString()}
                   </span>
                 </div>
                 <div className="w-full h-3.5 bg-slate-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-rose-600 rounded-full transition-all duration-1000"
+                    className="h-full bg-danger-600 rounded-full transition-all duration-1000"
                     style={{
                       width: `${inventoryTotal > 0 ? Math.round(((inventoryAgeing.age90_plus || 0) / inventoryTotal) * 100) : 0}%`,
                     }}

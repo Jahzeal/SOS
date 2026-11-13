@@ -28,7 +28,7 @@ export function TableWrap({ className = '', ...props }: React.HTMLAttributes<HTM
 }
 
 export function Table({ className = '', ...props }: React.TableHTMLAttributes<HTMLTableElement>) {
-  return <table className={`w-full text-left border-collapse text-xs sm:text-sm ${className}`} {...props} />;
+  return <table className={`w-full text-left border-collapse text-xs text-slate-700 ${className}`} {...props} />;
 }
 
 export function THead({ className = '', ...props }: React.HTMLAttributes<HTMLTableSectionElement>) {
@@ -62,7 +62,7 @@ export function Td({
   className = '',
   ...props
 }: React.TdHTMLAttributes<HTMLTableCellElement> & { align?: Align }) {
-  return <td className={`px-4 py-3 text-slate-700 ${ALIGN[align]} ${className}`} {...props} />;
+  return <td className={`px-4 py-3 ${ALIGN[align]} ${className}`} {...props} />;
 }
 
 export interface Column<T> {

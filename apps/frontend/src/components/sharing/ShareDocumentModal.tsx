@@ -1,4 +1,5 @@
 'use client';
+import { TextInput } from '@/components/ui/Input';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -59,6 +60,13 @@ export function ShareDocumentModal({ isOpen, onClose, document: doc }: ShareDocu
 
   const [supportsNativeFileShare, setSupportsNativeFileShare] = useState(false);
 
+  // The PDF is fetched as soon as the dialog opens. Phones only allow the share
+  // menu to open directly from a tap, so the file must already be in hand when
+  // the button is pressed; fetching it after the tap makes the phone refuse.
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
+  const [pdfLoadError, setPdfLoadError] = useState<string | null>(null);
+  const [shareFailed, setShareFailed] = useState(false);
+
   useEffect(() => {
     if (typeof navigator !== 'undefined' && navigator.canShare) {
       try {
@@ -78,6 +86,41 @@ export function ShareDocumentModal({ isOpen, onClose, document: doc }: ShareDocu
       setActionError(null);
     }
   }, [doc, isOpen]);
+
+  const docId = doc?.id;
+  const docType = doc?.type;
+  const docNumberForFile = doc?.docNumber;
+
+  useEffect(() => {
+    setPdfFile(null);
+    setPdfLoadError(null);
+    setShareFailed(false);
+    if (!isOpen || !docId || !docType || !supportsNativeFileShare) return;
+
+    let cancelled = false;
+    const label = docType === 'INVOICE' ? 'Invoice' : docType === 'RECEIPT' ? 'Receipt' : 'Quotation';
+    const url =
+      docType === 'INVOICE'
+        ? api.getInvoicePdfDownloadUrl(docId)
+        : docType === 'RECEIPT'
+        ? api.getReceiptPdfDownloadUrl(docId)
+        : api.getQuotePdfDownloadUrl(docId);
+
+    api
+      .fetchPdfFile(url, `${label}-${docNumberForFile || docId}.pdf`)
+      .then((file) => {
+        if (!cancelled) setPdfFile(file);
+      })
+      .catch((err: any) => {
+        if (cancelled) return;
+        setPdfLoadError(err?.message || 'Could not prepare the PDF.');
+        setActionError('The PDF could not be prepared. Please close this and try again.');
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, docId, docType, docNumberForFile, supportsNativeFileShare]);
 
   if (!isOpen || !doc) return null;
 
@@ -132,39 +175,24 @@ Thank you for your business!`;
 
   // 1. Native File Share (Attaches actual .pdf to WhatsApp on mobile/supported desktop)
   const handleSharePdfFile = async () => {
+    if (!pdfFile) return; // still being prepared; the button is disabled until it is ready
     setIsSharingFile(true);
     setActionError(null);
 
     try {
-      const downloadUrl = getPdfDownloadUrl();
-      const filename = getPdfFilename();
-      const file = await api.fetchPdfFile(downloadUrl, filename);
-
-      // On mobile browsers supporting file sharing, sharing files only (without conflicting text)
-      // allows WhatsApp to directly attach the PDF document into the chat.
-      if (typeof navigator !== 'undefined' && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: filename,
-        });
-      } else {
-        // Desktop / Browser fallback:
-        // Automatically download the PDF to PC and open WhatsApp Web with customer details
-        const url = window.URL.createObjectURL(file);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        window.URL.revokeObjectURL(url);
-
-        handleOpenWhatsAppChat();
-      }
+      // Sharing the file on its own (no text) makes WhatsApp attach it as a document.
+      await navigator.share({
+        files: [pdfFile],
+        title: getPdfFilename(),
+      });
     } catch (err: any) {
-      if (err.name !== 'AbortError') {
-        setActionError(err.message || 'Unable to share PDF file directly. Opening WhatsApp chat.');
-        handleOpenWhatsAppChat();
+      // AbortError = the person closed the share menu themselves.
+      if (err?.name !== 'AbortError') {
+        // Never fall back to a text-only message silently: show the manual route instead.
+        setShareFailed(true);
+        setActionError(
+          'Your phone would not open the share menu. Save the PDF below, then attach it in the WhatsApp chat.',
+        );
       }
     } finally {
       setIsSharingFile(false);
@@ -213,13 +241,13 @@ Thank you for your business!`;
   };
 
   return (
-    <div className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in font-sans">
-      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-scale-up">
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in font-sans">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-scale-up">
         
         {/* Modal Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center font-black shrink-0 border border-teal-100">
+            <div className="w-10 h-10 rounded-2xl bg-accent-50 text-accent-700 flex items-center justify-center font-black shrink-0 border border-accent-100">
               <Share2 className="w-5 h-5" />
             </div>
             <div className="min-w-0">
@@ -236,13 +264,11 @@ Thank you for your business!`;
               </p>
             </div>
           </div>
-          <button
+          <Button variant="ghost" size="icon" className="w-8"
             onClick={onClose}
-            className="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 transition cursor-pointer"
-            aria-label="Close"
-          >
+            aria-label="Close">
             <X className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
 
         {/* Channel Switcher Tabs */}
@@ -252,7 +278,7 @@ Thank you for your business!`;
             onClick={() => setActiveTab('whatsapp')}
             className={`flex-1 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'whatsapp'
-                ? 'bg-emerald-600 text-white shadow-sm shadow-emerald-600/20'
+                ? 'bg-success-600 text-white shadow-sm shadow-success-600/20'
                 : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
@@ -264,7 +290,7 @@ Thank you for your business!`;
             onClick={() => setActiveTab('email')}
             className={`flex-1 py-2.5 px-3 rounded-2xl text-xs font-extrabold transition-all flex items-center justify-center gap-2 cursor-pointer ${
               activeTab === 'email'
-                ? 'bg-blue-600 text-white shadow-sm shadow-blue-600/20'
+                ? 'bg-accent-600 text-white shadow-sm shadow-accent-600/20'
                 : 'text-slate-600 hover:bg-slate-100'
             }`}
           >
@@ -278,15 +304,15 @@ Thank you for your business!`;
 
           {/* Feedback Banners */}
           {actionError && (
-            <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center gap-2 animate-in fade-in">
-              <AlertTriangle className="w-4 h-4 shrink-0 text-rose-600" />
+            <div className="p-3.5 rounded-2xl bg-danger-50 border border-danger-200 text-danger-700 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+              <AlertTriangle className="w-4 h-4 shrink-0 text-danger-600" />
               <span>{actionError}</span>
             </div>
           )}
 
           {emailSuccessMsg && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center gap-2 animate-in fade-in">
-              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            <div className="p-3.5 rounded-2xl bg-success-50 border border-success-200 text-success-800 text-xs font-bold flex items-center gap-2 animate-in fade-in">
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-success-600" />
               <span>{emailSuccessMsg}</span>
             </div>
           )}
@@ -295,43 +321,55 @@ Thank you for your business!`;
           {activeTab === 'whatsapp' && (
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 flex items-center justify-between">
+                <label htmlFor="edocumentmodal-tsx-f1" className="text-xs font-bold text-slate-700 flex items-center justify-between">
                   <span>Customer WhatsApp Number</span>
                   <span className="text-xs font-normal text-slate-400">e.g. 08012345678 or 2348012345678</span>
                 </label>
                 <div className="relative">
                   <Smartphone className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
-                  <input
+                  <input id="edocumentmodal-tsx-f1" aria-label="Enter phone number"
                     type="tel"
                     value={phoneInput}
                     onChange={(e) => setPhoneInput(e.target.value)}
                     placeholder="Enter phone number"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 text-sm font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                    className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed pl-10 pr-4"
                   />
                 </div>
               </div>
 
               {/* Action Buttons */}
               <div className="space-y-2.5 pt-1">
-                {supportsNativeFileShare ? (
-                  <button
-                    type="button"
-                    onClick={handleSharePdfFile}
-                    disabled={isSharingFile}
-                    className="w-full py-3 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 transition-all cursor-pointer disabled:opacity-60"
-                  >
-                    {isSharingFile ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Preparing PDF File...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Smartphone className="w-4 h-4" />
-                        <span>Share PDF File to WhatsApp</span>
-                      </>
-                    )}
-                  </button>
+                {supportsNativeFileShare && !shareFailed && !pdfLoadError ? (
+                  <>
+                    <Button variant="primary" size="lg" fullWidth
+                      type="button"
+                      onClick={handleSharePdfFile}
+                      disabled={!pdfFile || isSharingFile}>
+                      {!pdfFile ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Preparing PDF File...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Smartphone className="w-4 h-4" />
+                          <span>Share PDF File to WhatsApp</span>
+                        </>
+                      )}
+                    </Button>
+                    <p className="text-xs text-slate-500 text-center leading-relaxed">
+                      {pdfFile
+                        ? 'Tap the button, choose WhatsApp, then pick the customer. The PDF is sent as a file.'
+                        : 'Getting the PDF ready. The button turns on in a moment.'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleOpenWhatsAppChat}
+                      className="w-full text-xs font-bold text-slate-500 hover:text-slate-800 underline cursor-pointer"
+                    >
+                      Send a text summary only (no PDF)
+                    </button>
+                  </>
                 ) : (
                   <div className="grid grid-cols-2 gap-2.5">
                     <a
@@ -344,14 +382,12 @@ Thank you for your business!`;
                       <span>Save PDF to Device</span>
                     </a>
 
-                    <button
+                    <Button variant="primary" size="lg"
                       type="button"
-                      onClick={handleOpenWhatsAppChat}
-                      className="py-3 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm shadow-emerald-600/20 transition cursor-pointer"
-                    >
+                      onClick={handleOpenWhatsAppChat}>
                       <ExternalLink className="w-4 h-4" />
                       <span>Open WhatsApp Web</span>
-                    </button>
+                    </Button>
                   </div>
                 )}
               </div>
@@ -359,7 +395,7 @@ Thank you for your business!`;
               {/* Message Preview */}
               <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-600 space-y-1">
                 <span className="font-extrabold text-slate-800 uppercase tracking-wider text-xs block">
-                  WhatsApp Message Preview
+                  Text Summary Preview
                 </span>
                 <p className="whitespace-pre-line text-slate-600 font-mono text-[10.5px] leading-relaxed max-h-24 overflow-y-auto">
                   {whatsappMessageText}
@@ -372,32 +408,24 @@ Thank you for your business!`;
           {activeTab === 'email' && (
             <div className="space-y-4">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700">Customer Email Address</label>
-                <div className="relative">
-                  <Mail className="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400" />
-                  <input
+                <TextInput label="Customer Email Address"
                     type="email"
                     value={emailInput}
                     onChange={(e) => setEmailInput(e.target.value)}
-                    placeholder="e.g. customer@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
-                  />
-                </div>
+                    placeholder="e.g. customer@example.com" leftIcon={<Mail className="w-4 h-4" />} />
               </div>
 
-              <div className="p-3.5 rounded-2xl bg-blue-50/60 border border-blue-100 text-xs text-blue-900 space-y-1">
+              <div className="p-3.5 rounded-2xl bg-accent-50/60 border border-accent-100 text-xs text-accent-900 space-y-1">
                 <p className="font-bold">Official PDF Delivery Notice:</p>
-                <p className="text-xs text-blue-800 leading-relaxed font-sans">
+                <p className="text-xs text-accent-800 leading-relaxed font-sans">
                   The recipient will receive an email containing their official formatted A4 statement attached as a PDF document ({getPdfFilename()}).
                 </p>
               </div>
 
-              <button
+              <Button variant="primary" size="lg" fullWidth
                 type="button"
                 onClick={handleSendEmail}
-                disabled={isSendingEmail || !!emailSuccessMsg}
-                className="w-full py-3 px-4 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-60"
-              >
+                disabled={isSendingEmail || !!emailSuccessMsg}>
                 {isSendingEmail ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -409,19 +437,17 @@ Thank you for your business!`;
                     <span>Send Official PDF Email</span>
                   </>
                 )}
-              </button>
+              </Button>
             </div>
           )}
 
           {/* Bottom Utility Bar */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-2">
-            <button
+            <Button variant="ghost" size="sm"
               type="button"
-              onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-100 transition cursor-pointer"
-            >
+              onClick={onClose}>
               Close
-            </button>
+            </Button>
 
             <a
               href={getPdfDownloadUrl()}

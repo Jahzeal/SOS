@@ -57,7 +57,7 @@ export default function VerifyPhonePage() {
           </p>
         </div>
         <Link href="/report-stolen">
-          <Button variant="secondary" size="sm" className="border-rose-200 text-rose-600 hover:bg-rose-50 font-bold" leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}>
+          <Button variant="secondary" size="sm" className="border-danger-200 text-danger-600 hover:bg-danger-50 font-bold" leftIcon={<ShieldAlert className="w-3.5 h-3.5" />}>
             Report Stolen Phone
           </Button>
         </Link>
@@ -66,12 +66,12 @@ export default function VerifyPhonePage() {
       {/* Search Input Card */}
       <form onSubmit={handleSearch} className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs flex flex-col sm:flex-row gap-2.5">
         <div className="relative flex-1">
-          <input
+          <input aria-label="Enter 15-digit IMEI or Serial Number"
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Enter 15-digit IMEI or Serial Number..."
-            className="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-mono font-bold text-slate-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 placeholder:text-slate-400"
+            className="w-full text-sm px-3 py-2 bg-white text-slate-900 placeholder-slate-400 rounded-control border border-slate-200 shadow-subtle transition-all duration-150 focus:outline-none focus:ring-2 focus:border-accent-600 focus:ring-accent-500/20 disabled:bg-slate-100 disabled:text-slate-400 disabled:cursor-not-allowed pl-9 pr-3 font-mono"
           />
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
         </div>
@@ -97,21 +97,21 @@ export default function VerifyPhonePage() {
           
           {/* 1. THEFT / BLACKLIST BANNER */}
           {result.isStolen ? (
-            <div className="p-6 rounded-3xl bg-rose-50 border-2 border-rose-300 text-rose-950 space-y-4 shadow-md">
+            <div className="p-6 rounded-2xl bg-danger-50 border-2 border-danger-300 text-danger-950 space-y-4 shadow-md">
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 rounded-2xl bg-rose-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-rose-600/30 animate-pulse">
+                <div className="w-12 h-12 rounded-2xl bg-danger-600 text-white flex items-center justify-center shrink-0 shadow-lg shadow-danger-600/30 animate-pulse">
                   <ShieldAlert className="w-6 h-6" />
                 </div>
                 <div className="space-y-1 flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="px-2.5 py-0.5 rounded-full bg-rose-600 text-white font-extrabold text-xs tracking-wider uppercase">
+                    <span className="px-2.5 py-0.5 rounded-full bg-danger-600 text-white font-extrabold text-xs tracking-wider uppercase">
                       STOLEN / LOST MODE ACTIVE
                     </span>
                   </div>
-                  <h3 className="text-lg font-black text-rose-900">
+                  <h3 className="text-lg font-black text-danger-900">
                     WARNING: This device has been reported as STOLEN
                   </h3>
-                  <p className="text-xs text-rose-800 font-medium">
+                  <p className="text-xs text-danger-800 font-medium">
                     Do not purchase, unlock, or service this device without contacting the verified owner.
                   </p>
                 </div>
@@ -119,9 +119,9 @@ export default function VerifyPhonePage() {
 
               {/* Owner Note Box */}
               {result.ownerMessage && (
-                <div className="p-4 rounded-2xl bg-white border border-rose-200 space-y-2">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-rose-900">
-                    <MessageSquare className="w-4 h-4 text-rose-600" />
+                <div className="p-4 rounded-2xl bg-white border border-danger-200 space-y-2">
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-danger-900">
+                    <MessageSquare className="w-4 h-4 text-danger-600" />
                     <span>Owner's Recovery Note & Message:</span>
                   </div>
                   <p className="text-xs text-slate-700 italic font-medium leading-relaxed">
@@ -131,7 +131,7 @@ export default function VerifyPhonePage() {
                     <div className="pt-2 flex items-center gap-3">
                       <a
                         href={`tel:${result.contactPhone}`}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-xs transition"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-danger-600 hover:bg-danger-500 text-white font-bold text-xs shadow-xs transition"
                       >
                         <Phone className="w-3.5 h-3.5" /> Call Owner ({result.contactPhone})
                       </a>
@@ -139,7 +139,7 @@ export default function VerifyPhonePage() {
                         href={`https://wa.me/${result.contactPhone.replace(/\D/g, '')}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-xs transition"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-success-600 hover:bg-success-500 text-white font-bold text-xs shadow-xs transition"
                       >
                         WhatsApp Owner
                       </a>
@@ -149,9 +149,9 @@ export default function VerifyPhonePage() {
               )}
             </div>
           ) : (
-            <div className={`p-5 rounded-3xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${result.retailer ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
+            <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${result.retailer ? 'bg-success-50 border-success-200 text-success-950' : 'bg-slate-50 border-slate-200 text-slate-800'}`}>
               <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${result.retailer ? 'bg-emerald-600 text-white' : 'bg-slate-600 text-white'}`}>
+                <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 shadow-sm ${result.retailer ? 'bg-success-600 text-white' : 'bg-slate-600 text-white'}`}>
                   <CheckCircle2 className="w-5 h-5" />
                 </div>
                 <div>
@@ -165,14 +165,14 @@ export default function VerifyPhonePage() {
                   </p>
                 </div>
               </div>
-              <span className={`px-3 py-1 rounded-full text-white font-extrabold text-xs uppercase tracking-wider self-start sm:self-auto ${result.retailer ? 'bg-emerald-600' : 'bg-slate-600'}`}>
+              <span className={`px-3 py-1 rounded-full text-white font-extrabold text-xs uppercase tracking-wider self-start sm:self-auto ${result.retailer ? 'bg-success-600' : 'bg-slate-600'}`}>
                 {result.retailer ? 'AUTHORIZED DEALER' : 'UNREGISTERED'}
               </span>
             </div>
           )}
 
           {/* 2. SPECIFICATIONS & STATUS GRID */}
-          <div className="bg-white rounded-3xl border border-slate-200/90 shadow-xs p-6 space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200/90 shadow-xs p-6 space-y-6">
             
             {/* Header Device Title */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
@@ -186,8 +186,8 @@ export default function VerifyPhonePage() {
               </div>
 
               {result.retailer ? (
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
-                  <Building2 className="w-4 h-4 text-emerald-600" />
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-success-50 border border-success-200 text-success-800 text-xs font-bold">
+                  <Building2 className="w-4 h-4 text-success-600" />
                   <span>Purchased at {result.retailer.name} (Authorized Dealer)</span>
                 </div>
               ) : (
@@ -201,10 +201,10 @@ export default function VerifyPhonePage() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
               
               {/* Pillar 1: Theft Status */}
-              <div className={`p-4 rounded-2xl border ${result.isStolen ? 'bg-rose-50/60 border-rose-200' : 'bg-slate-50 border-slate-200'} space-y-1`}>
+              <div className={`p-4 rounded-2xl border ${result.isStolen ? 'bg-danger-50/60 border-danger-200' : 'bg-slate-50 border-slate-200'} space-y-1`}>
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Theft & Blacklist</span>
-                <p className={`text-sm font-extrabold flex items-center gap-1.5 ${result.isStolen ? 'text-rose-700' : 'text-emerald-700'}`}>
-                  {result.isStolen ? <ShieldAlert className="w-4 h-4 text-rose-600" /> : <ShieldCheck className="w-4 h-4 text-emerald-600" />}
+                <p className={`text-sm font-extrabold flex items-center gap-1.5 ${result.isStolen ? 'text-danger-700' : 'text-success-700'}`}>
+                  {result.isStolen ? <ShieldAlert className="w-4 h-4 text-danger-600" /> : <ShieldCheck className="w-4 h-4 text-success-600" />}
                   {result.isStolen ? 'Blacklisted / Stolen' : 'Clean & Verified'}
                 </p>
               </div>
@@ -215,13 +215,13 @@ export default function VerifyPhonePage() {
                 <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
                   {result.carrierStatus === 'CARRIER_LOCKED' ? (
                     <>
-                      <Lock className="w-4 h-4 text-amber-600" />
-                      <span className="text-amber-700">Locked ({result.lockedCarrier || 'Carrier'})</span>
+                      <Lock className="w-4 h-4 text-warning-600" />
+                      <span className="text-warning-700">Locked ({result.lockedCarrier || 'Carrier'})</span>
                     </>
                   ) : (
                     <>
-                      <Unlock className="w-4 h-4 text-emerald-600" />
-                      <span className="text-emerald-700">Factory Unlocked (All SIMs)</span>
+                      <Unlock className="w-4 h-4 text-success-600" />
+                      <span className="text-success-700">Factory Unlocked (All SIMs)</span>
                     </>
                   )}
                 </p>
@@ -231,7 +231,7 @@ export default function VerifyPhonePage() {
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Activation State</span>
                 <p className="text-sm font-extrabold text-slate-900 flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-teal-600" />
+                  <CheckCircle2 className="w-4 h-4 text-accent-600" />
                   <span className="text-slate-800">
                     {result.activationStatus ? result.activationStatus.replace(/_/g, ' ') : 'Ready for Setup'}
                   </span>
@@ -241,10 +241,10 @@ export default function VerifyPhonePage() {
 
             {/* Additional Hardware & Warranty Details */}
             {result.warranty && (
-              <div className="p-4 rounded-2xl bg-blue-50/50 border border-blue-100 flex items-center justify-between text-xs">
+              <div className="p-4 rounded-2xl bg-accent-50/50 border border-accent-100 flex items-center justify-between text-xs">
                 <div className="space-y-0.5">
-                  <span className="font-bold text-blue-900">Warranty Coverage:</span>
-                  <p className="text-blue-700 font-medium">
+                  <span className="font-bold text-accent-900">Warranty Coverage:</span>
+                  <p className="text-accent-700 font-medium">
                     {result.warranty.warrantyDurationMonths} Months Store Guarantee • {result.warranty.isWarrantyActive ? 'Active' : 'Expired'}
                   </p>
                 </div>

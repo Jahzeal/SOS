@@ -98,7 +98,7 @@ export default function DedicatedPricingPage() {
               </Link>
               <Link href="/onboarding">
                 <Button variant="primary" size="sm" className="bg-teal-600 hover:bg-teal-700 text-white font-bold whitespace-nowrap">
-                  Start free →
+                  Get started →
                 </Button>
               </Link>
             </>
@@ -339,7 +339,7 @@ export default function DedicatedPricingPage() {
                               : 'bg-slate-900 hover:bg-slate-800 text-white'
                           }`}
                         >
-                          {isFree ? 'Start free →' : `Get ${plan.name} →`}
+                          {isFree ? 'Get started →' : `Get ${plan.name} →`}
                         </Button>
                       </Link>
                     )}
