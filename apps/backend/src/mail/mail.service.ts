@@ -3,6 +3,21 @@ import * as nodemailer from 'nodemailer';
 import { Resend } from 'resend';
 import { PrismaService } from '../prisma/prisma.service';
 
+/**
+ * Names, store names and other typed-in text go into emails as plain text only.
+ * Without this, someone could type a link or markup into a name field and have
+ * NoxGuarda send it to another person's inbox as part of an official email.
+ */
+export function escapeHtml(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+const esc = escapeHtml;
+
 @Injectable()
 export class MailService {
   private readonly logger = new Logger(MailService.name);
@@ -119,7 +134,7 @@ export class MailService {
         <div style="background-color: #ffffff; padding: 28px; border-radius: 16px; border: 1px solid #e2e8f0; text-align: center; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
           <h3 style="color: #0f172a; font-size: 18px; font-weight: 700; margin-top: 0;">Confirm Your Email Address</h3>
           <p style="color: #475569; font-size: 13px; line-height: 1.5; margin-bottom: 24px;">
-            Hello <strong>${recipientName}</strong>, enter the 6-digit code below to verify your email and activate your business workspace.
+            Hello <strong>${esc(recipientName)}</strong>, enter the 6-digit code below to verify your email and activate your business workspace.
           </p>
 
           <div style="background-color: #f1f5f9; padding: 18px; border-radius: 12px; font-size: 32px; font-weight: 800; letter-spacing: 8px; color: #2E6F5E; font-family: monospace; margin: 16px 0; border: 1px dashed #cbd5e1;">
@@ -158,16 +173,16 @@ export class MailService {
         <div style="background-color: #ffffff; padding: 28px; border-radius: 16px; border: 1px solid #e2e8f0; text-align: center;">
           <h3 style="color: #0f172a; font-size: 18px; font-weight: 700; margin-top: 0;">Password Reset Request</h3>
           <p style="color: #475569; font-size: 13px; line-height: 1.5; margin-bottom: 24px;">
-            Hello <strong>${recipientName}</strong>, we received a request to reset your password. Click the button below to choose a new password:
+            Hello <strong>${esc(recipientName)}</strong>, we received a request to reset your password. Click the button below to choose a new password:
           </p>
 
-          <a href="${resetUrl}" style="display: inline-block; padding: 12px 28px; background-color: #2E6F5E; color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(46,111,94,0.2);">
+          <a href="${esc(resetUrl)}" style="display: inline-block; padding: 12px 28px; background-color: #2E6F5E; color: #ffffff; text-decoration: none; border-radius: 10px; font-weight: 700; font-size: 13px; box-shadow: 0 2px 4px rgba(46,111,94,0.2);">
             Reset Password →
           </a>
 
           <p style="color: #94a3b8; font-size: 11px; margin-top: 24px; word-break: break-all;">
             Or copy and paste this URL into your browser:<br/>
-            <a href="${resetUrl}" style="color: #2E6F5E;">${resetUrl}</a>
+            <a href="${esc(resetUrl)}" style="color: #2E6F5E;">${esc(resetUrl)}</a>
           </p>
         </div>
       </div>
@@ -252,21 +267,24 @@ export class MailService {
     const dashboardUrl = `${frontendUrl}/dashboard`;
 
     // Helper for variable interpolation
-    const interpolate = (text: string) => {
+    // The template wording comes from the admin panel. The values dropped into it
+    // (names typed at sign-up) are made safe when the result is used as HTML.
+    const interpolate = (text: string, asHtml: boolean) => {
+      const v = (value: string) => (asHtml ? esc(value) : value);
       return (text || '')
-        .replace(/{{recipientName}}/g, recipientName || 'Store Owner')
-        .replace(/{{businessName}}/g, businessName || 'My Store')
-        .replace(/{{email}}/g, to)
-        .replace(/{{planName}}/g, planName || 'Starter')
-        .replace(/{{dashboardUrl}}/g, dashboardUrl)
+        .replace(/{{recipientName}}/g, () => v(recipientName || 'Store Owner'))
+        .replace(/{{businessName}}/g, () => v(businessName || 'My Store'))
+        .replace(/{{email}}/g, () => v(to))
+        .replace(/{{planName}}/g, () => v(planName || 'Free'))
+        .replace(/{{dashboardUrl}}/g, () => dashboardUrl)
         .replace(/{{platformName}}/g, 'NoxGuarda');
     };
 
-    const finalSubject = interpolate(subject);
-    const finalHeading = interpolate(heading);
-    const finalSubheading = interpolate(subheading);
-    const finalBody = interpolate(bodyText);
-    const finalCta = interpolate(ctaText);
+    const finalSubject = interpolate(subject, false);
+    const finalHeading = interpolate(heading, true);
+    const finalSubheading = interpolate(subheading, true);
+    const finalBody = interpolate(bodyText, true);
+    const finalCta = interpolate(ctaText, true);
 
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 32px 20px; background-color: #121417; border-radius: 20px; color: #ffffff;">
@@ -278,7 +296,7 @@ export class MailService {
 
         <div style="background-color: #1a1d24; padding: 32px 24px; border-radius: 18px; border: 1px solid #2a2f3a; box-shadow: 0 8px 16px rgba(0,0,0,0.3);">
           <h2 style="color: #f8fafc; font-size: 18px; font-weight: 700; margin-top: 0;">
-            Hello ${recipientName || 'Store Owner'} 
+            Hello ${esc(recipientName || 'Store Owner')} 
           </h2>
           <p style="color: #cbd5e1; font-size: 14px; line-height: 1.6; margin-bottom: 20px; white-space: pre-line;">
             ${finalBody}
@@ -288,13 +306,13 @@ export class MailService {
           <div style="background-color: #121417; padding: 18px; border-radius: 14px; border: 1px solid #2a2f3a; margin-bottom: 24px;">
             <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #52a38c; letter-spacing: 1px; margin-bottom: 8px;">Workspace Overview</div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 6px;">
-              <span>Store Name:</span> <strong style="color: #f1f5f9;">${businessName}</strong>
+              <span>Store Name:</span> <strong style="color: #f1f5f9;">${esc(businessName)}</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8; margin-bottom: 6px;">
-              <span>Plan:</span> <strong style="color: #10b981;">${String(planName || '').toUpperCase() === 'FREE' ? 'Free forever (up to 10 devices)' : planName}</strong>
+              <span>Plan:</span> <strong style="color: #10b981;">${String(planName || '').toUpperCase() === 'FREE' ? 'Free forever (up to 10 devices)' : esc(planName)}</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #94a3b8;">
-              <span>Login Email:</span> <strong style="color: #f1f5f9;">${to}</strong>
+              <span>Login Email:</span> <strong style="color: #f1f5f9;">${esc(to)}</strong>
             </div>
           </div>
 
@@ -341,7 +359,7 @@ export class MailService {
       to,
       subject: finalSubject,
       html,
-      text: `${finalHeading}\n\n${finalBody}\n\nAccess your dashboard: ${dashboardUrl}`,
+      text: `${interpolate(heading, false)}\n\n${interpolate(bodyText, false)}\n\nAccess your dashboard: ${dashboardUrl}`,
     });
   }
 
@@ -372,24 +390,24 @@ export class MailService {
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; color: #0f172a;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; padding: 6px 16px; background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
-          <h1 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 14px 0 4px 0; letter-spacing: -0.5px;">${quoteTitle} #${quoteNumber}</h1>
+          <div style="display: inline-block; padding: 6px 16px; background-color: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">${esc(storeName.toUpperCase())}</div>
+          <h1 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 14px 0 4px 0; letter-spacing: -0.5px;">${esc(quoteTitle)} #${esc(quoteNumber)}</h1>
           <p style="color: #64748b; font-size: 13px; margin: 0;">Official Commercial Proposal</p>
         </div>
 
         <div style="background-color: #ffffff; padding: 28px 24px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
           <p style="color: #0f172a; font-size: 14px; line-height: 1.6; margin-top: 0;">
-            Hello <strong>${customerName || 'Valued Client'}</strong>,
+            Hello <strong>${esc(customerName || 'Valued Client')}</strong>,
           </p>
           <p style="color: #475569; font-size: 13.5px; line-height: 1.6;">
-            Thank you for your interest. Please find attached your formal <strong>${quoteTitle} (#${quoteNumber})</strong> from <strong>${storeName}</strong>.
+            Thank you for your interest. Please find attached your formal <strong>${esc(quoteTitle)} (#${esc(quoteNumber)})</strong> from <strong>${esc(storeName)}</strong>.
           </p>
 
           <!-- Quote Breakdown Box -->
           <div style="background-color: #f8fafc; padding: 18px 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 20px 0;">
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Quotation Number:</span>
-              <strong style="color: #0f172a;">${quoteNumber}</strong>
+              <strong style="color: #0f172a;">${esc(quoteNumber)}</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Estimated Total:</span>
@@ -399,7 +417,7 @@ export class MailService {
               expiryDateStr
                 ? `<div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b;">
                     <span>Valid Until:</span>
-                    <strong style="color: #d97706;">${expiryDateStr}</strong>
+                    <strong style="color: #d97706;">${esc(expiryDateStr)}</strong>
                   </div>`
                 : ''
             }
@@ -411,8 +429,8 @@ export class MailService {
         </div>
 
         <div style="text-align: center; margin-top: 24px; color: #94a3b8; font-size: 11px;">
-          Sent by ${storeName} via NoxGuarda Retail OS.<br/>
-          © ${new Date().getFullYear()} ${storeName}. All rights reserved.
+          Sent by ${esc(storeName)} via NoxGuarda Retail OS.<br/>
+          © ${new Date().getFullYear()} ${esc(storeName)}. All rights reserved.
         </div>
       </div>
     `;
@@ -479,17 +497,17 @@ export class MailService {
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; color: #0f172a;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; padding: 6px 16px; background-color: ${isOverdue ? '#fee2e2' : '#ecfdf5'}; color: ${isOverdue ? '#dc2626' : '#059669'}; border: 1px solid ${isOverdue ? '#fecaca' : '#a7f3d0'}; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
+          <div style="display: inline-block; padding: 6px 16px; background-color: ${isOverdue ? '#fee2e2' : '#ecfdf5'}; color: ${isOverdue ? '#dc2626' : '#059669'}; border: 1px solid ${isOverdue ? '#fecaca' : '#a7f3d0'}; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">${esc(storeName.toUpperCase())}</div>
           <h1 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 14px 0 4px 0;">${isOverdue ? 'Overdue Payment Reminder' : 'Installment Due Reminder'}</h1>
-          <p style="color: #64748b; font-size: 13px; margin: 0;">${docType} #${docNumber} • ${installmentLabel}</p>
+          <p style="color: #64748b; font-size: 13px; margin: 0;">${esc(docType)} #${esc(docNumber)} • ${installmentLabel}</p>
         </div>
 
         <div style="background-color: #ffffff; padding: 28px 24px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
           <p style="color: #0f172a; font-size: 14px; line-height: 1.6; margin-top: 0;">
-            Hello <strong>${customerName}</strong>,
+            Hello <strong>${esc(customerName)}</strong>,
           </p>
           <p style="color: #475569; font-size: 13.5px; line-height: 1.6;">
-            This is a friendly reminder regarding your upcoming scheduled installment payment for <strong>${docType} #${docNumber}</strong> with <strong>${storeName}</strong>.
+            This is a friendly reminder regarding your upcoming scheduled installment payment for <strong>${esc(docType)} #${esc(docNumber)}</strong> with <strong>${esc(storeName)}</strong>.
           </p>
 
           <!-- Due Summary Box -->
@@ -508,7 +526,7 @@ export class MailService {
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b;">
               <span>Due Date:</span>
-              <strong style="color: ${isOverdue ? '#dc2626' : '#059669'};">${dueDateStr}</strong>
+              <strong style="color: ${isOverdue ? '#dc2626' : '#059669'};">${esc(dueDateStr)}</strong>
             </div>
           </div>
 
@@ -517,21 +535,21 @@ export class MailService {
               ? `<!-- Bank Transfer Info -->
               <div style="background-color: #f1f5f9; padding: 16px; border-radius: 10px; border: 1px solid #cbd5e1; margin-bottom: 20px;">
                 <div style="font-size: 11px; font-weight: 700; color: #2E6F5E; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;">Payment Remittance Details</div>
-                ${bankName ? `<div style="font-size: 13px; color: #334155; margin-bottom: 4px;">Bank: <strong>${bankName}</strong></div>` : ''}
-                ${accountNumber ? `<div style="font-size: 13px; color: #334155; margin-bottom: 4px;">Account Number: <strong style="color: #0284c7; font-family: monospace;">${accountNumber}</strong></div>` : ''}
-                ${accountName ? `<div style="font-size: 13px; color: #334155;">Account Name: <strong>${accountName}</strong></div>` : ''}
+                ${bankName ? `<div style="font-size: 13px; color: #334155; margin-bottom: 4px;">Bank: <strong>${esc(bankName)}</strong></div>` : ''}
+                ${accountNumber ? `<div style="font-size: 13px; color: #334155; margin-bottom: 4px;">Account Number: <strong style="color: #0284c7; font-family: monospace;">${esc(accountNumber)}</strong></div>` : ''}
+                ${accountName ? `<div style="font-size: 13px; color: #334155;">Account Name: <strong>${esc(accountName)}</strong></div>` : ''}
               </div>`
               : ''
           }
 
           <p style="color: #64748b; font-size: 12.5px; line-height: 1.5; margin-bottom: 0;">
-            Please contact <strong>${storeName}</strong> after making payment to confirm receipt and update your account records.
+            Please contact <strong>${esc(storeName)}</strong> after making payment to confirm receipt and update your account records.
           </p>
         </div>
 
         <div style="text-align: center; margin-top: 24px; color: #94a3b8; font-size: 11px;">
-          Sent by ${storeName} via NoxGuarda Retail OS.<br/>
-          © ${new Date().getFullYear()} ${storeName}. All rights reserved.
+          Sent by ${esc(storeName)} via NoxGuarda Retail OS.<br/>
+          © ${new Date().getFullYear()} ${esc(storeName)}. All rights reserved.
         </div>
       </div>
     `;
@@ -574,17 +592,17 @@ export class MailService {
     const html = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 32px 20px; background-color: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; color: #0f172a;">
         <div style="text-align: center; margin-bottom: 24px;">
-          <div style="display: inline-block; padding: 6px 16px; background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">${storeName.toUpperCase()}</div>
+          <div style="display: inline-block; padding: 6px 16px; background-color: #ecfdf5; color: #059669; border: 1px solid #a7f3d0; border-radius: 8px; font-weight: 800; font-size: 13px; letter-spacing: 0.5px;">${esc(storeName.toUpperCase())}</div>
           <h1 style="color: #0f172a; font-size: 22px; font-weight: 800; margin: 14px 0 4px 0; letter-spacing: -0.5px;">Payment Receipt Confirmation</h1>
-          <p style="color: #64748b; font-size: 13px; margin: 0;">${docType} #${docNumber} ${receiptRef ? `• Ref: ${receiptRef}` : ''}</p>
+          <p style="color: #64748b; font-size: 13px; margin: 0;">${esc(docType)} #${esc(docNumber)} ${receiptRef ? `• Ref: ${esc(receiptRef)}` : ''}</p>
         </div>
 
         <div style="background-color: #ffffff; padding: 28px 24px; border-radius: 14px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03);">
           <p style="color: #0f172a; font-size: 14px; line-height: 1.6; margin-top: 0;">
-            Hello <strong>${customerName}</strong>,
+            Hello <strong>${esc(customerName)}</strong>,
           </p>
           <p style="color: #475569; font-size: 13.5px; line-height: 1.6;">
-            We have successfully received and recorded your payment of <strong style="color: #059669;">₦${amountPaid.toLocaleString()}</strong> towards <strong>${docType} #${docNumber}</strong>.
+            We have successfully received and recorded your payment of <strong style="color: #059669;">₦${amountPaid.toLocaleString()}</strong> towards <strong>${esc(docType)} #${esc(docNumber)}</strong>.
           </p>
 
           <div style="background-color: #f8fafc; padding: 18px 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 20px 0;">
@@ -594,11 +612,11 @@ export class MailService {
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Payment Method:</span>
-              <strong style="color: #0f172a;">${paymentMethod}</strong>
+              <strong style="color: #0f172a;">${esc(paymentMethod)}</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b; margin-bottom: 8px;">
               <span>Date Received:</span>
-              <strong style="color: #0f172a;">${paymentDateStr}</strong>
+              <strong style="color: #0f172a;">${esc(paymentDateStr)}</strong>
             </div>
             <div style="display: flex; justify-content: space-between; font-size: 13px; color: #64748b;">
               <span>Remaining Balance:</span>
@@ -608,8 +626,8 @@ export class MailService {
         </div>
 
         <div style="text-align: center; margin-top: 24px; color: #94a3b8; font-size: 11px;">
-          Sent by ${storeName} via NoxGuarda Retail OS.<br/>
-          © ${new Date().getFullYear()} ${storeName}. All rights reserved.
+          Sent by ${esc(storeName)} via NoxGuarda Retail OS.<br/>
+          © ${new Date().getFullYear()} ${esc(storeName)}. All rights reserved.
         </div>
       </div>
     `;

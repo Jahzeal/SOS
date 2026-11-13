@@ -39,6 +39,7 @@ import { Logo } from '@/components/ui/Logo';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
 import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModal';
+import { CONTACT } from '@/components/marketing/SiteFooter';
 
 // Comprehensive Plan Specifications & Fallback Data
 const FALLBACK_PLANS = [
@@ -131,6 +132,7 @@ export default function OnboardingPage() {
   const [otpError, setOtpError] = useState<string | null>(null);
   const [googleCredential, setGoogleCredential] = useState<string | null>(null);
   const [isGoogleAuth, setIsGoogleAuth] = useState<boolean>(false);
+  const [googleEmail, setGoogleEmail] = useState<string | null>(null);
 
   // Step 1 Form Data
   const [accountForm, setAccountForm] = useState({
@@ -145,6 +147,10 @@ export default function OnboardingPage() {
   const [otpDigits, setOtpDigits] = useState<string[]>(['', '', '', '', '', '']);
   const [otpResent, setOtpResent] = useState(false);
   const [emailVerificationToken, setEmailVerificationToken] = useState<string | null>(null);
+  // The address the code was confirmed for, and when (the confirmation lasts 30 minutes).
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
+  const [verifiedAt, setVerifiedAt] = useState<number>(0);
+  const [businessErrors, setBusinessErrors] = useState<{ [key: string]: string }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Step 3 Business Profile State
@@ -203,8 +209,31 @@ export default function OnboardingPage() {
     if (!accountForm.fullName.trim()) errors.fullName = 'Full Name is required';
     if (!accountForm.email.trim() || !accountForm.email.includes('@')) errors.email = 'Valid work email is required';
     if (!accountForm.password || accountForm.password.length < 8) errors.password = 'Password must be at least 8 characters';
+    if (!accountForm.agreeTerms) errors.agreeTerms = 'Please tick the box to agree to the Terms of Service and Privacy Policy.';
     setAccountErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const cleanEmail = (value: string) => value.trim().toLowerCase();
+  const VERIFICATION_LIFETIME_MS = 28 * 60 * 1000; // a little under the server's 30 minutes
+  const emailStillVerified = () =>
+    !!emailVerificationToken &&
+    verifiedEmail === cleanEmail(accountForm.email) &&
+    Date.now() - verifiedAt < VERIFICATION_LIFETIME_MS;
+
+  // The progress bar only goes BACK to steps already done. Going forward always
+  // uses the main button, so no step (email check, account creation) can be skipped.
+  const canJumpTo = (step: number) => {
+    if (step >= currentStep) return false;
+    if (accountCreated) return false; // the account exists: nothing earlier can be changed here
+    if (step === 2) return false; // a used code cannot be entered again
+    return true;
+  };
+  const jumpTo = (step: number) => {
+    if (canJumpTo(step)) {
+      setSubmitError(null);
+      setCurrentStep(step);
+    }
   };
 
   const handleGoogleSignUpSuccess = (result: {
@@ -214,16 +243,22 @@ export default function OnboardingPage() {
     lastName?: string;
     fullName?: string;
   }) => {
+    if (!accountForm.agreeTerms) {
+      setAccountErrors({ agreeTerms: 'Please tick the box to agree to the Terms of Service and Privacy Policy, then try again.' });
+      return;
+    }
     setGoogleCredential(result.credential);
     setIsGoogleAuth(true);
     const fullName = result.fullName || `${result.firstName || ''} ${result.lastName || ''}`.trim() || 'Store Owner';
     const email = result.email || accountForm.email;
 
+    setGoogleEmail(email);
+    // No password is set for Google sign-ups: the server makes its own random one.
     setAccountForm((prev) => ({
       ...prev,
       fullName,
       email,
-      password: 'GoogleOAuth2VerifiedSecurePassword123!',
+      password: '',
     }));
 
     // Pre-populate store name with owner name if empty
@@ -240,11 +275,28 @@ export default function OnboardingPage() {
 
   const handleNext = async () => {
     if (currentStep === 1) {
+      if (isGoogleAuth && googleCredential && googleEmail === accountForm.email) {
+        // Still the Google account they chose: Google has already confirmed this address.
+        setCurrentStep(3);
+        return;
+      }
       if (!validateStep1()) return;
+      // A different email was typed: this is now the email-and-password route.
+      setIsGoogleAuth(false);
+      setGoogleCredential(null);
+      if (emailStillVerified()) {
+        // They came back to this step after confirming this same address.
+        setCurrentStep(3);
+        return;
+      }
+      setEmailVerificationToken(null);
+      setVerifiedEmail(null);
       setIsSubmitting(true);
       try {
         await api.sendOtp(accountForm.email, accountForm.fullName);
         setOtpError(null);
+        setOtpResent(false);
+        setOtpDigits(['', '', '', '', '', '']);
         setAccountErrors({});
         setCurrentStep(2);
       } catch (err: any) {
@@ -269,6 +321,8 @@ export default function OnboardingPage() {
       try {
         const verified = await api.verifyOtp(accountForm.email, code);
         setEmailVerificationToken(verified.emailVerificationToken || null);
+        setVerifiedEmail(cleanEmail(accountForm.email));
+        setVerifiedAt(Date.now());
         setCurrentStep(3);
       } catch (err: any) {
         setOtpError(err.message || 'Invalid or expired verification code.');
@@ -279,6 +333,24 @@ export default function OnboardingPage() {
       return;
     }
     
+    if (currentStep === 3) {
+      if (!businessForm.storeName.trim()) {
+        setBusinessErrors({ storeName: 'Please enter your store name.' });
+        return;
+      }
+      setBusinessErrors({});
+    }
+
+    if (currentStep === 4 && !accountCreated && !(isGoogleAuth && googleCredential) && !emailStillVerified()) {
+      // The email confirmation lasts 30 minutes. Send them back for a new code
+      // instead of failing with a confusing error.
+      setEmailVerificationToken(null);
+      setVerifiedEmail(null);
+      setAccountErrors({ email: 'Your email confirmation has run out. Please continue to get a new code.' });
+      setCurrentStep(1);
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitError(null);
     try {
@@ -318,7 +390,7 @@ export default function OnboardingPage() {
             emailVerificationToken: emailVerificationToken || undefined,
             firstName,
             lastName,
-            businessName: businessForm.storeName.trim() || `${firstName}'s Mobile Store`,
+            businessName: businessForm.storeName.trim(),
             phone: businessForm.phone?.trim() || undefined,
             plan: selectedPlan.toUpperCase(),
           });
@@ -350,7 +422,8 @@ export default function OnboardingPage() {
 
   const handleBack = () => {
     if (currentStep > 1) {
-      if (currentStep === 3 && isGoogleAuth) {
+      if (accountCreated) return; // the account exists: earlier steps cannot be changed here
+      if (currentStep === 3) {
         setCurrentStep(1);
       } else {
         setCurrentStep((prev) => prev - 1);
@@ -358,17 +431,62 @@ export default function OnboardingPage() {
     }
   };
 
-  const handleOtpChange = (index: number, value: string) => {
-    if (value.length > 1) value = value[value.length - 1];
-    const newDigits = [...otpDigits];
-    newDigits[index] = value;
-    setOtpDigits(newDigits);
+  const focusOtpBox = (index: number) => {
+    const box = document.getElementById(`otp-input-${Math.max(0, Math.min(5, index))}`) as HTMLInputElement | null;
+    box?.focus();
+    box?.select();
+  };
 
-    // Auto-focus next input
-    if (value && index < 5) {
-      const nextInput = document.getElementById(`otp-input-${index + 1}`);
-      nextInput?.focus();
+  // Fills the boxes from `index` onward. Handles one typed digit, a pasted code,
+  // and the phone keyboard's "code from your messages/email" suggestion.
+  const fillOtpFrom = (index: number, raw: string) => {
+    const digits = raw.replace(/\D/g, '');
+    if (!digits) return;
+    const chars = digits.length >= 6 ? digits.slice(-6).split('') : digits.split('');
+    const start = digits.length >= 6 ? 0 : index;
+    const newDigits = [...otpDigits];
+    chars.forEach((ch, i) => {
+      if (start + i < 6) newDigits[start + i] = ch;
+    });
+    setOtpDigits(newDigits);
+    setOtpError(null);
+    focusOtpBox(start + chars.length);
+  };
+
+  const handleOtpChange = (index: number, value: string) => {
+    if (!value) {
+      const newDigits = [...otpDigits];
+      newDigits[index] = '';
+      setOtpDigits(newDigits);
+      return;
     }
+    // Typing over a filled box sends the old digit plus the new one: keep the new one.
+    const digits = value.replace(/\D/g, '');
+    fillOtpFrom(index, digits.length === 2 && otpDigits[index] ? digits.slice(-1) : digits);
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      e.preventDefault();
+      const newDigits = [...otpDigits];
+      newDigits[index - 1] = '';
+      setOtpDigits(newDigits);
+      focusOtpBox(index - 1);
+    } else if (e.key === 'ArrowLeft' && index > 0) {
+      e.preventDefault();
+      focusOtpBox(index - 1);
+    } else if (e.key === 'ArrowRight' && index < 5) {
+      e.preventDefault();
+      focusOtpBox(index + 1);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      handleNext();
+    }
+  };
+
+  const handleOtpPaste = (index: number, e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    fillOtpFrom(index, e.clipboardData.getData('text'));
   };
 
   // Step Meta Configuration for Left Brand Panel
@@ -410,6 +528,15 @@ export default function OnboardingPage() {
     selectedPlan.toUpperCase() === 'FREE' ||
     (!!selectedPlanItem && !selectedPlanItem.monthlyPriceNgn && !selectedPlanItem.annualPriceNgn);
   const paymentPending = accountCreated && !!pendingPlanCode && !paidPlanActive;
+
+  // The yearly saving is worked out from the real prices, so the label is always true.
+  const annualSavingPercent = dynamicPlans.reduce((best: number, p: any) => {
+    const monthly = Number(p.monthlyPriceNgn) || 0;
+    if (!monthly) return best;
+    const yearly = Number(p.annualPriceNgn) || monthly * 10;
+    return Math.max(best, Math.round((1 - yearly / (monthly * 12)) * 100));
+  }, 0);
+  const annualLabel = annualSavingPercent > 0 ? `Annual (Save ${annualSavingPercent}%)` : 'Annual';
   const activePlanName = paidPlanActive && checkoutPlan ? checkoutPlan.name : 'Free';
 
   return (
@@ -464,10 +591,10 @@ export default function OnboardingPage() {
               </p>
               <div className="flex items-center gap-2.5 pt-1.5 border-t border-slate-800">
                 <div className="w-7 h-7 rounded-full bg-accent-600 text-white font-bold flex items-center justify-center text-xs shadow-md shadow-accent-600/30">
-                  M
+                  T
                 </div>
                 <div>
-                  <div className="font-bold text-white text-xs">Marcus Vance</div>
+                  <div className="font-bold text-white text-xs">Tobi Adeyemi</div>
                   <div className="text-xs text-slate-400">Owner, TechWorld Mobile (5 Store Branches)</div>
                 </div>
               </div>
@@ -495,7 +622,7 @@ export default function OnboardingPage() {
                   <Link href="/login" className="text-xs font-bold text-accent-600 hover:underline">
                     Sign In
                   </Link>
-                  {currentStep > 1 && (
+                  {currentStep > 1 && !accountCreated && (
                     <Button variant="secondary" size="sm"
                       onClick={handleBack}>
                       <ArrowLeft className="w-3 h-3" /> Back
@@ -517,9 +644,11 @@ export default function OnboardingPage() {
                     <button
                       key={s}
                       type="button"
-                      onClick={() => setCurrentStep(s)}
-                      className="group py-0.5 cursor-pointer w-full focus:outline-none"
-                      title={`Jump to Step ${s}`}
+                      onClick={() => jumpTo(s)}
+                      disabled={!canJumpTo(s)}
+                      aria-label={`Step ${s} of 5`}
+                      className={`group py-0.5 w-full focus:outline-none ${canJumpTo(s) ? 'cursor-pointer' : 'cursor-default'}`}
+                      title={canJumpTo(s) ? `Back to Step ${s}` : undefined}
                     >
                       <div
                         className={`h-1.5 rounded-full transition-all duration-300 ${
@@ -540,12 +669,12 @@ export default function OnboardingPage() {
             <div className="hidden lg:flex items-center justify-between border-b border-slate-200 pb-2">
               <button
                 onClick={handleBack}
-                disabled={currentStep === 1}
+                disabled={currentStep === 1 || accountCreated}
                 className={`flex items-center gap-1 text-xs font-bold transition ${
-                  currentStep === 1 ? 'opacity-0 cursor-default' : 'text-slate-600 hover:text-slate-900 cursor-pointer'
+                  currentStep === 1 || accountCreated ? 'opacity-0 cursor-default' : 'text-slate-600 hover:text-slate-900 cursor-pointer'
                 }`}
               >
-                <ArrowLeft className="w-3.5 h-3.5" /> Back to Step {currentStep - 1}
+                <ArrowLeft className="w-3.5 h-3.5" /> Back to Step {currentStep === 3 ? 1 : currentStep - 1}
               </button>
 
               <div className="flex items-center gap-2.5 text-xs font-bold">
@@ -575,9 +704,10 @@ export default function OnboardingPage() {
                   <button
                     key={s.step}
                     type="button"
-                    onClick={() => setCurrentStep(s.step)}
-                    className="space-y-1 text-center group cursor-pointer w-full focus:outline-none transition-transform active:scale-95"
-                    title={`Click to preview Step ${s.step}: ${s.label}`}
+                    onClick={() => jumpTo(s.step)}
+                    disabled={!canJumpTo(s.step)}
+                    className={`space-y-1 text-center group w-full focus:outline-none ${canJumpTo(s.step) ? 'cursor-pointer transition-transform active:scale-95' : 'cursor-default'}`}
+                    title={canJumpTo(s.step) ? `Back to Step ${s.step}: ${s.label}` : undefined}
                   >
                     <div
                       className={`h-1.5 rounded-full transition-all duration-300 ${
@@ -700,9 +830,12 @@ export default function OnboardingPage() {
                         className="mt-0.5 w-3.5 h-3.5 rounded text-accent-600 focus:ring-accent-500"
                       />
                       <label htmlFor="agreeTerms" className="text-xs text-slate-600 font-medium leading-tight">
-                        I agree to the <a href="#" className="text-accent-600 font-bold hover:underline">Terms of Service</a> and <a href="#" className="text-accent-600 font-bold hover:underline">Privacy Policy</a>.
+                        I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-accent-600 font-bold hover:underline">Terms of Service</a> and <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-accent-600 font-bold hover:underline">Privacy Policy</a>.
                       </label>
                     </div>
+                    {accountErrors.agreeTerms && (
+                      <p role="alert" className="text-xs text-danger-500 font-semibold">{accountErrors.agreeTerms}</p>
+                    )}
 
                     {/* Or Login CTA */}
                     <div className="pt-2 border-t border-slate-100 text-center text-xs">
@@ -746,9 +879,13 @@ export default function OnboardingPage() {
                         type="text"
                         inputMode="numeric"
                         pattern="[0-9]*"
-                        maxLength={1}
+                        autoComplete={idx === 0 ? 'one-time-code' : 'off'}
+                        aria-label={`Digit ${idx + 1} of 6`}
                         value={digit}
                         onChange={(e) => handleOtpChange(idx, e.target.value)}
+                        onKeyDown={(e) => handleOtpKeyDown(idx, e)}
+                        onPaste={(e) => handleOtpPaste(idx, e)}
+                        onFocus={(e) => e.target.select()}
                         className="w-8 h-10 sm:w-10 sm:h-12 text-center text-base sm:text-xl font-extrabold bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-accent-600 focus:ring-2 focus:ring-accent-500/20 font-mono text-slate-900 shadow-inner"
                       />
                     ))}
@@ -804,8 +941,15 @@ export default function OnboardingPage() {
                         <TextInput label="Store Name"
                             type="text"
                             value={businessForm.storeName}
-                            onChange={(e) => setBusinessForm({ ...businessForm, storeName: e.target.value })}
+                            onChange={(e) => {
+                              setBusinessForm({ ...businessForm, storeName: e.target.value });
+                              if (businessErrors.storeName) setBusinessErrors({});
+                            }}
+                            maxLength={120}
                             placeholder="e.g. Zenith Gadgets Ltd" leftIcon={<Store className="w-4 h-4" />} />
+                        {businessErrors.storeName && (
+                          <p role="alert" className="text-xs text-danger-500 font-semibold mt-0.5">{businessErrors.storeName}</p>
+                        )}
                       </div>
 
                       {/* Store Phone */}
@@ -883,7 +1027,7 @@ export default function OnboardingPage() {
                         onClick={() => setBillingCycle('annual')}
                         className={`px-3 py-1 rounded-lg transition ${billingCycle === 'annual' ? 'bg-white shadow-sm text-slate-900 font-extrabold' : 'text-slate-500 hover:text-slate-800'}`}
                       >
-                        Annual (20% Off)
+                        {annualLabel}
                       </button>
                     </div>
                   </div>
@@ -922,7 +1066,7 @@ export default function OnboardingPage() {
 
                         <div className="p-3.5 rounded-xl bg-white/10 border border-white/10 text-left sm:text-right shrink-0">
                           <div className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                            {billingCycle === 'monthly' ? 'Monthly Billing' : 'Annual Billing (20% Off)'}
+                            {billingCycle === 'monthly' ? 'Monthly Billing' : 'Annual Billing'}
                           </div>
                           <div className="text-2xl sm:text-3xl font-black text-white font-mono">
                             ₦{billingCycle === 'monthly'
@@ -1193,7 +1337,7 @@ export default function OnboardingPage() {
 
               {/* Bottom Primary Action Button */}
               <div className="pt-2 sm:pt-2.5 border-t border-slate-100 flex items-center justify-between gap-3">
-                {currentStep > 1 && currentStep < 5 && (
+                {currentStep > 1 && currentStep < 5 && !accountCreated && (
                   <Button variant="ghost" size="sm"
                     type="button"
                     onClick={handleBack}>
@@ -1245,7 +1389,7 @@ export default function OnboardingPage() {
               <div className="block lg:hidden pt-2 border-t border-slate-100 text-center">
                 <p className="text-xs font-semibold text-slate-500 flex items-center justify-center gap-1 flex-wrap">
                   <span className="text-warning-500 font-bold">★★★★★</span>
-                  <span>"Setup took &lt;5 mins" — Marcus V.</span>
+                  <span>"Setup took &lt;5 mins" — Tobi A.</span>
                 </p>
               </div>
 
@@ -1257,6 +1401,7 @@ export default function OnboardingPage() {
             <PaystackCheckoutModal
               isOpen
               plan={checkoutPlan}
+              initialBillingCycle={billingCycle === 'annual' ? 'ANNUAL' : 'MONTHLY'}
               onSuccess={() => setPaidPlanActive(true)}
               onClose={() => {
                 setIsCheckoutOpen(false);
@@ -1266,10 +1411,19 @@ export default function OnboardingPage() {
           )}
 
           {/* Right Bottom Footer Link */}
-          <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-md lg:max-w-lg'} mx-auto w-full text-center text-xs font-medium text-slate-500 py-1 shrink-0`}>
-            Need assistance with workspace setup?{' '}
-            <a href="#" className="text-accent-600 font-bold hover:underline">Contact Store Support</a>
-          </div>
+          {(CONTACT.whatsapp || CONTACT.email) && (
+            <div className={`${currentStep === 4 ? 'max-w-5xl xl:max-w-6xl' : 'max-w-md lg:max-w-lg'} mx-auto w-full text-center text-xs font-medium text-slate-500 py-1 shrink-0`}>
+              Need assistance with workspace setup?{' '}
+              <a
+                href={CONTACT.whatsapp ? `https://wa.me/${CONTACT.whatsapp}` : `mailto:${CONTACT.email}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-accent-600 font-bold hover:underline"
+              >
+                Contact Store Support
+              </a>
+            </div>
+          )}
         </div>
 
       </div>

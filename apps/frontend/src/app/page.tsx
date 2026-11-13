@@ -1143,13 +1143,13 @@ export default function PublicLandingPageV2() {
                       </div>
 
                       {!isCameraFrozen && (
-                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+                        <div className="absolute inset-x-0 bottom-0 z-20 px-3 pb-3 pt-6 bg-gradient-to-t from-slate-950/90 via-slate-950/50 to-transparent">
                           <button
                             type="button"
                             onClick={handleSnapAndScanText}
-                            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-extrabold rounded-full shadow-2xl transition border border-blue-400/40 flex items-center gap-1.5 text-xs shadow-blue-600/30 cursor-pointer"
+                            className="w-full py-2.5 bg-white hover:bg-slate-100 active:bg-slate-200 text-slate-900 font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-xs sm:text-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
                           >
-                            <Camera className="w-3.5 h-3.5" /> Capture & Read Frame
+                            <Camera className="w-4 h-4 text-emerald-700" /> Capture & Read Frame
                           </button>
                         </div>
                       )}
@@ -1936,10 +1936,10 @@ export default function PublicLandingPageV2() {
             </p>
             <div className="pt-2 border-t border-slate-100 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs">
-                M
+                T
               </div>
               <div>
-                <div className="font-bold text-xs text-slate-900">Marcus Vance</div>
+                <div className="font-bold text-xs text-slate-900">Tobi Adeyemi</div>
                 <div className="text-[10px] text-slate-500">Owner, TechWorld Mobile</div>
               </div>
             </div>
@@ -1955,7 +1955,7 @@ export default function PublicLandingPageV2() {
                 S
               </div>
               <div>
-                <div className="font-bold text-xs text-slate-900">Sarah Jenkins</div>
+                <div className="font-bold text-xs text-slate-900">Sandra Eze</div>
                 <div className="text-[10px] text-slate-500">Director, Apex Wireless</div>
               </div>
             </div>
@@ -1971,7 +1971,7 @@ export default function PublicLandingPageV2() {
                 D
               </div>
               <div>
-                <div className="font-bold text-xs text-slate-900">David Chen</div>
+                <div className="font-bold text-xs text-slate-900">Daniel Okoro</div>
                 <div className="text-[10px] text-slate-500">Wholesale Manager, GlobalPhone</div>
               </div>
             </div>

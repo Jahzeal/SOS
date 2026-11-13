@@ -50,6 +50,49 @@ export class AuthService {
   }
 
   /**
+   * Builds the store's web name from its name. Always returns something usable
+   * (a name made only of symbols becomes "store") and never one already taken.
+   */
+  private async uniqueSlug(name: string): Promise<string> {
+    const base =
+      String(name || '')
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 60) || 'store';
+
+    let slug = base;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const taken = await this.prisma.business.findUnique({ where: { slug }, select: { id: true } });
+      if (!taken) return slug;
+      slug = `${base}-${randomBytes(3).toString('hex')}`;
+    }
+    return `${base}-${randomBytes(6).toString('hex')}`;
+  }
+
+  /**
+   * Creates the store and its owner. Two sign-ups can still land at the same
+   * moment, so a clash reported by the database is turned into a clear answer:
+   * a taken email is refused, a taken store web name is retried with a new one.
+   */
+  private async createStoreWithOwner(build: (slug: string) => any, storeName: string) {
+    for (let attempt = 0; attempt < 3; attempt++) {
+      const slug = await this.uniqueSlug(storeName);
+      try {
+        return await this.prisma.business.create({ data: build(slug), include: { users: true } });
+      } catch (err: any) {
+        if (err?.code !== 'P2002') throw err;
+        const target = [err?.meta?.target].flat().join(',');
+        if (target.includes('email')) {
+          throw new ConflictException('This email already has an account. Please sign in instead.');
+        }
+        // Otherwise the store web name was taken a moment ago: try again with a new one.
+      }
+    }
+    throw new ConflictException('We could not set up your store just now. Please try again.');
+  }
+
+  /**
    * A plan MUST be chosen at signup, and only real, active, publicly offered
    * plans are accepted. There is no trial: every new store starts on the Free
    * plan (free forever, device cap from the FREE plan row). If a paid plan was
@@ -169,17 +212,12 @@ export class AuthService {
       const signupPlan = await this.resolveSignupPlan(dto.plan);
       // Create new user and business workspace
       const storeName = dto.businessName?.trim() || `${firstName}'s Store`;
-      let slug = storeName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-      const existingBusiness = await this.prisma.business.findUnique({ where: { slug } });
-      if (existingBusiness) {
-        slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
-      }
 
       const randomPassword = randomBytes(24).toString('base64url');
       const hashedPassword = await bcrypt.hash(randomPassword, 10);
 
-      const business = await this.prisma.business.create({
-        data: {
+      const business = await this.createStoreWithOwner(
+        (slug) => ({
           name: storeName,
           slug,
           phone: dto.phone,
@@ -195,11 +233,9 @@ export class AuthService {
               role: UserRole.BUSINESS,
             },
           },
-        },
-        include: {
-          users: true,
-        },
-      });
+        }),
+        storeName,
+      );
 
       const createdUser = business.users[0];
       const tokens = await this.generateTokens(createdUser.id, createdUser.email);
@@ -254,22 +290,21 @@ export class AuthService {
     const existingUser = await this.findUserByEmail(email);
 
     if (existingUser) {
-      throw new ConflictException('Email already registered');
+      throw new ConflictException('This email already has an account. Please sign in instead.');
     }
 
     const signupPlan = await this.resolveSignupPlan(dto.plan);
 
-    let slug = dto.businessName.toLowerCase().replace(/[^a-z0-9]/g, '-');
-    const existingBusiness = await this.prisma.business.findUnique({ where: { slug } });
-    if (existingBusiness) {
-      slug = `${slug}-${Math.floor(1000 + Math.random() * 9000)}`;
+    const storeName = dto.businessName.trim();
+    if (!storeName) {
+      throw new BadRequestException('Please enter your store name.');
     }
 
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    const business = await this.prisma.business.create({
-      data: {
-        name: dto.businessName,
+    const business = await this.createStoreWithOwner(
+      (slug) => ({
+        name: storeName,
         slug,
         phone: dto.phone,
         plan: 'FREE',
@@ -279,16 +314,14 @@ export class AuthService {
           create: {
             email,
             password: hashedPassword,
-            firstName: dto.firstName,
-            lastName: dto.lastName,
+            firstName: dto.firstName.trim(),
+            lastName: dto.lastName.trim(),
             role: UserRole.BUSINESS,
           },
         },
-      },
-      include: {
-        users: true,
-      },
-    });
+      }),
+      storeName,
+    );
 
     const user = business.users[0];
     const tokens = await this.generateTokens(user.id, user.email);
@@ -472,6 +505,12 @@ export class AuthService {
 
     // A code works once.
     await this.prisma.emailOtp.delete({ where: { email: cleanEmail } }).catch(() => {});
+
+    // Say so now, not after the store details and plan have been filled in. This is
+    // only revealed to someone who has just proved the address is theirs.
+    if (await this.findUserByEmail(cleanEmail)) {
+      throw new ConflictException('This email already has an account. Please sign in instead.');
+    }
 
     // Signup must present this token, proving the address was confirmed.
     const emailVerificationToken = this.jwtService.sign(

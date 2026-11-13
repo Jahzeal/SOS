@@ -29,10 +29,12 @@ interface PaystackCheckoutModalProps {
     features?: string[];
   };
   onSuccess: (updatedBusiness: any) => void;
+  /** Which billing choice to open on (e.g. the one picked on the sign-up plan step). */
+  initialBillingCycle?: 'MONTHLY' | 'ANNUAL';
 }
 
-export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess }: PaystackCheckoutModalProps) {
-  const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>('MONTHLY');
+export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess, initialBillingCycle = 'MONTHLY' }: PaystackCheckoutModalProps) {
+  const [billingCycle, setBillingCycle] = useState<'MONTHLY' | 'ANNUAL'>(initialBillingCycle);
   const [isInitializing, setIsInitializing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);

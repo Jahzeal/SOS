@@ -11,18 +11,22 @@ export class RegisterDto {
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(80)
   firstName: string;
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(80)
   lastName: string;
 
   @IsString()
   @IsNotEmpty()
+  @MaxLength(120)
   businessName: string;
 
   @IsString()
   @IsOptional()
+  @MaxLength(30)
   phone?: string;
 
   @IsString()
@@ -104,10 +108,12 @@ export class GoogleAuthDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(120)
   businessName?: string;
 
   @IsString()
   @IsOptional()
+  @MaxLength(30)
   phone?: string;
 
   @IsString()
@@ -116,10 +122,12 @@ export class GoogleAuthDto {
 
   @IsString()
   @IsOptional()
+  @MaxLength(80)
   firstName?: string;
 
   @IsString()
   @IsOptional()
+  @MaxLength(80)
   lastName?: string;
 
   @IsEmail()

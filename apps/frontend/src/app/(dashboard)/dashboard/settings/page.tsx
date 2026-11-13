@@ -164,7 +164,7 @@ export default function RebuiltSettingsPage() {
     { id: '2', name: 'Amaka Okafor', email: 'amaka@example.com', role: 'Sales', branch: 'Ikeja', status: 'ACTIVE', lastActive: '5 min ago', initials: 'AO', color: 'bg-accent-600' },
     { id: '3', name: 'John Ade', email: 'john@example.com', role: 'Manager', branch: 'Ikeja', status: 'ACTIVE', lastActive: '1 hour ago', initials: 'JA', color: 'bg-warning-600' },
     { id: '4', name: 'Peter James', email: 'peter@example.com', role: 'Technician', branch: 'Lekki', status: 'ACTIVE', lastActive: 'Yesterday', initials: 'PJ', color: 'bg-slate-700' },
-    { id: '5', name: 'Sarah Cole', email: 'sarah@example.com', role: 'Sales', branch: 'Lekki', status: 'INACTIVE', lastActive: '3 days ago', initials: 'SC', color: 'bg-slate-400' },
+    { id: '5', name: 'Sandra Eze', email: 'sandra@example.com', role: 'Sales', branch: 'Lekki', status: 'INACTIVE', lastActive: '3 days ago', initials: 'SC', color: 'bg-slate-400' },
   ]);
 
   // Branches State
