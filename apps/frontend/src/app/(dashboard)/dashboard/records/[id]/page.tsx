@@ -33,6 +33,8 @@ import {
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/useAuthStore';
+import { can } from '@/lib/permissions';
 import { useQueryClient } from '@tanstack/react-query';
 
 const STATUS_OPTIONS = [
@@ -107,6 +109,10 @@ export default function PhoneRecordDetailPage() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const recordId = params?.id as string;
+  const { user } = useAuthStore();
+  const canEdit = can(user, 'editDevices');
+  const canSeeCosts = can(user, 'seeCosts');
+  const canSell = can(user, 'sell');
 
   const [record, setRecord] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
@@ -319,6 +325,7 @@ export default function PhoneRecordDetailPage() {
             </>
           ) : (
             <>
+              {canEdit && (
               <Button
                 variant="secondary"
                 size="sm"
@@ -327,7 +334,8 @@ export default function PhoneRecordDetailPage() {
               >
                 Edit Device
               </Button>
-              {record?.status === 'IN_STOCK' && (
+              )}
+              {canSell && record?.status === 'IN_STOCK' && (
                 <Link href={`/dashboard/checkout?device=${record.id}`}>
                   <Button
                     variant="primary"
@@ -339,12 +347,14 @@ export default function PhoneRecordDetailPage() {
                   </Button>
                 </Link>
               )}
+              {canEdit && (
               <Button variant="secondary" size="icon" aria-label="Delete Record"
                 onClick={handleDelete}
                 disabled={saving}
                 title="Delete Record">
                 <Trash2 className="w-4 h-4" />
               </Button>
+              )}
             </>
           )}
         </div>
@@ -622,7 +632,8 @@ export default function PhoneRecordDetailPage() {
               <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">Pricing & Warranty Valuation</h4>
               
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-                {/* Purchase Price */}
+                {/* Purchase Price (hidden from staff who may not see costs) */}
+                {canSeeCosts && (
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
                     <label htmlFor="shboard-records-id-f7" className="block font-bold text-slate-700 uppercase tracking-wider text-xs">
@@ -655,6 +666,7 @@ export default function PhoneRecordDetailPage() {
                     </div>
                   )}
                 </div>
+                )}
 
                 {/* Selling Price */}
                 <div>

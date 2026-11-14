@@ -6,6 +6,7 @@ import * as QRCode from 'qrcode';
 import { randomInt } from 'crypto';
 import { SubscriptionService } from '../common/services/subscription.service';
 import { UpdatePhoneDto, FlagStolenDto } from './dto/update-phone.dto';
+import { requestContext } from '../common/staff/request-context';
 
 @Injectable()
 export class PhonesService {
@@ -16,7 +17,8 @@ export class PhonesService {
 
   async checkImei(businessId: string, imei: string) {
     const cleanImei = imei.trim();
-    const existing = await this.prisma.phoneRecord.findFirst({
+    // A device may only be in one branch of a store, so the duplicate check covers every branch.
+    const existing = await requestContext.storeWide(() => this.prisma.phoneRecord.findFirst({
       where: {
         businessId,
         OR: [
@@ -31,7 +33,7 @@ export class PhonesService {
           select: { name: true },
         },
       },
-    });
+    }));
 
     if (existing) {
       return {
@@ -330,6 +332,7 @@ export class PhonesService {
         warrantyDurationMonths: true,
         warrantyExpiryDate: true,
         createdAt: true,
+        branch: { select: { id: true, name: true } },
         customer: {
           select: {
             id: true,

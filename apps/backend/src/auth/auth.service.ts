@@ -15,6 +15,7 @@ import { RegisterDto, LoginDto, GoogleAuthDto } from './dto/auth.dto';
 import { UserRole } from '@prisma/client';
 import { frontendUrl } from '../common/config/env';
 import { RateLimitService } from '../common/services/rate-limit.service';
+import { StaffAccessService } from '../common/staff/staff-access.service';
 
 // OAuth client IDs are public identifiers (they ship in the frontend), not secrets.
 const DEFAULT_GOOGLE_CLIENT_ID = '380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c.apps.googleusercontent.com';
@@ -31,7 +32,22 @@ export class AuthService {
     private jwtService: JwtService,
     private mailService: MailService,
     private rateLimit: RateLimitService,
+    private staff: StaffAccessService,
   ) {}
+
+  /** The parts of an account the app needs after signing in. */
+  private publicUser(user: any, business: any) {
+    return {
+      id: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role,
+      storeRole: user.storeRole || 'OWNER',
+      branch: user.branch ? { id: user.branch.id, name: user.branch.name } : null,
+      business,
+    };
+  }
 
   private normalizeEmail(email: string): string {
     return String(email || '').trim().toLowerCase();
@@ -41,7 +57,7 @@ export class AuthService {
   private findUserByEmail(email: string) {
     return this.prisma.user.findFirst({
       where: { email: { equals: this.normalizeEmail(email), mode: 'insensitive' } },
-      include: { business: true },
+      include: { business: true, branch: { select: { id: true, name: true } } },
     });
   }
 
@@ -246,36 +262,23 @@ export class AuthService {
         .catch((err) => console.error('Failed to send welcome email for Google user:', err));
 
       return {
-        user: {
-          id: createdUser.id,
-          email: createdUser.email,
-          firstName: createdUser.firstName,
-          lastName: createdUser.lastName,
-          role: createdUser.role,
-          business: {
-            id: business.id,
-            name: business.name,
-            slug: business.slug,
-            plan: business.plan,
-          },
-        },
+        user: this.publicUser(createdUser, {
+          id: business.id,
+          name: business.name,
+          slug: business.slug,
+          plan: business.plan,
+        }),
         isNewUser: true,
         pendingPlan: signupPlan.pendingPlan,
         ...tokens,
       };
     }
 
+    await this.staff.assertCanWork(user);
     const tokens = await this.generateTokens(user.id, user.email);
 
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        business: user.business,
-      },
+      user: this.publicUser(user, user.business),
       isNewUser: false,
       ...tokens,
     };
@@ -332,19 +335,12 @@ export class AuthService {
       .catch((err) => console.error('Failed to send welcome email:', err));
 
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        business: {
-          id: business.id,
-          name: business.name,
-          slug: business.slug,
-          plan: business.plan,
-        },
-      },
+      user: this.publicUser(user, {
+        id: business.id,
+        name: business.name,
+        slug: business.slug,
+        plan: business.plan,
+      }),
       pendingPlan: signupPlan.pendingPlan,
       ...tokens,
     };
@@ -368,17 +364,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    // Right password, but switched off or not covered by the store's plan.
+    await this.staff.assertCanWork(user);
+
     const tokens = await this.generateTokens(user.id, user.email);
 
     return {
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: user.role,
-        business: user.business,
-      },
+      user: this.publicUser(user, user.business),
       ...tokens,
     };
   }

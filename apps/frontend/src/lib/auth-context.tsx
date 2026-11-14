@@ -11,6 +11,10 @@ interface UserProfile {
   firstName: string;
   lastName: string;
   role: string;
+  /** Role inside the store. Missing on older saved sessions = owner. */
+  storeRole?: 'OWNER' | 'MANAGER' | 'SALES' | 'TECHNICIAN';
+  /** The branch this person works in; empty = all branches. */
+  branch?: { id: string; name: string } | null;
   business: {
     id: string;
     name: string;

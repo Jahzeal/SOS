@@ -45,6 +45,10 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   // Ignore chrome-extension://, moz-extension://, and other non-http schemes
   if (!event.request.url.startsWith('http://') && !event.request.url.startsWith('https://')) return;
+  // Only the website's own pages and files are cached for offline use. Requests to the
+  // NoxGuarda server (stock, sales, team, accounts) are private and must never be stored
+  // in the browser, so they go straight to the network untouched.
+  if (new URL(event.request.url).origin !== self.location.origin) return;
   if (event.request.url.includes('/api/')) return;
 
   event.respondWith(

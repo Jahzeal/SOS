@@ -6,6 +6,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { RateLimit, RateLimitGuard } from '../common/guards/rate-limit.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { StoreRoleGuard, StoreRoles, SELLERS, MANAGERS } from '../common/staff/store-role.guard';
 
 @Controller('verification')
 export class VerificationController {
@@ -14,31 +15,32 @@ export class VerificationController {
     private jwt: JwtService,
   ) {}
 
-  @UseGuards(JwtAuthGuard, SubscriptionGuard)
+  @UseGuards(JwtAuthGuard, StoreRoleGuard, SubscriptionGuard)
+  @StoreRoles(...SELLERS)
   @Post('register')
   async registerPhone(@CurrentUser() user: any, @Body() dto: RegisterPhoneDto) {
     return this.verificationService.registerPhone(user.businessId, user.id, dto);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, StoreRoleGuard)
   @Get('phones')
   async getPhones(@CurrentUser() user: any, @Query('search') search?: string) {
     return this.verificationService.getPhones(user.businessId, search);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, StoreRoleGuard)
   @Get('phones/:id')
   async getPhoneDetails(@CurrentUser() user: any, @Param('id') id: string) {
     return this.verificationService.getPhoneDetails(user.businessId, id);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, StoreRoleGuard)
   @Get('search/imei')
   async searchByImei(@CurrentUser() user: any, @Query('imei') imei: string) {
     return this.verificationService.searchByImei(user.businessId, imei);
   }
 
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, StoreRoleGuard)
   @Get('search/serial')
   async searchBySerial(@CurrentUser() user: any, @Query('serial') serial: string) {
     return this.verificationService.searchBySerial(user.businessId, serial);

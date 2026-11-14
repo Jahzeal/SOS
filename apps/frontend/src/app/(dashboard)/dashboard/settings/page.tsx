@@ -33,10 +33,19 @@ import { SearchInput, Select, Textarea, TextInput } from '@/components/ui/Input'
 import { Table, TableWrap, TBody, Td, Th, THead, Tr } from '@/components/ui/DataTable';
 import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModal';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { TeamPanel } from '@/components/team/TeamPanel';
+import { BranchesPanel } from '@/components/team/BranchesPanel';
+import { can } from '@/lib/permissions';
 import { Sun, Moon, Monitor } from 'lucide-react';
 
 export default function RebuiltSettingsPage() {
   const { user, setAuth } = useAuthStore();
+  // Which settings sections this person's role may open.
+  const canSee = (tab: 'account' | 'profile' | 'users' | 'branches' | 'billing') =>
+    tab === 'account' ||
+    (tab === 'profile' && can(user, 'storeSettings')) ||
+    ((tab === 'users' || tab === 'branches') && can(user, 'manageStaff')) ||
+    (tab === 'billing' && can(user, 'billing'));
   const [activeSubTab, setActiveSubTab] = useState<'account' | 'profile' | 'users' | 'branches' | 'billing'>('account');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
@@ -153,26 +162,6 @@ export default function RebuiltSettingsPage() {
     loadLiveProfileAndPlans();
   }, []);
 
-  // Users & Roles State
-  const [userSearch, setUserSearch] = useState('');
-  const [roleFilter, setRoleFilter] = useState('ALL');
-  const [branchFilter, setBranchFilter] = useState('ALL');
-  const [statusFilter, setStatusFilter] = useState('ALL');
-
-  const [usersList, setUsersList] = useState([
-    { id: '1', name: 'David Ibeh', email: 'david@example.com', role: 'Management', branch: 'All Branches', status: 'ACTIVE', lastActive: 'Just now', initials: 'DI', color: 'bg-accent-600' },
-    { id: '2', name: 'Amaka Okafor', email: 'amaka@example.com', role: 'Sales', branch: 'Ikeja', status: 'ACTIVE', lastActive: '5 min ago', initials: 'AO', color: 'bg-accent-600' },
-    { id: '3', name: 'John Ade', email: 'john@example.com', role: 'Manager', branch: 'Ikeja', status: 'ACTIVE', lastActive: '1 hour ago', initials: 'JA', color: 'bg-warning-600' },
-    { id: '4', name: 'Peter James', email: 'peter@example.com', role: 'Technician', branch: 'Lekki', status: 'ACTIVE', lastActive: 'Yesterday', initials: 'PJ', color: 'bg-slate-700' },
-    { id: '5', name: 'Sandra Eze', email: 'sandra@example.com', role: 'Sales', branch: 'Lekki', status: 'INACTIVE', lastActive: '3 days ago', initials: 'SC', color: 'bg-slate-400' },
-  ]);
-
-  // Branches State
-  const [branches, setBranches] = useState([
-    { id: 'b1', name: 'Ikeja Main Store', address: '12 Computer Village Road, Ikeja, Lagos', phone: '+234 801 111 2222', isHeadquarters: true, staffCount: 5, stockValue: '₦48,500,000' },
-    { id: 'b2', name: 'Lekki Mall Branch', address: 'Suite 40, Admiralty Way, Lekki Phase 1', phone: '+234 802 333 4444', isHeadquarters: false, staffCount: 3, stockValue: '₦24,200,000' },
-  ]);
-
   // Handle Operator Profile Save
   const handleSaveOperatorProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -249,17 +238,6 @@ export default function RebuiltSettingsPage() {
     setHasUnsavedChanges(false);
   };
 
-  // Filtered Users
-  const filteredUsers = usersList.filter((u) => {
-    if (roleFilter !== 'ALL' && u.role.toLowerCase() !== roleFilter.toLowerCase()) return false;
-    if (branchFilter !== 'ALL' && !u.branch.toLowerCase().includes(branchFilter.toLowerCase())) return false;
-    if (statusFilter !== 'ALL' && u.status.toLowerCase() !== statusFilter.toLowerCase()) return false;
-    if (userSearch) {
-      const q = userSearch.toLowerCase();
-      return u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q);
-    }
-    return true;
-  });
 
   return (
     <div className="space-y-6 pb-24 font-sans text-slate-900">
@@ -348,6 +326,7 @@ export default function RebuiltSettingsPage() {
                 <UserCircle className="w-4 h-4 shrink-0 text-accent-600" />
                 <span>My Account (Operator)</span>
               </button>
+              {canSee('profile') && (
               <button
                 type="button"
                 role="menuitem"
@@ -362,6 +341,8 @@ export default function RebuiltSettingsPage() {
                 <Building className="w-4 h-4 shrink-0 text-accent-600" />
                 <span>Business & Store Profile</span>
               </button>
+              )}
+              {canSee('users') && (
               <button
                 type="button"
                 role="menuitem"
@@ -376,6 +357,8 @@ export default function RebuiltSettingsPage() {
                 <Users className="w-4 h-4 shrink-0 text-accent-600" />
                 <span>Users & Roles</span>
               </button>
+              )}
+              {canSee('branches') && (
               <button
                 type="button"
                 role="menuitem"
@@ -390,6 +373,8 @@ export default function RebuiltSettingsPage() {
                 <Store className="w-4 h-4 shrink-0 text-accent-600" />
                 <span>Branches</span>
               </button>
+              )}
+              {canSee('billing') && (
               <button
                 type="button"
                 role="menuitem"
@@ -404,6 +389,7 @@ export default function RebuiltSettingsPage() {
                 <CreditCard className="w-4 h-4 shrink-0 text-accent-600" />
                 <span>Billing & Plan</span>
               </button>
+              )}
             </div>
           </>
         )}
@@ -822,222 +808,12 @@ export default function RebuiltSettingsPage() {
       )}
 
       {/* TAB 2: USERS & ROLES */}
-      {activeSubTab === 'users' && (
-        <div className="space-y-6">
-          {/* Info Banner */}
-          <div className="p-4 rounded-2xl bg-accent-50 border border-accent-200/80 text-xs text-accent-900 flex items-start gap-3">
-            <Info className="w-5 h-5 text-accent-600 shrink-0 mt-0.5" />
-            <div>
-              <span className="font-bold">Multi-Staff Permission Management:</span> Your store owner account controls staff roles and branch access. Assigned staff can register devices and record sales without seeing private store financials.
-            </div>
-          </div>
+      {/* Users & Roles: real staff accounts (owners and managers only) */}
+      {activeSubTab === 'users' && canSee('users') && <TeamPanel />}
 
-          {/* KPI Summary Bento */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
-              <span className="text-xs font-semibold text-slate-500">Total Users</span>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-1">{usersList.length}</div>
-            </div>
-            <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
-              <span className="text-xs font-semibold text-slate-500">Active Staff</span>
-              <div className="text-2xl sm:text-3xl font-extrabold text-accent-600 mt-1">
-                {usersList.filter((u) => u.status === 'ACTIVE').length}
-              </div>
-            </div>
-            <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
-              <span className="text-xs font-semibold text-slate-500">Inactive</span>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-700 mt-1">
-                {usersList.filter((u) => u.status === 'INACTIVE').length}
-              </div>
-            </div>
-            <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-sm">
-              <span className="text-xs font-semibold text-slate-500">Pending Invites</span>
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-400 mt-1">0</div>
-            </div>
-          </div>
+      {/* Branches: real branches (owners manage, managers view) */}
+      {activeSubTab === 'branches' && canSee('branches') && <BranchesPanel />}
 
-          {/* Table Card Container */}
-          <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
-            {/* Header & Filter Controls */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-2 border-b border-slate-100">
-              <div className="flex-1 max-w-sm">
-                <SearchInput
-                  value={userSearch}
-                  onChange={(e) => setUserSearch(e.target.value)}
-                  placeholder="Search staff name or email..."
-                  shortcutHint=""
-                />
-              </div>
-
-              <div className="flex items-center gap-2 flex-wrap text-xs">
-                <div className="w-36">
-                  <Select aria-label="Filter by role" value={roleFilter} onChange={(e) => setRoleFilter(e.target.value)}>
-                    <option value="ALL">All Roles</option>
-                    <option value="Management">Management</option>
-                    <option value="Sales">Sales</option>
-                    <option value="Technician">Technician</option>
-                  </Select>
-                </div>
-
-                <div className="w-40">
-                  <Select aria-label="Filter by branch" value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}>
-                    <option value="ALL">All Branches</option>
-                    <option value="Ikeja">Ikeja Main Store</option>
-                    <option value="Lekki">Lekki Branch</option>
-                  </Select>
-                </div>
-
-                <Button variant="primary" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
-                  Add Staff Member
-                </Button>
-              </div>
-            </div>
-
-            {/* Mobile Cards View (Hidden on larger screens) */}
-            <div className="block sm:hidden space-y-4">
-              {filteredUsers.map((u) => (
-                <div key={u.id} className="p-4 rounded-xl border border-slate-200 bg-white space-y-3 shadow-subtle">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-full ${u.color} text-white font-bold flex items-center justify-center text-xs shadow-sm`}>
-                        {u.initials}
-                      </div>
-                      <div>
-                        <div className="font-bold text-slate-900 text-sm">{u.name}</div>
-                        <div className="text-xs text-slate-500">{u.email}</div>
-                      </div>
-                    </div>
-                    <Button variant="ghost" size="icon" aria-label={`Actions for ${u.name}`} leftIcon={<MoreVertical className="w-4 h-4" />} />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-slate-100">
-                    <div>
-                      <span className="text-xs text-slate-400 font-bold uppercase block">Role</span>
-                      <span className="font-bold text-slate-800">{u.role}</span>
-                    </div>
-                    <div>
-                      <span className="text-xs text-slate-400 font-bold uppercase block">Branch</span>
-                      <span className="text-slate-600 font-medium">{u.branch}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-100 text-xs">
-                    <div>
-                      <span className="text-xs text-slate-400 font-bold uppercase block mb-1">Status</span>
-                      {u.status === 'ACTIVE' ? (
-                        <Badge variant="verified" size="sm">Active</Badge>
-                      ) : (
-                        <Badge variant="neutral" size="sm" className="bg-slate-100 text-slate-600 border-slate-200">Inactive</Badge>
-                      )}
-                    </div>
-                    <div className="text-right">
-                      <span className="text-xs text-slate-400 font-bold uppercase block">Last Active</span>
-                      <span className="text-slate-500 text-xs font-medium">{u.lastActive}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Desktop Table View (Hidden on mobile) */}
-            <TableWrap className="hidden sm:block">
-              <Table className="sm:text-xs whitespace-nowrap">
-                <THead>
-                  <tr>
-                    <Th>Staff Member</Th>
-                    <Th>Assigned Role</Th>
-                    <Th>Branch Location</Th>
-                    <Th>Status</Th>
-                    <Th>Last Active</Th>
-                    <Th align="right">Actions</Th>
-                  </tr>
-                </THead>
-                <TBody className="font-medium">
-                  {filteredUsers.map((u) => (
-                    <Tr key={u.id}>
-                      <Td>
-                        <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 rounded-full ${u.color} text-white font-bold flex items-center justify-center text-xs shadow-sm`}>
-                            {u.initials}
-                          </div>
-                          <div>
-                            <div className="font-bold text-slate-900">{u.name}</div>
-                            <div className="text-xs text-slate-500">{u.email}</div>
-                          </div>
-                        </div>
-                      </Td>
-                      <Td className="font-bold text-slate-800">{u.role}</Td>
-                      <Td className="text-slate-600">{u.branch}</Td>
-                      <Td>
-                        {u.status === 'ACTIVE' ? (
-                          <Badge variant="verified" size="sm">Active</Badge>
-                        ) : (
-                          <Badge variant="neutral" size="sm" className="bg-slate-100 text-slate-600 border-slate-200">Inactive</Badge>
-                        )}
-                      </Td>
-                      <Td className="text-slate-500 text-xs">{u.lastActive}</Td>
-                      <Td align="right">
-                        <Button variant="ghost" size="icon" aria-label={`Actions for ${u.name}`} leftIcon={<MoreVertical className="w-4 h-4" />} />
-                      </Td>
-                    </Tr>
-                  ))}
-                </TBody>
-              </Table>
-            </TableWrap>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: BRANCHES */}
-      {activeSubTab === 'branches' && (
-        <div className="space-y-6">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-            <div>
-              <h3 className="text-base font-extrabold text-slate-900">Retail Store Locations</h3>
-              <p className="text-xs text-slate-500 font-medium mt-0.5">Manage multi-branch inventory LEDGER and staff locations.</p>
-            </div>
-            <Button variant="primary" size="sm" leftIcon={<Plus className="w-4 h-4" />}>
-              Add Store Branch
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {branches.map((b) => (
-              <div key={b.id} className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Store className="w-5 h-5 text-accent-600" />
-                    <span className="font-extrabold text-slate-900 text-base">{b.name}</span>
-                  </div>
-                  {b.isHeadquarters && (
-                    <Badge variant="verified" size="sm">HEADQUARTERS</Badge>
-                  )}
-                </div>
-
-                <p className="text-xs text-slate-600 font-medium leading-relaxed">{b.address}</p>
-
-                <div className="grid grid-cols-2 gap-3 pt-2 text-xs">
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                    <span className="text-xs uppercase font-bold text-slate-400 block">Assigned Staff</span>
-                    <span className="font-extrabold text-slate-900 text-sm">{b.staffCount} Team Members</span>
-                  </div>
-                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/60">
-                    <span className="text-xs uppercase font-bold text-slate-400 block">Live Stock Valuation</span>
-                    <span className="font-extrabold text-success-700 text-sm">{b.stockValue}</span>
-                  </div>
-                </div>
-
-                <div className="pt-2 flex items-center justify-between border-t border-slate-100">
-                  <span className="text-xs text-slate-500 font-medium">{b.phone}</span>
-                  <Button variant="secondary" size="sm">Manage Branch</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: BILLING & PLAN */}
       {activeSubTab === 'billing' && (
         <div className="space-y-8">
           {/* Current Subscription Status Card */}

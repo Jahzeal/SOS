@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
+import { requestContext } from '../staff/request-context';
 
 export type DocumentKind = 'INVOICE' | 'RECEIPT' | 'REPAIR' | 'QUOTE';
 
@@ -27,9 +28,12 @@ export class DocumentNumberService {
       // quotes that already exist to avoid reusing a number.
       let startAt = 1;
       if (kind === 'QUOTE') {
-        const existing = await this.prisma.quote.count({
-          where: { businessId, quoteNumber: { startsWith: `QT-${year}-` } },
-        });
+        // Numbers are per store, never per branch.
+        const existing = await requestContext.storeWide(() =>
+          this.prisma.quote.count({
+            where: { businessId, quoteNumber: { startsWith: `QT-${year}-` } },
+          }),
+        );
         startAt = existing + 1;
       }
 

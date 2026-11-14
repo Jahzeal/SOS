@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { requestContext } from '../common/staff/request-context';
 
 export interface TacSuggestion {
   brand: string;
@@ -83,7 +84,8 @@ export class TacSuggestionService {
     if (!isValidImei(clean)) return null;
     const tac = clean.slice(0, 8);
 
-    const records = await this.prisma.phoneRecord.findMany({
+    // Learns from every store on NoxGuarda, so it runs outside the person's store and branch.
+    const records = await requestContext.outside(() => this.prisma.phoneRecord.findMany({
       where: {
         deviceCategory: 'PHONE',
         OR: [{ imei1: { startsWith: tac } }, { imei2: { startsWith: tac } }],
@@ -98,7 +100,7 @@ export class TacSuggestionService {
       },
       orderBy: { createdAt: 'desc' },
       take: 300,
-    });
+    }));
 
     type Group = { brand: string; model: string; count: number; stores: Set<string>; paidStore: boolean };
     const groups = new Map<string, Group>();

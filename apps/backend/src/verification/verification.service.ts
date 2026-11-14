@@ -7,6 +7,7 @@ import { TacSuggestionService } from '../device-lookup/tac-suggestion.service';
 import { maskPhone } from '../theft-reports/theft-reports.service';
 import { frontendUrl } from '../common/config/env';
 import { SubscriptionService } from '../common/services/subscription.service';
+import { requestContext } from '../common/staff/request-context';
 import * as QRCode from 'qrcode';
 
 @Injectable()
@@ -46,12 +47,15 @@ export class VerificationService {
     await this.subscriptions.assertCanAddDevice(businessId);
 
     // Check if IMEI1 already registered under this business
-    const existing = await this.prisma.phoneRecord.findFirst({
-      where: {
-        businessId,
-        imei1: dto.imei1,
-      },
-    });
+    // Duplicate check covers every branch of the store.
+    const existing = await requestContext.storeWide(() =>
+      this.prisma.phoneRecord.findFirst({
+        where: {
+          businessId,
+          imei1: dto.imei1,
+        },
+      }),
+    );
 
     if (existing) {
       throw new ConflictException(`Phone with IMEI ${dto.imei1} is already registered.`);

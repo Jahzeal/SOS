@@ -2,21 +2,24 @@ import { Controller, Post, Get, Body, Param, Req, Headers, UseGuards, HttpCode, 
 import { PaymentsService } from './payments.service';
 import { InitializePaymentDto } from './dto/initialize-payment.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { StoreRoleGuard, StoreRoles, SELLERS, MANAGERS } from '../common/staff/store-role.guard';
 
 @Controller('payments')
 export class PaymentsController {
   constructor(private readonly paymentsService: PaymentsService) {}
 
+  @StoreRoles('OWNER')
   @Post('initialize')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, StoreRoleGuard)
   async initializePayment(@Req() req: any, @Body() dto: InitializePaymentDto) {
     const businessId = req.user.businessId;
     const userId = req.user.id || req.user.sub;
     return this.paymentsService.initializeSubscription(businessId, userId, dto);
   }
 
+  @StoreRoles('OWNER')
   @Get('verify/:reference')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, StoreRoleGuard)
   async verifyPayment(@Req() req: any, @Param('reference') reference: string) {
     const businessId = req.user.businessId;
     return this.paymentsService.verifySubscription(businessId, reference);

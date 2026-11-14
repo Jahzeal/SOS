@@ -104,7 +104,7 @@ export default function InventoryPage() {
       fullImei: item.imei1,
       daysInInv: Math.floor((Date.now() - new Date(item.createdAt).getTime()) / (1000 * 60 * 60 * 24)) || 1,
       warrantyStatus: item.warrantyExpiryDate && new Date(item.warrantyExpiryDate) > new Date() ? 'active' : 'expired',
-      branch: 'Main Flagship',
+      branch: (item as any).branch?.name || 'Main branch',
       value: item.sellingPrice ? `₦${item.sellingPrice.toLocaleString()}` : '₦0',
     }));
   }, [liveInventory]);

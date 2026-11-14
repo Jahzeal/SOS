@@ -4,6 +4,8 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
+import { useAuthStore } from '@/store/useAuthStore';
+import { can } from '@/lib/permissions';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -48,6 +50,9 @@ import { useInventory, useInventorySummary } from '@/hooks/useDashboardQueries';
 export default function BusinessDashboardPage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
+  // Profit is only for owners and managers (the server also leaves it out for other roles).
+  const storeUser = useAuthStore((st) => st.user);
+  const showProfit = can(storeUser || user, 'seeCosts');
 
   const [salesTimeframe, setSalesTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('weekly');
   const [showSupportModal, setShowSupportModal] = useState(false);
@@ -105,7 +110,7 @@ export default function BusinessDashboardPage() {
         <div className="space-y-2 relative z-10 min-w-0 max-w-full">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-slate-500 dark:text-slate-400 text-xs font-semibold">
-              <span className="hidden sm:inline">• </span>Main Downtown Branch
+              <span className="hidden sm:inline">• </span>{storeUser?.branch?.name || 'All branches'}
             </span>
             <button
               type="button"
@@ -223,6 +228,7 @@ export default function BusinessDashboardPage() {
         </div>
 
         {/* Card 5: Profit Made */}
+        {showProfit && (
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-success-200 dark:border-success-800/80 shadow-sm space-y-2 relative overflow-hidden bg-gradient-to-br from-white to-success-50/30 dark:from-slate-900 dark:to-success-950/20 transition-colors duration-200">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-success-800 dark:text-success-300 uppercase tracking-wider">Profit Made</span>
@@ -241,6 +247,7 @@ export default function BusinessDashboardPage() {
             <span>{metrics.profitMargin}% margin</span> • <span>Net profit realized</span>
           </div>
         </div>
+        )}
 
         {/* Card 6: Stock Valuation */}
         <div className="vf-card vf-card-interactive p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm space-y-2 transition-colors duration-200">
@@ -428,6 +435,7 @@ export default function BusinessDashboardPage() {
               <div className="text-xs text-accent-700 dark:text-accent-400 font-semibold">Gross sales</div>
             </div>
 
+            {showProfit && (
             <div className="p-3 rounded-xl bg-success-50/70 dark:bg-success-950/40 border border-success-200 dark:border-success-800 space-y-0.5">
               <div className="text-xs font-bold text-success-900 dark:text-success-300">Profit Made</div>
               {isDataLoading ? (
@@ -439,6 +447,7 @@ export default function BusinessDashboardPage() {
               )}
               <div className="text-xs text-success-700 dark:text-success-400 font-semibold">{metrics.profitMargin}% margin</div>
             </div>
+            )}
           </div>
         </div>
 

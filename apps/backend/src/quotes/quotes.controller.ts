@@ -19,9 +19,11 @@ import { RecordQuotePaymentDto } from './dto/record-payment.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { PaymentMethod } from '@prisma/client';
+import { StoreRoleGuard, StoreRoles, SELLERS, MANAGERS } from '../common/staff/store-role.guard';
 
 @Controller('quotes')
-@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@UseGuards(JwtAuthGuard, StoreRoleGuard, SubscriptionGuard)
+@StoreRoles(...SELLERS)
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) {}
 
@@ -68,12 +70,14 @@ export class QuotesController {
     return this.quotesService.create(businessId, userId, dto);
   }
 
+  @StoreRoles(...MANAGERS)
   @Put(':id')
   async update(@Request() req, @Param('id') id: string, @Body() dto: UpdateQuoteDto) {
     const businessId = req.user.businessId;
     return this.quotesService.update(businessId, id, dto);
   }
 
+  @StoreRoles(...MANAGERS)
   @Delete(':id')
   async delete(@Request() req, @Param('id') id: string) {
     const businessId = req.user.businessId;

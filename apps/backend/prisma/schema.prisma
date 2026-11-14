@@ -21,6 +21,14 @@ enum UserRole {
   BUSINESS
 }
 
+/// What a person may do inside their store. Every store has one OWNER.
+enum StoreRole {
+  OWNER
+  MANAGER
+  SALES
+  TECHNICIAN
+}
+
 enum PhoneCondition {
   NEW
   LIKE_NEW
@@ -89,17 +97,17 @@ enum QuoteStatus {
 }
 
 model Business {
-  id                        String         @id @default(uuid())
+  id                        String            @id @default(uuid())
   name                      String
-  slug                      String         @unique
+  slug                      String            @unique
   logoUrl                   String?
   address                   String?
   phone                     String?
   email                     String?
-  plan                      String         @default("STARTER")
+  plan                      String            @default("STARTER")
   planId                    String?
   subscriptionPlan          SubscriptionPlan? @relation(fields: [planId], references: [id])
-  subscriptionStatus        String         @default("TRIAL")
+  subscriptionStatus        String            @default("TRIAL")
   trialEndsAt               DateTime?
   subscriptionEndsAt        DateTime?
   paystackCustomerCode      String?
@@ -107,92 +115,153 @@ model Business {
   accountNumber             String?
   accountName               String?
   taxId                     String?
-  publicVerificationEnabled Boolean        @default(true)
-  customSuccessMessage      String?        @default("This phone is verified and authentic.")
+  publicVerificationEnabled Boolean           @default(true)
+  customSuccessMessage      String?           @default("This phone is verified and authentic.")
   warrantyTerms             String?
-  receiptFooter             String?        @default("Thank you for shopping with us!")
+  receiptFooter             String?           @default("Thank you for shopping with us!")
   receiptTerms              String?
-  receiptPaperSize          String         @default("80mm")
+  receiptPaperSize          String            @default("80mm")
 
   // Quote Template Settings
-  quoteTitle                String?        @default("PRICE QUOTATION")
-  quoteTerms                String?
-  quoteNotes                String?
-  quoteValidityDays         Int            @default(14)
-  quoteAccentColor          String?        @default("#2563EB")
-  quoteShowBankDetails      Boolean        @default(true)
-  quoteShowSignature        Boolean        @default(true)
+  quoteTitle           String? @default("PRICE QUOTATION")
+  quoteTerms           String?
+  quoteNotes           String?
+  quoteValidityDays    Int     @default(14)
+  quoteAccentColor     String? @default("#2563EB")
+  quoteShowBankDetails Boolean @default(true)
+  quoteShowSignature   Boolean @default(true)
 
-  users                     User[]
-  phoneRecords              PhoneRecord[]
-  customers                 Customer[]
-  sales                     Sale[]
-  quotes                    Quote[]
-  repairs                   RepairTicket[]
-  supportTickets            SupportTicket[]
-  verificationLogs          VerificationLog[]
-  subscriptionPayments      SubscriptionPayment[]
+  users                User[]
+  phoneRecords         PhoneRecord[]
+  customers            Customer[]
+  sales                Sale[]
+  quotes               Quote[]
+  repairs              RepairTicket[]
+  supportTickets       SupportTicket[]
+  verificationLogs     VerificationLog[]
+  subscriptionPayments SubscriptionPayment[]
+  branches             Branch[]
+  staffInvites         StaffInvite[]
 
-  createdAt                 DateTime       @default(now())
-  updatedAt                 DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// A shop location. Every store has one main branch; more depend on the plan.
+model Branch {
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  name       String
+  address    String?
+  phone      String?
+  isMain     Boolean  @default(false)
+  isActive   Boolean  @default(true)
+
+  users        User[]
+  invites      StaffInvite[]
+  phoneRecords PhoneRecord[]
+  sales        Sale[]
+  repairs      RepairTicket[]
+  quotes       Quote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([businessId, name])
+  @@index([businessId])
+}
+
+/// An emailed invitation for a staff member to join a store.
+model StaffInvite {
+  id          String    @id @default(uuid())
+  businessId  String
+  business    Business  @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  email       String
+  firstName   String
+  lastName    String
+  storeRole   StoreRole
+  branchId    String?
+  branch      Branch?   @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  tokenHash   String    @unique
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  invitedById String?
+  invitedBy   User?     @relation("InvitesSent", fields: [invitedById], references: [id], onDelete: SetNull)
+  createdAt   DateTime  @default(now())
+
+  @@index([businessId])
+  @@index([email])
 }
 
 model SubscriptionPayment {
-  id                  String     @id @default(uuid())
-  businessId          String
-  business            Business   @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  reference           String     @unique
-  amountNgn           Float
-  planCode            String
-  billingCycle        String     @default("MONTHLY")
-  status              String     @default("PENDING")
-  channel             String?
-  paystackAccessCode  String?
-  paidAt              DateTime?
-  rawMetadata         Json?
+  reference          String    @unique
+  amountNgn          Float
+  planCode           String
+  billingCycle       String    @default("MONTHLY")
+  status             String    @default("PENDING")
+  channel            String?
+  paystackAccessCode String?
+  paidAt             DateTime?
+  rawMetadata        Json?
 
-  createdAt           DateTime   @default(now())
-  updatedAt           DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model SubscriptionPlan {
-  id                  String     @id @default(uuid())
-  code                String     @unique
-  name                String
-  description         String?
-  monthlyPriceNgn     Float      @default(0)
-  annualPriceNgn      Float      @default(0)
-  maxDevices          Int        @default(100)
-  customBranding      Boolean    @default(false)
-  prioritySupport     Boolean    @default(false)
-  features            String[]   @default([])
-  isActive            Boolean    @default(true)
-  isPublic            Boolean    @default(true)
-  sortOrder           Int        @default(0)
+  id              String   @id @default(uuid())
+  code            String   @unique
+  name            String
+  description     String?
+  monthlyPriceNgn Float    @default(0)
+  annualPriceNgn  Float    @default(0)
+  maxDevices      Int      @default(100)
+  /// Staff accounts allowed, the owner included. 0 = unlimited.
+  maxStaff        Int      @default(1)
+  /// Branches allowed, the main branch included. 0 = unlimited.
+  maxBranches     Int      @default(1)
+  customBranding  Boolean  @default(false)
+  prioritySupport Boolean  @default(false)
+  features        String[] @default([])
+  isActive        Boolean  @default(true)
+  isPublic        Boolean  @default(true)
+  sortOrder       Int      @default(0)
 
-  businesses          Business[]
+  businesses Business[]
 
-  createdAt           DateTime   @default(now())
-  updatedAt           DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model User {
-  id            String         @id @default(uuid())
-  email         String         @unique
-  password      String
-  firstName     String
-  lastName      String
-  role          UserRole       @default(BUSINESS)
-  businessId    String?
-  business      Business?      @relation(fields: [businessId], references: [id], onDelete: SetNull)
-  
-  refreshTokens RefreshToken[]
-  registeredPhones PhoneRecord[]
-  quotesCreated Quote[]
+  id          String        @id @default(uuid())
+  email       String        @unique
+  password    String
+  firstName   String
+  lastName    String
+  role        UserRole      @default(BUSINESS)
+  businessId  String?
+  business    Business?     @relation(fields: [businessId], references: [id], onDelete: SetNull)
+  /// Role inside the store. Accounts made at sign-up are the OWNER.
+  storeRole   StoreRole     @default(OWNER)
+  /// Switched off by the owner: the person can no longer sign in.
+  isActive    Boolean       @default(true)
+  /// The branch this person works in. Empty = all branches (owners and head-office managers).
+  branchId    String?
+  branch      Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
+  invitesSent StaffInvite[] @relation("InvitesSent")
 
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  refreshTokens    RefreshToken[]
+  registeredPhones PhoneRecord[]
+  quotesCreated    Quote[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RefreshToken {
@@ -214,52 +283,54 @@ enum DeviceCategory {
 // Update PhoneRecord model
 
 model PhoneRecord {
-  id                     String         @id @default(uuid())
-  businessId             String
-  business               Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branchId   String?
+  branch     Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
-  imei1                  String
-  imei2                  String?
-  serialNumber           String?
-  brand                  String
-  model                  String
-  color                  String?
-  storageCapacity        String?
-  condition              PhoneCondition @default(NEW)
-  status                 PhoneStatus    @default(IN_STOCK)
-  deviceCategory         DeviceCategory @default(PHONE)
+  imei1           String
+  imei2           String?
+  serialNumber    String?
+  brand           String
+  model           String
+  color           String?
+  storageCapacity String?
+  condition       PhoneCondition @default(NEW)
+  status          PhoneStatus    @default(IN_STOCK)
+  deviceCategory  DeviceCategory @default(PHONE)
 
-  purchasePrice          Float?
-  sellingPrice           Float?
+  purchasePrice Float?
+  sellingPrice  Float?
 
-  warrantyDurationMonths Int            @default(0)
+  warrantyDurationMonths Int       @default(0)
   warrantyExpiryDate     DateTime?
   qrCodeUrl              String?
 
-  carrierStatus          CarrierLockStatus?
-  lockedCarrier          String?
-  activationStatus       DeviceActivationStatus?
+  carrierStatus    CarrierLockStatus?
+  lockedCarrier    String?
+  activationStatus DeviceActivationStatus?
 
-  isStolen               Boolean                @default(false)
-  theftStatus            TheftStatus            @default(CLEAN)
-  stolenAt               DateTime?
-  theftReason            String?
-  theftReportedBy        String?
-  lostNote               String?
-  contactPhone           String?
+  isStolen        Boolean     @default(false)
+  theftStatus     TheftStatus @default(CLEAN)
+  stolenAt        DateTime?
+  theftReason     String?
+  theftReportedBy String?
+  lostNote        String?
+  contactPhone    String?
 
-  registeredById         String?
-  registeredBy           User?          @relation(fields: [registeredById], references: [id], onDelete: SetNull)
+  registeredById String?
+  registeredBy   User?   @relation(fields: [registeredById], references: [id], onDelete: SetNull)
 
-  customerId             String?
-  customer               Customer?      @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
-  repairs                RepairTicket[]
-  saleItems              SaleItem[]
-  quoteItems             QuoteItem[]
+  repairs    RepairTicket[]
+  saleItems  SaleItem[]
+  quoteItems QuoteItem[]
 
-  createdAt              DateTime       @default(now())
-  updatedAt              DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([businessId, status])
   @@index([businessId, createdAt])
@@ -269,39 +340,42 @@ model PhoneRecord {
   @@index([imei1])
   @@index([imei2])
   @@index([serialNumber])
+  @@index([branchId])
 }
 
 model Customer {
-  id           String         @id @default(uuid())
-  businessId   String
-  business     Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
 
-  name         String
-  phone        String
-  email        String?
-  address      String?
-  notes        String?
+  name    String
+  phone   String
+  email   String?
+  address String?
+  notes   String?
 
   phoneRecords PhoneRecord[]
   sales        Sale[]
   quotes       Quote[]
   repairs      RepairTicket[]
 
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model RepairTicket {
-  id               String       @id @default(uuid())
-  ticketNumber     String
-  businessId       String
-  business         Business     @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id           String   @id @default(uuid())
+  ticketNumber String
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branchId     String?
+  branch       Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
-  phoneRecordId    String?
-  phoneRecord      PhoneRecord? @relation(fields: [phoneRecordId], references: [id], onDelete: SetNull)
+  phoneRecordId String?
+  phoneRecord   PhoneRecord? @relation(fields: [phoneRecordId], references: [id], onDelete: SetNull)
 
-  customerId       String
-  customer         Customer     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
 
   issueDescription String
   technicianNotes  String?
@@ -311,147 +385,155 @@ model RepairTicket {
   technicianId     String?
   completedAt      DateTime?
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([branchId])
 }
 
 model Sale {
-  id                    String            @id @default(uuid())
-  invoiceNumber         String
-  receiptNumber         String?
-  businessId            String
-  business              Business          @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id            String   @id @default(uuid())
+  invoiceNumber String
+  receiptNumber String?
+  businessId    String
+  business      Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branchId      String?
+  branch        Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
-  customerId            String?
-  customer              Customer?         @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
   totalAmount           Float
-  discount              Float             @default(0)
-  amountPaid            Float             @default(0)
-  balanceDue            Float             @default(0)
-  paymentMethod         PaymentMethod     @default(CASH)
-  paymentStatus         String            @default("PAID") // PAID, PARTIALLY_PAID, CREDIT
-  hasInstallments       Boolean           @default(false)
-  sendCustomerReminders Boolean           @default(true)
+  discount              Float         @default(0)
+  amountPaid            Float         @default(0)
+  balanceDue            Float         @default(0)
+  paymentMethod         PaymentMethod @default(CASH)
+  paymentStatus         String        @default("PAID") // PAID, PARTIALLY_PAID, CREDIT
+  hasInstallments       Boolean       @default(false)
+  sendCustomerReminders Boolean       @default(true)
   lastReminderSentAt    DateTime?
-  reminderCount         Int               @default(0)
+  reminderCount         Int           @default(0)
   notes                 String?
 
-  items                 SaleItem[]
-  quotes                Quote[]
-  installments          SaleInstallment[]
-  payments              SalePayment[]
-  soldById              String
+  items        SaleItem[]
+  quotes       Quote[]
+  installments SaleInstallment[]
+  payments     SalePayment[]
+  soldById     String
 
-  createdAt             DateTime          @default(now())
-  updatedAt             DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   // Receipt numbers are sequential per store, so they are unique per store.
   @@unique([businessId, receiptNumber])
   @@index([businessId, createdAt])
+  @@index([branchId])
 }
 
 model SaleItem {
-  id            String       @id @default(uuid())
-  saleId        String
-  sale          Sale         @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
   phoneRecordId String?
   phoneRecord   PhoneRecord? @relation(fields: [phoneRecordId], references: [id], onDelete: SetNull)
 
-  description   String
-  unitPrice     Float
-  quantity      Int          @default(1)
-  totalPrice    Float
+  description String
+  unitPrice   Float
+  quantity    Int    @default(1)
+  totalPrice  Float
 }
 
 model Quote {
-  id                    String              @id @default(uuid())
-  quoteNumber           String
-  businessId            String
-  business              Business            @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  id          String   @id @default(uuid())
+  quoteNumber String
+  businessId  String
+  business    Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branchId    String?
+  branch      Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
 
-  customerId            String?
-  customer              Customer?           @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
 
-  quoteDate             DateTime            @default(now())
-  expiryDate            DateTime?
-  subject               String?
+  quoteDate  DateTime  @default(now())
+  expiryDate DateTime?
+  subject    String?
 
   subtotal              Float
-  discount              Float               @default(0)
-  taxRate               Float               @default(0)
-  taxAmount             Float               @default(0)
+  discount              Float     @default(0)
+  taxRate               Float     @default(0)
+  taxAmount             Float     @default(0)
   totalAmount           Float
-  amountPaid            Float               @default(0)
-  balanceDue            Float               @default(0)
-  hasInstallments       Boolean             @default(false)
-  sendCustomerReminders Boolean             @default(true)
+  amountPaid            Float     @default(0)
+  balanceDue            Float     @default(0)
+  hasInstallments       Boolean   @default(false)
+  sendCustomerReminders Boolean   @default(true)
   lastReminderSentAt    DateTime?
-  reminderCount         Int                 @default(0)
+  reminderCount         Int       @default(0)
 
-  status                QuoteStatus         @default(DRAFT)
-  notes                 String?
-  terms                 String?
+  status QuoteStatus @default(DRAFT)
+  notes  String?
+  terms  String?
 
-  convertedSaleId       String?
-  convertedSale         Sale?               @relation(fields: [convertedSaleId], references: [id], onDelete: SetNull)
+  convertedSaleId String?
+  convertedSale   Sale?   @relation(fields: [convertedSaleId], references: [id], onDelete: SetNull)
 
-  items                 QuoteItem[]
-  installments          QuoteInstallment[]
-  payments              QuotePayment[]
-  createdById           String
-  createdBy             User                @relation(fields: [createdById], references: [id], onDelete: Cascade)
+  items        QuoteItem[]
+  installments QuoteInstallment[]
+  payments     QuotePayment[]
+  createdById  String
+  createdBy    User               @relation(fields: [createdById], references: [id], onDelete: Cascade)
 
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([businessId, status])
   @@index([businessId, createdAt])
   @@index([quoteNumber])
+  @@index([branchId])
 }
 
 model QuoteItem {
-  id            String       @id @default(uuid())
-  quoteId       String
-  quote         Quote        @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  id      String @id @default(uuid())
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
   phoneRecordId String?
   phoneRecord   PhoneRecord? @relation(fields: [phoneRecordId], references: [id], onDelete: SetNull)
 
-  description   String
-  unitPrice     Float
-  quantity      Int          @default(1)
-  discount      Float        @default(0)
-  totalPrice    Float
+  description String
+  unitPrice   Float
+  quantity    Int    @default(1)
+  discount    Float  @default(0)
+  totalPrice  Float
 }
 
 model QuoteInstallment {
-  id               String       @id @default(uuid())
-  quoteId          String
-  quote            Quote        @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  id      String @id @default(uuid())
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
-  installmentNo    Int
-  amountDue        Float
-  amountPaid       Float        @default(0)
-  dueDate          DateTime
-  status           String       @default("PENDING") // PENDING, PAID, OVERDUE
-  paidAt           DateTime?
+  installmentNo Int
+  amountDue     Float
+  amountPaid    Float     @default(0)
+  dueDate       DateTime
+  status        String    @default("PENDING") // PENDING, PAID, OVERDUE
+  paidAt        DateTime?
 
-  reminderSent     Boolean      @default(false)
-  reminderSentAt   DateTime?
+  reminderSent   Boolean   @default(false)
+  reminderSentAt DateTime?
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([quoteId, status])
   @@index([dueDate, status])
 }
 
 model QuotePayment {
-  id            String        @id @default(uuid())
-  quoteId       String
-  quote         Quote         @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  id      String @id @default(uuid())
+  quoteId String
+  quote   Quote  @relation(fields: [quoteId], references: [id], onDelete: Cascade)
 
   amount        Float
   paymentMethod PaymentMethod @default(CASH)
@@ -460,35 +542,35 @@ model QuotePayment {
   paidAt        DateTime      @default(now())
   receivedById  String?
 
-  createdAt     DateTime      @default(now())
+  createdAt DateTime @default(now())
 }
 
 model SaleInstallment {
-  id               String       @id @default(uuid())
-  saleId           String
-  sale             Sale         @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
-  installmentNo    Int
-  amountDue        Float
-  amountPaid       Float        @default(0)
-  dueDate          DateTime
-  status           String       @default("PENDING") // PENDING, PAID, OVERDUE
-  paidAt           DateTime?
+  installmentNo Int
+  amountDue     Float
+  amountPaid    Float     @default(0)
+  dueDate       DateTime
+  status        String    @default("PENDING") // PENDING, PAID, OVERDUE
+  paidAt        DateTime?
 
-  reminderSent     Boolean      @default(false)
-  reminderSentAt   DateTime?
+  reminderSent   Boolean   @default(false)
+  reminderSentAt DateTime?
 
-  createdAt        DateTime     @default(now())
-  updatedAt        DateTime     @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([saleId, status])
   @@index([dueDate, status])
 }
 
 model SalePayment {
-  id            String        @id @default(uuid())
-  saleId        String
-  sale          Sale         @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  saleId String
+  sale   Sale   @relation(fields: [saleId], references: [id], onDelete: Cascade)
 
   amount        Float
   paymentMethod PaymentMethod @default(CASH)
@@ -497,7 +579,7 @@ model SalePayment {
   paidAt        DateTime      @default(now())
   receivedById  String?
 
-  createdAt     DateTime      @default(now())
+  createdAt DateTime @default(now())
 }
 
 enum TicketPriority {
@@ -530,26 +612,26 @@ enum NotificationPriority {
 }
 
 model SupportTicket {
-  id                    String         @id @default(uuid())
-  ticketNumber          String         @unique
-  businessId            String
-  business              Business       @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  
-  requesterName         String
-  requesterEmail        String
-  requesterPhone        String?
-  requesterRole         String?        @default("Staff")
-  subject               String
-  description           String
-  priority              TicketPriority @default(NORMAL)
-  status                TicketStatus   @default(OPEN)
-  
+  id           String   @id @default(uuid())
+  ticketNumber String   @unique
+  businessId   String
+  business     Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+
+  requesterName  String
+  requesterEmail String
+  requesterPhone String?
+  requesterRole  String?        @default("Staff")
+  subject        String
+  description    String
+  priority       TicketPriority @default(NORMAL)
+  status         TicketStatus   @default(OPEN)
+
   relatedImei           String?
   relatedSerial         String?
   relatedVerificationId String?
 
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([businessId])
   @@index([status])
@@ -566,8 +648,8 @@ model AdminNotification {
   actionLabel String?
   meta        Json?
 
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([isRead])
   @@index([category])
@@ -582,14 +664,14 @@ model PlatformSetting {
 }
 
 model VerificationLog {
-  id           String    @id @default(uuid())
-  identifier   String
-  status       String    // "VERIFIED", "NOT_FOUND", "FLAGGED_STOLEN"
-  ipAddress    String?
-  userAgent    String?
-  businessId   String?
-  business     Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
-  createdAt    DateTime  @default(now())
+  id         String    @id @default(uuid())
+  identifier String
+  status     String // "VERIFIED", "NOT_FOUND", "FLAGGED_STOLEN"
+  ipAddress  String?
+  userAgent  String?
+  businessId String?
+  business   Business? @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  createdAt  DateTime  @default(now())
 
   @@index([createdAt])
   @@index([status])
@@ -597,30 +679,30 @@ model VerificationLog {
 }
 
 model TheftReport {
-  id                 String            @id @default(uuid())
-  imei1              String
-  imei2              String?
-  serialNumber       String?
-  brand              String
-  model              String
-  color              String?
+  id           String  @id @default(uuid())
+  imei1        String
+  imei2        String?
+  serialNumber String?
+  brand        String
+  model        String
+  color        String?
 
-  ownerEmail         String
-  ownerName          String
-  ownerPhone         String
-  lostNote           String?
-  bountyAmount       Float?            @default(0)
+  ownerEmail   String
+  ownerName    String
+  ownerPhone   String
+  lostNote     String?
+  bountyAmount Float?  @default(0)
 
   status             TheftReportStatus @default(ACTIVE)
   verificationSource String            @default("GOOGLE_AUTH") // "GOOGLE_AUTH", "PROOF_SCREENSHOT", "POLICE_REPORT"
   proofUrl           String?
   policeCaseNo       String?
 
-  resolvedAt         DateTime?
-  resolvedNote       String?
+  resolvedAt   DateTime?
+  resolvedNote String?
 
-  createdAt          DateTime          @default(now())
-  updatedAt          DateTime          @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([imei1])
   @@index([imei2])
@@ -630,33 +712,33 @@ model TheftReport {
 }
 
 model DeviceCheckCache {
-  id               String                 @id @default(uuid())
-  imei             String                 @unique
+  id               String                  @id @default(uuid())
+  imei             String                  @unique
   brand            String?
   model            String?
   carrierStatus    CarrierLockStatus?
   lockedCarrier    String?
   activationStatus DeviceActivationStatus?
-  source           String                 @default("TAC_PARSER") // "TAC_PARSER", "LIVE_API", "SHOP_VERIFIED"
+  source           String                  @default("TAC_PARSER") // "TAC_PARSER", "LIVE_API", "SHOP_VERIFIED"
   rawData          Json?
   expiresAt        DateTime?
-  createdAt        DateTime               @default(now())
-  updatedAt        DateTime               @updatedAt
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
 
   @@index([imei])
 }
 
 model ErrorLog {
-  id          String   @id @default(uuid())
-  endpoint    String?
-  method      String?
-  statusCode  Int?
-  errorType   String   // e.g. "PrismaClientKnownRequestError", "TypeError", "HttpException"
-  message     String   // Error description
-  stack       String?  // Code stack trace
-  businessId  String?
-  userEmail   String?
-  createdAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  endpoint   String?
+  method     String?
+  statusCode Int?
+  errorType  String // e.g. "PrismaClientKnownRequestError", "TypeError", "HttpException"
+  message    String // Error description
+  stack      String? // Code stack trace
+  businessId String?
+  userEmail  String?
+  createdAt  DateTime @default(now())
 
   @@index([errorType])
   @@index([statusCode])

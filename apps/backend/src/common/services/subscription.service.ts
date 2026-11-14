@@ -1,5 +1,6 @@
 import { ForbiddenException, HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { requestContext } from '../staff/request-context';
 
 export interface SubscriptionState {
   /** May the store create or change records right now? */
@@ -110,7 +111,8 @@ export class SubscriptionService {
     const maxDevices = plan ? plan.maxDevices : planCode === 'FREE' ? 10 : 0;
     if (!maxDevices || maxDevices <= 0) return; // 0 = unlimited
 
-    const used = await this.prisma.phoneRecord.count({ where: { businessId } });
+    // The device limit covers the whole store, every branch included.
+    const used = await requestContext.storeWide(() => this.prisma.phoneRecord.count({ where: { businessId } }));
     if (used >= maxDevices) {
       throw new ForbiddenException(
         `Your ${plan?.name || planCode} plan allows up to ${maxDevices.toLocaleString()} devices and you have reached that limit. Upgrade your plan to register more.`,

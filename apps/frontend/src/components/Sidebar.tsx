@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/useAuthStore';
+import { can, Permission, ROLE_LABELS, storeRoleOf } from '@/lib/permissions';
 import {
   LayoutDashboard,
   ShieldCheck,
@@ -207,7 +208,9 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <div className="mx-3.5 my-3 p-3 rounded-control bg-slate-50 border border-slate-200 flex items-center justify-between">
           <div className="flex flex-col min-w-0">
             <span className="text-xs font-bold text-slate-900 truncate">{user?.business?.name || 'Store Account'}</span>
-            <span className="text-xs text-slate-500 font-medium">Main Branch</span>
+            <span className="text-xs text-slate-500 font-medium truncate">
+              {ROLE_LABELS[storeRoleOf(user)]} • {user?.branch?.name || 'All branches'}
+            </span>
           </div>
           <Badge variant="business" size="sm" showDot={false}>
             {currentPlan}
@@ -220,7 +223,17 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         aria-label="Main menu"
         className={`flex-1 py-2 space-y-1 overflow-y-auto overflow-x-hidden custom-scrollbar ${collapsed ? 'px-2 pt-3' : 'px-3'}`}
       >
-        {menuItems.map((item) => {
+        {menuItems.filter((item) => {
+          // Hide sections this person's role cannot use (the server refuses them anyway).
+          const needs: Record<string, Permission> = {
+            'Register Phone / Item': 'registerDevices',
+            'Sales & Invoices': 'sell',
+            Analytics: 'reports',
+            Templates: 'storeSettings',
+            'Subscription & Plans': 'billing',
+          };
+          return !needs[item.name] || can(user, needs[item.name]);
+        }).map((item) => {
           const Icon = item.icon;
           const hasChildren = !!item.children;
           const isSubmenuOpen = openSubmenus[item.name];

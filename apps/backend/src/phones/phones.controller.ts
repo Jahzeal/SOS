@@ -6,9 +6,10 @@ import { UpdatePhoneDto, FlagStolenDto } from './dto/update-phone.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { PhoneStatus } from '@prisma/client';
+import { StoreRoleGuard, StoreRoles, SELLERS, MANAGERS } from '../common/staff/store-role.guard';
 
 @Controller('phones')
-@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@UseGuards(JwtAuthGuard, StoreRoleGuard, SubscriptionGuard)
 export class PhonesController {
   constructor(
     private readonly phonesService: PhonesService,
@@ -30,6 +31,7 @@ export class PhonesController {
     return this.phonesService.checkImei(businessId, imei || '');
   }
 
+  @StoreRoles(...SELLERS)
   @Get('price-suggestion')
   async getPriceSuggestion(
     @Request() req,
@@ -47,6 +49,7 @@ export class PhonesController {
     });
   }
 
+  @StoreRoles(...SELLERS)
   @Post('register')
   async registerPhone(@Request() req, @Body() dto: RegisterPhoneDto) {
     const businessId = req.user.businessId;
@@ -71,24 +74,28 @@ export class PhonesController {
     return this.phonesService.findOne(businessId, id);
   }
 
+  @StoreRoles(...MANAGERS)
   @Patch(':id')
   async update(@Request() req, @Param('id') id: string, @Body() dto: UpdatePhoneDto) {
     const businessId = req.user.businessId;
     return this.phonesService.update(businessId, id, dto);
   }
 
+  @StoreRoles(...SELLERS)
   @Patch(':id/flag-stolen')
   async flagStolen(@Request() req, @Param('id') id: string, @Body() dto: FlagStolenDto) {
     const businessId = req.user.businessId;
     return this.phonesService.flagAsStolen(businessId, id, dto);
   }
 
+  @StoreRoles(...SELLERS)
   @Patch(':id/clear-stolen')
   async clearStolen(@Request() req, @Param('id') id: string) {
     const businessId = req.user.businessId;
     return this.phonesService.clearStolenFlag(businessId, id);
   }
 
+  @StoreRoles(...MANAGERS)
   @Delete(':id')
   async delete(@Request() req, @Param('id') id: string) {
     const businessId = req.user.businessId;

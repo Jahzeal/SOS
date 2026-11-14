@@ -15,9 +15,10 @@ import { UpdateRepairStatusDto } from './dto/update-repair-status.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { RepairStatus } from '@prisma/client';
+import { StoreRoleGuard, StoreRoles, SELLERS, MANAGERS } from '../common/staff/store-role.guard';
 
 @Controller('repairs')
-@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@UseGuards(JwtAuthGuard, StoreRoleGuard, SubscriptionGuard)
 export class RepairsController {
   constructor(private readonly repairsService: RepairsService) {}
 

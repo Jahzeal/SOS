@@ -27,6 +27,7 @@ import { BrandLogo } from '@/components/brand/BrandLogo';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { Button } from '@/components/ui/Button';
 import { SubscriptionGuardProvider } from '@/hooks/useSubscriptionGuard';
+import { ROLE_LABELS, storeRoleOf } from '@/lib/permissions';
 import { SubscriptionStatusBanner } from '@/components/subscription/SubscriptionStatusBanner';
 import { SubscriptionPaywallModal } from '@/components/subscription/SubscriptionPaywallModal';
 import Link from 'next/link';
@@ -67,7 +68,7 @@ function formatRelativeTime(dateString: string | Date): string {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, setAuth } = useAuthStore();
   const [isMounted, setIsMounted] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -156,6 +157,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       clearInterval(interval);
     };
   }, [router, logout]);
+
+  // Refresh the signed-in person's role, branch and plan once per visit, so a change
+  // made by the owner (new role, new branch, upgraded plan) shows without signing out.
+  useEffect(() => {
+    if (!isAuthorized) return;
+    const token = typeof window !== 'undefined' ? localStorage.getItem('vf_access_token') : null;
+    if (!token) return;
+    api
+      .getMe()
+      .then((me: any) => {
+        if (!me?.id) return;
+        const fresh = {
+          id: me.id,
+          email: me.email,
+          firstName: me.firstName,
+          lastName: me.lastName,
+          role: me.role,
+          storeRole: me.storeRole || 'OWNER',
+          branch: me.branch || null,
+          business: me.business,
+        };
+        localStorage.setItem('vf_user', JSON.stringify(fresh));
+        setAuth(fresh as any, token);
+      })
+      .catch(() => {});
+  }, [isAuthorized, setAuth]);
 
   useEffect(() => {
     if (isAuthorized && isMounted) {
@@ -401,23 +428,29 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                       <div className="pt-2 border-t border-slate-200/80 dark:border-slate-700/80 space-y-1 text-xs">
                         <div className="flex items-center justify-between">
                           <span className="text-slate-500 dark:text-slate-400 font-medium">Store:</span>
-                          <span className="font-bold text-accent-700 dark:text-accent-400 truncate max-w-[130px]">{user?.business?.name || 'TechWorld Mobile'}</span>
+                          <span className="font-bold text-accent-700 dark:text-accent-400 truncate max-w-[130px]">{user?.business?.name || 'Your store'}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-slate-500 dark:text-slate-400 font-medium">Role:</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200">{ROLE_LABELS[storeRoleOf(user)]}</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <span className="text-slate-500 dark:text-slate-400 font-medium">Branch:</span>
-                          <span className="font-bold text-slate-800 dark:text-slate-200">Ikeja Main Branch</span>
+                          <span className="font-bold text-slate-800 dark:text-slate-200 truncate max-w-[130px]">{user?.branch?.name || 'All branches'}</span>
                         </div>
                         <div className="flex items-center justify-between pt-1">
                           <span className="text-slate-500 dark:text-slate-400 font-medium">Plan:</span>
-                          <span className="font-extrabold text-success-600 bg-success-50 px-1.5 py-0.5 rounded border border-success-200">PRO PLAN</span>
+                          <span className="font-extrabold uppercase text-success-600 bg-success-50 px-1.5 py-0.5 rounded border border-success-200">
+                            {String(user?.business?.plan || 'Free')} plan
+                          </span>
                         </div>
                       </div>
                     </div>
 
                     {/* Quick Appearance Switcher */}
-                    <div className="px-1 py-1 flex items-center justify-between border-b border-slate-100 dark:border-slate-800">
-                      <span className="text-xs font-bold text-slate-600 dark:text-slate-400">Theme</span>
-                      <ThemeToggle variant="compact" />
+                    <div className="px-1 pb-2 space-y-1.5 border-b border-slate-100 dark:border-slate-800">
+                      <span className="block text-xs font-bold text-slate-600 dark:text-slate-400">Theme</span>
+                      <ThemeToggle variant="compact" fullWidth />
                     </div>
 
                     <div className="space-y-0.5">

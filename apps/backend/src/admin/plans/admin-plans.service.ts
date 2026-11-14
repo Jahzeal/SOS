@@ -8,6 +8,10 @@ export interface CreatePlanDto {
   monthlyPriceNgn: number;
   annualPriceNgn?: number;
   maxDevices?: number;
+  /** Staff accounts, owner included. 0 = unlimited. */
+  maxStaff?: number;
+  /** Branches, main branch included. 0 = unlimited. */
+  maxBranches?: number;
   customBranding?: boolean;
   prioritySupport?: boolean;
   features?: string[];
@@ -84,6 +88,8 @@ export class AdminPlansService {
         monthlyPriceNgn: Number(dto.monthlyPriceNgn) || 0,
         annualPriceNgn: Number(dto.annualPriceNgn) || (Number(dto.monthlyPriceNgn) || 0) * 10,
         maxDevices: dto.maxDevices !== undefined ? Number(dto.maxDevices) : 100,
+        maxStaff: dto.maxStaff !== undefined ? Math.max(0, Number(dto.maxStaff) || 0) : 1,
+        maxBranches: dto.maxBranches !== undefined ? Math.max(0, Number(dto.maxBranches) || 0) : 1,
         customBranding: Boolean(dto.customBranding),
         prioritySupport: Boolean(dto.prioritySupport),
         features: dto.features || [],
@@ -112,6 +118,8 @@ export class AdminPlansService {
     if (dto.monthlyPriceNgn !== undefined) data.monthlyPriceNgn = Number(dto.monthlyPriceNgn);
     if (dto.annualPriceNgn !== undefined) data.annualPriceNgn = Number(dto.annualPriceNgn);
     if (dto.maxDevices !== undefined) data.maxDevices = Number(dto.maxDevices);
+    if (dto.maxStaff !== undefined) data.maxStaff = Math.max(0, Number(dto.maxStaff) || 0);
+    if (dto.maxBranches !== undefined) data.maxBranches = Math.max(0, Number(dto.maxBranches) || 0);
     if (dto.customBranding !== undefined) data.customBranding = Boolean(dto.customBranding);
     if (dto.prioritySupport !== undefined) data.prioritySupport = Boolean(dto.prioritySupport);
     if (dto.features !== undefined) data.features = dto.features;

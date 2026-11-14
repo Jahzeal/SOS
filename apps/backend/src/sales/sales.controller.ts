@@ -4,9 +4,11 @@ import { CheckoutSaleDto, UpdateInvoiceDto, PayInvoiceDto, SendDocumentEmailDto 
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { PaymentMethod } from '@prisma/client';
+import { StoreRoleGuard, StoreRoles, SELLERS, MANAGERS } from '../common/staff/store-role.guard';
 
 @Controller('sales')
-@UseGuards(JwtAuthGuard, SubscriptionGuard)
+@UseGuards(JwtAuthGuard, StoreRoleGuard, SubscriptionGuard)
+@StoreRoles(...SELLERS)
 export class SalesController {
   constructor(private readonly salesService: SalesService) {}
 
@@ -55,12 +57,14 @@ export class SalesController {
     });
   }
 
+  @StoreRoles(...MANAGERS)
   @Put('invoices/:id')
   async updateInvoice(@Request() req, @Param('id') id: string, @Body() dto: UpdateInvoiceDto) {
     const businessId = req.user.businessId;
     return this.salesService.updateInvoice(businessId, id, dto);
   }
 
+  @StoreRoles(...MANAGERS)
   @Delete('invoices/:id')
   async deleteInvoice(@Request() req, @Param('id') id: string) {
     const businessId = req.user.businessId;

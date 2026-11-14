@@ -16,13 +16,22 @@ import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
 function SessionExpiredAlert() {
   const searchParams = useSearchParams();
   const isExpired = searchParams ? searchParams.get('expired') === 'true' : false;
+  // Staff signed out because the owner switched them off, or the plan no longer covers them.
+  const paused = searchParams ? searchParams.get('paused') : null;
 
-  if (!isExpired) return null;
+  if (!isExpired && !paused) return null;
+
+  const message =
+    paused === 'STAFF_DISABLED'
+      ? 'Your account has been switched off by the store owner. Please contact them.'
+      : paused
+      ? "Your store's plan does not cover your account right now. Ask the store owner to upgrade the plan."
+      : 'Your session has expired or is invalid. Please sign in again to access your workspace.';
 
   return (
     <div className="p-3.5 rounded-control bg-warning-50 border border-warning-200 text-warning-900 text-xs flex items-start gap-2.5 shadow-sm">
       <AlertCircle className="w-4 h-4 text-warning-600 shrink-0 mt-0.5" />
-      <div className="font-medium">Your session has expired or is invalid. Please sign in again to access your workspace.</div>
+      <div className="font-medium">{message}</div>
     </div>
   );
 }

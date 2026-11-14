@@ -165,6 +165,8 @@ export default function AdminSubscriptionsPage() {
     monthlyPriceNgn: 15000,
     annualPriceNgn: 150000,
     maxDevices: 100,
+    maxStaff: 1,
+    maxBranches: 1,
     customBranding: false,
     prioritySupport: false,
     isActive: true,
@@ -183,6 +185,8 @@ export default function AdminSubscriptionsPage() {
       monthlyPriceNgn: 0,
       annualPriceNgn: 0,
       maxDevices: 100,
+      maxStaff: 1,
+      maxBranches: 1,
       customBranding: false,
       prioritySupport: false,
       isActive: true,
@@ -202,6 +206,8 @@ export default function AdminSubscriptionsPage() {
       monthlyPriceNgn: plan.monthlyPriceNgn,
       annualPriceNgn: plan.annualPriceNgn || plan.monthlyPriceNgn * 10,
       maxDevices: plan.maxDevices !== undefined && plan.maxDevices !== null ? plan.maxDevices : 100,
+      maxStaff: plan.maxStaff ?? 1,
+      maxBranches: plan.maxBranches ?? 1,
       customBranding: plan.customBranding,
       prioritySupport: plan.prioritySupport,
       isActive: plan.isActive,
@@ -900,6 +906,29 @@ export default function AdminSubscriptionsPage() {
                     </span>
                   </div>
                 )}
+              </div>
+
+              {/* Staff and branch allowances (0 = unlimited) */}
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  ['maxStaff', 'Staff accounts (owner included)', 'staff'],
+                  ['maxBranches', 'Branches (main included)', 'branches'],
+                ] as const).map(([key, label, unit]) => (
+                  <div key={key}>
+                    <label className="block font-bold text-slate-700 uppercase tracking-wider text-xs mb-1.5">{label}</label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        min="0"
+                        value={(planForm as any)[key]}
+                        onChange={(e) => setPlanForm({ ...planForm, [key]: Math.max(0, Number(e.target.value) || 0) })}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-mono font-bold outline-none focus:border-blue-600 text-xs pr-16"
+                      />
+                      <span className="absolute right-3 top-2 text-xs text-slate-400 font-medium pointer-events-none">{unit}</span>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-1">0 = unlimited</p>
+                  </div>
+                ))}
               </div>
 
               {/* Categorized Platform Feature Selector */}

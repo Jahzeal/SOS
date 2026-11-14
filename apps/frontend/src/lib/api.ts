@@ -75,6 +75,19 @@ class ApiClient {
     }
 
     if (!response.ok) {
+      // Staff switched off by the owner, or not covered by the store's plan any more.
+      if (
+        response.status === 403 &&
+        usingAccountToken &&
+        typeof window !== 'undefined' &&
+        (data?.code === 'STAFF_DISABLED' || data?.code === 'STAFF_SEAT_PAUSED')
+      ) {
+        localStorage.removeItem('vf_access_token');
+        localStorage.removeItem('vf_user');
+        if (!window.location.pathname.startsWith('/login')) {
+          window.location.href = `/login?paused=${encodeURIComponent(data.code)}`;
+        }
+      }
       if (response.status === 401 && usingAccountToken && typeof window !== 'undefined') {
         localStorage.removeItem('vf_access_token');
         localStorage.removeItem('vf_user');
@@ -90,6 +103,69 @@ class ApiClient {
     }
 
     return data as T;
+  }
+
+  // --- Staff, branches and joining a store ---
+  async getMe() {
+    return this.request<any>('/auth/me');
+  }
+
+  async getTeam() {
+    return this.request<{
+      limits: { planCode: string; planName: string; maxStaff: number; maxBranches: number; assignableRoles: string[] };
+      seatsUsed: number;
+      branchesUsed: number;
+      members: Array<{ id: string; firstName: string; lastName: string; email: string; storeRole: string; isActive: boolean; createdAt: string; branch: { id: string; name: string } | null }>;
+      invites: Array<{ id: string; email: string; firstName: string; lastName: string; storeRole: string; expiresAt: string; branch: { id: string; name: string } | null }>;
+      branches: Array<{ id: string; name: string; address: string | null; phone: string | null; isMain: boolean; isActive: boolean }>;
+      canManage: boolean;
+      isOwner: boolean;
+    }>('/team');
+  }
+
+  async inviteStaff(payload: { email: string; firstName: string; lastName: string; storeRole: string; branchId?: string | null }) {
+    return this.request<{ id: string; email: string; inviteLink: string; emailSent: boolean; expiresAt: string }>('/team/invites', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async revokeStaffInvite(id: string) {
+    return this.request<{ success: boolean }>(`/team/invites/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  }
+
+  async updateStaffMember(id: string, payload: { storeRole?: string; branchId?: string | null; isActive?: boolean }) {
+    return this.request<any>(`/team/members/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getBranches() {
+    return this.request<Array<{ id: string; name: string; address: string | null; phone: string | null; isMain: boolean; isActive: boolean }>>('/branches');
+  }
+
+  async createBranch(payload: { name: string; address?: string; phone?: string }) {
+    return this.request<any>('/branches', { method: 'POST', body: JSON.stringify(payload) });
+  }
+
+  async updateBranch(id: string, payload: { name?: string; address?: string; phone?: string; isActive?: boolean }) {
+    return this.request<any>(`/branches/${encodeURIComponent(id)}`, { method: 'PATCH', body: JSON.stringify(payload) });
+  }
+
+  async describeInvite(token: string) {
+    return this.request<{ storeName: string; firstName: string; lastName: string; email: string; role: string; branch: string | null }>(
+      `/join/${encodeURIComponent(token)}`,
+      {},
+      null,
+    );
+  }
+
+  async acceptInvite(token: string, password: string) {
+    return this.request<{ accessToken: string; user: any }>('/join', {
+      method: 'POST',
+      body: JSON.stringify({ token, password }),
+    }, null);
   }
 
   // --- Auth & Profile Endpoints ---
