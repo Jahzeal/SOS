@@ -2,6 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Resend } from 'resend';
 import { PrismaService } from '../prisma/prisma.service';
+import { frontendUrl } from '../common/config/env';
 
 /**
  * Names, store names and other typed-in text go into emails as plain text only.
@@ -263,8 +264,7 @@ export class MailService {
       return { success: true, skipped: true };
     }
 
-    const frontendUrl = process.env.FRONTEND_URL || 'https://sos-frontend-indol.vercel.app';
-    const dashboardUrl = `${frontendUrl}/dashboard`;
+    const dashboardUrl = `${frontendUrl()}/dashboard`;
 
     // Helper for variable interpolation
     // The template wording comes from the admin panel. The values dropped into it

@@ -5,6 +5,7 @@
  * (comma separated), e.g. CORS_ORIGIN="https://noxguarda.com,https://www.noxguarda.com"
  */
 const BUILT_IN_ORIGINS = [
+  'https://noxguarda.vercel.app',
   'https://sos-frontend-indol.vercel.app',
   'https://noxguarda.com',
   'https://www.noxguarda.com',

@@ -30,6 +30,7 @@ import { SubscriptionGuardProvider } from '@/hooks/useSubscriptionGuard';
 import { ROLE_LABELS, storeRoleOf } from '@/lib/permissions';
 import { SubscriptionStatusBanner } from '@/components/subscription/SubscriptionStatusBanner';
 import { SubscriptionPaywallModal } from '@/components/subscription/SubscriptionPaywallModal';
+import { PaymentSuccessModal } from '@/components/subscription/PaymentSuccessModal';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 
@@ -541,6 +542,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
         {/* Dynamic Paywall Modal */}
         <SubscriptionPaywallModal />
+
+        {/* Subscription Activated / Payment Success Modal */}
+        <PaymentSuccessModal />
       </div>
     </SubscriptionGuardProvider>
   );

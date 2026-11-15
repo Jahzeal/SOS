@@ -7,6 +7,7 @@ import { randomInt } from 'crypto';
 import { SubscriptionService } from '../common/services/subscription.service';
 import { UpdatePhoneDto, FlagStolenDto } from './dto/update-phone.dto';
 import { requestContext } from '../common/staff/request-context';
+import { frontendUrl } from '../common/config/env';
 
 @Injectable()
 export class PhonesService {
@@ -254,8 +255,7 @@ export class PhonesService {
         },
       });
 
-      const frontendUrl = (process.env.FRONTEND_URL || 'https://sos-frontend-indol.vercel.app').replace(/\/$/, '');
-      const verificationUrl = `${frontendUrl}/verify?imei=${encodeURIComponent(phoneRecord.imei1)}`;
+      const verificationUrl = `${frontendUrl()}/verify?imei=${encodeURIComponent(phoneRecord.imei1)}`;
       const qrCodeUrl = await QRCode.toDataURL(verificationUrl).catch(() => null);
 
       if (qrCodeUrl) {

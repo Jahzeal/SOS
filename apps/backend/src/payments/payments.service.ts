@@ -72,7 +72,7 @@ export class PaymentsService {
           amount: amountInKobo,
           reference,
           currency: 'NGN',
-          callback_url: `${process.env.FRONTEND_URL ? frontendUrl() : 'https://sos-frontend-indol.vercel.app'}/dashboard/settings?tab=subscription&ref=${reference}`,
+          callback_url: `${frontendUrl()}/dashboard?ref=${reference}&plan=${encodeURIComponent(plan.name || plan.code)}`,
           metadata: {
             businessId: business.id,
             businessName: business.name,

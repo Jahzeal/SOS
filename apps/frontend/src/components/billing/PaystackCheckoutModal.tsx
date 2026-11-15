@@ -172,14 +172,13 @@ export function PaystackCheckoutModal({ isOpen, onClose, plan, onSuccess, initia
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <div>
-                <h3 className="text-xl font-extrabold text-slate-900">Subscription Active!</h3>
-                <p className="text-xs text-slate-500 font-medium mt-1">
-                  Your store has been successfully upgraded to the <strong>{plan.name}</strong> tier.
+                <h3 className="text-xl font-black text-slate-900">🎉 Payment Successful!</h3>
+                <p className="text-sm text-slate-600 font-medium mt-1.5 leading-relaxed">
+                  Welcome to your <strong>{plan.name}</strong> plan. Your store is now active with all premium features.
                 </p>
               </div>
-              <Button variant="primary" size="lg" fullWidth
-                onClick={onClose}>
-                Return to Dashboard
+              <Button variant="primary" size="lg" fullWidth onClick={onClose}>
+                Proceed
               </Button>
             </div>
           ) : (
