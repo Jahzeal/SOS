@@ -5,6 +5,7 @@ import {
   IsInt,
   IsEmail,
   IsIn,
+  IsNotEmpty,
   Min,
   Max,
   MaxLength,
@@ -128,4 +129,10 @@ export class UpdatePlanDto {
   @IsString()
   @MaxLength(40)
   plan: string;
+}
+
+export class DeleteAccountDto {
+  @IsString()
+  @IsNotEmpty()
+  password: string;
 }

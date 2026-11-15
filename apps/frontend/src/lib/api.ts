@@ -304,6 +304,13 @@ class ApiClient {
     });
   }
 
+  async deleteAccount(password: string) {
+    return this.request<{ success: boolean }>('/business/account', {
+      method: 'DELETE',
+      body: JSON.stringify({ password }),
+    });
+  }
+
   // --- Phone Registration & Inventory Endpoints ---
   async checkImei(imei: string) {
     return this.request<{ exists: boolean; record: any; message: string }>(`/phones/check-imei?imei=${encodeURIComponent(imei)}`);

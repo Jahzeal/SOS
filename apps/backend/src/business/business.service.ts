@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SubscriptionService } from '../common/services/subscription.service';
 import { UpdateBusinessSettingsDto, UpdateTemplateSettingsDto } from './dto/business.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class BusinessService {
@@ -156,5 +157,30 @@ export class BusinessService {
       where: { id: businessId },
       data: updateData,
     });
+  }
+
+  async deleteAccount(businessId: string, userId: string, password: string) {
+    // 1. Fetch user
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('User not found');
+
+    // 2. OWNER only
+    if (user.storeRole !== 'OWNER') {
+      throw new ForbiddenException('Only the store owner can delete this account.');
+    }
+
+    // 3. Verify password
+    const valid = user.password ? await bcrypt.compare(password, user.password) : false;
+    if (!valid) {
+      throw new UnauthorizedException('Incorrect password. Account not deleted.');
+    }
+
+    // 4. Delete business (cascades all related data via Prisma schema onDelete: Cascade)
+    await this.prisma.business.delete({ where: { id: businessId } });
+
+    // 5. Delete the owner user record (business FK is now null due to SetNull)
+    await this.prisma.user.delete({ where: { id: userId } });
+
+    return { success: true };
   }
 }

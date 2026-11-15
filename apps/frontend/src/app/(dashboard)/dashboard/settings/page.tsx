@@ -39,7 +39,7 @@ import { can } from '@/lib/permissions';
 import { Sun, Moon, Monitor } from 'lucide-react';
 
 export default function RebuiltSettingsPage() {
-  const { user, setAuth } = useAuthStore();
+  const { user, setAuth, logout } = useAuthStore();
   // Which settings sections this person's role may open.
   const canSee = (tab: 'account' | 'profile' | 'users' | 'branches' | 'billing') =>
     tab === 'account' ||
@@ -53,6 +53,12 @@ export default function RebuiltSettingsPage() {
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Delete Account modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   // Operator Account Profile State
   const [operatorForm, setOperatorForm] = useState({
@@ -503,6 +509,28 @@ export default function RebuiltSettingsPage() {
                 </Button>
               </div>
             </form>
+
+            {/* Danger Zone — OWNER only */}
+            {user?.storeRole === 'OWNER' && (
+              <div className="p-5 rounded-2xl border-2 border-red-200 dark:border-red-900/60 bg-red-50/40 dark:bg-red-950/20 space-y-3">
+                <div className="flex items-center gap-2 border-b border-red-200 dark:border-red-900/60 pb-2.5">
+                  <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  <h4 className="text-xs font-extrabold uppercase tracking-wider text-red-700 dark:text-red-400">Danger Zone</h4>
+                </div>
+                <p className="text-xs text-red-700/80 dark:text-red-400/80 font-medium leading-relaxed">
+                  Permanently delete your store and all associated data — inventory, sales, customers, staff, and billing history.
+                  This action is <span className="font-bold">irreversible</span>.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setDeleteError(null); }}
+                  className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors"
+                >
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  Delete Account
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Right Operator Summary Card */}
@@ -550,6 +578,85 @@ export default function RebuiltSettingsPage() {
               <div className="pt-1 flex justify-center">
                 <ThemeToggle variant="compact" />
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE ACCOUNT MODAL */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-red-200 dark:border-red-900 w-full max-w-md p-6 space-y-5">
+            {/* Header */}
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-950 flex items-center justify-center shrink-0">
+                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-900 dark:text-white">Delete Account Permanently</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                  This will erase your store, all inventory, sales, customers, and staff. <span className="font-bold text-red-600 dark:text-red-400">This cannot be undone.</span>
+                </p>
+              </div>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-xs flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span className="font-semibold">{deleteError}</span>
+              </div>
+            )}
+
+            <div>
+              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                Confirm your password to continue
+              </label>
+              <input
+                type="password"
+                value={deletePassword}
+                onChange={(e) => setDeletePassword(e.target.value)}
+                placeholder="Enter your current password"
+                className="w-full px-3.5 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                autoComplete="current-password"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <button
+                type="button"
+                onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteError(null); }}
+                disabled={deleting}
+                className="flex-1 py-2.5 text-sm font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting || !deletePassword}
+                onClick={async () => {
+                  setDeleteError(null);
+                  setDeleting(true);
+                  try {
+                    await api.deleteAccount(deletePassword);
+                    // Clear session and redirect
+                    logout();
+                    window.location.href = '/login?deleted=true';
+                  } catch (err: any) {
+                    setDeleteError(err?.message || 'Failed to delete account. Check your password.');
+                  } finally {
+                    setDeleting(false);
+                  }
+                }}
+                className="flex-1 py-2.5 text-sm font-bold rounded-xl bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white transition-colors flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
+                  </svg>
+                ) : null}
+                {deleting ? 'Deleting...' : 'Yes, Delete Everything'}
+              </button>
             </div>
           </div>
         </div>
