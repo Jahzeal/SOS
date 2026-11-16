@@ -343,7 +343,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
       if (deviceCategory === 'PHONE_TABLET') {
         const cleanImei = imei.trim();
         if (!cleanImei) {
-          setErrorMessage('Please enter or scan a 15-digit IMEI.');
+          setErrorMessage(deviceCategory === 'LAPTOP' ? 'Please enter or scan a Serial Number (S/N).' : 'Please enter or scan a 15-digit IMEI.');
           return;
         }
         if (cleanImei.length !== 15 || !/^\d{15}$/.test(cleanImei)) {
@@ -669,7 +669,9 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                     </h2>
                     <p className="text-xs sm:text-xs text-slate-500 font-medium">
                       {mode === 'PHONE'
-                        ? 'Scan retail box barcode or enter 15-digit IMEI number'
+                        ? (deviceCategory === 'LAPTOP'
+                          ? 'Scan retail box barcode or enter laptop Serial Number (S/N)'
+                          : 'Scan retail box barcode or enter 15-digit IMEI number')
                         : 'Scan box barcode, enter serial number, or auto-generate a unique inventory SKU'}
                     </p>
                   </div>
@@ -720,7 +722,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label htmlFor="dashboard-register-f1" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      {mode === 'PHONE' ? 'IMEI Number *' : 'Barcode / EAN / S/N (Optional)'}
+                      {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'Serial Number / S/N *' : 'IMEI Number *') : 'Barcode / EAN / S/N (Optional)'}
                     </label>
                     {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
                       <span className={`text-xs font-bold ${
@@ -745,7 +747,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                       }
                       setImei(val);
                     }}
-                    placeholder={mode === 'PHONE' ? "Enter 15-digit IMEI" : "e.g. 693420849102 or scan box"}
+                    placeholder={mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'Enter Serial Number / S/N' : 'Enter 15-digit IMEI') : 'e.g. 693420849102 or scan box'}
                     className={`w-full text-xs sm:text-sm px-3.5 py-2.5 sm:px-4 sm:py-3 bg-white border rounded-xl focus:outline-none font-mono font-semibold text-slate-900 placeholder:text-xs sm:placeholder:text-xs shadow-xs transition-colors ${
                       isPhoneImeiMode && imeiLooksValid
                         ? 'border-success-500 focus:border-success-600 bg-success-50/20'

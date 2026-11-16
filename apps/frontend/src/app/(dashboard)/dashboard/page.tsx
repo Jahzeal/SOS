@@ -505,7 +505,7 @@ export default function BusinessDashboardPage() {
               <a href="#" className="block p-2 rounded-lg bg-slate-50 hover:bg-slate-100 font-bold text-slate-800">
                  Documentation & Guides
               </a>
-              <a href="#" className="block p-2 rounded-lg bg-accent-50 text-accent-700 font-bold hover:bg-accent-100">
+              <a href="https://wa.me/2348140724619?text=Hi%20NoxGuarda%20Support%2C%20I%20need%20help%20with%20my%20store." target="_blank" rel="noopener noreferrer" className="block p-2 rounded-lg bg-accent-50 text-accent-700 font-bold hover:bg-accent-100">
                  Contact Store Support
               </a>
             </div>
