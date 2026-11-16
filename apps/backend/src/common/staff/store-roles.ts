@@ -18,17 +18,17 @@ export const ROLES_WITHOUT_COSTS: StoreRoleName[] = ['SALES', 'TECHNICIAN'];
 /** Roles an owner may give staff on each plan (the owner role itself is never given). */
 export function assignableRolesForPlan(planCode: string | null | undefined): StoreRoleName[] {
   const code = String(planCode || '').toUpperCase();
-  if (code === 'STARTER') return ['SALES', 'TECHNICIAN'];
-  if (code === 'GOLD' || code === 'BUSINESS' || code === 'ENTERPRISE') return ['MANAGER', 'SALES', 'TECHNICIAN'];
+  if (code.startsWith('STARTER')) return ['SALES', 'TECHNICIAN'];
+  if (code.startsWith('GOLD') || code.startsWith('BUSINESS') || code.startsWith('ENTERPRISE')) return ['MANAGER', 'SALES', 'TECHNICIAN'];
   return []; // Free: the owner works alone
 }
 
 /** Fallback limits if a plan row has no value (0 = unlimited). Matches the migration defaults. */
 export function defaultLimits(planCode: string | null | undefined): { maxStaff: number; maxBranches: number } {
   const code = String(planCode || '').toUpperCase();
-  if (code === 'STARTER') return { maxStaff: 3, maxBranches: 1 };
-  if (code === 'GOLD' || code === 'BUSINESS') return { maxStaff: 10, maxBranches: 2 };
-  if (code === 'ENTERPRISE') return { maxStaff: 0, maxBranches: 0 };
+  if (code.startsWith('STARTER')) return { maxStaff: 3, maxBranches: 1 };
+  if (code.startsWith('GOLD') || code.startsWith('BUSINESS')) return { maxStaff: 10, maxBranches: 2 };
+  if (code.startsWith('ENTERPRISE')) return { maxStaff: 0, maxBranches: 0 };
   return { maxStaff: 1, maxBranches: 1 };
 }
 
