@@ -340,14 +340,27 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
   const handleNextToStep2 = async () => {
     setErrorMessage(null);
     if (mode === 'PHONE') {
-      if (deviceCategory === 'PHONE_TABLET') {
-        const cleanImei = imei.trim();
+      let currentCategory = deviceCategory;
+      const trimmedImei = imei.trim();
+      const trimmedSerial = serialNumber.trim();
+
+      // Smart auto-detection: if user entered a Serial Number but left IMEI empty,
+      // or if they didn't toggle to Laptop mode yet
+      if (!trimmedImei && trimmedSerial) {
+        currentCategory = 'LAPTOP';
+        setDeviceCategory('LAPTOP');
+        setImei(trimmedSerial);
+      }
+
+      if (currentCategory === 'PHONE_TABLET') {
+        const cleanImei = trimmedImei || trimmedSerial;
         if (!cleanImei) {
-          setErrorMessage(deviceCategory === 'LAPTOP' ? 'Please enter or scan a Serial Number (S/N).' : 'Please enter or scan a 15-digit IMEI.');
+          setErrorMessage('Please enter or scan a 15-digit IMEI, or select "Laptop / Computer" above.');
           return;
         }
         if (cleanImei.length !== 15 || !/^\d{15}$/.test(cleanImei)) {
-          setErrorMessage(`IMEI must be exactly 15 numeric digits (currently ${cleanImei.length} digits).`);
+          // If the user entered a serial number (not 15 digits), auto-switch or prompt
+          setErrorMessage(`IMEI must be exactly 15 numeric digits (currently ${cleanImei.length} characters). If you are registering a laptop, please select "Laptop / Computer" above.`);
           return;
         }
         if (/^(\d)\1{14}$/.test(cleanImei)) {
@@ -360,9 +373,14 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
           return;
         }
       } else {
-        if (!imei.trim() && !serialNumber.trim()) {
-          setErrorMessage('Please enter or scan a Serial Number or Device ID.');
+        if (!trimmedImei && !trimmedSerial) {
+          setErrorMessage('Please enter or scan a Serial Number (S/N).');
           return;
+        }
+        if (!trimmedImei && trimmedSerial) {
+          setImei(trimmedSerial);
+        } else if (trimmedImei && !trimmedSerial) {
+          setSerialNumber(trimmedImei);
         }
       }
     } else {
@@ -677,9 +695,66 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                   </div>
                 </div>
                 <Badge variant="new" size="sm">
-                  {mode === 'PHONE' ? 'IMEI Tracked' : 'General Item'}
+                  {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'Serial Tracked' : 'IMEI Tracked') : 'General Item'}
                 </Badge>
               </div>
+
+              {/* Sub-Category Toggle for Serialized Mode: Phone/Tablet vs Laptop */}
+              {mode === 'PHONE' && (
+                <div className="bg-slate-100 p-1 sm:p-1.5 rounded-xl sm:rounded-2xl border border-slate-200">
+                  <div className="grid grid-cols-2 gap-1 sm:gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeviceCategory('PHONE_TABLET');
+                        if (LAPTOP_SPECS_PRESETS.includes(specs)) {
+                          setSpecs('128 GB');
+                        }
+                      }}
+                      className={`flex items-center justify-center gap-1.5 sm:gap-2.5 py-2 px-3 rounded-lg sm:rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                        deviceCategory === 'PHONE_TABLET'
+                          ? 'bg-white text-slate-950 shadow-xs sm:shadow-sm border border-slate-200 ring-2 ring-accent-500/20'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                      }`}
+                    >
+                      <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 ${
+                        deviceCategory === 'PHONE_TABLET' ? 'bg-accent-50 text-accent-700' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        <Smartphone className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="text-left">
+                        <span className="block font-black truncate">Phone / Tablet</span>
+                        <span className="text-[11px] text-slate-400 font-medium hidden sm:block">Requires 15-digit IMEI</span>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setDeviceCategory('LAPTOP');
+                        if (PHONE_SPECS_PRESETS.includes(specs) || !specs) {
+                          setSpecs('16GB RAM / 512GB SSD');
+                        }
+                      }}
+                      className={`flex items-center justify-center gap-1.5 sm:gap-2.5 py-2 px-3 rounded-lg sm:rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                        deviceCategory === 'LAPTOP'
+                          ? 'bg-white text-slate-950 shadow-xs sm:shadow-sm border border-slate-200 ring-2 ring-accent-500/20'
+                          : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
+                      }`}
+                    >
+                      <div className={`w-5 h-5 sm:w-6 sm:h-6 rounded-md sm:rounded-lg flex items-center justify-center shrink-0 ${
+                        deviceCategory === 'LAPTOP' ? 'bg-accent-50 text-accent-700' : 'bg-slate-200 text-slate-500'
+                      }`}>
+                        <Laptop className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="text-left">
+                        <span className="block font-black truncate">Laptop / Computer</span>
+                        <span className="text-[11px] text-slate-400 font-medium hidden sm:block">Serial Number (S/N)</span>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Duplicate Warning Alert */}
               {showDuplicateWarning && (
@@ -722,7 +797,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                 <div className="space-y-1.5">
                   <div className="flex items-center justify-between">
                     <label htmlFor="dashboard-register-f1" className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                      {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'Serial Number / S/N *' : 'IMEI Number *') : 'Barcode / EAN / S/N (Optional)'}
+                      {mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'Laptop Serial Number (S/N) *' : 'IMEI Number *') : 'Barcode / EAN / S/N (Optional)'}
                     </label>
                     {mode === 'PHONE' && deviceCategory === 'PHONE_TABLET' && (
                       <span className={`text-xs font-bold ${
@@ -747,7 +822,7 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                       }
                       setImei(val);
                     }}
-                    placeholder={mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'Enter Serial Number / S/N' : 'Enter 15-digit IMEI') : 'e.g. 693420849102 or scan box'}
+                    placeholder={mode === 'PHONE' ? (deviceCategory === 'LAPTOP' ? 'e.g. 5CD1234XYZ or 3433345332' : 'Enter 15-digit IMEI') : 'e.g. 693420849102 or scan box'}
                     className={`w-full text-xs sm:text-sm px-3.5 py-2.5 sm:px-4 sm:py-3 bg-white border rounded-xl focus:outline-none font-mono font-semibold text-slate-900 placeholder:text-xs sm:placeholder:text-xs shadow-xs transition-colors ${
                       isPhoneImeiMode && imeiLooksValid
                         ? 'border-success-500 focus:border-success-600 bg-success-50/20'
@@ -759,11 +834,14 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                 </div>
 
                 <div className="space-y-1.5">
-                  <TextInput label="Inventory SKU / Serial Number"
+                  <TextInput
+                    label={mode === 'PHONE' && deviceCategory === 'LAPTOP' ? 'Custom SKU / Barcode (Optional)' : 'Inventory SKU / Serial Number'}
                     type="text"
                     value={serialNumber}
                     onChange={(e) => setSerialNumber(e.target.value)}
-                    placeholder="Enter SKU or barcode number" className="font-mono" />
+                    placeholder={mode === 'PHONE' && deviceCategory === 'LAPTOP' ? 'Optional SKU or leave blank' : 'Enter SKU or barcode number'}
+                    className="font-mono"
+                  />
                 </div>
               </div>
 
