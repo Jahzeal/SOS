@@ -16,8 +16,18 @@ import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
 function SessionExpiredAlert() {
   const searchParams = useSearchParams();
   const isExpired = searchParams ? searchParams.get('expired') === 'true' : false;
+  const isDeleted = searchParams ? searchParams.get('deleted') === 'true' : false;
   // Staff signed out because the owner switched them off, or the plan no longer covers them.
   const paused = searchParams ? searchParams.get('paused') : null;
+
+  if (isDeleted) {
+    return (
+      <div className="p-3.5 rounded-control bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs flex items-start gap-2.5 shadow-sm">
+        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+        <div className="font-semibold">Your store and account have been permanently deleted.</div>
+      </div>
+    );
+  }
 
   if (!isExpired && !paused) return null;
 

@@ -172,7 +172,7 @@ export class BusinessService {
     // 3. Verify password
     const valid = user.password ? await bcrypt.compare(password, user.password) : false;
     if (!valid) {
-      throw new UnauthorizedException('Incorrect password. Account not deleted.');
+      throw new BadRequestException('Incorrect password. Account was not deleted.');
     }
 
     // 4. Delete business (cascades all related data via Prisma schema onDelete: Cascade)
