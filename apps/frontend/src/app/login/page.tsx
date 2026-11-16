@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
-import { Mail, Lock, AlertCircle, ArrowRight } from 'lucide-react';
+import { Mail, Lock, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Input';
 import { Logo } from '@/components/ui/Logo';

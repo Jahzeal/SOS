@@ -146,7 +146,7 @@ export default function DedicatedPricingPage() {
             >
               <span>Annual Billing</span>{' '}
               <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold">
-                Save 20%
+                Save 25%
               </span>
             </button>
           </div>
@@ -216,7 +216,7 @@ export default function DedicatedPricingPage() {
                         {isFree
                           ? 'Free forever • No card needed'
                           : billingCycle === 'annual'
-                          ? `₦${annualPrice.toLocaleString()} / year (Save 20%)`
+                          ? `₦${annualPrice.toLocaleString()} / year (Save 25%)`
                           : 'Billed monthly'}
                       </p>
                     </div>
