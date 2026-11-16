@@ -44,87 +44,39 @@ interface FeatureCategory {
 
 const PLATFORM_FEATURE_CATALOG: FeatureCategory[] = [
   {
-    category: 'Device & Inventory Management',
+    category: 'Inventory & Anti-Theft',
     icon: '📱',
     items: [
-      'Single Device Registration & Dual IMEI Ledger',
-      'Bulk Excel & CSV Device Import',
-      'Physical Condition Grading (New, Refurbished, Parts)',
-      'Device Specs & Storage Capacity (GB) Ledger',
-      'Device Passport & Warranty Management',
-      'Camera & Barcode Multi-Identifier Scanner',
-      'High-Speed Debounced Inventory Search & Filters',
+      'Device Capacity Limit',
+      'Dual IMEI & Laptop Serial Tracking',
+      'Condition Grading (A-D / Parts)',
+      'Anti-Theft Verification Portal (/verify)',
     ],
   },
   {
-    category: 'Point of Sale (POS) & Checkout',
-    icon: '💳',
-    items: [
-      'Point of Sale (POS) Counter & Fast Checkout',
-      'Multi-Payment Settlement (Cash, Card, Transfer, Split)',
-      'Instant Automated Inventory Stock Deduction',
-      'Complete Sales Transaction Archive & Lookups',
-      'Daily Revenue & Cashier Shift Tracking',
-    ],
-  },
-  {
-    category: 'Receipts, Invoices & Branding',
+    category: 'Sales, POS & Billing',
     icon: '🧾',
     items: [
-      'Standard POS Thermal Receipts (58mm/80mm)',
-      'Commercial PDF Invoices with Bank Details',
-      'Direct Email Receipts & Invoices to Customers',
-      'Store Logo & Header Branding Customization',
-      'Custom Warranty Terms & Receipt Footer Disclaimers',
+      'Point of Sale (POS) & Checkout',
+      'Digital QR & Thermal Receipts',
+      'Auto-Share Invoices & Receipts (WhatsApp & Email)',
     ],
   },
   {
-    category: 'Public Verification & Anti-Theft Ledger',
-    icon: '🛡️',
-    items: [
-      'Public Anti-Theft & Proof-of-Origin Portal (/verify)',
-      'Instant Flagged-Stolen Device Warning Badges',
-      'Verified Store Origin Authenticity Seals',
-      'Public Verification Audit History Logs',
-    ],
-  },
-  {
-    category: 'Repair Counter & Diagnostics',
-    icon: '🔧',
-    items: [
-      'Repair Ticketing & Diagnostics Lifecycle Tracking',
-      'Customer Fault Notes & Cost Estimation Quotations',
-      'Linked IMEI Diagnostic & Repair History',
-      'Ready-for-Pickup Status Notifications',
-    ],
-  },
-  {
-    category: 'Customer CRM & Warranty Engine',
-    icon: '👥',
-    items: [
-      'Customer Directory & Lifetime Purchase History',
-      'Automated Warranty Expiration Clock & Claim Alerts',
-      'Customer Phone & Contact Ledger',
-    ],
-  },
-  {
-    category: 'Financial Analytics & Reports',
+    category: 'Analytics & Reporting',
     icon: '📊',
     items: [
-      'Live Revenue, Gross Margin & Profit Analytics',
-      'Payment Channel Distribution Breakdown',
-      'Top-Selling Brands & Inventory Velocity Reports',
-      'CSV Export for Accounting & Tax Records',
+      'Live Profit & Margin Analytics',
+      'Excel / CSV Export & Reports',
     ],
   },
   {
-    category: 'Multi-Branch & Enterprise',
+    category: 'Team & Multi-Branch',
     icon: '🏢',
     items: [
-      'Multi-Branch Store Workspaces',
-      'Wholesaler Stock Allocation & Inter-Branch Transfers',
-      'Role-Based Staff Access & Permissions',
-      'Priority Helpdesk & Dedicated Account Support',
+      'Role-Based Staff Accounts',
+      'Multi-Store / Multi-Branch Switching',
+      'Cross-Branch Global Search (Ctrl+K)',
     ],
   },
 ];

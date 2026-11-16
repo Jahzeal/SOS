@@ -120,7 +120,7 @@ export default function DedicatedPricingPage() {
               Flexible plans tailored to your retail scale
             </h1>
             <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-              The <strong className="text-slate-900">Free plan is free forever</strong> for up to 10 devices, with no card needed. Paid plans start as soon as you pay, and you can upgrade or switch billing cycles anytime.
+              Transparent merchant pricing. Choose a plan tailored to your retail scale, with instant activation via Paystack.
             </p>
           </div>
 
@@ -165,9 +165,9 @@ export default function DedicatedPricingPage() {
             <p className="text-xs text-slate-500 font-medium">Please check back shortly or reach out to support.</p>
           </div>
         ) : (
-          /* Pricing Cards Grid (4 Responsive Columns) */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch pt-2">
-            {plans.map((plan, idx) => {
+          /* Pricing Cards Grid (Paid Plans Only) */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch pt-2 max-w-5xl mx-auto">
+            {plans.filter((p: any) => p.code?.toUpperCase() !== 'FREE').map((plan, idx) => {
               const isFree = plan.code === 'FREE' || (!plan.monthlyPriceNgn && !plan.annualPriceNgn);
               const monthlyPrice = plan.monthlyPriceNgn || 0;
               const annualPrice = plan.annualPriceNgn && plan.annualPriceNgn > 0 ? plan.annualPriceNgn : monthlyPrice * 10;
