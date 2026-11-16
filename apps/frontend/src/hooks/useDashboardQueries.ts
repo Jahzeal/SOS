@@ -31,9 +31,8 @@ export function useInventory(params?: { search?: string; status?: string; brand?
       const res = await api.getInventory(params);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000, // 60s instant cache
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -46,9 +45,8 @@ export function useInventorySummary() {
     queryFn: async () => {
       return await api.getDashboardSummary();
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000, // 60s instant cache
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -62,16 +60,15 @@ export function useInvoices(search?: string) {
       const res = await api.getInvoices(search?.trim() || undefined);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
 /**
  * Cached hook for Quotes
  */
-export function useQuotes(params?: { search?: string; status?: string } | string) {
+export function useQuotes(params?: { search?: string; status?: string} | string) {
   const queryParams = typeof params === 'string' ? { search: params.trim() || undefined } : params;
   return useQuery({
     queryKey: QUERY_KEYS.quotes(queryParams),
@@ -79,9 +76,8 @@ export function useQuotes(params?: { search?: string; status?: string } | string
       const res = await api.getQuotes(queryParams);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -95,9 +91,8 @@ export function useCustomers(search?: string) {
       const res = await api.getCustomers();
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -111,9 +106,8 @@ export function usePhoneRecords(params?: any) {
       const res = await api.getInventory(params);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -129,9 +123,8 @@ export function usePhoneRecordDetail(id?: string) {
       return res || null;
     },
     enabled: Boolean(id),
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -145,9 +138,8 @@ export function useReceipts(search?: string) {
       const res = await api.getReceipts(search);
       return Array.isArray(res) ? res : [];
     },
-    staleTime: 0,
-    refetchOnMount: 'always',
-    refetchOnWindowFocus: true,
+    staleTime: 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
@@ -160,8 +152,8 @@ export function useBusinessProfile() {
     queryFn: async () => {
       return await api.getBusinessProfile();
     },
-    staleTime: 30 * 1000,
-    refetchOnMount: 'always',
+    staleTime: 2 * 60 * 1000,
+    refetchOnWindowFocus: false,
   });
 }
 
