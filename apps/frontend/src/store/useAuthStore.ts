@@ -25,7 +25,10 @@ export interface User {
 interface AuthState {
   user: User | null;
   token: string | null;
+  selectedBranchId: string | null;
+  selectedBranchName: string | null;
   setAuth: (user: User, token: string) => void;
+  setSelectedBranch: (id: string | null, name?: string | null) => void;
   logout: () => void;
   setPlan: (plan: PlanType) => void;
 }
@@ -60,10 +63,28 @@ const initialAuth = getInitialAuthState();
 export const useAuthStore = create<AuthState>((set) => ({
   user: initialAuth.user,
   token: initialAuth.token,
+  selectedBranchId: typeof window !== 'undefined' ? localStorage.getItem('vf_selected_branch_id') : null,
+  selectedBranchName: typeof window !== 'undefined' ? localStorage.getItem('vf_selected_branch_name') : null,
   setAuth: (user, token) => set({ user, token }),
+  setSelectedBranch: (id, name = null) => {
+    if (typeof window !== 'undefined') {
+      if (id) {
+        localStorage.setItem('vf_selected_branch_id', id);
+        if (name) localStorage.setItem('vf_selected_branch_name', name);
+      } else {
+        localStorage.removeItem('vf_selected_branch_id');
+        localStorage.removeItem('vf_selected_branch_name');
+      }
+    }
+    set({ selectedBranchId: id, selectedBranchName: name });
+  },
   logout: () => {
     clearAuthSessionAndCaches();
-    set({ user: null, token: null });
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('vf_selected_branch_id');
+      localStorage.removeItem('vf_selected_branch_name');
+    }
+    set({ user: null, token: null, selectedBranchId: null, selectedBranchName: null });
   },
   setPlan: (plan) =>
     set((state) => ({

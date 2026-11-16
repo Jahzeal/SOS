@@ -49,6 +49,13 @@ class ApiClient {
       headers['Authorization'] = `Bearer ${token}`;
     }
 
+    if (usingAccountToken && typeof window !== 'undefined') {
+      const selectedBranchId = localStorage.getItem('vf_selected_branch_id');
+      if (selectedBranchId) {
+        headers['x-branch-id'] = selectedBranchId;
+      }
+    }
+
     let response: Response;
     try {
       response = await fetch(`${API_BASE_URL}${endpoint}`, {

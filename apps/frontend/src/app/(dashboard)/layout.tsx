@@ -21,6 +21,9 @@ import {
   Shield,
   Loader2,
   X,
+  Building2,
+  ChevronDown,
+  Check,
 } from 'lucide-react';
 import { GlobalSearchModal } from '@/components/search/GlobalSearchModal';
 import { BrandLogo } from '@/components/brand/BrandLogo';
@@ -69,13 +72,17 @@ function formatRelativeTime(dateString: string | Date): string {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, logout, setAuth } = useAuthStore();
+  const { user, logout, setAuth, selectedBranchId, selectedBranchName, setSelectedBranch } = useAuthStore();
   const [isMounted, setIsMounted] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
+
+  // Available branches list for Owner / Manager switching
+  const [branchesList, setBranchesList] = useState<Array<{ id: string; name: string; isMain: boolean; isActive: boolean }>>([]);
 
   // Store Notifications Real Data State
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -188,11 +195,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     if (isAuthorized && isMounted) {
       fetchNotifications();
+      // Fetch branches for Owner and Manager roles
+      const role = user?.storeRole || 'OWNER';
+      if (role === 'OWNER' || role === 'MANAGER') {
+        api.getTeam()
+          .then((res) => {
+            if (Array.isArray(res?.branches)) {
+              setBranchesList(res.branches);
+            }
+          })
+          .catch(() => {});
+      }
       // Poll every 30s for real-time activity updates
       const notifInterval = setInterval(fetchNotifications, 30000);
       return () => clearInterval(notifInterval);
     }
-  }, [isAuthorized, isMounted, fetchNotifications]);
+  }, [isAuthorized, isMounted, fetchNotifications, user?.storeRole]);
 
   const unreadCount = notifications.filter((n) => n.unread).length;
 
@@ -259,6 +277,82 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link href="/dashboard" className="flex items-center">
                 <BrandLogo size="sm" showText={true} textClassName="hidden sm:inline text-slate-900 dark:text-white text-xs font-black tracking-[0.18em]" />
               </Link>
+
+              {/* Branch Switcher (Owners & Managers) */}
+              {(user?.storeRole === 'OWNER' || user?.storeRole === 'MANAGER') && branchesList.length > 0 && (
+                <div className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsBranchDropdownOpen(!isBranchDropdownOpen)}
+                    className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-subtle"
+                    title="Switch Branch View"
+                  >
+                    <Building2 className="w-3.5 h-3.5 text-accent-600 dark:text-accent-400 shrink-0" />
+                    <span className="max-w-[110px] sm:max-w-[150px] truncate">
+                      {selectedBranchName || 'All Branches'}
+                    </span>
+                    <ChevronDown className="w-3 h-3 text-slate-400 shrink-0" />
+                  </button>
+
+                  {isBranchDropdownOpen && (
+                    <div className="absolute left-0 mt-2 w-56 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-xl py-1.5 z-50">
+                      <div className="px-3 py-1.5 border-b border-slate-100 dark:border-slate-800 text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">
+                        Switch Store Branch
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSelectedBranch(null, null);
+                          setIsBranchDropdownOpen(false);
+                          window.location.reload();
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition-colors ${
+                          !selectedBranchId ? 'text-accent-600 dark:text-accent-400 font-bold bg-accent-50/50 dark:bg-accent-950/30' : 'text-slate-700 dark:text-slate-300'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2">
+                          <Building2 className="w-3.5 h-3.5" />
+                          <span>All Branches (Combined)</span>
+                        </span>
+                        {!selectedBranchId && <Check className="w-3.5 h-3.5" />}
+                      </button>
+
+                      <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+
+                      {branchesList.map((branch) => {
+                        const isSelected = selectedBranchId === branch.id;
+                        return (
+                          <button
+                            key={branch.id}
+                            type="button"
+                            onClick={() => {
+                              setSelectedBranch(branch.id, branch.name);
+                              setIsBranchDropdownOpen(false);
+                              window.location.reload();
+                            }}
+                            className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition-colors ${
+                              isSelected ? 'text-accent-600 dark:text-accent-400 font-bold bg-accent-50/50 dark:bg-accent-950/30' : 'text-slate-700 dark:text-slate-300'
+                            }`}
+                          >
+                            <span className="truncate pr-2">{branch.name}</span>
+                            {isSelected && <Check className="w-3.5 h-3.5 shrink-0" />}
+                          </button>
+                        );
+                      })}
+
+                      <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+                      <Link
+                        href="/dashboard/settings"
+                        onClick={() => setIsBranchDropdownOpen(false)}
+                        className="w-full block px-3 py-1.5 text-[11px] font-semibold text-slate-500 hover:text-accent-600 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                      >
+                        Manage Branches in Settings →
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
