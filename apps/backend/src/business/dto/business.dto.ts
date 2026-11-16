@@ -133,6 +133,10 @@ export class UpdatePlanDto {
 
 export class DeleteAccountDto {
   @IsString()
-  @IsNotEmpty()
-  password: string;
+  @IsOptional()
+  password?: string;
+
+  @IsString()
+  @IsOptional()
+  confirmText?: string;
 }

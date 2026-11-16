@@ -283,7 +283,7 @@ export class PhonesService {
     }
   }
 
-  async findAll(businessId: string, query?: { search?: string; status?: PhoneStatus; brand?: string }) {
+  async findAll(businessId: string, query?: { search?: string; status?: PhoneStatus; brand?: string; global?: boolean }) {
     const where: any = { businessId };
 
     if (query?.status) {
@@ -305,7 +305,7 @@ export class PhonesService {
       ];
     }
 
-    return this.prisma.phoneRecord.findMany({
+    const runQuery = () => this.prisma.phoneRecord.findMany({
       where,
       select: {
         id: true,
@@ -344,6 +344,11 @@ export class PhonesService {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    if (query?.global) {
+      return requestContext.storeWide(runQuery);
+    }
+    return runQuery();
   }
 
   async flagAsStolen(businessId: string, id: string, dto: FlagStolenDto) {

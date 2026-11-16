@@ -57,6 +57,7 @@ export default function RebuiltSettingsPage() {
   // Delete Account modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletePassword, setDeletePassword] = useState('');
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
@@ -523,7 +524,7 @@ export default function RebuiltSettingsPage() {
                 </p>
                 <button
                   type="button"
-                  onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setDeleteError(null); }}
+                  onClick={() => { setShowDeleteModal(true); setDeletePassword(''); setDeleteConfirmText(''); setDeleteError(null); }}
                   className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white transition-colors"
                 >
                   <AlertCircle className="w-3.5 h-3.5" />
@@ -607,24 +608,51 @@ export default function RebuiltSettingsPage() {
               </div>
             )}
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
-                Confirm your password to continue
-              </label>
-              <input
-                type="password"
-                value={deletePassword}
-                onChange={(e) => setDeletePassword(e.target.value)}
-                placeholder="Enter your current password"
-                className="w-full px-3.5 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-400"
-                autoComplete="current-password"
-              />
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Confirm your password
+                </label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => {
+                    setDeletePassword(e.target.value);
+                    if (e.target.value) setDeleteConfirmText('');
+                  }}
+                  placeholder="Enter your current password"
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-400"
+                  autoComplete="current-password"
+                />
+              </div>
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+                <span className="flex-shrink mx-3 text-[10px] font-bold text-slate-400 uppercase tracking-wider">OR (Google Sign-In)</span>
+                <div className="flex-grow border-t border-slate-200 dark:border-slate-800"></div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Signed in with Google? Type <span className="font-mono text-red-600 dark:text-red-400 font-extrabold">DELETE</span> below
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => {
+                    setDeleteConfirmText(e.target.value);
+                    if (e.target.value) setDeletePassword('');
+                  }}
+                  placeholder="Type DELETE to confirm"
+                  className="w-full px-3.5 py-2.5 text-sm border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-red-400 font-mono"
+                />
+              </div>
             </div>
 
             <div className="flex gap-3 pt-1">
               <button
                 type="button"
-                onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteError(null); }}
+                onClick={() => { setShowDeleteModal(false); setDeletePassword(''); setDeleteConfirmText(''); setDeleteError(null); }}
                 disabled={deleting}
                 className="flex-1 py-2.5 text-sm font-bold rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
               >
@@ -632,17 +660,20 @@ export default function RebuiltSettingsPage() {
               </button>
               <button
                 type="button"
-                disabled={deleting || !deletePassword}
+                disabled={deleting || (!deletePassword && deleteConfirmText.trim().toUpperCase() !== 'DELETE')}
                 onClick={async () => {
                   setDeleteError(null);
                   setDeleting(true);
                   try {
-                    await api.deleteAccount(deletePassword);
+                    const payload = deletePassword
+                      ? { password: deletePassword }
+                      : { confirmText: deleteConfirmText.trim().toUpperCase() };
+                    await api.deleteAccount(payload);
                     // Clear session and redirect
                     logout();
                     window.location.href = '/login?deleted=true';
                   } catch (err: any) {
-                    setDeleteError(err?.message || 'Failed to delete account. Check your password.');
+                    setDeleteError(err?.message || 'Failed to delete account. Please verify your password or confirmation text.');
                   } finally {
                     setDeleting(false);
                   }

@@ -1,17 +1,18 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
+import { useAuthStore } from '@/store/useAuthStore';
 
 /**
  * Cache Keys
  */
 export const QUERY_KEYS = {
-  inventory: (params?: any) => ['inventory', params] as const,
-  inventorySummary: ['inventory-summary'] as const,
-  records: (params?: any) => ['records', params] as const,
+  inventory: (branchId?: string | null, params?: any) => ['inventory', branchId || 'all', params] as const,
+  inventorySummary: (branchId?: string | null) => ['inventory-summary', branchId || 'all'] as const,
+  records: (branchId?: string | null, params?: any) => ['records', branchId || 'all', params] as const,
   recordDetail: (id: string) => ['record-detail', id] as const,
-  receipts: (params?: any) => ['receipts', params] as const,
-  invoices: (search?: string) => ['invoices', search] as const,
-  quotes: (params?: any) => ['quotes', params] as const,
+  receipts: (branchId?: string | null, params?: any) => ['receipts', branchId || 'all', params] as const,
+  invoices: (branchId?: string | null, search?: string) => ['invoices', branchId || 'all', search] as const,
+  quotes: (branchId?: string | null, params?: any) => ['quotes', branchId || 'all', params] as const,
   customers: (search?: string) => ['customers', search] as const,
   adminSubscriptions: ['admin-subscriptions'] as const,
   adminMetrics: (timeRange?: string) => ['admin-metrics', timeRange] as const,
@@ -25,8 +26,9 @@ export const QUERY_KEYS = {
  * Cached hook for Inventory list
  */
 export function useInventory(params?: { search?: string; status?: string; brand?: string }) {
+  const selectedBranchId = useAuthStore((s) => s.selectedBranchId);
   return useQuery({
-    queryKey: QUERY_KEYS.inventory(params),
+    queryKey: QUERY_KEYS.inventory(selectedBranchId, params),
     queryFn: async () => {
       const res = await api.getInventory(params);
       return Array.isArray(res) ? res : [];
@@ -40,8 +42,9 @@ export function useInventory(params?: { search?: string; status?: string; brand?
  * Cached hook for Inventory KPI & Summary
  */
 export function useInventorySummary() {
+  const selectedBranchId = useAuthStore((s) => s.selectedBranchId);
   return useQuery({
-    queryKey: QUERY_KEYS.inventorySummary,
+    queryKey: QUERY_KEYS.inventorySummary(selectedBranchId),
     queryFn: async () => {
       return await api.getDashboardSummary();
     },
@@ -54,8 +57,9 @@ export function useInventorySummary() {
  * Cached hook for Invoices
  */
 export function useInvoices(search?: string) {
+  const selectedBranchId = useAuthStore((s) => s.selectedBranchId);
   return useQuery({
-    queryKey: QUERY_KEYS.invoices(search),
+    queryKey: QUERY_KEYS.invoices(selectedBranchId, search),
     queryFn: async () => {
       const res = await api.getInvoices(search?.trim() || undefined);
       return Array.isArray(res) ? res : [];
@@ -69,9 +73,10 @@ export function useInvoices(search?: string) {
  * Cached hook for Quotes
  */
 export function useQuotes(params?: { search?: string; status?: string} | string) {
+  const selectedBranchId = useAuthStore((s) => s.selectedBranchId);
   const queryParams = typeof params === 'string' ? { search: params.trim() || undefined } : params;
   return useQuery({
-    queryKey: QUERY_KEYS.quotes(queryParams),
+    queryKey: QUERY_KEYS.quotes(selectedBranchId, queryParams),
     queryFn: async () => {
       const res = await api.getQuotes(queryParams);
       return Array.isArray(res) ? res : [];
@@ -100,8 +105,9 @@ export function useCustomers(search?: string) {
  * Cached hook for Phone Records Ledger
  */
 export function usePhoneRecords(params?: any) {
+  const selectedBranchId = useAuthStore((s) => s.selectedBranchId);
   return useQuery({
-    queryKey: QUERY_KEYS.records(params),
+    queryKey: QUERY_KEYS.records(selectedBranchId, params),
     queryFn: async () => {
       const res = await api.getInventory(params);
       return Array.isArray(res) ? res : [];
@@ -132,8 +138,9 @@ export function usePhoneRecordDetail(id?: string) {
  * Cached hook for Receipts Archive
  */
 export function useReceipts(search?: string) {
+  const selectedBranchId = useAuthStore((s) => s.selectedBranchId);
   return useQuery({
-    queryKey: QUERY_KEYS.receipts(search),
+    queryKey: QUERY_KEYS.receipts(selectedBranchId, search),
     queryFn: async () => {
       const res = await api.getReceipts(search);
       return Array.isArray(res) ? res : [];
@@ -221,7 +228,7 @@ export function useDashboardCacheUtils() {
   return {
     invalidateInventory: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventorySummary });
+      queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
       queryClient.invalidateQueries({ queryKey: ['records'] });
     },
     invalidateRecords: () => {
@@ -230,11 +237,11 @@ export function useDashboardCacheUtils() {
     },
     invalidateReceipts: () => {
       queryClient.invalidateQueries({ queryKey: ['receipts'] });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventorySummary });
+      queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
     },
     invalidateInvoices: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.inventorySummary });
+      queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
     },
     invalidateQuotes: () => {
       queryClient.invalidateQueries({ queryKey: ['quotes'] });

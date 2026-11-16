@@ -159,7 +159,7 @@ export class BusinessService {
     });
   }
 
-  async deleteAccount(businessId: string, userId: string, password: string) {
+  async deleteAccount(businessId: string, userId: string, password?: string, confirmText?: string) {
     // 1. Fetch user
     const user = await this.prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
@@ -169,10 +169,16 @@ export class BusinessService {
       throw new ForbiddenException('Only the store owner can delete this account.');
     }
 
-    // 3. Verify password
-    const valid = user.password ? await bcrypt.compare(password, user.password) : false;
-    if (!valid) {
-      throw new BadRequestException('Incorrect password. Account was not deleted.');
+    // 3. Verify identity — password for email/password accounts, "DELETE" text for Google sign-in accounts
+    if (password) {
+      const valid = user.password ? await bcrypt.compare(password, user.password) : false;
+      if (!valid) {
+        throw new BadRequestException('Incorrect password. Account was not deleted.');
+      }
+    } else if (confirmText === 'DELETE') {
+      // Google sign-in users have no user-set password — they confirm by typing DELETE
+    } else {
+      throw new BadRequestException('Please confirm with your password or type DELETE to proceed.');
     }
 
     // 4. Delete business (cascades all related data via Prisma schema onDelete: Cascade)

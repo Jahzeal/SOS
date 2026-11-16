@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useAuthStore } from '@/store/useAuthStore';
 import { isTokenExpired } from '@/lib/jwt-utils';
+import { useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import {
   Bell,
@@ -72,6 +73,7 @@ function formatRelativeTime(dateString: string | Date): string {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user, logout, setAuth, selectedBranchId, selectedBranchName, setSelectedBranch } = useAuthStore();
   const [isMounted, setIsMounted] = useState(false);
   const [isAuthorized, setIsAuthorized] = useState(false);
@@ -81,8 +83,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isBranchDropdownOpen, setIsBranchDropdownOpen] = useState(false);
 
-  // Available branches list for Owner / Manager switching
-  const [branchesList, setBranchesList] = useState<Array<{ id: string; name: string; isMain: boolean; isActive: boolean }>>([]);
+  // Available branches list for Owner / Manager switching (persisted so it never flickers)
+  const [branchesList, setBranchesList] = useState<Array<{ id: string; name: string; isMain: boolean; isActive: boolean }>>(() => {
+    if (typeof window === 'undefined') return [];
+    try {
+      const cached = localStorage.getItem('vf_branches_cache');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
 
   // Store Notifications Real Data State
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
@@ -202,6 +212,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           .then((res) => {
             if (Array.isArray(res?.branches)) {
               setBranchesList(res.branches);
+              try {
+                localStorage.setItem('vf_branches_cache', JSON.stringify(res.branches));
+              } catch {}
             }
           })
           .catch(() => {});
@@ -305,7 +318,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                         onClick={() => {
                           setSelectedBranch(null, null);
                           setIsBranchDropdownOpen(false);
-                          window.location.reload();
+                          queryClient.invalidateQueries({ queryKey: ['inventory'] });
+                          queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+                          queryClient.invalidateQueries({ queryKey: ['records'] });
+                          queryClient.invalidateQueries({ queryKey: ['receipts'] });
+                          queryClient.invalidateQueries({ queryKey: ['invoices'] });
+                          queryClient.invalidateQueries({ queryKey: ['quotes'] });
                         }}
                         className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition-colors ${
                           !selectedBranchId ? 'text-accent-600 dark:text-accent-400 font-bold bg-accent-50/50 dark:bg-accent-950/30' : 'text-slate-700 dark:text-slate-300'
@@ -329,7 +347,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                             onClick={() => {
                               setSelectedBranch(branch.id, branch.name);
                               setIsBranchDropdownOpen(false);
-                              window.location.reload();
+                              queryClient.invalidateQueries({ queryKey: ['inventory'] });
+                              queryClient.invalidateQueries({ queryKey: ['inventory-summary'] });
+                              queryClient.invalidateQueries({ queryKey: ['records'] });
+                              queryClient.invalidateQueries({ queryKey: ['receipts'] });
+                              queryClient.invalidateQueries({ queryKey: ['invoices'] });
+                              queryClient.invalidateQueries({ queryKey: ['quotes'] });
                             }}
                             className={`w-full flex items-center justify-between px-3 py-2 text-xs font-medium hover:bg-slate-50 dark:hover:bg-slate-800 text-left transition-colors ${
                               isSelected ? 'text-accent-600 dark:text-accent-400 font-bold bg-accent-50/50 dark:bg-accent-950/30' : 'text-slate-700 dark:text-slate-300'

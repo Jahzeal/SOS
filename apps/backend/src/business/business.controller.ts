@@ -42,6 +42,6 @@ export class BusinessController {
   @Delete('account')
   @HttpCode(HttpStatus.OK)
   async deleteAccount(@CurrentUser() user: any, @Body() body: DeleteAccountDto) {
-    return this.businessService.deleteAccount(user.businessId, user.id, body.password);
+    return this.businessService.deleteAccount(user.businessId, user.id, body.password, body.confirmText);
   }
 }

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, X, ShieldCheck, Smartphone, User, FileText, ArrowRight, Loader2 } from 'lucide-react';
+import { Search, X, ShieldCheck, Smartphone, User, FileText, ArrowRight, Loader2, Building2 } from 'lucide-react';
 import { api } from '@/lib/api';
 
 export interface SearchResultItem {
@@ -12,6 +12,7 @@ export interface SearchResultItem {
   title: string;
   subtitle: string;
   badgeText: string;
+  branchName?: string | null;
   link?: string;
 }
 
@@ -49,21 +50,22 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
       setLoading(true);
       try {
         const [devicesRes, salesRes] = await Promise.allSettled([
-          api.getInventory({ search: query.trim() }),
+          api.getInventory({ search: query.trim(), global: true }),
           api.getReceipts(query.trim()),
         ]);
 
         const items: SearchResultItem[] = [];
 
         if (devicesRes.status === 'fulfilled' && Array.isArray(devicesRes.value)) {
-          devicesRes.value.slice(0, 5).forEach((d: any) => {
+          devicesRes.value.slice(0, 8).forEach((d: any) => {
             items.push({
               id: d.id,
               type: 'PHONE',
               title: `${d.brand || ''} ${d.model || 'Device'}`.trim(),
               subtitle: `IMEI: ${d.imei1 || d.imei || '—'}${d.serialNumber ? ` | SN: ${d.serialNumber}` : ''}`,
               badgeText: d.status || 'IN_STOCK',
-              link: `/dashboard/inventory/${d.id}`,
+              branchName: d.branch?.name || 'Main branch',
+              link: `/dashboard/records/${d.id}`,
             });
           });
         }
@@ -175,8 +177,14 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                       )}
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate">
-                        {item.title}
+                      <div className="font-bold text-xs sm:text-sm text-slate-900 dark:text-white truncate flex items-center gap-2">
+                        <span>{item.title}</span>
+                        {item.branchName && (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700">
+                            <Building2 className="w-2.5 h-2.5 text-accent-600 dark:text-accent-400" />
+                            {item.branchName}
+                          </span>
+                        )}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400 truncate font-mono">
                         {item.subtitle}

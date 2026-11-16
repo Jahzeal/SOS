@@ -63,9 +63,11 @@ export class PhonesController {
     @Query('search') search?: string,
     @Query('status') status?: PhoneStatus,
     @Query('brand') brand?: string,
+    @Query('global') global?: string,
   ) {
     const businessId = req.user.businessId;
-    return this.phonesService.findAll(businessId, { search, status, brand });
+    const isGlobal = global === 'true' || global === '1';
+    return this.phonesService.findAll(businessId, { search, status, brand, global: isGlobal });
   }
 
   @Get(':id')

@@ -311,10 +311,10 @@ class ApiClient {
     });
   }
 
-  async deleteAccount(password: string) {
+  async deleteAccount(payload: { password?: string; confirmText?: string }) {
     return this.request<{ success: boolean }>('/business/account', {
       method: 'DELETE',
-      body: JSON.stringify({ password }),
+      body: JSON.stringify(payload),
     });
   }
 
@@ -392,11 +392,12 @@ class ApiClient {
     });
   }
 
-  async getInventory(params?: { search?: string; status?: string; brand?: string }) {
+  async getInventory(params?: { search?: string; status?: string; brand?: string; global?: boolean }) {
     const query = new URLSearchParams();
     if (params?.search) query.append('search', params.search);
     if (params?.status) query.append('status', params.status);
     if (params?.brand) query.append('brand', params.brand);
+    if (params?.global) query.append('global', 'true');
 
     const queryString = query.toString() ? `?${query.toString()}` : '';
     return this.request<any[]>(`/phones${queryString}`);
