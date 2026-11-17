@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalPage } from '@/components/marketing/LegalPage';
-import { BUSINESS_NAME, CONTACT } from '@/components/marketing/SiteFooter';
+import { BUSINESS_NAME } from '@/components/marketing/SiteFooter';
+import { LEGAL } from '@/components/marketing/legal-details';
 
 export const metadata: Metadata = {
   title: 'Privacy Policy — NoxGuarda',
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy Policy" updated="12 November 2026">
+    <LegalPage title="Privacy Policy" updated="17 November 2026">
       <section>
         <h2>1. Who we are</h2>
         <p>
@@ -21,7 +22,7 @@ export default function PrivacyPage() {
         </p>
         <p>
           This policy explains how personal data is handled under the Nigeria Data Protection Act 2023 (NDPA).
-          [Registered business name, registration number and address of the data controller to be inserted.]
+          The data controller is {LEGAL.companyName}, {LEGAL.address}.
         </p>
       </section>
 
@@ -72,7 +73,7 @@ export default function PrivacyPage() {
         <ul>
           <li>
             Sign-in tokens and display preferences are kept in your browser&apos;s local storage so you stay signed in.
-            We do not use advertising or tracking cookies. [Confirm no analytics tools are added before launch.]
+            We do not use advertising or tracking cookies, or third-party analytics tools.
           </li>
         </ul>
       </section>
@@ -114,8 +115,10 @@ export default function PrivacyPage() {
           <li><strong>{BUSINESS_NAME} staff</strong> who need access to run and support the service.</li>
           <li>
             <strong>Service providers</strong> acting on our instructions: Paystack (payments), Google (sign-in for
-            reports), our email delivery provider, and our hosting and database providers. [List providers and the
-            countries where data is stored; confirm the basis for any transfer outside Nigeria under the NDPA.]
+            reports and Gmail email delivery), Resend (email delivery), Vercel (website hosting) and Supabase (database). Some of these
+            providers store data outside Nigeria, including in the European Union and the United States. We only
+            send data abroad where it is needed to provide the service you asked for, and we choose providers that
+            protect it with strong security.
           </li>
           <li>Law enforcement or regulators, where the law requires it.</li>
         </ul>
@@ -124,13 +127,13 @@ export default function PrivacyPage() {
       <section>
         <h2>6. How long we keep it</h2>
         <ul>
-          <li>Store account and business records: while the account is open, then [period to be confirmed] after closure.</li>
-          <li>Sales, invoice and payment records: [period to be confirmed, in line with Nigerian tax and accounting rules].</li>
+          <li>Store account and business records: while the account is open, then 12 months after closure.</li>
+          <li>Sales, invoice and payment records: 6 years, in line with Nigerian tax and accounting rules.</li>
           <li>
             Stolen-device reports: until the owner marks the device as recovered or asks for removal; resolved reports
-            are kept for [period to be confirmed].
+            are kept for 2 years.
           </li>
-          <li>Device check logs and error logs: [period to be confirmed].</li>
+          <li>Device check logs and error logs: 12 months.</li>
         </ul>
       </section>
 
@@ -167,16 +170,13 @@ export default function PrivacyPage() {
 
       <section>
         <h2>10. Contact</h2>
-        {CONTACT.email || CONTACT.phone || CONTACT.address ? (
-          <ul>
-            {CONTACT.email && <li>Email: <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></li>}
-            {CONTACT.phone && <li>Phone: {CONTACT.phone}</li>}
-            {CONTACT.address && <li>Address: {CONTACT.address}</li>}
-          </ul>
-        ) : (
-          <p>[Contact email, phone number and postal address for privacy requests to be inserted.]</p>
-        )}
-        <p>[Name and contact of the Data Protection Officer, if one must be appointed.]</p>
+        <ul>
+          <li>{LEGAL.companyName}</li>
+          <li>Email: <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li>
+          <li>Phone: {LEGAL.phone}</li>
+          <li>Address: {LEGAL.address}</li>
+        </ul>
+        <p>Send privacy requests to the email above. We aim to reply within 30 days.</p>
       </section>
 
       <section>

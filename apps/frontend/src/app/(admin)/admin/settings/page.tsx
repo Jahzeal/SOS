@@ -38,8 +38,8 @@ export default function AdminSettingsPage() {
 
   // Contact & Support Form State
   const [supportEmail, setSupportEmail] = useState('support@noxguarda.com');
-  const [supportPhone, setSupportPhone] = useState('+234 802 000 1122');
-  const [supportWhatsApp, setSupportWhatsApp] = useState('+234 802 000 1122');
+  const [supportPhone, setSupportPhone] = useState('0814 072 4619');
+  const [supportWhatsApp, setSupportWhatsApp] = useState('0814 072 4619');
 
   // Email Templates State
   const [welcomeEmailEnabled, setWelcomeEmailEnabled] = useState(true);

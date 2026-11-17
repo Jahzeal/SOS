@@ -10,6 +10,7 @@ import { api } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
+import { whatsappChatUrl } from '@/components/marketing/SiteFooter';
 import {
   ShieldCheck,
   Smartphone,
@@ -498,16 +499,20 @@ export default function BusinessDashboardPage() {
           <div className="absolute bottom-16 right-0 w-72 bg-white rounded-card border border-slate-200 shadow-2xl p-4 space-y-3 text-xs animate-in fade-in duration-150">
             <div className="font-extrabold text-slate-900 flex items-center justify-between border-b border-slate-100 pb-2">
               <span>NoxGuarda Support</span>
-              <span className="text-xs text-success-600 font-bold">ONLINE</span>
             </div>
-            <p className="text-slate-600 font-medium">Need help configuring box QR printers or multi-branch stock transfers?</p>
+            <p className="text-slate-600 font-medium">Need help with NoxGuarda?</p>
             <div className="space-y-1.5 pt-1">
-              <a href="#" className="block p-2 rounded-lg bg-slate-50 hover:bg-slate-100 font-bold text-slate-800">
-                 Documentation & Guides
+              <a
+                href={whatsappChatUrl('Hi NoxGuarda Support, I need help with my store.') || '/contact'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block p-2 rounded-lg bg-success-50 text-success-700 font-bold hover:bg-success-100"
+              >
+                Chat on WhatsApp
               </a>
-              <a href="https://wa.me/2348140724619?text=Hi%20NoxGuarda%20Support%2C%20I%20need%20help%20with%20my%20store." target="_blank" rel="noopener noreferrer" className="block p-2 rounded-lg bg-accent-50 text-accent-700 font-bold hover:bg-accent-100">
-                 Contact Store Support
-              </a>
+              <Link href="/contact" className="block p-2 rounded-lg bg-accent-50 text-accent-700 font-bold hover:bg-accent-100">
+                Send us a message
+              </Link>
             </div>
           </div>
         )}

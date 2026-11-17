@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { LegalPage } from '@/components/marketing/LegalPage';
-import { BUSINESS_NAME, CONTACT } from '@/components/marketing/SiteFooter';
+import { BUSINESS_NAME } from '@/components/marketing/SiteFooter';
+import { LEGAL } from '@/components/marketing/legal-details';
 
 export const metadata: Metadata = {
   title: 'Terms of Service — NoxGuarda',
@@ -11,13 +12,13 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <LegalPage title="Terms of Service" updated="12 November 2026">
+    <LegalPage title="Terms of Service" updated="17 November 2026">
       <section>
         <h2>1. About these terms</h2>
         <p>
           These terms apply to everyone who uses {BUSINESS_NAME}: stores with an account, buyers who check a device,
           and people who report a device as stolen or lost. By using the service you agree to them.
-          [Registered business name and address of the company providing the service to be inserted.]
+          The service is provided by {LEGAL.companyName}, {LEGAL.address}.
         </p>
       </section>
 
@@ -36,7 +37,15 @@ export default function TermsPage() {
           <li>The Free plan costs nothing and is limited to the number of devices shown on the <Link href="/pricing">pricing page</Link>.</li>
           <li>Paid plans are charged in naira, monthly or yearly, through Paystack.</li>
           <li>Prices and plan limits are those shown on the pricing page when you pay.</li>
-          <li>[Renewal, cancellation and refund terms to be confirmed.]</li>
+          <li>
+            Paid plans do not renew automatically. When the period you paid for ends, your account is paused until
+            you pay again. Your records are kept while it is paused.
+          </li>
+          <li>You can stop paying at any time. You keep access until the end of the period you have paid for.</li>
+          <li>
+            Payments are not refunded for time already paid for, except where you were charged by mistake or charged
+            twice. Those payments are refunded within 14 days of us confirming the error.
+          </li>
         </ul>
       </section>
 
@@ -98,8 +107,11 @@ export default function TermsPage() {
       <section>
         <h2>9. Liability</h2>
         <p>
-          [Limitation of liability wording to be drafted by a lawyer in line with Nigerian law, including the Federal
-          Competition and Consumer Protection Act 2018.]
+          As far as the law allows, {BUSINESS_NAME} is not responsible for losses that come from how a store or
+          buyer uses a device check, from records a store enters, or from a sale between a store and its customer.
+          Our total liability to a store is limited to the amount it paid us in the 12 months before the claim.
+          Nothing in these terms takes away rights you have under the Federal Competition and Consumer Protection
+          Act 2018 or other Nigerian law.
         </p>
       </section>
 
@@ -107,26 +119,26 @@ export default function TermsPage() {
         <h2>10. Ending an account</h2>
         <p>
           You can stop using the service at any time. We may suspend or close an account that breaks these terms.
-          [Notice period and how a store can obtain its records on closure to be confirmed.]
+          Unless an account is closed for breaking these terms, we will give 30 days&apos; notice by email before
+          closing it. During that time you can export your records, or email us for a copy.
         </p>
       </section>
 
       <section>
         <h2>11. Governing law</h2>
-        <p>These terms are governed by the laws of the Federal Republic of Nigeria. [Courts or dispute process to be confirmed.]</p>
+        <p>These terms are governed by the laws of the Federal Republic of Nigeria. If there is a dispute, please
+          email us first so we can try to settle it within 30 days. If it is not settled, the courts of Lagos State
+          will decide it.</p>
       </section>
 
       <section>
         <h2>12. Contact</h2>
-        {CONTACT.email || CONTACT.phone || CONTACT.address ? (
-          <ul>
-            {CONTACT.email && <li>Email: <a href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a></li>}
-            {CONTACT.phone && <li>Phone: {CONTACT.phone}</li>}
-            {CONTACT.address && <li>Address: {CONTACT.address}</li>}
-          </ul>
-        ) : (
-          <p>[Contact email, phone number and address to be inserted.]</p>
-        )}
+        <ul>
+          <li>{LEGAL.companyName}</li>
+          <li>Email: <a href={`mailto:${LEGAL.email}`}>{LEGAL.email}</a></li>
+          <li>Phone: {LEGAL.phone}</li>
+          <li>Address: {LEGAL.address}</li>
+        </ul>
       </section>
     </LegalPage>
   );
