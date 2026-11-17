@@ -857,4 +857,15 @@ export class SalesService {
     const filename = `${isInvoice ? 'Invoice' : 'Receipt'}-${docNum}.pdf`;
     return { buffer: pdfBuffer, filename };
   }
+
+  async generatePublicPdf(id: string): Promise<{ buffer: Buffer; filename: string }> {
+    const sale = await this.prisma.sale.findUnique({
+      where: { id },
+      select: { businessId: true },
+    });
+    if (!sale) {
+      throw new NotFoundException('Transaction record not found.');
+    }
+    return this.generatePdf(sale.businessId, id);
+  }
 }

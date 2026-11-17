@@ -505,6 +505,11 @@ class ApiClient {
     return `${API_BASE_URL}/sales/invoices/${id}/pdf`;
   }
 
+  getPublicDocumentPdfUrl(type: 'INVOICE' | 'RECEIPT' | 'QUOTE', id: string): string {
+    const slug = type === 'INVOICE' ? 'invoices' : type === 'RECEIPT' ? 'receipts' : 'quotes';
+    return `${API_BASE_URL}/public/documents/${slug}/${id}/pdf`;
+  }
+
   /**
    * PDFs need the login token, which must travel in a header (never in the URL,
    * where it would end up in browser history and server logs). So a PDF link

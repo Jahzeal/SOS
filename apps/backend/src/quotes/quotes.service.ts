@@ -729,6 +729,17 @@ export class QuotesService {
     };
   }
 
+  async generatePublicPdf(id: string): Promise<{ buffer: Buffer; filename: string }> {
+    const quote = await this.prisma.quote.findUnique({
+      where: { id },
+      select: { businessId: true },
+    });
+    if (!quote) {
+      throw new NotFoundException('Quotation record not found.');
+    }
+    return this.generatePdf(quote.businessId, id);
+  }
+
   async sendQuoteEmail(businessId: string, id: string, overrideEmail?: string) {
     const quote = await this.findOne(businessId, id);
     const targetEmail = overrideEmail?.trim() || quote.customer?.email;

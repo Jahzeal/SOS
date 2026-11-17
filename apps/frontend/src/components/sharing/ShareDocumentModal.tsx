@@ -149,7 +149,9 @@ export function ShareDocumentModal({ isOpen, onClose, document: doc }: ShareDocu
       }).join('\n') + (doc.items.length > 3 ? `\n• + ${doc.items.length - 3} more items` : '')
     : '• Equipment / Retail Order';
 
-  // Formatted text message for WhatsApp or SMS
+  const publicPdfDownloadUrl = api.getPublicDocumentPdfUrl(doc.type, doc.id);
+
+  // Formatted text message for WhatsApp or SMS with public PDF download link
   const whatsappMessageText = `Hello ${customerName},
 
 Please find your official ${docLabel} statement from *${storeName}*:
@@ -160,6 +162,9 @@ ${doc.type === 'INVOICE' && status === 'PARTIALLY_PAID' ? `💳 *Amount Paid:* �
 
 📦 *Items Summary:*
 ${itemsList}
+
+📥 *View & Download Official PDF:*
+${publicPdfDownloadUrl}
 
 Thank you for your business!`;
 
@@ -365,16 +370,17 @@ Thank you for your business!`;
                     <button
                       type="button"
                       onClick={handleOpenWhatsAppChat}
-                      className="w-full text-xs font-bold text-slate-500 hover:text-slate-800 underline cursor-pointer"
+                      className="w-full text-xs font-bold text-accent-600 hover:text-accent-700 underline cursor-pointer flex items-center justify-center gap-1.5 pt-1"
                     >
-                      Send a text summary only (no PDF)
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      <span>Send WhatsApp message with PDF download link</span>
                     </button>
                   </>
                 ) : (
                   <div className="grid grid-cols-2 gap-2.5">
                     <a
                       href={getPdfDownloadUrl()}
-              onClick={(e) => api.handlePdfLinkClick(e, getPdfDownloadUrl(), getPdfFilename())}
+                      onClick={(e) => api.handlePdfLinkClick(e, getPdfDownloadUrl(), getPdfFilename())}
                       download={getPdfFilename()}
                       className="py-3 px-3 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition shadow-sm cursor-pointer"
                     >
@@ -386,7 +392,7 @@ Thank you for your business!`;
                       type="button"
                       onClick={handleOpenWhatsAppChat}>
                       <ExternalLink className="w-4 h-4" />
-                      <span>Open WhatsApp Web</span>
+                      <span>Send on WhatsApp with PDF Link</span>
                     </Button>
                   </div>
                 )}
