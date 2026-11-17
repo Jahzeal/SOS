@@ -79,6 +79,14 @@ const PLATFORM_FEATURE_CATALOG: FeatureCategory[] = [
       'Cross-Branch Global Search (Ctrl+K)',
     ],
   },
+  {
+    category: 'Help & Support',
+    icon: '🎧',
+    items: [
+      'Standard Support',
+      'Priority Support',
+    ],
+  },
 ];
 
 const ALL_CATALOG_FEATURES = PLATFORM_FEATURE_CATALOG.flatMap((cat) => cat.items);
@@ -165,7 +173,7 @@ export default function AdminSubscriptionsPage() {
       isActive: plan.isActive,
       isPublic: plan.isPublic,
       sortOrder: plan.sortOrder !== undefined ? plan.sortOrder : 0,
-      features: Array.isArray(plan.features) ? plan.features : [],
+      features: Array.isArray(plan.features) ? plan.features.filter((f: string) => ALL_CATALOG_FEATURES.includes(f)) : [],
     });
     setShowPlanModal(true);
   };
@@ -535,21 +543,25 @@ export default function AdminSubscriptionsPage() {
                   </div>
 
                   {/* Feature Checklist */}
-                  {Array.isArray(p.features) && p.features.length > 0 && (
-                    <div className="pt-2.5 border-t border-slate-100 space-y-1.5">
-                      <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
-                        Included Features ({p.features.length}):
-                      </span>
-                      <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
-                        {p.features.map((f: string, fIdx: number) => (
-                          <div key={fIdx} className="flex items-start gap-1.5 text-xs text-slate-700 font-medium">
-                            <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                            <span className="leading-snug">{f}</span>
-                          </div>
-                        ))}
+                  {Array.isArray(p.features) && p.features.length > 0 && (() => {
+                    const validFeatures = p.features.filter((f: string) => ALL_CATALOG_FEATURES.includes(f));
+                    if (validFeatures.length === 0) return null;
+                    return (
+                      <div className="pt-2.5 border-t border-slate-100 space-y-1.5">
+                        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">
+                          Included Features ({validFeatures.length}):
+                        </span>
+                        <div className="space-y-1.5 max-h-56 overflow-y-auto pr-1">
+                          {validFeatures.map((f: string, fIdx: number) => (
+                            <div key={fIdx} className="flex items-start gap-1.5 text-xs text-slate-700 font-medium">
+                              <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                              <span className="leading-snug">{f}</span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 mt-4 flex items-center justify-between text-xs">
