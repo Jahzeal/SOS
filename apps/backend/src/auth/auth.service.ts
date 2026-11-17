@@ -23,6 +23,14 @@ const DEFAULT_GOOGLE_CLIENT_ID = '380893447009-j1qb7s0ub6k7t4529s3fhemlakj5c92c.
 const OTP_TTL_MS = 10 * 60 * 1000;
 const OTP_MAX_ATTEMPTS = 5;
 
+// Sign-in sessions. Each sign-in is one row in the RefreshToken table; signing out,
+// "sign out other devices" and password changes end sessions by marking rows revoked.
+const HOUR_MS = 60 * 60 * 1000;
+const SHORT_SESSION_MS = 24 * HOUR_MS; // box not ticked: same as before, one day
+const REMEMBER_SESSION_MS = 30 * 24 * HOUR_MS; // "Keep me signed in": 30 days, renewed on every use
+const SHORT_ACCESS_TTL = '24h';
+const REMEMBER_ACCESS_TTL = '1h'; // short, because the app renews it quietly with the refresh token
+
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
@@ -254,7 +262,7 @@ export class AuthService {
       );
 
       const createdUser = business.users[0];
-      const tokens = await this.generateTokens(createdUser.id, createdUser.email);
+      const tokens = await this.generateTokens(createdUser.id, createdUser.email, !!dto.rememberMe);
 
       // Asynchronously send welcome email
       this.mailService
@@ -275,7 +283,7 @@ export class AuthService {
     }
 
     await this.staff.assertCanWork(user);
-    const tokens = await this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email, !!dto.rememberMe);
 
     return {
       user: this.publicUser(user, user.business),
@@ -367,7 +375,7 @@ export class AuthService {
     // Right password, but switched off or not covered by the store's plan.
     await this.staff.assertCanWork(user);
 
-    const tokens = await this.generateTokens(user.id, user.email);
+    const tokens = await this.generateTokens(user.id, user.email, !!dto.rememberMe);
 
     return {
       user: this.publicUser(user, user.business),
@@ -375,12 +383,127 @@ export class AuthService {
     };
   }
 
-  private async generateTokens(userId: string, email: string) {
-    // Refresh tokens were being stored on every login but nothing ever consumed
-    // or revoked them, so only the access token is issued.
+  private hashToken(token: string): string {
+    return createHash('sha256').update(token).digest('hex');
+  }
+
+  /**
+   * A short fingerprint of the stored password hash. Put inside a reset link, it makes the
+   * link single-use: once the password changes, the fingerprint no longer matches.
+   */
+  private passwordFingerprint(passwordHash: string): string {
+    return createHash('sha256').update(String(passwordHash || '')).digest('hex').slice(0, 16);
+  }
+
+  /**
+   * Starts a sign-in session. The access token carries the session id (`sid`), so the
+   * session can be ended from the server. Only "Keep me signed in" gets a refresh token;
+   * the database keeps a hash of it, never the token itself.
+   */
+  async generateTokens(userId: string, email: string, rememberMe = false) {
+    const now = Date.now();
+
+    // Tidy this person's finished sessions (also clears old rows from before sessions existed).
+    await this.prisma.refreshToken
+      .deleteMany({ where: { userId, OR: [{ expiresAt: { lt: new Date(now) } }, { revoked: true }] } })
+      .catch(() => undefined);
+
+    const refreshToken = randomBytes(32).toString('base64url');
+    const session = await this.prisma.refreshToken.create({
+      data: {
+        userId,
+        token: this.hashToken(refreshToken),
+        expiresAt: new Date(now + (rememberMe ? REMEMBER_SESSION_MS : SHORT_SESSION_MS)),
+      },
+      select: { id: true },
+    });
+
+    const accessToken = this.jwtService.sign(
+      { sub: userId, email, sid: session.id },
+      { expiresIn: rememberMe ? REMEMBER_ACCESS_TTL : SHORT_ACCESS_TTL },
+    );
+
+    return rememberMe ? { accessToken, refreshToken, rememberMe: true } : { accessToken, rememberMe: false };
+  }
+
+  /**
+   * "Keep me signed in": swaps a refresh token for a new access token and a new refresh
+   * token (the old one stops working), and pushes the session's end 30 days out again.
+   */
+  async refreshSession(refreshToken: string) {
+    const ended = () => new UnauthorizedException('Your session has ended. Please sign in again.');
+    if (!refreshToken) throw ended();
+
+    const hash = this.hashToken(refreshToken);
+    const session = await this.prisma.refreshToken.findUnique({
+      where: { token: hash },
+      include: { user: { include: { business: true, branch: { select: { id: true, name: true } } } } },
+    });
+    if (!session || session.revoked || session.expiresAt.getTime() <= Date.now()) throw ended();
+
+    // Switched off by the owner, or no longer covered by the plan.
+    await this.staff.assertCanWork(session.user);
+
+    const next = randomBytes(32).toString('base64url');
+    // Conditional update: if two requests race with the same token, only one wins.
+    const rotated = await this.prisma.refreshToken.updateMany({
+      where: { id: session.id, token: hash, revoked: false },
+      data: { token: this.hashToken(next), expiresAt: new Date(Date.now() + REMEMBER_SESSION_MS) },
+    });
+    if (rotated.count !== 1) throw ended();
+
+    const accessToken = this.jwtService.sign(
+      { sub: session.userId, email: session.user.email, sid: session.id },
+      { expiresIn: REMEMBER_ACCESS_TTL },
+    );
+
     return {
-      accessToken: this.jwtService.sign({ sub: userId, email }),
+      accessToken,
+      refreshToken: next,
+      rememberMe: true,
+      user: this.publicUser(session.user, session.user.business),
     };
+  }
+
+  /**
+   * Ends the session behind an access token and/or a refresh token. Works with an expired
+   * access token too (its signature is still checked), so signing out always ends the session.
+   */
+  async logout(bearerToken?: string, refreshToken?: string) {
+    if (bearerToken) {
+      try {
+        const payload: any = this.jwtService.verify(bearerToken, { ignoreExpiration: true });
+        if (payload?.sid && payload?.sub && !payload.type) {
+          await this.prisma.refreshToken.updateMany({
+            where: { id: payload.sid, userId: payload.sub },
+            data: { revoked: true },
+          });
+        }
+      } catch {
+        // A token that is not ours: nothing to end.
+      }
+    }
+    if (refreshToken) {
+      await this.prisma.refreshToken.updateMany({
+        where: { token: this.hashToken(refreshToken) },
+        data: { revoked: true },
+      });
+    }
+    return { success: true };
+  }
+
+  /** Ends every session of this person except the one making the request. */
+  async logoutOtherSessions(userId: string, currentSessionId?: string | null) {
+    const result = await this.revokeSessions(userId, currentSessionId);
+    return { success: true, signedOut: result };
+  }
+
+  private async revokeSessions(userId: string, keepSessionId?: string | null): Promise<number> {
+    const res = await this.prisma.refreshToken.updateMany({
+      where: { userId, revoked: false, ...(keepSessionId ? { NOT: { id: keepSessionId } } : {}) },
+      data: { revoked: true },
+    });
+    return res.count;
   }
 
   async forgotPassword(email: string) {
@@ -400,9 +523,10 @@ export class AuthService {
       };
     }
 
-    // Generate reset token signed with 1h expiry
+    // Reset link valid for 1 hour and for one use only: `pwf` stops matching once the
+    // password has been changed with it.
     const resetToken = this.jwtService.sign(
-      { sub: user.id, type: 'password_reset' },
+      { sub: user.id, type: 'password_reset', pwf: this.passwordFingerprint(user.password) },
       { expiresIn: '1h' }
     );
 
@@ -548,12 +672,27 @@ export class AuthService {
       throw new BadRequestException('Invalid reset token structure');
     }
 
+    // One use only: the link carries a fingerprint of the password it was made for.
+    // Links sent before this check existed have no fingerprint and are refused too.
+    const user = await this.prisma.user.findUnique({
+      where: { id: payload.sub },
+      select: { id: true, password: true },
+    });
+    if (!user || !payload.pwf || payload.pwf !== this.passwordFingerprint(user.password)) {
+      throw new BadRequestException(
+        'This reset link has already been used or is no longer valid. Please request a new one.',
+      );
+    }
+
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     await this.prisma.user.update({
-      where: { id: payload.sub },
+      where: { id: user.id },
       data: { password: hashedPassword },
     });
+
+    // A reset usually means the password may be known to someone else: sign out everywhere.
+    await this.revokeSessions(user.id);
 
     return {
       success: true,
@@ -561,7 +700,11 @@ export class AuthService {
     };
   }
 
-  async updateUserProfile(userId: string, data: { firstName?: string; lastName?: string; password?: string }) {
+  async updateUserProfile(
+    userId: string,
+    data: { firstName?: string; lastName?: string; password?: string; currentPassword?: string },
+    currentSessionId?: string | null,
+  ) {
     if (!userId) {
       throw new BadRequestException('User ID is required');
     }
@@ -573,11 +716,24 @@ export class AuthService {
     if (data.lastName !== undefined && data.lastName.trim()) {
       updateData.lastName = data.lastName.trim();
     }
-    if (data.password && data.password.trim()) {
-      if (data.password.length < 8) {
+    const changingPassword = !!(data.password && data.password.trim());
+    if (changingPassword) {
+      if (data.password!.length < 8) {
         throw new BadRequestException('Password must be at least 8 characters long');
       }
-      updateData.password = await bcrypt.hash(data.password, 10);
+      // Someone holding an unlocked phone must not be able to take over the account.
+      // (400, not 401: a wrong answer here must not sign the person out.)
+      if (!data.currentPassword) {
+        throw new BadRequestException(
+          'Enter your current password to set a new one. If you sign in with Google and never set a password, use "Forgot password" on the sign-in page.',
+        );
+      }
+      await this.rateLimit.hit(`password-change:user:${userId}`, 10, 15 * 60);
+      const existing = await this.prisma.user.findUnique({ where: { id: userId }, select: { password: true } });
+      if (!existing || !(await bcrypt.compare(data.currentPassword, existing.password))) {
+        throw new BadRequestException('Your current password is not correct.');
+      }
+      updateData.password = await bcrypt.hash(data.password!, 10);
     }
 
     const updatedUser = await this.prisma.user.update({
@@ -586,11 +742,17 @@ export class AuthService {
       include: { business: true },
     });
 
+    // New password: every other phone or computer is signed out; this one stays in.
+    const signedOutOthers = changingPassword ? await this.revokeSessions(userId, currentSessionId) : 0;
+
     const { password: _, ...userWithoutPassword } = updatedUser;
     return {
       success: true,
-      message: 'Profile updated successfully',
+      message: changingPassword
+        ? 'Password changed. You have been signed out on your other devices.'
+        : 'Profile updated successfully',
       user: userWithoutPassword,
+      signedOutOthers,
     };
   }
 }

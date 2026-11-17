@@ -6,7 +6,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
+import { AuthService } from '../auth/auth.service';
 import * as bcrypt from 'bcrypt';
 import { createHash, randomBytes } from 'crypto';
 import { StoreRole } from '@prisma/client';
@@ -43,9 +43,9 @@ export class TeamService {
 
   constructor(
     private readonly prisma: PrismaService,
-    private readonly jwt: JwtService,
     private readonly mail: MailService,
     private readonly staff: StaffAccessService,
+    private readonly auth: AuthService,
   ) {}
 
   private role(actor: Actor): StoreRoleName {
@@ -442,6 +442,8 @@ export class TeamService {
       });
     });
 
+    const tokens = await this.auth.generateTokens(user.id, user.email);
+
     return {
       user: {
         id: user.id,
@@ -453,7 +455,7 @@ export class TeamService {
         branch: user.branch,
         business: user.business,
       },
-      accessToken: this.jwt.sign({ sub: user.id, email: user.email }),
+      ...tokens,
     };
   }
 }

@@ -1,9 +1,14 @@
+import { endServerSession } from './session';
+
 /**
  * Comprehensive Auth & Cache Cleanup Utility
  * Clears LocalStorage, SessionStorage, Cookies, and CacheStorage on logout.
  */
 export async function clearAuthSessionAndCaches() {
   if (typeof window === 'undefined') return;
+
+  // End the sign-in on the server too, before the tokens are wiped below.
+  endServerSession();
 
   try {
     // 1. Clear LocalStorage keys

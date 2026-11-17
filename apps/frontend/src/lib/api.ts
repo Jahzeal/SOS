@@ -1,4 +1,5 @@
 import { notify, confirmDialog } from '@/lib/feedback';
+import { expiresSoon, getRefreshToken, refreshSession } from '@/lib/session';
 // Unified API Client Service Layer for NoxGuarda NestJS API Backend
 
 const rawUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -37,9 +38,19 @@ class ApiClient {
    * @param authToken  pass a token to use instead of the logged-in account token
    *                   (used by the public theft-report flow). `undefined` = account token.
    */
-  private async request<T>(endpoint: string, options: RequestInit = {}, authToken?: string | null): Promise<T> {
+  private async request<T>(
+    endpoint: string,
+    options: RequestInit = {},
+    authToken?: string | null,
+    isRetry = false,
+  ): Promise<T> {
     const usingAccountToken = authToken === undefined;
-    const token = usingAccountToken ? this.getToken() : authToken;
+    let token = usingAccountToken ? this.getToken() : authToken;
+
+    // "Keep me signed in": renew quietly shortly before the login token runs out.
+    if (usingAccountToken && token && getRefreshToken() && expiresSoon(token)) {
+      token = (await refreshSession()) || token;
+    }
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
       ...(options.headers as Record<string, string>),
@@ -90,13 +101,20 @@ class ApiClient {
         (data?.code === 'STAFF_DISABLED' || data?.code === 'STAFF_SEAT_PAUSED')
       ) {
         localStorage.removeItem('vf_access_token');
+        localStorage.removeItem('vf_refresh_token');
         localStorage.removeItem('vf_user');
         if (!window.location.pathname.startsWith('/login')) {
           window.location.href = `/login?paused=${encodeURIComponent(data.code)}`;
         }
       }
       if (response.status === 401 && usingAccountToken && typeof window !== 'undefined') {
+        // A signed-in request was refused: with "Keep me signed in", renew once and try again.
+        if (token && !isRetry && getRefreshToken() && !endpoint.startsWith('/auth/')) {
+          const renewed = await refreshSession();
+          if (renewed) return this.request<T>(endpoint, options, authToken, true);
+        }
         localStorage.removeItem('vf_access_token');
+        localStorage.removeItem('vf_refresh_token');
         localStorage.removeItem('vf_user');
         if (!window.location.pathname.startsWith('/login')) {
           window.location.href = '/login?expired=true';
@@ -176,11 +194,17 @@ class ApiClient {
   }
 
   // --- Auth & Profile Endpoints ---
-  async login(email: string, password: string) {
-    return this.request<{ accessToken: string; refreshToken: string; user: any }>('/auth/login', {
+  async login(email: string, password: string, rememberMe = false) {
+    return this.request<{ accessToken: string; refreshToken?: string; user: any }>('/auth/login', {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      // Sent only when ticked, so sign-in keeps working against a server that predates it.
+      body: JSON.stringify({ email, password, ...(rememberMe ? { rememberMe: true } : {}) }),
     });
+  }
+
+  /** "Sign out other devices": ends every sign-in of this account except this one. */
+  async logoutOtherDevices() {
+    return this.request<{ success: boolean; signedOut: number }>('/auth/logout-others', { method: 'POST' });
   }
 
   async registerBusiness(data: any) {
@@ -198,8 +222,9 @@ class ApiClient {
     businessName?: string;
     phone?: string;
     plan?: string;
+    rememberMe?: boolean;
   }) {
-    return this.request<{ accessToken: string; refreshToken: string; user: any; isNewUser?: boolean; pendingPlan?: string | null }>('/auth/google', {
+    return this.request<{ accessToken: string; refreshToken?: string; user: any; isNewUser?: boolean; pendingPlan?: string | null }>('/auth/google', {
       method: 'POST',
       body: JSON.stringify(payload),
     });
@@ -249,8 +274,8 @@ class ApiClient {
     });
   }
 
-  async updateUserProfile(data: { firstName?: string; lastName?: string; password?: string }) {
-    return this.request<{ success: boolean; message: string; user: any }>('/auth/profile', {
+  async updateUserProfile(data: { firstName?: string; lastName?: string; password?: string; currentPassword?: string }) {
+    return this.request<{ success: boolean; message: string; user: any; signedOutOthers?: number }>('/auth/profile', {
       method: 'PUT',
       body: JSON.stringify(data),
     });

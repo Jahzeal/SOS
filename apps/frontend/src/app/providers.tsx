@@ -84,6 +84,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         return createSyncStoragePersister({
           storage: window.localStorage,
           key: 'NOXGUARDA_REACT_QUERY_CACHE',
+          // Saving the cache blocks the screen briefly; doing it at most every 3s (default 1s)
+          // avoids stutters while scrolling on slower phones.
+          throttleTime: 3000,
         });
       } catch (e) {
         console.warn('LocalStorage persister error:', e);

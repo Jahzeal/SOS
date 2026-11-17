@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { isTokenExpired } from '@/lib/jwt-utils';
+import { hasUsableSession } from '@/lib/session';
 import { clearAuthSessionAndCaches } from '@/lib/auth-cleanup';
 
 export type PlanType = 'FREE' | 'STARTER' | 'BUSINESS' | 'ENTERPRISE';
@@ -41,7 +41,8 @@ const getInitialAuthState = (): { user: User | null; token: string | null } => {
   const savedToken = localStorage.getItem('vf_access_token');
   const savedUserStr = localStorage.getItem('vf_user');
 
-  if (savedToken && !isTokenExpired(savedToken) && savedUserStr) {
+  // A live token, or "Keep me signed in" (the token is renewed on the first request).
+  if (savedToken && hasUsableSession(savedToken) && savedUserStr) {
     try {
       const savedUser = JSON.parse(savedUserStr);
       return { user: savedUser, token: savedToken };

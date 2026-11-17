@@ -23,7 +23,10 @@ body {
   border: 0;
   width: 100%;
   max-width: 100vw;
+  /* "clip" stops sideways overflow without turning html/body into a second scroll box,
+     which on iPhones made vertical scrolling stick. Older browsers keep "hidden". */
   overflow-x: hidden;
+  overflow-x: clip;
   color: var(--foreground);
   background: var(--background);
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

@@ -30,10 +30,15 @@ import {
   ShieldCheck,
   ExternalLink,
   X as XIcon,
+  Pencil,
+  RotateCcw,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { SearchInput, TextInput } from '@/components/ui/Input';
+import { Modal } from '@/components/ui/Modal';
+import { useAuthStore } from '@/store/useAuthStore';
+import { can } from '@/lib/permissions';
 import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
 import { A4SalesReceipt } from '@/components/receipt/A4SalesReceipt';
 import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
@@ -50,12 +55,65 @@ interface CartDeviceItem {
   price: number;
   quantity: number;
   isDevice?: boolean;
+  /** The device's saved selling price, so an agreed (negotiated) price can be shown against it. */
+  listPrice?: number;
+  /** Cost price, only present for people allowed to see costs. Used for the below-cost warning. */
+  costPrice?: number;
+}
+
+/** The device's saved selling price, or null when none has been set. Never falls back to cost. */
+function sellingPriceOf(phone: any): number | null {
+  const p = Number(phone?.sellingPrice);
+  return Number.isFinite(p) && p > 0 ? p : null;
+}
+
+function costPriceOf(phone: any): number | undefined {
+  const c = Number(phone?.purchasePrice);
+  return Number.isFinite(c) && c > 0 ? c : undefined;
+}
+
+/** Reads a typed amount such as "450,000" or "₦450000". Returns null when it is not a valid amount. */
+function parseNaira(raw: string): number | null {
+  const cleaned = raw.replace(/[,\s₦]/g, '');
+  if (!cleaned) return null;
+  const n = Number(cleaned);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+function toDeviceItem(phone: any, price: number): CartDeviceItem {
+  return {
+    id: phone.id,
+    brand: phone.brand,
+    model: phone.model,
+    imei: phone.imei1,
+    condition: phone.condition || 'NEW',
+    storage: phone.storageCapacity || 'N/A',
+    color: phone.color || 'Standard',
+    price,
+    quantity: 1,
+    isDevice: true,
+    listPrice: sellingPriceOf(phone) ?? undefined,
+    costPrice: costPriceOf(phone),
+  };
 }
 
 function CheckoutPOSContent() {
   const searchParams = useSearchParams();
   const initialDeviceId = searchParams.get('device');
   const { checkCanPerformAction } = useSubscriptionGuard();
+  const storeUser = useAuthStore((st) => st.user);
+  const showCosts = can(storeUser, 'seeCosts');
+  const canEditDevices = can(storeUser, 'editDevices');
+
+  // Editing the selling price of a cart line (agreed / negotiated price)
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>('');
+  const [editError, setEditError] = useState<string | null>(null);
+
+  // "Please add a price" popup for devices that have no selling price saved
+  const [pricePromptPhone, setPricePromptPhone] = useState<any | null>(null);
+  const [promptValue, setPromptValue] = useState<string>('');
+  const [promptError, setPromptError] = useState<string | null>(null);
 
   // Step Workflow: 1 = ORDER_BUILDER, 2 = PAYMENT_METHOD, 3 = RECEIPT_PREVIEW
   const [checkoutStep, setCheckoutStep] = useState<1 | 2 | 3>(1);
@@ -142,18 +200,15 @@ function CheckoutPOSContent() {
       api.getPhoneById(initialDeviceId)
         .then((phone) => {
           if (phone && phone.status === 'IN_STOCK') {
-            const item: CartDeviceItem = {
-              id: phone.id,
-              brand: phone.brand,
-              model: phone.model,
-              imei: phone.imei1,
-              condition: phone.condition || 'NEW',
-              storage: phone.storageCapacity || 'N/A',
-              color: phone.color || 'Standard',
-              price: phone.sellingPrice ?? phone.purchasePrice ?? 0,
-              quantity: 1,
-              isDevice: true,
-            };
+            const price = sellingPriceOf(phone);
+            if (price === null) {
+              // No selling price saved: ask for one instead of guessing.
+              setPromptValue('');
+              setPromptError(null);
+              setPricePromptPhone(phone);
+              return;
+            }
+            const item = toDeviceItem(phone, price);
             setCart((prev) => (prev.some((p) => p.id === item.id) ? prev : [item, ...prev]));
           }
         })
@@ -189,6 +244,15 @@ function CheckoutPOSContent() {
 
   const grandTotal = useMemo(() => subtotal, [subtotal]);
 
+  // Devices in the list that have no selling price saved yet (for the reminder)
+  const unpricedInList = useMemo(
+    () => inStockDevices.filter((p) => sellingPriceOf(p) === null).length,
+    [inStockDevices]
+  );
+
+  // Devices in the order still without a price: payment is blocked until they get one
+  const unpricedInCart = useMemo(() => cart.filter((i) => i.isDevice && i.price <= 0), [cart]);
+
   const changeDue = useMemo(() => {
     const tendered = parseFloat(cashTendered) || 0;
     return Math.max(0, tendered - grandTotal);
@@ -196,23 +260,49 @@ function CheckoutPOSContent() {
 
   // Add In-Stock Device to Cart
   const handleAddDeviceToCart = (phone: any) => {
-    const item: CartDeviceItem = {
-      id: phone.id,
-      brand: phone.brand,
-      model: phone.model,
-      imei: phone.imei1,
-      condition: phone.condition || 'NEW',
-      storage: phone.storageCapacity || 'N/A',
-      color: phone.color || 'Standard',
-      price: phone.sellingPrice ?? phone.purchasePrice ?? 0,
-      quantity: 1,
-      isDevice: true,
-    };
-
+    const price = sellingPriceOf(phone);
+    if (price === null) {
+      setPromptValue('');
+      setPromptError(null);
+      setPricePromptPhone(phone);
+      return;
+    }
+    const item = toDeviceItem(phone, price);
     setCart((prev) => {
       if (prev.some((p) => p.id === item.id)) return prev;
       return [item, ...prev];
     });
+  };
+
+  // Confirm the price typed in the "Please add a price" popup and add the device
+  const confirmPricePrompt = () => {
+    if (!pricePromptPhone) return;
+    const n = parseNaira(promptValue);
+    if (n === null || n <= 0) {
+      setPromptError('Enter a selling price above ₦0.');
+      return;
+    }
+    const item = toDeviceItem(pricePromptPhone, n);
+    setCart((prev) => (prev.some((p) => p.id === item.id) ? prev : [item, ...prev]));
+    setPricePromptPhone(null);
+  };
+
+  const startEditPrice = (item: CartDeviceItem) => {
+    setEditingId(item.id);
+    setEditValue(item.price > 0 ? String(item.price) : '');
+    setEditError(null);
+  };
+
+  const saveEditPrice = () => {
+    if (!editingId) return;
+    const n = parseNaira(editValue);
+    const editingItem = cart.find((i) => i.id === editingId);
+    if (n === null || (editingItem?.isDevice && n <= 0)) {
+      setEditError('Enter a selling price above ₦0.');
+      return;
+    }
+    updateItemPrice(editingId, n);
+    setEditingId(null);
   };
 
   // Add Custom Item / Accessory
@@ -487,6 +577,27 @@ function CheckoutPOSContent() {
                 className="py-2.5"
               />
 
+              {/* Reminder: some devices have no selling price yet */}
+              {!isSearchingDevices && unpricedInList > 0 && (
+                <div role="status" className="p-3 rounded-xl bg-warning-50 border border-warning-200 text-xs text-warning-800 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" aria-hidden="true" />
+                  <p className="leading-relaxed">
+                    <span className="font-bold">
+                      {unpricedInList} {unpricedInList === 1 ? 'device here has' : 'devices here have'} no selling price yet.
+                    </span>{' '}
+                    You&apos;ll be asked for a price when you add {unpricedInList === 1 ? 'it' : 'one'}.
+                    {canEditDevices && (
+                      <>
+                        {' '}
+                        <Link href="/dashboard/inventory" className="font-bold underline hover:text-warning-900">
+                          Set prices in Inventory
+                        </Link>
+                      </>
+                    )}
+                  </p>
+                </div>
+              )}
+
               {/* In-Stock Devices List */}
               <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                 {isSearchingDevices ? (
@@ -523,9 +634,13 @@ function CheckoutPOSContent() {
                         </div>
 
                         <div className="flex items-center gap-3 shrink-0">
-                          <span className="font-extrabold text-slate-900 text-xs sm:text-sm">
-                            ₦{(phone.sellingPrice ?? phone.purchasePrice ?? 0).toLocaleString()}
-                          </span>
+                          {sellingPriceOf(phone) !== null ? (
+                            <span className="font-extrabold text-slate-900 text-xs sm:text-sm">
+                              ₦{(sellingPriceOf(phone) as number).toLocaleString()}
+                            </span>
+                          ) : (
+                            <Badge variant="pending" size="sm">No price</Badge>
+                          )}
                           <Button
                             type="button"
                             size="sm"
@@ -612,11 +727,21 @@ function CheckoutPOSContent() {
                     Your cart is empty. Select an in-stock device above.
                   </div>
                 ) : (
-                  cart.map((item) => (
+                  cart.map((item) => {
+                    const isEditing = editingId === item.id;
+                    const isEdited = item.listPrice != null && item.price > 0 && item.price !== item.listPrice;
+                    const noPrice = !!item.isDevice && item.price <= 0;
+                    const draftPrice = isEditing ? parseNaira(editValue) : item.price;
+                    const belowCost =
+                      showCosts && item.costPrice != null && draftPrice != null && draftPrice > 0 && draftPrice < item.costPrice;
+                    return (
                     <div
                       key={item.id}
-                      className="p-3.5 rounded-xl bg-slate-50/90 border border-slate-200/80 flex items-center justify-between gap-3 text-xs"
+                      className={`p-3.5 rounded-xl border text-xs space-y-3 ${
+                        noPrice ? 'bg-warning-50/60 border-warning-300' : 'bg-slate-50/90 border-slate-200/80'
+                      }`}
                     >
+                    <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-3 min-w-0 flex-1">
                         <div className="w-8 h-8 rounded-lg bg-white border border-slate-200 flex items-center justify-center shrink-0 text-accent-600">
                           {item.isDevice ? <Smartphone className="w-4 h-4" /> : <Package className="w-4 h-4" />}
@@ -653,29 +778,113 @@ function CheckoutPOSContent() {
                           </div>
                         )}
 
-                        <div className="flex items-center gap-0.5">
-                          <span className="text-slate-400 font-bold">₦</span>
-                          <input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={item.price}
-                            onChange={(e) => updateItemPrice(item.id, parseFloat(e.target.value) || 0)}
-                            aria-label={`Price of ${item.model} in naira`}
-                            className="w-16 font-extrabold text-slate-900 text-right bg-white border border-slate-200 rounded px-1 py-0.5 focus:outline-none focus:border-accent-600"
-                          />
+                        <div className="text-right">
+                          {noPrice ? (
+                            <p className="font-bold text-warning-800">No price</p>
+                          ) : (
+                            <p className="font-extrabold text-slate-900 text-sm whitespace-nowrap">₦{item.price.toLocaleString()}</p>
+                          )}
+                          {isEdited && (
+                            <p className="text-[11px] text-slate-400 line-through whitespace-nowrap">
+                              ₦{(item.listPrice as number).toLocaleString()}
+                            </p>
+                          )}
                         </div>
+
+                        {!isEditing && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => startEditPrice(item)}
+                            aria-label={`Edit selling price of ${item.model}`}
+                            title="Edit selling price"
+                            leftIcon={<Pencil className="w-3.5 h-3.5" />}
+                          />
+                        )}
 
                         <Button
                           variant="ghostDanger"
                           size="icon"
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => {
+                            if (isEditing) setEditingId(null);
+                            removeFromCart(item.id);
+                          }}
                           aria-label={`Remove ${item.model} from order`}
                           leftIcon={<Trash2 className="w-3.5 h-3.5" />}
                         />
                       </div>
                     </div>
-                  ))
+
+                    {/* Price editor: type the agreed price */}
+                    {isEditing && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 min-w-0">
+                            <TextInput
+                              type="text"
+                              inputMode="decimal"
+                              autoFocus
+                              value={editValue}
+                              onChange={(e) => {
+                                setEditValue(e.target.value);
+                                setEditError(null);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  saveEditPrice();
+                                } else if (e.key === 'Escape') {
+                                  setEditingId(null);
+                                }
+                              }}
+                              placeholder="Agreed price (₦)"
+                              aria-label={`Agreed selling price of ${item.model} in naira`}
+                            />
+                          </div>
+                          <Button
+                            variant="primary"
+                            size="icon"
+                            onClick={saveEditPrice}
+                            aria-label="Save price"
+                            leftIcon={<Check className="w-4 h-4" />}
+                          />
+                          <Button
+                            variant="secondary"
+                            size="icon"
+                            onClick={() => setEditingId(null)}
+                            aria-label="Cancel price change"
+                            leftIcon={<XIcon className="w-4 h-4" />}
+                          />
+                        </div>
+                        {editError && <p className="text-danger-600 font-semibold">{editError}</p>}
+                        {item.listPrice != null && (
+                          <p className="text-slate-500">Listed price: ₦{item.listPrice.toLocaleString()}</p>
+                        )}
+                      </div>
+                    )}
+
+                    {/* After an edit: tag, reset, and below-cost warning */}
+                    {!isEditing && isEdited && (
+                      <div className="flex items-center justify-between gap-2">
+                        <Badge variant="pending" size="sm">Edited price</Badge>
+                        <button
+                          type="button"
+                          onClick={() => updateItemPrice(item.id, item.listPrice as number)}
+                          className="inline-flex items-center gap-1 font-bold text-accent-600 hover:text-accent-700"
+                        >
+                          <RotateCcw className="w-3 h-3" aria-hidden="true" /> Reset to ₦{(item.listPrice as number).toLocaleString()}
+                        </button>
+                      </div>
+                    )}
+                    {belowCost && (
+                      <p className="flex items-center gap-1.5 text-warning-800 font-semibold">
+                        <AlertTriangle className="w-3.5 h-3.5 shrink-0" aria-hidden="true" />
+                        This price is below the cost price (₦{(item.costPrice as number).toLocaleString()}).
+                      </p>
+                    )}
+                    </div>
+                    );
+                  })
                 )}
               </div>
 
@@ -692,11 +901,21 @@ function CheckoutPOSContent() {
                 </div>
               </div>
 
+              {unpricedInCart.length > 0 && (
+                <p role="alert" className="flex items-start gap-1.5 text-xs font-semibold text-warning-800">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
+                  Please add a price for {unpricedInCart.map((i) => i.model).join(', ')} to continue (tap the pencil).
+                </p>
+              )}
+              {editingId && unpricedInCart.length === 0 && (
+                <p className="text-xs font-semibold text-slate-500">Save or cancel the price you&apos;re editing to continue.</p>
+              )}
+
               {/* Proceed to Payment Method Button */}
               <Button
                 variant="primary"
                 size="lg"
-                disabled={cart.length === 0}
+                disabled={cart.length === 0 || unpricedInCart.length > 0 || !!editingId}
                 onClick={() => setCheckoutStep(2)}
                 fullWidth
                 rightIcon={<ArrowRight className="w-4 h-4" />}
@@ -1084,6 +1303,70 @@ function CheckoutPOSContent() {
           },
         } : null}
       />
+
+      {/* "Please add a price" popup for a device with no selling price saved */}
+      <Modal
+        isOpen={!!pricePromptPhone}
+        onClose={() => setPricePromptPhone(null)}
+        size="sm"
+        icon={<AlertTriangle className="w-5 h-5 text-warning-600" aria-hidden="true" />}
+        title="Please add a price"
+        description={
+          pricePromptPhone
+            ? `${pricePromptPhone.brand} ${pricePromptPhone.model} has no selling price saved. Enter the price for this sale.`
+            : undefined
+        }
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setPricePromptPhone(null)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={confirmPricePrompt} leftIcon={<Plus className="w-4 h-4" />}>
+              Add to order
+            </Button>
+          </>
+        }
+      >
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            confirmPricePrompt();
+          }}
+          className="space-y-2"
+        >
+          <TextInput
+            type="text"
+            inputMode="decimal"
+            data-autofocus
+            value={promptValue}
+            onChange={(e) => {
+              setPromptValue(e.target.value);
+              setPromptError(null);
+            }}
+            placeholder="Selling price (₦)"
+            aria-label="Selling price in naira"
+          />
+          {promptError && <p className="text-xs font-semibold text-danger-600">{promptError}</p>}
+          {(() => {
+            const cost = showCosts ? costPriceOf(pricePromptPhone) : undefined;
+            const typed = parseNaira(promptValue);
+            return cost != null && typed != null && typed > 0 && typed < cost ? (
+              <p className="text-xs font-semibold text-warning-800">
+                This price is below the cost price (₦{cost.toLocaleString()}).
+              </p>
+            ) : null;
+          })()}
+          {canEditDevices && (
+            <p className="text-xs text-slate-500">
+              This price is for this sale only. To save a price on the device, set it in{' '}
+              <Link href="/dashboard/inventory" className="font-bold text-accent-600 hover:underline">
+                Inventory
+              </Link>
+              .
+            </p>
+          )}
+        </form>
+      </Modal>
 
     </div>
   );

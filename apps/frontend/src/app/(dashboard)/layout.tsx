@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Sidebar from '@/components/Sidebar';
 import { useAuthStore } from '@/store/useAuthStore';
 import { isTokenExpired } from '@/lib/jwt-utils';
+import { getRefreshToken, hasUsableSession, refreshSession } from '@/lib/session';
 import { useQueryClient } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import {
@@ -103,7 +104,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const fetchNotifications = useCallback(async () => {
     if (typeof window === 'undefined') return;
     const token = localStorage.getItem('vf_access_token');
-    if (!token || isTokenExpired(token)) return;
+    if (!token || !hasUsableSession(token)) return;
 
     try {
       setIsLoadingNotifications(true);
@@ -136,9 +137,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   useEffect(() => {
     setIsMounted(true);
-    const verifySession = () => {
+    const verifySession = async () => {
       if (typeof window === 'undefined') return;
-      const token = localStorage.getItem('vf_access_token');
+      let token = localStorage.getItem('vf_access_token');
+
+      // "Keep me signed in": renew an expired login token instead of signing out.
+      if (token && isTokenExpired(token) && getRefreshToken()) {
+        token = (await refreshSession()) || token;
+        // No answer (offline) leaves the refresh token in place: stay signed in and retry later.
+        if (isTokenExpired(token) && getRefreshToken()) return;
+      }
+
       if (!token || isTokenExpired(token)) {
         localStorage.removeItem('vf_access_token');
         localStorage.removeItem('vf_user');
@@ -267,14 +276,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <SubscriptionGuardProvider>
-      <div className="h-screen w-full max-w-full overflow-hidden flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
+      {/* Phones: the page itself scrolls (one scroller, native momentum, address bar can hide).
+          Desktop (lg+): fixed-height shell where only the workspace scrolls beside the sidebar. */}
+      <div className="min-h-screen lg:h-screen w-full max-w-full overflow-x-clip lg:overflow-hidden flex bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 transition-colors duration-200">
         {/* Responsive Sidebar (Desktop Persistent + Mobile Drawer) */}
         <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
 
-        {/* Main Workspace (Scrolls independently while Sidebar stays 100% fixed) */}
-        <div className="flex-1 flex flex-col h-full min-w-0 w-full max-w-full overflow-y-auto overflow-x-hidden pb-16 lg:pb-0">
-          {/* Top Navigation Header */}
-          <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md z-20 shadow-subtle transition-colors duration-200 w-full max-w-full">
+        {/* Main Workspace (on desktop it scrolls independently while the Sidebar stays fixed) */}
+        <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-x-clip lg:h-full lg:overflow-y-auto lg:overflow-x-hidden pb-16 lg:pb-0">
+          {/* Top Navigation Header (solid on phones: a blur redrawn on every scroll frame is slow there) */}
+          <header className="h-16 shrink-0 border-b border-slate-200/80 dark:border-slate-800 px-3 sm:px-6 flex items-center justify-between sticky top-0 bg-white dark:bg-slate-900 lg:bg-white/90 lg:dark:bg-slate-900/90 lg:backdrop-blur-md z-20 shadow-subtle transition-colors duration-200 w-full max-w-full">
             <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
               {/* Mobile Hamburger Trigger */}
               <Button
@@ -610,7 +621,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {/* ========================================================================= */}
         {/* MOBILE BOTTOM NAVIGATION BAR (Fixed on Mobile Viewports)                 */}
         {/* ========================================================================= */}
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-around shadow-2xl">
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 px-4 py-2 flex items-center justify-around shadow-2xl">
           <Link
             href="/dashboard"
             className="flex flex-col items-center gap-0.5 text-xs font-bold text-slate-700 dark:text-slate-300 hover:text-accent-600 dark:hover:text-accent-400 transition"

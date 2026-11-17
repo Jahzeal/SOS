@@ -7,6 +7,7 @@ import { AlertTriangle, Eye, EyeOff, Loader2, Lock, Store } from 'lucide-react';
 import { api } from '@/lib/api';
 import { Logo } from '@/components/ui/Logo';
 import { Button } from '@/components/ui/Button';
+import { saveSession } from '@/lib/session';
 
 type Invite = Awaited<ReturnType<typeof api.describeInvite>>;
 
@@ -37,8 +38,7 @@ function JoinForm() {
     setJoining(true);
     try {
       const res = await api.acceptInvite(token, password);
-      localStorage.setItem('vf_access_token', res.accessToken);
-      localStorage.setItem('vf_user', JSON.stringify(res.user));
+      saveSession(res);
       // Full page load so every part of the app starts with the new account.
       window.location.href = '/dashboard';
     } catch (err: any) {

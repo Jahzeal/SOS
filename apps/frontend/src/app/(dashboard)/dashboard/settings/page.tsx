@@ -68,7 +68,31 @@ export default function RebuiltSettingsPage() {
     email: user?.email || '',
     password: '',
     confirmPassword: '',
+    currentPassword: '',
   });
+  const [signingOutOthers, setSigningOutOthers] = useState(false);
+
+  const handleSignOutOtherDevices = async () => {
+    const ok = await confirmDialog(
+      'Sign out every other phone or computer signed in to your account? This device stays signed in.',
+      { confirmLabel: 'Sign out others' }
+    );
+    if (!ok) return;
+    setSigningOutOthers(true);
+    try {
+      const res = await api.logoutOtherDevices();
+      notify(
+        res.signedOut > 0
+          ? `Signed out ${res.signedOut} other ${res.signedOut === 1 ? 'device' : 'devices'}.`
+          : 'No other devices were signed in.',
+        'success'
+      );
+    } catch (err: any) {
+      notify(err?.message || 'Could not sign out other devices. Please try again.', 'error');
+    } finally {
+      setSigningOutOthers(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -180,6 +204,10 @@ export default function RebuiltSettingsPage() {
       setSaveError('Passwords do not match.');
       return;
     }
+    if (operatorForm.password && !operatorForm.currentPassword) {
+      setSaveError('Enter your current password to set a new one.');
+      return;
+    }
 
     setSaving(true);
     setSaveError(null);
@@ -188,6 +216,7 @@ export default function RebuiltSettingsPage() {
         firstName: operatorForm.firstName.trim(),
         lastName: operatorForm.lastName.trim(),
         password: operatorForm.password ? operatorForm.password.trim() : undefined,
+        currentPassword: operatorForm.password ? operatorForm.currentPassword : undefined,
       });
 
       if (res?.user) {
@@ -198,7 +227,10 @@ export default function RebuiltSettingsPage() {
         }
       }
 
-      setOperatorForm((prev) => ({ ...prev, password: '', confirmPassword: '' }));
+      if (operatorForm.password) {
+        notify(res?.message || 'Password changed. You have been signed out on your other devices.', 'success');
+      }
+      setOperatorForm((prev) => ({ ...prev, password: '', confirmPassword: '', currentPassword: '' }));
       setSavedSuccess(true);
       setTimeout(() => setSavedSuccess(false), 3000);
     } catch (err: any) {
@@ -476,6 +508,18 @@ export default function RebuiltSettingsPage() {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="sm:col-span-2">
+                    <TextInput
+                      label="Current Password"
+                      type="password"
+                      autoComplete="current-password"
+                      value={operatorForm.currentPassword}
+                      onChange={(e) => setOperatorForm({ ...operatorForm, currentPassword: e.target.value })}
+                      placeholder="••••••••••••"
+                      helperText="Needed only when setting a new password. Signed up with Google? Use “Forgot password” on the sign-in page to create one."
+                    />
+                  </div>
+
                   <div>
                     <TextInput
                       label="New Password"
@@ -495,6 +539,24 @@ export default function RebuiltSettingsPage() {
                       placeholder="••••••••••••"
                     />
                   </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-bold text-slate-900">Signed in somewhere else?</p>
+                    <p className="text-xs text-slate-500 font-medium">
+                      Lost a phone or used a shared computer? Sign out everywhere except here.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="md"
+                    isLoading={signingOutOthers}
+                    onClick={handleSignOutOtherDevices}
+                  >
+                    Sign out other devices
+                  </Button>
                 </div>
               </div>
 

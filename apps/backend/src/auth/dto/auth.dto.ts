@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional, Length } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsString, MinLength, MaxLength, IsOptional, Length, IsBoolean } from 'class-validator';
 
 export class RegisterDto {
   @IsEmail()
@@ -90,6 +90,12 @@ export class UpdateProfileDto {
   @MinLength(8)
   @MaxLength(128)
   password?: string;
+
+  /** Required whenever `password` is being changed. */
+  @IsString()
+  @IsOptional()
+  @MaxLength(128)
+  currentPassword?: string;
 }
 
 export class LoginDto {
@@ -99,12 +105,35 @@ export class LoginDto {
   @IsString()
   @IsNotEmpty()
   password: string;
+
+  /** "Keep me signed in": a 30-day session that renews itself while it is used. */
+  @IsBoolean()
+  @IsOptional()
+  rememberMe?: boolean;
+}
+
+export class RefreshSessionDto {
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(200)
+  refreshToken: string;
+}
+
+export class LogoutDto {
+  @IsString()
+  @IsOptional()
+  @MaxLength(200)
+  refreshToken?: string;
 }
 
 export class GoogleAuthDto {
   @IsString()
   @IsNotEmpty()
   credential: string;
+
+  @IsBoolean()
+  @IsOptional()
+  rememberMe?: boolean;
 
   @IsString()
   @IsOptional()

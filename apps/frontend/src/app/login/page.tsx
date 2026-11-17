@@ -7,11 +7,12 @@ import { api } from '@/lib/api';
 import { useAuthStore } from '@/store/useAuthStore';
 import { Mail, Lock, AlertCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { TextInput } from '@/components/ui/Input';
+import { TextInput, Checkbox } from '@/components/ui/Input';
 import { Logo } from '@/components/ui/Logo';
 import { PwaInstallButton } from '@/components/PwaInstallButton';
 import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
+import { saveSession } from '@/lib/session';
 
 function SessionExpiredAlert() {
   const searchParams = useSearchParams();
@@ -52,6 +53,7 @@ export default function LoginPage() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -66,13 +68,10 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const data = await api.login(email, password);
-      
-      // Cache token & user in localStorage
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('vf_access_token', data.accessToken);
-        localStorage.setItem('vf_user', JSON.stringify(data.user));
-      }
+      const data = await api.login(email, password, rememberMe);
+
+      // Cache token(s) & user in localStorage
+      saveSession(data);
 
       setAuth(data.user, data.accessToken);
       const targetRoute = data.user?.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard';
@@ -104,12 +103,10 @@ export default function LoginPage() {
         email: result.email,
         firstName: result.firstName,
         lastName: result.lastName,
+        ...(rememberMe ? { rememberMe: true } : {}),
       });
 
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('vf_access_token', data.accessToken);
-        localStorage.setItem('vf_user', JSON.stringify(data.user));
-      }
+      saveSession(data);
 
       setAuth(data.user, data.accessToken);
       const targetRoute = data.user?.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard';
@@ -228,6 +225,15 @@ export default function LoginPage() {
                     Forgot password?
                   </Link>
                 }
+              />
+
+              {/* Also applies to "Sign in with Google" above */}
+              <Checkbox
+                label="Keep me signed in"
+                description="Stay signed in on this device for 30 days. Don't tick this on a shared phone or computer."
+                checked={rememberMe}
+                onChange={(e) => setRememberMe(e.target.checked)}
+                disabled={loading}
               />
 
               <Button

@@ -1,4 +1,4 @@
-import { Controller, Post, Put, Body, Get, UseGuards } from '@nestjs/common';
+import { Controller, Post, Put, Body, Get, UseGuards, Headers } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import {
   RegisterDto,
@@ -9,6 +9,8 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
   UpdateProfileDto,
+  RefreshSessionDto,
+  LogoutDto,
 } from './dto/auth.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
@@ -63,6 +65,28 @@ export class AuthController {
     return this.authService.resetPassword(dto.token, dto.newPassword);
   }
 
+  /** "Keep me signed in": trade the refresh token for fresh tokens. */
+  @Post('refresh')
+  @RateLimit({ name: 'auth-refresh', limit: 60, windowSeconds: 15 * MINUTE })
+  async refresh(@Body() dto: RefreshSessionDto) {
+    return this.authService.refreshSession(dto.refreshToken);
+  }
+
+  /** Ends this sign-in on the server. No guard, so an expired access token can still sign out. */
+  @Post('logout')
+  @RateLimit({ name: 'auth-logout', limit: 60, windowSeconds: 15 * MINUTE })
+  async logout(@Headers('authorization') authorization: string | undefined, @Body() dto: LogoutDto) {
+    const bearer = authorization?.startsWith('Bearer ') ? authorization.slice(7) : undefined;
+    return this.authService.logout(bearer, dto?.refreshToken);
+  }
+
+  /** "Sign out other devices". */
+  @UseGuards(JwtAuthGuard)
+  @Post('logout-others')
+  async logoutOthers(@CurrentUser() user: any) {
+    return this.authService.logoutOtherSessions(user.id, user.sessionId);
+  }
+
   @UseGuards(JwtAuthGuard)
   @Get('me')
   async getMe(@CurrentUser() user: any) {
@@ -72,6 +96,6 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Put('profile')
   async updateProfile(@CurrentUser() user: any, @Body() body: UpdateProfileDto) {
-    return this.authService.updateUserProfile(user.id, body);
+    return this.authService.updateUserProfile(user.id, body, user.sessionId);
   }
 }

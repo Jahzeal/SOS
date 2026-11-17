@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from './api';
-import { isTokenExpired } from './jwt-utils';
+import { hasUsableSession, saveSession } from './session';
 import { clearAuthSessionAndCaches } from './auth-cleanup';
 
 interface UserProfile {
@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const savedToken = localStorage.getItem('vf_access_token');
     const savedUser = localStorage.getItem('vf_user');
 
-    if (savedToken && savedUser && !isTokenExpired(savedToken)) {
+    if (savedToken && savedUser && hasUsableSession(savedToken)) {
       try {
         setToken(savedToken);
         setUser(JSON.parse(savedUser));
@@ -65,16 +65,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await api.login(email, pass);
     setToken(res.accessToken);
     setUser(res.user);
-    localStorage.setItem('vf_access_token', res.accessToken);
-    localStorage.setItem('vf_user', JSON.stringify(res.user));
+    saveSession(res);
   };
 
   const register = async (payload: any) => {
     const res = await api.registerBusiness(payload);
     setToken(res.accessToken);
     setUser(res.user);
-    localStorage.setItem('vf_access_token', res.accessToken);
-    localStorage.setItem('vf_user', JSON.stringify(res.user));
+    saveSession(res);
     return { pendingPlan: res.pendingPlan ?? null };
   };
 

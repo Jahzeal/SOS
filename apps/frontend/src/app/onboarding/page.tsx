@@ -40,31 +40,32 @@ import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
 import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModal';
 import { CONTACT } from '@/components/marketing/SiteFooter';
+import { saveSession } from '@/lib/session';
 
 // Comprehensive Plan Specifications & Fallback Data
 const FALLBACK_PLANS = [
   {
     code: 'FREE',
-    name: 'Free Forever',
-    description: 'Free forever for up to 10 devices. IMEI records and receipts for small shops.',
+    name: 'Free',
+    description: 'IMEI records and receipts for small shops, up to 10 devices.',
     monthlyPriceNgn: 0,
     annualPriceNgn: 0,
     maxDevices: 10,
     customBranding: false,
     prioritySupport: false,
     features: [
-      'Up to 10 Devices, Free Forever',
-      'IMEI & Serial Number Hardware Ledger',
-      'Standard POS Thermal Receipts (80mm & 58mm)',
-      'Anti-Theft Stolen Device Blacklist Check',
-      'Single Technician Store Workspace',
-      'Cryptographic QR Receipt Verification',
+      'Up to 10 Devices',
+      'Dual IMEI & Laptop Serial Tracking',
+      'Digital QR & Thermal Receipts',
+      'Anti-Theft Verification Portal (/verify)',
+      'Owner Account Only',
+      'Standard Support',
     ],
   },
   {
     code: 'STARTER',
     name: 'Starter',
-    description: 'For growing phone shops requiring custom receipt branding and automated warranty receipts.',
+    description: 'For growing shops that want branded receipts and a small team.',
     monthlyPriceNgn: 5000,
     annualPriceNgn: 50000,
     maxDevices: 500,
@@ -72,18 +73,21 @@ const FALLBACK_PLANS = [
     prioritySupport: false,
     isRecommended: false,
     features: [
-      'Up to 500 Registered Devices',
-      'Custom Store Logo on Thermal Receipts',
-      'IMEI & Serial Lifecycle History Ledger',
-      'Automated Warranty Terms & Thermal Receipts',
-      'Anti-Theft Stolen Device Cross-Check',
-      'Daily Sales & Revenue Summaries',
+      'Up to 500 Devices',
+      'Dual IMEI & Laptop Serial Tracking',
+      'Condition Grading (A-D / Parts)',
+      'Point of Sale (POS) & Checkout',
+      'Digital QR & Thermal Receipts with Your Store Logo',
+      'Auto-Share Invoices & Receipts (WhatsApp & Email)',
+      'Anti-Theft Verification Portal (/verify)',
+      'Up to 3 Staff (Sales & Technician Roles)',
+      'Standard Support',
     ],
   },
   {
     code: 'GOLD',
     name: 'Gold',
-    description: 'High-volume phone retailers needing multi-staff accounts, cashiers, and margin tracking.',
+    description: 'For busy stores with managers, staff and a second branch.',
     monthlyPriceNgn: 10000,
     annualPriceNgn: 100000,
     maxDevices: 1000,
@@ -91,19 +95,20 @@ const FALLBACK_PLANS = [
     prioritySupport: true,
     isRecommended: true,
     features: [
-      'Up to 1,000 Registered Devices',
-      'Custom Receipt Logo & Store Watermark',
-      'Multi-Staff Accounts with Role Permissions',
-      'Instant Anti-Theft IMEI Blacklist Verification',
-      'Live Store Profit & Gross Margin Analytics',
-      'Warranty Claim Resolution Tracking',
-      'Priority WhatsApp & Email Support',
+      'Up to 1,000 Devices',
+      'Everything in Starter',
+      'Up to 10 Staff (Manager, Sales & Technician Roles)',
+      'Up to 2 Branches',
+      'Cross-Branch Global Search (Ctrl+K)',
+      'Live Profit & Margin Analytics',
+      'Excel / CSV Export & Reports',
+      'Priority Support',
     ],
   },
   {
     code: 'ENTERPRISE',
     name: 'Enterprise Chain',
-    description: 'For phone distributors, wholesalers, and multi-branch retail chains.',
+    description: 'For distributors, wholesalers and multi-branch chains.',
     monthlyPriceNgn: 25000,
     annualPriceNgn: 250000,
     maxDevices: null,
@@ -111,13 +116,12 @@ const FALLBACK_PLANS = [
     prioritySupport: true,
     isRecommended: false,
     features: [
-      'Unlimited Registered Devices & Inventory',
-      'Multi-Branch Store Workspaces & Stock Transfers',
-      'Wholesaler Bulk Serial Upload & Batch Tagging',
-      'Unlimited Staff & Cashier User Accounts',
-      'White-label Receipt Branding & Custom Domains',
-      'Advanced Multi-Store Valuation & Reports',
-      'Dedicated Account Manager & 24/7 SLA Support',
+      'Unlimited Devices',
+      'Everything in Gold',
+      'Unlimited Staff Accounts',
+      'Unlimited Branches',
+      'Multi-Store / Multi-Branch Switching',
+      'Priority Support',
     ],
   },
 ];
@@ -378,8 +382,7 @@ export default function OnboardingPage() {
           });
 
           if (typeof window !== 'undefined') {
-            localStorage.setItem('vf_access_token', res.accessToken);
-            localStorage.setItem('vf_user', JSON.stringify(res.user));
+            saveSession(res);
           }
           pendingPlan = res.pendingPlan || null;
         } else {
@@ -580,24 +583,21 @@ export default function OnboardingPage() {
               </p>
             </div>
 
-            {/* Testimonial Card */}
+            {/* What every store gets (real features only) */}
             <div className="p-3.5 xl:p-4 rounded-2xl bg-slate-900/80 border border-slate-800/90 text-xs space-y-2.5 shadow-xl backdrop-blur-md">
-              <div className="flex items-center justify-between">
-                <div className="flex text-warning-400 gap-0.5 text-xs">★★★★★</div>
-                <span className="text-xs text-slate-400 font-extrabold uppercase tracking-wider">Store Owner Review</span>
-              </div>
-              <p className="text-slate-200 font-medium italic leading-relaxed text-xs xl:text-xs">
-                "Setting up our 3 store locations on NoxGuarda took less than 5 minutes. The IMEI receipt verification stopped warranty disputes instantly."
-              </p>
-              <div className="flex items-center gap-2.5 pt-1.5 border-t border-slate-800">
-                <div className="w-7 h-7 rounded-full bg-accent-600 text-white font-bold flex items-center justify-center text-xs shadow-md shadow-accent-600/30">
-                  T
-                </div>
-                <div>
-                  <div className="font-bold text-white text-xs">Tobi Adeyemi</div>
-                  <div className="text-xs text-slate-400">Owner, TechWorld Mobile (5 Store Branches)</div>
-                </div>
-              </div>
+              <span className="text-xs text-slate-400 font-extrabold uppercase tracking-wider">Why stores use NoxGuarda</span>
+              <ul className="space-y-2">
+                {[
+                  'QR receipts your customers can scan to check',
+                  'Every IMEI and serial on record, with stolen-phone checks',
+                  'Staff roles and branches built in',
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-2 text-slate-200 font-medium leading-relaxed">
+                    <CheckCircle2 className="w-4 h-4 text-success-400 shrink-0 mt-0.5" />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
 
@@ -1122,7 +1122,7 @@ export default function OnboardingPage() {
                           <div>
                             <div className="font-extrabold text-slate-900 text-xs sm:text-sm">Anti-Theft Protection</div>
                             <p className="text-xs text-slate-500 mt-0.5">
-                              Cross-checks devices against police and blacklisted registry.
+                              Checks devices against phones reported stolen to NoxGuarda stores.
                             </p>
                           </div>
                         </div>
