@@ -282,10 +282,11 @@ model User {
   branch      Branch?       @relation(fields: [branchId], references: [id], onDelete: SetNull)
   invitesSent StaffInvite[] @relation("InvitesSent")
 
-  refreshTokens    RefreshToken[]
-  registeredPhones PhoneRecord[]
-  quotesCreated    Quote[]
-  tradeInsRecorded TradeIn[]
+  refreshTokens     RefreshToken[]
+  registeredPhones  PhoneRecord[]
+  quotesCreated     Quote[]
+  tradeInsRecorded  TradeIn[]
+  pushSubscriptions PushSubscription[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -862,4 +863,78 @@ model TradeIn {
   @@index([phoneRecordId])
   @@index([imei1])
   @@index([serialNumber])
+}
+
+/// A phone or computer that allowed NoxGuarda notifications (Web Push).
+model PushSubscription {
+  id         String  @id @default(uuid())
+  userId     String
+  user       User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessId String?
+
+  endpoint  String  @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+
+  createdAt     DateTime  @default(now())
+  lastSuccessAt DateTime?
+
+  @@index([businessId])
+  @@index([userId])
+}
+
+/// REMINDER: messages that take turns on a schedule. PLAN_EXPIRY: sent before a store's plan ends.
+enum PushCampaignKind {
+  REMINDER
+  PLAN_EXPIRY
+}
+
+/// A reminder the admin sets up: what it says, who gets it and how often.
+model PushCampaign {
+  id   String           @id @default(uuid())
+  name String
+  kind PushCampaignKind @default(REMINDER)
+
+  /// [{ "title": "...", "body": "...", "url": "/dashboard" }] — sent in turn.
+  messages Json
+
+  /// Plan codes that get it (FREE, STARTER, GOLD, ENTERPRISE). Empty = every plan.
+  targetPlans String[] @default([])
+  /// OWNERS, OWNERS_MANAGERS or ALL_STAFF
+  audience    String   @default("OWNERS")
+
+  /// Lagos times, "HH:MM". One send per time.
+  timesOfDay       String[] @default([])
+  /// 0 = Sunday … 6 = Saturday. Empty = every day.
+  daysOfWeek       Int[]    @default([])
+  /// PLAN_EXPIRY only: days before the plan ends, e.g. [3, 1].
+  daysBeforeExpiry Int[]    @default([])
+
+  isActive         Boolean   @default(true)
+  nextMessageIndex Int       @default(0)
+  lastSlotKey      String?
+  sentCount        Int       @default(0)
+  lastSentAt       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  logs PushLog[]
+}
+
+/// One send of a reminder (or a test), with how many devices received it.
+model PushLog {
+  id         String        @id @default(uuid())
+  campaignId String?
+  campaign   PushCampaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  businessId String?
+  /// Stops the same plan-ending reminder going to a store twice.
+  dedupeKey  String?       @unique
+  title      String
+  recipients Int           @default(0)
+  delivered  Int           @default(0)
+  createdAt  DateTime      @default(now())
+
+  @@index([campaignId, createdAt])
 }

@@ -1,24 +1,52 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { RefreshCw, X, ArrowUpCircle } from 'lucide-react';
 
 /** Changes on every deploy (see next.config.mjs), so the installed app can tell a new version is out. */
 const APP_VERSION = process.env.NEXT_PUBLIC_APP_VERSION || 'dev';
 const CHECK_EVERY_MS = 30 * 60 * 1000;
 
+/** True when NoxGuarda runs as the installed app (home-screen / desktop app), not in a browser tab. */
+function isInstalledApp() {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia?.('(display-mode: standalone)').matches ||
+    window.matchMedia?.('(display-mode: window-controls-overlay)').matches ||
+    (navigator as any).standalone === true
+  );
+}
+
 /**
- * Registers the app's background file (public/sw.js) and shows "A new version is
- * ready" when a deploy is waiting. Nothing switches over until the person taps
- * "Update now", then the page reloads on the new version.
+ * Registers the app's background file (public/sw.js) and handles new deploys:
+ *  - Installed app: shows "A new version is ready" and switches over when the person taps "Update now".
+ *  - Browser tab: switches over silently, then reloads the next time the person moves to
+ *    another page (never in the middle of what they are typing). A refresh also picks it up.
  */
 export function PwaRegister() {
+  const pathname = usePathname();
+  const firstPathRef = useRef(pathname);
+  // Browser tab: the new version has taken over; reload on the next page change.
+  const silentReloadRef = useRef(false);
   const [showUpdate, setShowUpdate] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const refreshingRef = useRef(false);
   // Only reload when the person asked for the update (never on a first visit).
   const updateRequestedRef = useRef(false);
+  // Browser tab: we switched to the new version ourselves, without asking.
+  const silentUpdateRef = useRef(false);
+
+  // Browser tab: once the new version has taken over, reload when the person moves to another page.
+  useEffect(() => {
+    if (pathname === firstPathRef.current) return;
+    firstPathRef.current = pathname;
+    if (silentReloadRef.current && !refreshingRef.current) {
+      refreshingRef.current = true;
+      window.location.reload();
+    }
+  }, [pathname]);
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
@@ -26,24 +54,42 @@ export function PwaRegister() {
     let interval: ReturnType<typeof setInterval> | undefined;
 
     // When the new version takes over after "Update now", reload once so the page runs on it.
+    // In a browser tab the reload waits for the next page change instead (see below).
     const onControllerChange = () => {
-      if (!updateRequestedRef.current || refreshingRef.current) return;
-      refreshingRef.current = true;
-      window.location.reload();
+      if (refreshingRef.current) return;
+      if (updateRequestedRef.current) {
+        refreshingRef.current = true;
+        window.location.reload();
+      } else if (silentUpdateRef.current) {
+        silentReloadRef.current = true;
+      }
     };
     navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+
+    const updateReady = (reg: ServiceWorkerRegistration) => {
+      if (isInstalledApp()) {
+        setShowUpdate(true);
+        return;
+      }
+      // Browser tab: no message. Switch to the new version now; the page reloads on the next page change.
+      const waiting = reg.waiting;
+      if (!waiting || silentUpdateRef.current) return;
+      silentUpdateRef.current = true;
+      waiting.postMessage({ type: 'CLEAR_CACHE' });
+      waiting.postMessage({ type: 'SKIP_WAITING' });
+    };
 
     const watch = (reg: ServiceWorkerRegistration) => {
       setRegistration(reg);
       // A new version already downloaded and waiting (e.g. from a visit earlier today).
-      if (reg.waiting && navigator.serviceWorker.controller) setShowUpdate(true);
+      if (reg.waiting && navigator.serviceWorker.controller) updateReady(reg);
 
       reg.addEventListener('updatefound', () => {
         const incoming = reg.installing;
         if (!incoming) return;
         incoming.addEventListener('statechange', () => {
           // "installed" while an older version is running = an update is ready.
-          if (incoming.state === 'installed' && navigator.serviceWorker.controller) setShowUpdate(true);
+          if (incoming.state === 'installed' && navigator.serviceWorker.controller) updateReady(reg);
         });
       });
     };

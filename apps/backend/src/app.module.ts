@@ -21,6 +21,7 @@ import { QuotesModule } from './quotes/quotes.module';
 import { DeviceLookupModule } from './device-lookup/device-lookup.module';
 import { TradeInsModule } from './trade-ins/trade-ins.module';
 import { DailySummaryModule } from './daily-summary/daily-summary.module';
+import { PushModule } from './push/push.module';
 
 import { AppController } from './app.controller';
 
@@ -42,6 +43,7 @@ import { AppController } from './app.controller';
     SalesModule,
     TradeInsModule,
     DailySummaryModule,
+    PushModule,
     QuotesModule,
     CustomersModule,
     RepairsModule,

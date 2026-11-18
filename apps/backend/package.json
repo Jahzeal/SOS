@@ -38,7 +38,8 @@
     "qrcode": "^1.5.3",
     "reflect-metadata": "^0.2.1",
     "resend": "^6.24.0",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.1",
+    "web-push": "^3.6.7"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.3.0",

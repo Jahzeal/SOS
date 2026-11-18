@@ -27,6 +27,7 @@ import {
   Activity,
   ListChecks,
   AlertTriangle,
+  BellRing,
 } from 'lucide-react';
 
 interface NavItem {
@@ -46,6 +47,7 @@ const mainNavItems: NavItem[] = [
 const bottomNavItems: NavItem[] = [
   { name: 'Error Logs', href: '/admin/errors', icon: AlertTriangle },
   { name: 'Notifications', href: '/admin/notifications', icon: Bell },
+  { name: 'Reminders', href: '/admin/reminders', icon: BellRing },
   { name: 'Support', href: '/admin/support', icon: HelpCircle },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];

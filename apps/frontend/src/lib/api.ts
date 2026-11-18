@@ -507,6 +507,50 @@ class ApiClient {
     });
   }
 
+  // --- Push notifications ---
+  async getPushPublicKey() {
+    return this.request<{ publicKey: string | null; enabled: boolean }>('/push/public-key');
+  }
+
+  async savePushSubscription(subscription: any) {
+    return this.request<{ success: boolean }>('/push/subscribe', { method: 'POST', body: JSON.stringify(subscription) });
+  }
+
+  async removePushSubscription(endpoint: string) {
+    return this.request<{ success: boolean }>('/push/unsubscribe', { method: 'POST', body: JSON.stringify({ endpoint }) });
+  }
+
+  async adminGetPushCampaigns() {
+    return this.request<{ campaigns: PushCampaign[]; devices: { total: number; byPlan: Record<string, number> }; enabled: boolean }>('/admin/push-campaigns');
+  }
+
+  async adminSavePushCampaign(input: PushCampaignInput, id?: string) {
+    return this.request<PushCampaign>(id ? `/admin/push-campaigns/${id}` : '/admin/push-campaigns', {
+      method: id ? 'PUT' : 'POST',
+      body: JSON.stringify(input),
+    });
+  }
+
+  async adminSetPushCampaignActive(id: string, isActive: boolean) {
+    return this.request<PushCampaign>(`/admin/push-campaigns/${id}/active`, { method: 'PATCH', body: JSON.stringify({ isActive }) });
+  }
+
+  async adminDeletePushCampaign(id: string) {
+    return this.request<{ success: boolean }>(`/admin/push-campaigns/${id}`, { method: 'DELETE' });
+  }
+
+  async adminTestPushCampaign(id: string) {
+    return this.request<{ recipients: number; delivered: number }>(`/admin/push-campaigns/${id}/test`, { method: 'POST' });
+  }
+
+  async adminSendPushCampaignNow(id: string) {
+    return this.request<{ recipients: number; delivered: number }>(`/admin/push-campaigns/${id}/send-now`, { method: 'POST' });
+  }
+
+  async adminAddStarterPushCampaigns() {
+    return this.request<any>('/admin/push-campaigns/starter', { method: 'POST' });
+  }
+
   // --- Commercial Invoices Endpoints ---
   async getInvoices(search?: string, status?: string) {
     const params = new URLSearchParams();
@@ -1216,4 +1260,29 @@ export interface DailySummarySettings {
   extraEmails: string[];
   includedInPlan: boolean;
   sendTime: string;
+}
+
+export interface PushCampaignMessage {
+  title: string;
+  body: string;
+  url?: string;
+}
+
+export interface PushCampaignInput {
+  name: string;
+  kind: 'REMINDER' | 'PLAN_EXPIRY';
+  messages: PushCampaignMessage[];
+  targetPlans: string[];
+  audience: 'OWNERS' | 'OWNERS_MANAGERS' | 'ALL_STAFF';
+  timesOfDay: string[];
+  daysOfWeek: number[];
+  daysBeforeExpiry: number[];
+  isActive: boolean;
+}
+
+export interface PushCampaign extends PushCampaignInput {
+  id: string;
+  sentCount: number;
+  lastSentAt: string | null;
+  createdAt: string;
 }

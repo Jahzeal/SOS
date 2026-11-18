@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { whatsappChatUrl } from '@/components/marketing/SiteFooter';
 import { TodaySummaryCard } from '@/components/summary/TodaySummaryCard';
+import { NotificationPrompt } from '@/components/notifications/NotificationPrompt';
 import {
   ShieldCheck,
   Smartphone,
@@ -156,6 +157,8 @@ export default function BusinessDashboardPage() {
           )}
         </div>
       </div>
+
+      <NotificationPrompt />
 
       {showProfit && <TodaySummaryCard storeName={user?.business?.name} />}
 
