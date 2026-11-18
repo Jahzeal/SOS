@@ -1357,120 +1357,8 @@ export default function PublicLandingPageV2() {
         </div>
       </section>
 
-      {/* SECTION 3 — TRUST SECTION & STATS */}
-      <section className="py-6 sm:py-10 bg-white border-y border-slate-200/80 px-6">
-        <div className="max-w-7xl mx-auto text-center space-y-4">
-          <p className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-widest">
-            Trusted by phone & laptop retailers & electronics businesses worldwide
-          </p>
-
-          {/* Animated Infinite Scrolling Logo Marquee Ticker */}
-          <div className="relative w-full overflow-hidden py-3">
-            {/* Side Fade Gradient Masks */}
-            <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none" />
-            <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none" />
-
-            <div className="animate-ticker items-center gap-8 sm:gap-14 font-bold text-xs sm:text-sm text-slate-800 select-none">
-              {/* Set 1 */}
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Store className="w-4 h-4 text-teal-600" /> Zenith Gadgets, Ikeja
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Smartphone className="w-4 h-4 text-emerald-600" /> Apex Wireless
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Globe className="w-4 h-4 text-indigo-600" /> MobileWorld Global
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Zap className="w-4 h-4 text-amber-600" /> iTech Hub Retail
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Building className="w-4 h-4 text-slate-700" /> SmartRetail Logistics
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <ShieldCheck className="w-4 h-4 text-teal-600" /> Matrix Cellular
-              </div>
-
-              {/* Set 2 (Seamless Duplicate Loop) */}
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Store className="w-4 h-4 text-teal-600" /> Zenith Gadgets, Ikeja
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Smartphone className="w-4 h-4 text-emerald-600" /> Apex Wireless
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Globe className="w-4 h-4 text-indigo-600" /> MobileWorld Global
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Zap className="w-4 h-4 text-amber-600" /> iTech Hub Retail
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <Building className="w-4 h-4 text-slate-700" /> SmartRetail Logistics
-              </div>
-              <div className="flex items-center gap-2 shrink-0 px-2 py-1.5 rounded-xl bg-slate-50 border border-slate-200/60 shadow-subtle">
-                <ShieldCheck className="w-4 h-4 text-teal-600" /> Matrix Cellular
-              </div>
-            </div>
-          </div>
-
-          {/* 4 Stat Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6 max-w-5xl mx-auto">
-            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">500+</div>
-              <div className="text-xs text-slate-500 font-medium mt-1">Businesses Registered</div>
-            </div>
-            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-emerald-600">1.2M+</div>
-              <div className="text-xs text-slate-500 font-medium mt-1">Phones Verified</div>
-            </div>
-            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-blue-600">450K+</div>
-              <div className="text-xs text-slate-500 font-medium mt-1">Monthly Searches</div>
-            </div>
-            <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-4 text-center">
-              <div className="text-2xl sm:text-3xl font-extrabold text-slate-900">99.4%</div>
-              <div className="text-xs text-slate-500 font-medium mt-1">Customer Satisfaction</div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 5 — SOLUTION SECTION */}
-      <section id="solutions" className="py-20 bg-gradient-to-b from-slate-50 via-white to-slate-100 text-slate-900 px-6 border-y border-slate-200/80">
-        <div className="max-w-7xl mx-auto text-center space-y-10">
-          <div className="max-w-3xl mx-auto space-y-4">
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-tight">
-              Meet NoxGuarda: One Workspace for Phone, Laptop & Accessory Sellers
-            </h2>
-            <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed">
-              One workspace to register stock by IMEI or serial number, sell at the counter, issue receipts, invoices and quotations, track warranties, and handle repairs.
-            </p>
-          </div>
-
-          {/* Store Showcase Container */}
-          <div className="relative rounded-3xl overflow-hidden border border-slate-200/80 shadow-2xl max-w-5xl mx-auto group">
-            <img
-              src="/images/verifyflow_store_hero.png"
-              alt="Professional phone retailer operating NoxGuarda retail software at store counter"
-              className="w-full h-auto max-h-[480px] object-cover object-center transform group-hover:scale-[1.01] transition-transform duration-500"
-            />
-
-            {/* Overlay Ambient Gradients */}
-            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/10 to-transparent pointer-events-none" />
-
-            {/* Floating Live Badge Overlays */}
-            <div className="absolute bottom-4 left-4 right-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-bold text-white">
-              <div className="flex items-center gap-2 bg-slate-900/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-700/80 shadow-lg">
-                <span>Real-Time Store Operations & POS Checkout</span>
-              </div>
-              <div className="flex items-center gap-2 bg-teal-600/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-teal-400/30 shadow-lg text-white font-extrabold">
-                <ShieldCheck className="w-4 h-4 text-emerald-300" />
-                <span>100% Serial & IMEI Tracked</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* SECTION 5 — MEET NOXGUARDA: the real screens */}
+      <DashboardShowcase />
 
       {/* SECTION 6 — CORE FEATURES */}
       <section id="features" className="py-20 px-6 max-w-7xl mx-auto w-full space-y-12">
@@ -1662,10 +1550,7 @@ export default function PublicLandingPageV2() {
         </div>
       </section>
 
-      {/* SECTION 8 — PRODUCT SHOWCASE (copy of the real dashboard) */}
-      <DashboardShowcase />
-
-      {/* SECTION 9 — WHY VERIFYFLOW (Comparison Matrix) */}
+      {/* SECTION 8 — WHY NOXGUARDA (Comparison) */}
       <section className="py-20 bg-slate-100/70 border-y border-slate-200 px-6">
         <div className="max-w-5xl mx-auto space-y-10">
           <div className="text-center space-y-2">
@@ -1713,65 +1598,6 @@ export default function PublicLandingPageV2() {
                   <Check className="w-4 h-4 text-emerald-600 shrink-0" /> Warranty claims checked against the sale record
                 </li>
               </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SECTION 10 — TESTIMONIALS */}
-      <section className="py-20 px-6 max-w-7xl mx-auto w-full space-y-12">
-        <div className="text-center space-y-2">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Trusted by 500+ Phone Store Owners
-          </h2>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
-            <div className="flex text-amber-400 gap-1 text-sm"></div>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-              "NoxGuarda stopped customer warranty swaps completely. Now every phone we sell has a scanned QR receipt linked to its IMEI."
-            </p>
-            <div className="pt-2 border-t border-slate-100 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs">
-                T
-              </div>
-              <div>
-                <div className="font-bold text-xs text-slate-900">Tobi Adeyemi</div>
-                <div className="text-[10px] text-slate-500">Owner, TechWorld Mobile</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
-            <div className="flex text-amber-400 gap-1 text-sm"></div>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-              "Managing 4 store branches used to require constant phone calls. With NoxGuarda, serial stock transfers take 10 seconds."
-            </p>
-            <div className="pt-2 border-t border-slate-100 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs">
-                S
-              </div>
-              <div>
-                <div className="font-bold text-xs text-slate-900">Sandra Eze</div>
-                <div className="text-[10px] text-slate-500">Director, Apex Wireless</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 shadow-sm rounded-2xl p-6 space-y-4">
-            <div className="flex text-amber-400 gap-1 text-sm"></div>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed italic">
-              "Our buyers love scanning the QR receipt on their phone to verify warranty expiration. It makes us look extremely professional."
-            </p>
-            <div className="pt-2 border-t border-slate-100 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center text-xs">
-                D
-              </div>
-              <div>
-                <div className="font-bold text-xs text-slate-900">Daniel Okoro</div>
-                <div className="text-[10px] text-slate-500">Wholesale Manager, GlobalPhone</div>
-              </div>
             </div>
           </div>
         </div>

@@ -529,10 +529,14 @@ export function DashboardShowcase() {
   const glass = GLASS[tab];
 
   return (
-    <section className="relative py-20 px-4 sm:px-6 max-w-7xl mx-auto w-full space-y-8 overflow-hidden">
-      <div className="text-center max-w-2xl mx-auto space-y-2">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">Explore the NoxGuarda Interface</h2>
-        <p className="text-xs sm:text-sm text-slate-500">These are the screens your store works in. The figures shown are examples.</p>
+    <section id="solutions" className="relative py-20 px-4 sm:px-6 max-w-7xl mx-auto w-full space-y-8 overflow-hidden scroll-mt-20">
+      <div className="text-center max-w-3xl mx-auto space-y-3">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          Meet NoxGuarda: One Workspace for Phone, Laptop &amp; Accessory Sellers
+        </h2>
+        <p className="text-sm sm:text-base text-slate-600">
+          One workspace to register stock by IMEI or serial number, sell at the counter, issue receipts, invoices and quotations, track warranties, and handle repairs.
+        </p>
       </div>
 
       {/* Frosted switcher; the chosen screen is a plain raised white pill in brand teal. */}
