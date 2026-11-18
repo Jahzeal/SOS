@@ -34,7 +34,9 @@ export class UpdateDailySummaryDto {
 export class DailySummaryController {
   constructor(private readonly summary: DailySummaryService) {}
 
+  /** Everyone in the store sees today's numbers; what they see depends on their role. */
   @Get('today')
+  @StoreRoles('MANAGER', 'SALES', 'TECHNICIAN')
   today(@Request() req) {
     return this.summary.today(req.user);
   }

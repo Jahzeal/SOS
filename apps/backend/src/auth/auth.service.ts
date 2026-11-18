@@ -117,24 +117,23 @@ export class AuthService {
   }
 
   /**
-   * A plan MUST be chosen at signup, and only real, active, publicly offered
-   * plans are accepted. There is no trial: every new store starts on the Free
-   * plan (free forever, device cap from the FREE plan row). If a paid plan was
-   * chosen it is returned as `pendingPlan` so the app can open checkout; the
-   * paid plan only becomes active in PaymentsService.applySuccessfulPayment.
+   * A paid plan MUST be chosen at signup; there is no free plan and no trial.
+   * The store is saved on the chosen plan with status PENDING_PAYMENT, which keeps
+   * it locked until Paystack confirms payment (PaymentsService.applySuccessfulPayment).
+   * The plan code is returned as `pendingPlan` so the app opens checkout straight away.
    */
   private async resolveSignupPlan(
     requested?: string,
-  ): Promise<{ planId: string | null; pendingPlan: string | null }> {
+  ): Promise<{ planId: string; planCode: string; pendingPlan: string }> {
     const code = String(requested || '').trim().toUpperCase();
     const plan = code
       ? await this.prisma.subscriptionPlan.findFirst({
           where: { code, isActive: true, isPublic: true },
-          select: { id: true, code: true },
+          select: { id: true, code: true, monthlyPriceNgn: true, annualPriceNgn: true },
         })
       : null;
 
-    if (!plan) {
+    if (!plan || plan.code === 'FREE' || (!plan.monthlyPriceNgn && !plan.annualPriceNgn)) {
       throw new BadRequestException({
         statusCode: 400,
         code: 'PLAN_REQUIRED',
@@ -143,15 +142,7 @@ export class AuthService {
           : 'Please choose a plan to create your account.',
       });
     }
-    if (plan.code === 'FREE') {
-      return { planId: plan.id, pendingPlan: null };
-    }
-
-    const freePlan = await this.prisma.subscriptionPlan.findUnique({
-      where: { code: 'FREE' },
-      select: { id: true },
-    });
-    return { planId: freePlan?.id ?? null, pendingPlan: plan.code };
+    return { planId: plan.id, planCode: plan.code, pendingPlan: plan.code };
   }
 
   /**
@@ -245,9 +236,9 @@ export class AuthService {
           name: storeName,
           slug,
           phone: dto.phone,
-          plan: 'FREE',
+          plan: signupPlan.planCode,
           planId: signupPlan.planId,
-          subscriptionStatus: 'FREE',
+          subscriptionStatus: 'PENDING_PAYMENT',
           users: {
             create: {
               email,
@@ -318,9 +309,9 @@ export class AuthService {
         name: storeName,
         slug,
         phone: dto.phone,
-        plan: 'FREE',
+        plan: signupPlan.planCode,
         planId: signupPlan.planId,
-        subscriptionStatus: 'FREE',
+        subscriptionStatus: 'PENDING_PAYMENT',
         users: {
           create: {
             email,

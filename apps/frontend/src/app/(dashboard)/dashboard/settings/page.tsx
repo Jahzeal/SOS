@@ -1030,7 +1030,9 @@ export default function RebuiltSettingsPage() {
                     </span>
                   ) : (
                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-extrabold uppercase bg-accent-500 text-white shadow-sm">
-                      {liveBusinessData?.subscriptionStatus === 'TRIAL'
+                      {liveBusinessData?.subscriptionStatus === 'PENDING_PAYMENT'
+                        ? 'Payment Pending'
+                        : liveBusinessData?.subscriptionStatus === 'TRIAL'
                         ? 'Trial'
                         : liveBusinessData?.subscriptionStatus === 'EXPIRED' || liveBusinessData?.subscriptionStatus === 'PAST_DUE'
                         ? 'Plan Expired'
@@ -1060,12 +1062,14 @@ export default function RebuiltSettingsPage() {
                       {liveBusinessData?.subscriptionStatus === 'TRIAL'
                         ? `Trial ended on ${new Date(liveBusinessData?.trialEndsAt || Date.now()).toLocaleDateString()}`
                         : 'Your plan has expired'}{' '}
-                      • Pay for a plan to keep full access, or use the Free plan
+                      • Pay for a plan to keep full access
                     </>
                   ) : liveBusinessData?.subscriptionStatus === 'TRIAL' && liveBusinessData?.trialEndsAt ? (
                     <>Trial ends on {new Date(liveBusinessData.trialEndsAt).toLocaleDateString()} • Pay anytime to keep full access</>
+                  ) : liveBusinessData?.subscriptionStatus === 'PENDING_PAYMENT' ? (
+                    <>Payment not completed • Your plan starts as soon as you pay</>
                   ) : (liveBusinessData?.plan || 'FREE') === 'FREE' ? (
-                    <>Free forever • Up to 10 devices • Upgrade when you need more</>
+                    <>Free plan (no longer offered) • Choose a paid plan to keep growing</>
                   ) : (
                     <>Instant verification, POS, and thermal receipt generation active</>
                   )}

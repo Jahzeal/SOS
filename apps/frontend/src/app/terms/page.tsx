@@ -34,7 +34,6 @@ export default function TermsPage() {
       <section>
         <h2>3. Plans and payment</h2>
         <ul>
-          <li>The Free plan costs nothing and is limited to the number of devices shown on the <Link href="/pricing">pricing page</Link>.</li>
           <li>Paid plans are charged in naira, monthly or yearly, through Paystack.</li>
           <li>Prices and plan limits are those shown on the pricing page when you pay.</li>
           <li>

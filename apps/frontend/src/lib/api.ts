@@ -493,7 +493,7 @@ class ApiClient {
 
   // --- Daily summary ---
   async getDailySummaryToday() {
-    return this.request<{ day: string; dayLabel: string; summary: DailySummaryData }>('/daily-summary/today');
+    return this.request<{ day: string; dayLabel: string; showAmounts?: boolean; summary: DailySummaryData }>('/daily-summary/today');
   }
 
   async getDailySummarySettings() {

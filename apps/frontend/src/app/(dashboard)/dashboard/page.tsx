@@ -160,7 +160,7 @@ export default function BusinessDashboardPage() {
 
       <NotificationPrompt />
 
-      {showProfit && <TodaySummaryCard storeName={user?.business?.name} />}
+      <TodaySummaryCard storeName={user?.business?.name} />
 
       {/* ========================================================================= */}
       {/* 2. EXECUTIVE KPI STAT CARDS GRID (6 Cards with Profit Made)               */}

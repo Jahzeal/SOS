@@ -541,7 +541,7 @@ export default function FeaturesPage() {
             Ready to upgrade how your store runs?
           </h2>
           <p className="text-sm sm:text-base text-slate-300 max-w-xl mx-auto font-medium">
-            For retailers, wholesalers and technicians dealing in phones, laptops and accessories. Free forever for up to 10 devices.
+            For retailers, wholesalers and technicians dealing in phones, laptops and accessories. Plans start at Starter, paid monthly or yearly in naira.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-3">
             <Link href="/onboarding" className="w-full sm:w-auto">

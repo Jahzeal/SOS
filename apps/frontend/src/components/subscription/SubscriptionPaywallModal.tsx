@@ -31,6 +31,8 @@ export function SubscriptionPaywallModal() {
     selectedPlan,
     formattedTrialEndDate,
     isLegacyTrial,
+    isPaymentPending,
+    isFreeEnded,
     paywallContextAction,
     switchToFreePlan,
     refreshSubscription,
@@ -51,11 +53,7 @@ export function SubscriptionPaywallModal() {
       setErrorMessage(null);
       setSuccessPayment(null);
       setSuccessDowngrade(false);
-      if (paywallContextAction === 'free_details') {
-        setViewMode('FREE_DETAILS');
-      } else {
-        setViewMode('PAY_PLAN');
-      }
+      setViewMode('PAY_PLAN');
     }
   }, [isPaywallOpen, paywallContextAction]);
 
@@ -197,14 +195,22 @@ export function SubscriptionPaywallModal() {
 
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-warning-500/20 text-warning-300 border border-warning-500/30 text-xs font-extrabold uppercase tracking-wider mb-2.5">
                 <Clock className="w-3.5 h-3.5" />
-                <span>{isLegacyTrial ? 'Trial Ended' : 'Plan Expired'}</span>
+                <span>{isPaymentPending ? 'Payment Pending' : isFreeEnded ? 'Free Access Ended' : isLegacyTrial ? 'Trial Ended' : 'Plan Expired'}</span>
               </div>
 
               <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                 Pay for your {planName} Plan
               </h2>
               <p className="text-xs text-slate-300 font-medium mt-1 leading-relaxed">
-                {isLegacyTrial ? (
+                {isPaymentPending ? (
+                  <>
+                    Your account is ready. Your <strong className="text-accent-300">{planName} Plan</strong> starts as soon as you pay.
+                  </>
+                ) : isFreeEnded ? (
+                  <>
+                    Free access has ended. Your records are safe. The <strong className="text-accent-300">{planName} Plan</strong> is the simplest way to continue.
+                  </>
+                ) : isLegacyTrial ? (
                   <>
                     Your trial of the <strong className="text-accent-300">{planName} Plan</strong> ended on{' '}
                     <strong className="text-warning-200">{formattedTrialEndDate}</strong>.
@@ -214,7 +220,7 @@ export function SubscriptionPaywallModal() {
                     Your <strong className="text-accent-300">{planName} Plan</strong> is no longer active.
                   </>
                 )}{' '}
-                Pay for the plan {getActionReason()}, or move to the Free plan (free forever, up to 10 devices).
+                Pay for the plan {getActionReason()}.
               </p>
             </div>
 
@@ -341,20 +347,6 @@ export function SubscriptionPaywallModal() {
                       )}
                     </Button>
 
-                    {/* Secondary Option: Learn about and use the Free plan */}
-                    <div className="pt-2 border-t border-slate-100 flex flex-col items-center gap-2">
-                      <Button variant="secondary" size="sm" fullWidth
-                        type="button"
-                        onClick={() => {
-                          setErrorMessage(null);
-                          setViewMode('FREE_DETAILS');
-                        }}>
-                        <span>Use the Free plan →</span>
-                      </Button>
-                      <span className="text-xs text-slate-400 font-medium text-center">
-                        See what the Free plan includes and its limits before deciding.
-                      </span>
-                    </div>
 
                     {/* View other plans link */}
                     <div className="text-center pt-1">

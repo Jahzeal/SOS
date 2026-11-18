@@ -90,12 +90,8 @@ export default function BusinessSubscriptionPage() {
 
   const faqs = [
     {
-      q: 'Is the Free plan really free?',
-      a: 'Yes. The Free plan is free forever and needs no card. You can keep up to 10 devices in your records, issue receipts and print QR codes. When you need more than 10 devices, pay for a paid plan.',
-    },
-    {
       q: 'What happens when my paid plan runs out?',
-      a: 'Your devices, sales and receipts stay safe. To keep adding new records, renew the plan, or move to the Free plan (free forever, up to 10 devices).',
+      a: 'Your devices, sales and receipts stay safe. To keep adding new records, renew the plan.',
     },
     {
       q: 'Can I upgrade or switch my plan at any time?',
@@ -166,8 +162,8 @@ export default function BusinessSubscriptionPage() {
               </div>
               <p className="text-xs font-medium opacity-90 mt-0.5">
                 {trialInfo.isExpired
-                  ? 'Pay for a plan below to keep adding stock and making sales, or move to the Free plan (free forever, up to 10 devices).'
-                  : 'Pay for a plan before it ends, or move to the Free plan (free forever, up to 10 devices).'}
+                  ? 'Pay for a plan below to keep adding stock and making sales.'
+                  : 'Pay for a plan before it ends to keep full access.'}
               </p>
             </div>
           </div>

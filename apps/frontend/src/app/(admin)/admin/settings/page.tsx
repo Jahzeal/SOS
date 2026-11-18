@@ -553,7 +553,7 @@ export default function AdminSettingsPage() {
                       </div>
                       <div className="flex justify-between text-slate-400 text-xs">
                         <span>Plan:</span>
-                        <strong className="text-emerald-400">Free forever (up to 10 devices)</strong>
+                        <strong className="text-emerald-400">Gold (example)</strong>
                       </div>
                     </div>
 

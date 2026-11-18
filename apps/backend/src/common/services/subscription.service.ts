@@ -5,13 +5,23 @@ import { requestContext } from '../staff/request-context';
 export interface SubscriptionState {
   /** May the store create or change records right now? */
   active: boolean;
-  reason?: 'TRIAL_EXPIRED' | 'SUBSCRIPTION_EXPIRED';
+  reason?: 'TRIAL_EXPIRED' | 'SUBSCRIPTION_EXPIRED' | 'PAYMENT_REQUIRED' | 'FREE_ENDED';
 }
 
 /**
  * The server-side source of truth for "is this store allowed to work".
  * The same rules used to live only in the browser, where they could be skipped.
  */
+/**
+ * The Free plan is no longer offered. Stores already on it keep full access until the
+ * end of Tue 25 Nov 2026 (Lagos time), then lock until they pay for a plan.
+ * FREE_ACCESS_ENDS_AT (an ISO date) on the server moves the date without a code change.
+ */
+export function freeAccessEndsAt(): Date {
+  const fromEnv = process.env.FREE_ACCESS_ENDS_AT ? new Date(process.env.FREE_ACCESS_ENDS_AT) : null;
+  return fromEnv && !Number.isNaN(fromEnv.getTime()) ? fromEnv : new Date('2026-11-26T00:00:00+01:00');
+}
+
 @Injectable()
 export class SubscriptionService {
   constructor(private readonly prisma: PrismaService) {}
@@ -26,8 +36,13 @@ export class SubscriptionService {
     const status = String(business.subscriptionStatus || '').toUpperCase();
     const now = Date.now();
 
+    // Signed up and chose a plan, but Paystack has not confirmed payment yet.
+    if (status === 'PENDING_PAYMENT') {
+      return { active: false, reason: 'PAYMENT_REQUIRED' };
+    }
+
     if (plan === 'FREE' || status === 'FREE') {
-      return { active: true };
+      return now >= freeAccessEndsAt().getTime() ? { active: false, reason: 'FREE_ENDED' } : { active: true };
     }
 
     if (status === 'ACTIVE') {
@@ -62,9 +77,13 @@ export class SubscriptionService {
         statusCode: HttpStatus.PAYMENT_REQUIRED,
         code: state.reason,
         message:
-          state.reason === 'TRIAL_EXPIRED'
-            ? 'Your free trial has ended. Choose a plan to continue.'
-            : 'Your subscription has expired. Renew your plan to continue.',
+          state.reason === 'PAYMENT_REQUIRED'
+            ? 'Complete payment for your plan to start using NoxGuarda.'
+            : state.reason === 'FREE_ENDED'
+            ? 'Free access has ended. Choose a plan to keep adding stock and issuing receipts.'
+            : state.reason === 'TRIAL_EXPIRED'
+              ? 'Your free trial has ended. Choose a plan to continue.'
+              : 'Your subscription has expired. Renew your plan to continue.',
       },
       HttpStatus.PAYMENT_REQUIRED,
     );

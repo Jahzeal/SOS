@@ -40,29 +40,11 @@ import { GoogleAuthButton } from '@/components/auth/GoogleAuthButton';
 import { WatermarkBackground } from '@/components/brand/WatermarkBackground';
 import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModal';
 import { CONTACT } from '@/components/marketing/SiteFooter';
+import { planFeatureLabel } from '@/lib/plan-features';
 import { saveSession } from '@/lib/session';
 
 // Comprehensive Plan Specifications & Fallback Data
 const FALLBACK_PLANS = [
-  {
-    code: 'FREE',
-    name: 'Free',
-    description: 'IMEI records and receipts for small shops, up to 10 devices.',
-    monthlyPriceNgn: 0,
-    annualPriceNgn: 0,
-    maxDevices: 10,
-    customBranding: false,
-    prioritySupport: false,
-    features: [
-      'Up to 10 Devices',
-      'Dual IMEI & Laptop Serial Tracking',
-      'Digital QR & Thermal Receipts',
-      'Anti-Theft Verification Portal (/verify)',
-      'Swap & Trade-in Records with Stolen Check',
-      'Owner Account Only',
-      'Standard Support',
-    ],
-  },
   {
     code: 'STARTER',
     name: 'Starter',
@@ -174,7 +156,7 @@ export default function OnboardingPage() {
   const [billingCycle, setBillingCycle] = useState<'monthly' | 'annual'>('monthly');
   const [viewingPlanDetails, setViewingPlanDetails] = useState<any | null>(null);
 
-  // Every new store starts on the Free plan. A paid plan only starts once it is paid for.
+  // A new store is saved on the chosen plan, locked until it is paid for.
   const [accountCreated, setAccountCreated] = useState(false);
   const [pendingPlanCode, setPendingPlanCode] = useState<string | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -198,7 +180,8 @@ export default function OnboardingPage() {
             features: (Array.isArray(p.features) && p.features.length > 0) ? p.features : fallback?.features || [],
           };
         });
-        setDynamicPlans(merged);
+        // There is no free plan: never offer one, even if it still exists in the database.
+        setDynamicPlans(merged.filter((p: any) => String(p.code || '').toUpperCase() !== 'FREE' && (p.monthlyPriceNgn || p.annualPriceNgn)));
         if (!urlPlan) {
           const defaultChoice = merged.find((p: any) => p.code === 'GOLD' || p.code === 'BUSINESS' || p.isRecommended) || merged[1] || merged[0];
           setSelectedPlan(defaultChoice.code);
@@ -514,8 +497,8 @@ export default function OnboardingPage() {
     },
     4: {
       headline: 'Choose the Right Plan',
-      description: 'Start on the Free plan, free forever for up to 10 devices, or pick a paid plan and pay to start it.',
-      highlight: 'Free Forever • Up to 10 Devices',
+      description: 'Pick the plan that fits your store. It starts as soon as you pay with Paystack.',
+      highlight: 'Pay monthly or yearly in naira',
     },
     5: {
       headline: 'Welcome to NoxGuarda!',
@@ -1007,13 +990,9 @@ export default function OnboardingPage() {
                     <div>
                       <div className="flex flex-wrap items-center gap-2">
                         <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Select Store Plan</h3>
-                        <span className="px-2.5 py-0.5 rounded-full bg-success-50 text-success-700 border border-success-200 text-xs font-extrabold inline-flex items-center gap-1">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-success-600" />
-                          Free plan is free forever
-                        </span>
                       </div>
                       <p className="text-xs text-slate-500 font-medium mt-0.5">
-                        The Free plan needs no card. A paid plan starts as soon as you pay, and you can switch anytime.
+                        Your plan starts as soon as you pay. You can change plans anytime.
                       </p>
                     </div>
                     
@@ -1142,7 +1121,7 @@ export default function OnboardingPage() {
                             viewingPlanDetails.features.map((feat: string, idx: number) => (
                               <div key={idx} className="flex items-start gap-2 text-xs text-slate-800">
                                 <Check className="w-4 h-4 text-success-600 shrink-0 mt-0.5" />
-                                <span className="font-medium">{feat}</span>
+                                <span className="font-medium">{planFeatureLabel(feat, viewingPlanDetails)}</span>
                               </div>
                             ))
                           ) : (
@@ -1237,7 +1216,7 @@ export default function OnboardingPage() {
                                     planItem.features.slice(0, 4).map((feat: string, fIdx: number) => (
                                       <div key={fIdx} className="flex items-start gap-1.5 leading-snug">
                                         <Check className="w-3.5 h-3.5 text-success-600 shrink-0 mt-0.5" />
-                                        <span className="line-clamp-1">{feat}</span>
+                                        <span className="line-clamp-1">{planFeatureLabel(feat, planItem)}</span>
                                       </div>
                                     ))
                                   ) : (
@@ -1312,8 +1291,8 @@ export default function OnboardingPage() {
                     </p>
                     {paymentPending && (
                       <p className="text-xs text-warning-700 font-semibold max-w-md mx-auto pt-1">
-                        Payment for the {checkoutPlan?.name || pendingPlanCode} plan was not completed, so your store is on the Free plan (free forever, up to 10 devices). You can upgrade anytime from{' '}
-                        <Link href="/dashboard/settings?tab=subscription" className="underline font-bold">Settings → Subscription</Link>.
+                        Payment for the {checkoutPlan?.name || pendingPlanCode} plan was not completed. Your account is saved; your plan starts as soon as you pay, from{' '}
+                        <Link href="/dashboard/subscription" className="underline font-bold">Subscription</Link>.
                       </p>
                     )}
                   </div>
@@ -1331,7 +1310,7 @@ export default function OnboardingPage() {
                     <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
                       <div className="text-xs font-bold text-slate-500 uppercase">Billing</div>
                       <div className="text-xs font-extrabold text-slate-900 mt-0.5">
-                        {paidPlanActive ? `${activePlanName} Plan Active` : 'Free Forever • 10 Devices'}
+                        {paidPlanActive ? `${activePlanName} Plan Active` : 'Payment pending'}
                       </div>
                     </div>
                   </div>

@@ -17,6 +17,12 @@ export interface PlanDetails {
   features?: string[];
 }
 
+/** Last day of free access for stores still on the old Free plan (end of Tue 25 Nov 2026, Lagos). */
+const FREE_ACCESS_ENDS_AT = new Date(process.env.NEXT_PUBLIC_FREE_ACCESS_ENDS_AT || '2026-11-26T00:00:00+01:00');
+const FREE_ACCESS_END_LABEL = new Date(FREE_ACCESS_ENDS_AT.getTime() - 1).toLocaleDateString('en-GB', {
+  weekday: 'short', day: 'numeric', month: 'short', timeZone: 'Africa/Lagos',
+});
+
 interface SubscriptionGuardContextType {
   business: any | null;
   plans: PlanDetails[];
@@ -26,6 +32,10 @@ interface SubscriptionGuardContextType {
   isTrialExpired: boolean;
   /** Store created before trials were removed and still on one. No new store gets a trial. */
   isLegacyTrial: boolean;
+  isPaymentPending: boolean;
+  isFreeEnded: boolean;
+  isFreeEnding: boolean;
+  freeAccessEndLabel: string;
   isPaidActive: boolean;
   isFreePlan: boolean;
   trialDaysRemaining: number;
@@ -104,10 +114,15 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
 
   // Derive status with authoritative database fields
   const planCode = (business?.plan || user?.business?.plan || 'FREE').toUpperCase();
-  const subscriptionStatus = (business?.subscriptionStatus || 'FREE').toUpperCase();
+  const subscriptionStatus = (business?.subscriptionStatus || '').toUpperCase();
+
+  // Stores still on the old Free plan are offered the cheapest paid plan to move to.
+  const cheapestPaid = [...plans]
+    .filter((p) => (p.monthlyPriceNgn || 0) > 0 && p.code.toUpperCase() !== 'FREE')
+    .sort((a, b) => (a.monthlyPriceNgn || 0) - (b.monthlyPriceNgn || 0))[0];
 
   // Find matching plan object
-  const selectedPlan: PlanDetails = plans.find(
+  const selectedPlan: PlanDetails = (planCode === 'FREE' && cheapestPaid) || plans.find(
     (p) => p.code.toUpperCase() === planCode || p.id === business?.planId
   ) || {
     id: 'default-starter',
@@ -125,6 +140,9 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
   const hasValidTrialDate = trialEndsAt !== null && !isNaN(trialEndsAt.getTime());
 
   const isFreePlan = planCode === 'FREE' || subscriptionStatus === 'FREE';
+  // The Free plan is no longer offered: stores still on it lock after this date (same date as the server).
+  const isFreeEnded = isFreePlan && now.getTime() >= FREE_ACCESS_ENDS_AT.getTime();
+  const isFreeEnding = isFreePlan && !isFreeEnded;
   const isPaidActive = subscriptionStatus === 'ACTIVE';
   
   // Only stores created before the Free plan replaced trials can have this status.
@@ -132,12 +150,17 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
 
   // Access has lapsed (the name is historical): a paid period ran out, or a legacy trial ended.
   // True ONLY if status is explicitly EXPIRED/PAST_DUE, or status is TRIAL and DB trial date has passed
+  // Signed up and chose a plan, but payment has not been completed yet: locked until paid.
+  const isPaymentPending = subscriptionStatus === 'PENDING_PAYMENT';
+
   const isTrialExpired =
-    !isFreePlan &&
+    isPaymentPending ||
+    isFreeEnded ||
+    (!isFreePlan &&
     !isPaidActive &&
     (subscriptionStatus === 'EXPIRED' ||
       subscriptionStatus === 'PAST_DUE' ||
-      (subscriptionStatus === 'TRIAL' && hasValidTrialDate && trialEndsAt.getTime() <= now.getTime()));
+      (subscriptionStatus === 'TRIAL' && hasValidTrialDate && trialEndsAt.getTime() <= now.getTime())));
 
   // Trial is active ONLY if status is TRIAL AND we have a verified trial date from the DB that is in the future
   const isTrialActive =
@@ -209,6 +232,10 @@ export function SubscriptionGuardProvider({ children }: { children: React.ReactN
         isTrialActive,
         isTrialExpired,
         isLegacyTrial,
+        isPaymentPending,
+        isFreeEnded,
+        isFreeEnding,
+        freeAccessEndLabel: FREE_ACCESS_END_LABEL,
         isPaidActive,
         isFreePlan,
         trialDaysRemaining,

@@ -1815,7 +1815,7 @@ export default function PublicLandingPageV2() {
             },
             {
               q: 'What does it cost?',
-              a: 'There is a Free plan for up to 10 devices. Paid plans are charged in naira through Paystack; current prices are on the Pricing page.',
+              a: 'Plans are charged monthly or yearly in naira through Paystack. Current prices and what each plan includes are on the Pricing page.',
             },
           ].map((item, idx) => (
 

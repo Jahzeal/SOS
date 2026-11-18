@@ -310,14 +310,28 @@ export class DailySummaryService {
   // Dashboard and settings
   // ---------------------------------------------------------------------------
 
+  /**
+   * Today's numbers for the dashboard card. Owners see the whole store; staff in one
+   * branch see that branch. Profit is only for owners and managers, and technicians
+   * (who cannot see prices anywhere) get counts without naira amounts.
+   */
   async today(user: { businessId: string; storeRole?: string | null; branchId?: string | null }) {
     const role = String(user.storeRole || 'OWNER').toUpperCase();
     const day = lagosDay();
+    // Follow the branch picker (owners and head-office managers), otherwise the person's own branch.
+    const picked = requestContext.get()?.readBranchId || null;
     const summary = await this.compute(user.businessId, day, {
-      branchId: role === 'OWNER' ? null : user.branchId || null,
+      branchId: picked || (role === 'OWNER' ? null : user.branchId || null),
       showProfit: role === 'OWNER' || role === 'MANAGER',
     });
-    return { day: day.key, dayLabel: day.label, summary };
+    const showAmounts = role !== 'TECHNICIAN';
+    if (!showAmounts) {
+      summary.revenue = 0;
+      summary.owed = 0;
+      summary.tradeInsValue = 0;
+      summary.devicesSold = summary.devicesSold.map((d) => ({ description: d.description, price: 0 }));
+    }
+    return { day: day.key, dayLabel: day.label, showAmounts, summary };
   }
 
   async getSettings(businessId: string) {

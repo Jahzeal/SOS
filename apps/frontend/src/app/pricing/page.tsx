@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { planFeatureLabel } from '@/lib/plan-features';
 import { SiteFooter } from '@/components/marketing/SiteFooter';
 import { useInitialPlans } from './InitialPlans';
 import { Button } from '@/components/ui/Button';
@@ -248,7 +249,7 @@ export default function DedicatedPricingPage() {
                               displayedFeatures.map((feat: string, fIdx: number) => (
                                 <li key={fIdx} className="flex items-start gap-2 animate-in fade-in duration-150">
                                   <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                                  <span className="leading-snug">{feat}</span>
+                                  <span className="leading-snug">{planFeatureLabel(feat, plan)}</span>
                                 </li>
                               ))
                             ) : (

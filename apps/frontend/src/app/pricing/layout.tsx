@@ -5,7 +5,7 @@ import { InitialPlansProvider } from './InitialPlans';
 export const metadata: Metadata = {
   title: 'Pricing & Plans — NoxGuarda',
   description:
-    'NoxGuarda plans for sellers of phones, laptops and accessories. Start free with up to 10 devices; paid plans are charged in naira through Paystack.',
+    'NoxGuarda plans for sellers of phones, laptops and accessories. Plans are charged in naira through Paystack, monthly or yearly.',
 };
 
 // Plans are fetched on the server so the first HTML (and any link preview)

@@ -94,6 +94,7 @@ const PLATFORM_FEATURE_CATALOG: FeatureCategory[] = [
 const ALL_CATALOG_FEATURES = PLATFORM_FEATURE_CATALOG.flatMap((cat) => cat.items);
 
 import { useAdminSubscriptions, useDashboardCacheUtils } from '@/hooks/useDashboardQueries';
+import { planFeatureLabel } from '@/lib/plan-features';
 
 export default function AdminSubscriptionsPage() {
   const { invalidateAdminSubscriptions } = useDashboardCacheUtils();
@@ -1190,7 +1191,7 @@ export default function AdminSubscriptionsPage() {
                                 plan.features.map((feat: string, fIdx: number) => (
                                   <div key={fIdx} className="flex items-start gap-1.5 font-medium">
                                     <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
-                                    <span className="leading-snug">{feat}</span>
+                                    <span className="leading-snug">{planFeatureLabel(feat, plan)}</span>
                                   </div>
                                 ))
                               ) : (

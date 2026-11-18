@@ -65,32 +65,11 @@ export class BusinessService {
   }
 
   /**
-   * A store may only move itself DOWN to the free plan here.
-   * Paid plans are granted exclusively by verified payment (PaymentsService)
-   * or by a platform admin.
+   * There is no free plan to move to. Paid plans are granted only by verified
+   * payment (PaymentsService) or by a platform admin.
    */
-  async updatePlan(businessId: string, planCode: any) {
-    const cleanPlan = String(planCode || '').toUpperCase();
-    if (cleanPlan !== 'FREE') {
-      throw new ForbiddenException('Paid plans can only be activated through checkout.');
-    }
-
-    const subPlan = await this.prisma.subscriptionPlan.findUnique({
-      where: { code: 'FREE' },
-    });
-
-    return this.prisma.business.update({
-      where: { id: businessId },
-      data: {
-        plan: 'FREE',
-        planId: subPlan ? subPlan.id : null,
-        subscriptionStatus: 'FREE',
-        subscriptionEndsAt: null,
-      },
-      include: {
-        subscriptionPlan: true,
-      },
-    });
+  async updatePlan(_businessId: string, _planCode: any): Promise<never> {
+    throw new ForbiddenException('Plans can only be changed by paying for a plan.');
   }
 
   async getTemplateSettings(businessId: string) {
