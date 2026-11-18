@@ -10,6 +10,8 @@ export interface A4ReceiptData {
   paymentStatus?: string | null;
   paymentMethod?: string | null;
   totalAmount: number;
+  /** A device the customer swapped in, taken off what they paid. */
+  tradeIn?: { label: string; value: number } | null;
   customerName?: string | null;
   customerPhone?: string | null;
   customerEmail?: string | null;
@@ -197,16 +199,30 @@ export function A4SalesReceipt({ data, id = 'printable-a4-receipt' }: { data: A4
               NGN {data.totalAmount.toLocaleString()}
             </span>
           </div>
-          <div className="flex justify-between text-slate-600">
-            <span>Tax / VAT (0%):</span>
-            <span className="font-mono font-bold text-slate-900">NGN 0.00</span>
-          </div>
-          <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 text-sm font-black">
-            <span className="text-slate-900 uppercase">TOTAL PAID:</span>
-            <span className="text-blue-600 font-mono text-base font-extrabold">
-              NGN {data.totalAmount.toLocaleString()}
-            </span>
-          </div>
+          {data.tradeIn ? (
+            <div className="flex justify-between gap-3 text-slate-600">
+              <span>{data.tradeIn.label}</span>
+              <span className="font-mono font-bold text-slate-900 shrink-0">
+                − NGN {data.tradeIn.value.toLocaleString()}
+              </span>
+            </div>
+          ) : (
+            <div className="flex justify-between text-slate-600">
+              <span>Tax / VAT (0%):</span>
+              <span className="font-mono font-bold text-slate-900">NGN 0.00</span>
+            </div>
+          )}
+          {(() => {
+            const net = data.totalAmount - (data.tradeIn?.value || 0);
+            return (
+              <div className="flex justify-between items-baseline pt-2 border-t border-slate-200 text-sm font-black">
+                <span className="text-slate-900 uppercase">{net < 0 ? 'STORE PAID CUSTOMER:' : 'TOTAL PAID:'}</span>
+                <span className="text-blue-600 font-mono text-base font-extrabold">
+                  NGN {Math.abs(net).toLocaleString()}
+                </span>
+              </div>
+            );
+          })()}
         </div>
       </div>
 

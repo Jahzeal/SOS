@@ -39,6 +39,24 @@ enum PhoneCondition {
   FOR_PARTS
 }
 
+/// Where a device in stock came from.
+enum DeviceSource {
+  PURCHASE
+  TRADE_IN
+}
+
+/// SWAP: customer swapped a device in at checkout. BUY: store bought it for cash.
+enum TradeInKind {
+  SWAP
+  BUY
+}
+
+/// BLOCKED: a swap attempt stopped because the device is reported stolen.
+enum TradeInStatus {
+  COMPLETED
+  BLOCKED
+}
+
 enum PhoneStatus {
   IN_STOCK
   SOLD
@@ -142,6 +160,13 @@ model Business {
   subscriptionPayments SubscriptionPayment[]
   branches             Branch[]
   staffInvites         StaffInvite[]
+  tradeIns             TradeIn[]
+
+  // Daily summary email for the owner (and managers, per branch)
+  dailySummaryEnabled Boolean  @default(true)
+  dailySummaryHour    Int      @default(21) // Lagos time, 0-23
+  dailySummaryEmails  String[] @default([])
+  lastDailySummaryOn  String? // Lagos date (YYYY-MM-DD) of the last summary sent
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -164,6 +189,7 @@ model Branch {
   sales        Sale[]
   repairs      RepairTicket[]
   quotes       Quote[]
+  tradeIns     TradeIn[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -259,6 +285,7 @@ model User {
   refreshTokens    RefreshToken[]
   registeredPhones PhoneRecord[]
   quotesCreated    Quote[]
+  tradeInsRecorded TradeIn[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -299,6 +326,7 @@ model PhoneRecord {
   condition       PhoneCondition @default(NEW)
   status          PhoneStatus    @default(IN_STOCK)
   deviceCategory  DeviceCategory @default(PHONE)
+  source          DeviceSource   @default(PURCHASE)
 
   purchasePrice Float?
   sellingPrice  Float?
@@ -328,6 +356,7 @@ model PhoneRecord {
   repairs    RepairTicket[]
   saleItems  SaleItem[]
   quoteItems QuoteItem[]
+  tradeIns   TradeIn[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -358,6 +387,7 @@ model Customer {
   sales        Sale[]
   quotes       Quote[]
   repairs      RepairTicket[]
+  tradeIns     TradeIn[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -420,6 +450,10 @@ model Sale {
   installments SaleInstallment[]
   payments     SalePayment[]
   soldById     String
+
+  // Value of a device the customer swapped in, taken off what they pay.
+  tradeInCredit Float    @default(0)
+  tradeIn       TradeIn?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -771,4 +805,61 @@ model EmailOtp {
   expiresAt DateTime
   attempts  Int      @default(0)
   createdAt DateTime @default(now())
+}
+
+/// A device a customer gave the store: swapped in at checkout, or bought for cash.
+/// Blocked attempts (device reported stolen) are kept too, so owners can see them.
+model TradeIn {
+  id         String   @id @default(uuid())
+  businessId String
+  business   Business @relation(fields: [businessId], references: [id], onDelete: Cascade)
+  branchId   String?
+  branch     Branch?  @relation(fields: [branchId], references: [id], onDelete: SetNull)
+
+  kind   TradeInKind
+  status TradeInStatus @default(COMPLETED)
+
+  // The sale the customer received a device in (SWAP only).
+  saleId String? @unique
+  sale   Sale?   @relation(fields: [saleId], references: [id], onDelete: SetNull)
+
+  // The device that came in, once it is in stock (empty for blocked attempts).
+  phoneRecordId String?
+  phoneRecord   PhoneRecord? @relation(fields: [phoneRecordId], references: [id], onDelete: SetNull)
+
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+
+  // What was typed in, kept even if the device record changes later.
+  deviceCategory DeviceCategory  @default(PHONE)
+  imei1          String?
+  imei2          String?
+  serialNumber   String?
+  brand          String?
+  model          String?
+  condition      PhoneCondition?
+
+  customerName       String?
+  customerPhone      String?
+  idType             String?
+  idNumber           String?
+  ownershipConfirmed Boolean @default(false)
+
+  tradeInValue  Float          @default(0)
+  // Positive: the customer paid the store. Negative: the store paid the customer.
+  balance       Float          @default(0)
+  paymentMethod PaymentMethod?
+
+  blockedReason String?
+
+  createdById String?
+  createdBy   User?   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([businessId, createdAt])
+  @@index([branchId])
+  @@index([phoneRecordId])
+  @@index([imei1])
+  @@index([serialNumber])
 }

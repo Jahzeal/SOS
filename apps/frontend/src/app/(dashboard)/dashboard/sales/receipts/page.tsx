@@ -31,6 +31,15 @@ import { A4SalesReceipt } from '@/components/receipt/A4SalesReceipt';
 import { api } from '@/lib/api';
 import { useReceipts, useInventorySummary } from '@/hooks/useDashboardQueries';
 
+/** The "Trade-in" line for a swap receipt, or null for a normal sale. */
+function tradeInLineOf(sale: any): { label: string; value: number } | null {
+  const t = sale?.tradeIn;
+  const value = Number(sale?.tradeInCredit) || 0;
+  if (!t || value <= 0) return null;
+  const id = t.imei1 || t.serialNumber;
+  return { label: `Trade-in: ${[t.brand, t.model].filter(Boolean).join(' ')}${id ? ` (${id})` : ''}`, value };
+}
+
 export default function ReceiptsArchivePage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -488,6 +497,7 @@ export default function ReceiptsArchivePage() {
                   paymentStatus: selectedReceipt.paymentStatus,
                   paymentMethod: selectedReceipt.paymentMethod,
                   totalAmount: selectedReceipt.totalAmount || 0,
+                  tradeIn: tradeInLineOf(selectedReceipt),
                   customerName: selectedReceipt.customer?.name,
                   customerPhone: selectedReceipt.customer?.phone,
                   customerEmail: selectedReceipt.customer?.email,
@@ -524,6 +534,7 @@ export default function ReceiptsArchivePage() {
                 paymentStatus: rcp.paymentStatus,
                 paymentMethod: rcp.paymentMethod,
                 totalAmount: rcp.totalAmount || 0,
+                tradeIn: tradeInLineOf(rcp),
                 customerName: rcp.customer?.name,
                 customerPhone: rcp.customer?.phone,
                 customerEmail: rcp.customer?.email,

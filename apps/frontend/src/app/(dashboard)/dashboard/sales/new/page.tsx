@@ -32,6 +32,8 @@ import {
   X as XIcon,
   Pencil,
   RotateCcw,
+  ArrowLeftRight,
+  ShoppingCart,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
@@ -43,6 +45,14 @@ import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
 import { A4SalesReceipt } from '@/components/receipt/A4SalesReceipt';
 import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 import { api } from '@/lib/api';
+import {
+  SwapIncomingPanel,
+  SwapIncoming,
+  SwapCheckState,
+  EMPTY_SWAP_INCOMING,
+  parseSwapValue,
+  swapIncomingProblem,
+} from '@/components/sales/SwapIncomingPanel';
 
 interface CartDeviceItem {
   id: string; // phoneRecord.id (UUID) or custom item ID
@@ -104,6 +114,12 @@ function CheckoutPOSContent() {
   const storeUser = useAuthStore((st) => st.user);
   const showCosts = can(storeUser, 'seeCosts');
   const canEditDevices = can(storeUser, 'editDevices');
+
+  // Sale or Swap. A swap adds "Device the customer is dropping" and takes its value off the total.
+  const [mode, setMode] = useState<'SALE' | 'SWAP'>(searchParams.get('mode') === 'swap' ? 'SWAP' : 'SALE');
+  const isSwap = mode === 'SWAP';
+  const [swapIncoming, setSwapIncoming] = useState<SwapIncoming>(EMPTY_SWAP_INCOMING);
+  const [swapCheck, setSwapCheck] = useState<SwapCheckState>({ status: 'idle' });
 
   // Editing the selling price of a cart line (agreed / negotiated price)
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -242,7 +258,18 @@ function CheckoutPOSContent() {
     return cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   }, [cart]);
 
-  const grandTotal = useMemo(() => subtotal, [subtotal]);
+  // In a swap, the value of the device coming in is taken off what the customer pays.
+  // If it is worth more than what they receive, the store pays them the difference.
+  const tradeInCredit = isSwap ? parseSwapValue(swapIncoming.tradeInValue) || 0 : 0;
+  const grandTotal = useMemo(() => Math.max(0, subtotal - tradeInCredit), [subtotal, tradeInCredit]);
+  const storePays = Math.max(0, tradeInCredit - subtotal);
+  const swapProblem = isSwap
+    ? swapIncomingProblem(swapIncoming, swapCheck) ||
+      (customerName.trim().length < 2 ? "Enter the customer's name." : null) ||
+      (customerPhone.trim().length < 5 ? "Enter the customer's phone number." : null) ||
+      (cart.length === 0 && tradeInCredit <= 0 ? 'Enter how much you are paying the customer.' : null)
+    : null;
+  const tradeInLabel = `Trade-in: ${[swapIncoming.brand, swapIncoming.model].filter(Boolean).join(' ') || 'device'}`;
 
   // Devices in the list that have no selling price saved yet (for the reminder)
   const unpricedInList = useMemo(
@@ -362,7 +389,7 @@ function CheckoutPOSContent() {
     setIsProcessing(true);
     setErrorMessage(null);
     try {
-      if (cart.length === 0) {
+      if (cart.length === 0 && !isSwap) {
         throw new Error('At least one item or appliance is required to checkout.');
       }
 
@@ -372,6 +399,62 @@ function CheckoutPOSContent() {
         price: item.price,
         quantity: item.quantity || 1,
       }));
+
+      if (isSwap) {
+        const incomingId = swapIncoming.category === 'PHONE' ? swapIncoming.imei1 : swapIncoming.serialNumber;
+        const res = await api.createTradeIn({
+          incoming: {
+            category: swapIncoming.category,
+            imei1: swapIncoming.category === 'PHONE' ? swapIncoming.imei1 : undefined,
+            imei2: swapIncoming.category === 'PHONE' ? swapIncoming.imei2 || undefined : undefined,
+            serialNumber: swapIncoming.category === 'LAPTOP' ? swapIncoming.serialNumber : undefined,
+            brand: swapIncoming.brand.trim(),
+            model: swapIncoming.model.trim(),
+            storageCapacity: swapIncoming.storageCapacity.trim() || undefined,
+            color: swapIncoming.color.trim() || undefined,
+            condition: swapIncoming.condition,
+            tradeInValue: tradeInCredit,
+          },
+          items: payloadItems,
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          customerEmail: customerEmail.trim() || undefined,
+          idType: swapIncoming.idType || undefined,
+          idNumber: swapIncoming.idType ? swapIncoming.idNumber.trim() || undefined : undefined,
+          ownershipConfirmed: swapIncoming.ownershipConfirmed,
+          paymentMethod,
+        });
+        const swapSale = res.sale;
+        setFinalReceipt({
+          rawId: swapSale?.id,
+          id: swapSale?.receiptNumber || swapSale?.invoiceNumber || res.tradeIn?.id,
+          invoiceNumber: swapSale?.invoiceNumber,
+          receiptNumber: swapSale?.receiptNumber,
+          customerName: customerName.trim(),
+          customerPhone: customerPhone.trim(),
+          customerEmail: customerEmail.trim(),
+          items: cart,
+          subtotal,
+          total: subtotal,
+          tradeIn: { label: `${tradeInLabel}${incomingId ? ` (${incomingId})` : ''}`, value: tradeInCredit },
+          netPaid: grandTotal,
+          storePays,
+          isBuyOnly: !swapSale,
+          tradeInId: res.tradeIn?.id,
+          paymentMethod,
+          cashTendered: parseFloat(cashTendered) || grandTotal,
+          changeDue,
+          date: new Date(swapSale?.createdAt || Date.now()).toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+        });
+        setCheckoutStep(3);
+        return;
+      }
 
       const sale = await api.checkoutSale({
         customerName: customerName.trim() || 'Retail Buyer',
@@ -445,7 +528,14 @@ function CheckoutPOSContent() {
         `• ${it.brand} ${it.model}${it.isDevice && it.imei ? `\n  IMEI: ${it.imei}` : ''}\n  Qty: ${it.quantity} x ₦${it.price.toLocaleString()} = ₦${(it.price * it.quantity).toLocaleString()}`
       ),
       `----------------------------------------`,
-      `*TOTAL PAID: ₦${finalReceipt.total.toLocaleString()}*`,
+      ...(finalReceipt.tradeIn
+        ? [
+            `${finalReceipt.tradeIn.label}: -₦${finalReceipt.tradeIn.value.toLocaleString()}`,
+            finalReceipt.storePays > 0
+              ? `*STORE PAID CUSTOMER: ₦${finalReceipt.storePays.toLocaleString()}*`
+              : `*TOTAL PAID: ₦${finalReceipt.netPaid.toLocaleString()}*`,
+          ]
+        : [`*TOTAL PAID: ₦${finalReceipt.total.toLocaleString()}*`]),
       `========================================`,
       `${storeSettings?.receiptFooter || 'Thank you for your purchase! 30-Day Store Warranty included. Official IMEI verified on NoxGuarda Registry.'}`,
       `Official Registry: https://noxguarda.com`,
@@ -468,6 +558,9 @@ function CheckoutPOSContent() {
     setCustomerName('');
     setCustomerPhone('');
     setCustomerEmail('');
+    setSwapIncoming(EMPTY_SWAP_INCOMING);
+    setSwapCheck({ status: 'idle' });
+    setSeenPaymentConfirmed(false);
   };
 
   return (
@@ -477,12 +570,14 @@ function CheckoutPOSContent() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
         <div>
           <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
-            {checkoutStep === 1 && 'Checkout POS Terminal'}
+            {checkoutStep === 1 && (isSwap ? 'Swap / Trade-in' : 'Checkout POS Terminal')}
             {checkoutStep === 2 && 'Select Payment Method'}
             {checkoutStep === 3 && 'Transaction Receipt'}
           </h1>
           <p className="hidden sm:block text-xs sm:text-sm text-slate-500 font-medium max-w-xl mt-1 leading-relaxed">
-            {checkoutStep === 1 && 'Select in-stock devices, add customer details, and build your order.'}
+            {checkoutStep === 1 && (isSwap
+              ? 'Record the device the customer is dropping, then pick what they are receiving.'
+              : 'Select in-stock devices, add customer details, and build your order.')}
             {checkoutStep === 2 && 'Choose customer payment method (Cash, Card, Transfer) and confirm settlement.'}
             {checkoutStep === 3 && 'Review thermal receipt, print or email customer statement, and view record.'}
           </p>
@@ -504,6 +599,26 @@ function CheckoutPOSContent() {
         </div>
       </div>
 
+      {/* Sale / Swap switch */}
+      {checkoutStep === 1 && (
+        <div role="group" aria-label="Checkout type" className="inline-flex rounded-2xl border border-slate-200 bg-slate-100 p-1">
+          {(['SALE', 'SWAP'] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              aria-pressed={mode === m}
+              onClick={() => setMode(m)}
+              className={`px-4 sm:px-5 py-2 text-sm font-extrabold rounded-xl flex items-center gap-2 transition-colors ${
+                mode === m ? 'bg-white text-accent-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'
+              }`}
+            >
+              {m === 'SALE' ? <ShoppingCart className="w-4 h-4" /> : <ArrowLeftRight className="w-4 h-4" />}
+              {m === 'SALE' ? 'Sale' : 'Swap'}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* Error Message Banner */}
       {errorMessage && (
         <div role="alert" className="p-4 bg-danger-50 border border-danger-200 rounded-control flex items-center gap-3 text-danger-800 text-xs font-bold animate-in fade-in duration-200">
@@ -520,6 +635,15 @@ function CheckoutPOSContent() {
           {/* LEFT 7 COLUMNS: CUSTOMER INFO & IN-STOCK INVENTORY SEARCH */}
           <div className="lg:col-span-7 space-y-6">
 
+            {isSwap && (
+              <SwapIncomingPanel
+                value={swapIncoming}
+                onChange={setSwapIncoming}
+                check={swapCheck}
+                onCheckChange={setSwapCheck}
+              />
+            )}
+
             {/* Customer Info Card Section */}
             <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-4">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -531,7 +655,7 @@ function CheckoutPOSContent() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
                 <TextInput
-                  label="Customer Name"
+                  label={isSwap ? 'Customer Name (required)' : 'Customer Name'}
                   type="text"
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
@@ -539,7 +663,7 @@ function CheckoutPOSContent() {
                   leftIcon={<User className="w-4 h-4" />}
                 />
                 <TextInput
-                  label="Phone Number"
+                  label={isSwap ? 'Phone Number (required)' : 'Phone Number'}
                   type="text"
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
@@ -702,7 +826,7 @@ function CheckoutPOSContent() {
           <div className="lg:col-span-5 space-y-5">
             <div className="p-6 rounded-2xl bg-white border border-slate-200/90 shadow-sm space-y-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h2 className="text-lg font-extrabold text-slate-900">Current Order</h2>
+                <h2 className="text-lg font-extrabold text-slate-900">{isSwap ? 'Customer is receiving' : 'Current Order'}</h2>
                 <Badge variant="starter" size="sm">{cart.length} ITEMS</Badge>
               </div>
 
@@ -724,7 +848,9 @@ function CheckoutPOSContent() {
               <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
                 {cart.length === 0 ? (
                   <div className="text-center py-8 text-slate-400 text-xs font-medium">
-                    Your cart is empty. Select an in-stock device above.
+                    {isSwap
+                      ? 'Pick the device the customer is receiving. Leave this empty if you are only buying their device.'
+                      : 'Your cart is empty. Select an in-stock device above.'}
                   </div>
                 ) : (
                   cart.map((item) => {
@@ -895,9 +1021,18 @@ function CheckoutPOSContent() {
                   <span className="font-bold text-slate-900">₦{subtotal.toLocaleString()}</span>
                 </div>
 
+                {isSwap && (
+                  <div className="flex justify-between gap-3">
+                    <span>{tradeInLabel}</span>
+                    <span className="font-bold text-slate-900 shrink-0">−₦{tradeInCredit.toLocaleString()}</span>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-baseline pt-3 border-t border-slate-200 text-slate-900 font-extrabold">
-                  <span className="text-sm">Grand Total</span>
-                  <span className="text-2xl text-accent-600 font-extrabold">₦{grandTotal.toLocaleString()}</span>
+                  <span className="text-sm">{storePays > 0 ? 'Store pays customer' : isSwap ? 'Customer pays' : 'Grand Total'}</span>
+                  <span className={`text-2xl font-extrabold ${storePays > 0 ? 'text-warning-700' : 'text-accent-600'}`}>
+                    ₦{(storePays > 0 ? storePays : grandTotal).toLocaleString()}
+                  </span>
                 </div>
               </div>
 
@@ -905,6 +1040,12 @@ function CheckoutPOSContent() {
                 <p role="alert" className="flex items-start gap-1.5 text-xs font-semibold text-warning-800">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" aria-hidden="true" />
                   Please add a price for {unpricedInCart.map((i) => i.model).join(', ')} to continue (tap the pencil).
+                </p>
+              )}
+              {isSwap && swapProblem && (
+                <p role="status" className="flex items-start gap-1.5 text-xs font-semibold text-slate-600">
+                  <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5 text-warning-600" aria-hidden="true" />
+                  {swapProblem}
                 </p>
               )}
               {editingId && unpricedInCart.length === 0 && (
@@ -915,8 +1056,11 @@ function CheckoutPOSContent() {
               <Button
                 variant="primary"
                 size="lg"
-                disabled={cart.length === 0 || unpricedInCart.length > 0 || !!editingId}
-                onClick={() => setCheckoutStep(2)}
+                disabled={(isSwap ? !!swapProblem : cart.length === 0) || unpricedInCart.length > 0 || !!editingId}
+                onClick={() => {
+                  setSeenPaymentConfirmed(false);
+                  setCheckoutStep(2);
+                }}
                 fullWidth
                 rightIcon={<ArrowRight className="w-4 h-4" />}
               >
@@ -939,8 +1083,10 @@ function CheckoutPOSContent() {
                 <p className="text-xs text-slate-500 font-medium">Customer: <strong>{customerName.trim() || 'Retail Buyer'}</strong> ({customerPhone || 'No Phone'})</p>
               </div>
               <div className="text-right">
-                <p className="text-xs text-slate-400 font-extrabold uppercase">Total Amount Due</p>
-                <p className="text-lg sm:text-2xl font-extrabold text-accent-600">₦{grandTotal.toLocaleString()}</p>
+                <p className="text-xs text-slate-400 font-extrabold uppercase">{storePays > 0 ? 'Store pays customer' : 'Total Amount Due'}</p>
+                <p className={`text-lg sm:text-2xl font-extrabold ${storePays > 0 ? 'text-warning-700' : 'text-accent-600'}`}>
+                  ₦{(storePays > 0 ? storePays : grandTotal).toLocaleString()}
+                </p>
               </div>
             </div>
 
@@ -989,8 +1135,18 @@ function CheckoutPOSContent() {
               </button>
             </div>
 
+            {isSwap && (
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                <div className="flex justify-between"><span>Customer is receiving</span><span className="font-bold">₦{subtotal.toLocaleString()}</span></div>
+                <div className="flex justify-between gap-3"><span>{tradeInLabel}</span><span className="font-bold shrink-0">−₦{tradeInCredit.toLocaleString()}</span></div>
+                {storePays > 0 && (
+                  <p className="pt-1 font-bold text-warning-800">Choose how you are paying the customer ₦{storePays.toLocaleString()}.</p>
+                )}
+              </div>
+            )}
+
             {/* Cash Tendered Calculator (If Cash Selected) */}
-            {paymentMethod === 'CASH' && (
+            {paymentMethod === 'CASH' && grandTotal > 0 && (
               <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
                 <TextInput
                   label="Cash Tendered (₦)"
@@ -1014,7 +1170,7 @@ function CheckoutPOSContent() {
             )}
 
             {/* Store Bank Settlement Details (If Bank Transfer or Card Selected) */}
-            {(paymentMethod === 'BANK_TRANSFER' || paymentMethod === 'CARD') && (
+            {(paymentMethod === 'BANK_TRANSFER' || paymentMethod === 'CARD') && grandTotal > 0 && (
               <div className="p-4 rounded-card bg-gradient-to-br from-slate-900 to-slate-800 dark:from-slate-800 dark:to-slate-800 text-white space-y-3 text-xs shadow-md">
                 <div className="flex items-center justify-between border-b border-white/10 pb-2">
                   <div className="flex items-center gap-2">
@@ -1095,10 +1251,16 @@ function CheckoutPOSContent() {
                 />
                 <div className="text-xs">
                   <span className="font-extrabold text-warning-950 block">
-                    Confirm Receipt of Payment
+                    {storePays > 0 ? 'Confirm You Paid the Customer' : 'Confirm Receipt of Payment'}
                   </span>
                   <span className="text-warning-900 font-medium leading-relaxed">
-                    I have verified and confirmed receipt of <strong>₦{grandTotal.toLocaleString()}</strong> in store account / cash in hand before issuing this receipt.
+                    {storePays > 0 ? (
+                      <>I have paid the customer <strong>₦{storePays.toLocaleString()}</strong> for their device.</>
+                    ) : grandTotal === 0 ? (
+                      <>The device coming in covers the full price. Nothing more is owed.</>
+                    ) : (
+                      <>I have verified and confirmed receipt of <strong>₦{grandTotal.toLocaleString()}</strong> in store account / cash in hand before issuing this receipt.</>
+                    )}
                   </span>
                 </div>
               </label>
@@ -1123,7 +1285,7 @@ function CheckoutPOSContent() {
                 onClick={handleConfirmPayment}
                 rightIcon={<CheckCircle2 className="w-4 h-4" />}
               >
-                Confirm Payment & Process Sale
+                {isSwap ? 'Complete Swap' : 'Confirm Payment & Process Sale'}
               </Button>
             </div>
 
@@ -1142,9 +1304,13 @@ function CheckoutPOSContent() {
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-sm font-extrabold text-success-950">Sale Processed & Archived!</h2>
+                <h2 className="text-sm font-extrabold text-success-950">
+                  {finalReceipt.isBuyOnly ? 'Device Bought & Added to Stock' : finalReceipt.tradeIn ? 'Swap Completed!' : 'Sale Processed & Archived!'}
+                </h2>
                 <p className="text-xs text-success-800 font-medium">
-                  Transaction logged to verified store ledger & anti-theft database.
+                  {finalReceipt.tradeIn
+                    ? 'The device the customer dropped is now in your inventory as a trade-in.'
+                    : 'Transaction logged to verified store ledger & anti-theft database.'}
                 </p>
               </div>
             </div>
@@ -1153,7 +1319,19 @@ function CheckoutPOSContent() {
             </Badge>
           </div>
 
+          {finalReceipt.isBuyOnly && (
+            <div className="p-5 rounded-2xl bg-white border border-slate-200 shadow-sm space-y-2 text-xs">
+              <p className="font-extrabold text-slate-900 text-sm">{finalReceipt.tradeIn?.label}</p>
+              <p className="text-slate-600">Bought from <strong>{finalReceipt.customerName}</strong> ({finalReceipt.customerPhone})</p>
+              <p className="text-slate-600">Store paid customer: <strong>₦{(finalReceipt.storePays || 0).toLocaleString()}</strong></p>
+              <Link href="/dashboard/swaps" className="inline-block pt-1 font-bold text-accent-600 hover:underline">
+                View in Swaps →
+              </Link>
+            </div>
+          )}
+
           {/* A4 Sales Receipt Document Display */}
+          {!finalReceipt.isBuyOnly && (
           <div className="space-y-4">
             <A4SalesReceipt
               id="printable-a4-receipt"
@@ -1164,6 +1342,7 @@ function CheckoutPOSContent() {
                 paymentStatus: 'PAID',
                 paymentMethod: finalReceipt.paymentMethod,
                 totalAmount: finalReceipt.total,
+                tradeIn: finalReceipt.tradeIn || null,
                 customerName: finalReceipt.customerName,
                 customerPhone: finalReceipt.customerPhone,
                 customerEmail: finalReceipt.customerEmail,
@@ -1193,9 +1372,11 @@ function CheckoutPOSContent() {
               }}
             />
           </div>
+          )}
 
           {/* Action Toolbar */}
           <div className="space-y-2.5 pt-1">
+            {!finalReceipt.isBuyOnly && (<>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               <Button
                 variant="primary"
@@ -1232,6 +1413,7 @@ function CheckoutPOSContent() {
                 </Button>
               </Link>
             </div>
+            </>)}
 
             <Button
               variant="secondary"

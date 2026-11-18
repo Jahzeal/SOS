@@ -3,7 +3,7 @@ import { PrismaClient } from '@prisma/client';
 import { requestContext } from '../common/staff/request-context';
 
 /** Records that belong to a branch. */
-const BRANCH_MODELS = new Set(['PhoneRecord', 'Sale', 'RepairTicket', 'Quote']);
+const BRANCH_MODELS = new Set(['PhoneRecord', 'Sale', 'RepairTicket', 'Quote', 'TradeIn']);
 const READ_ACTIONS = new Set([
   'findMany',
   'findFirst',

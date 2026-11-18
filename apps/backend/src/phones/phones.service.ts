@@ -318,6 +318,8 @@ export class PhonesService {
         serialNumber: true,
         condition: true,
         status: true,
+        source: true,
+        deviceCategory: true,
         purchasePrice: true,
         sellingPrice: true,
         carrierStatus: true,
@@ -464,6 +466,17 @@ export class PhonesService {
         saleItems: {
           include: {
             sale: true,
+          },
+        },
+        tradeIns: {
+          where: { status: 'COMPLETED' },
+          orderBy: { createdAt: 'desc' },
+          select: {
+            id: true,
+            kind: true,
+            customerName: true,
+            createdAt: true,
+            createdBy: { select: { firstName: true, lastName: true } },
           },
         },
       },

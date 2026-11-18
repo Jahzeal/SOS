@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Modal } from '@/components/ui/Modal';
 import { whatsappChatUrl } from '@/components/marketing/SiteFooter';
+import { TodaySummaryCard } from '@/components/summary/TodaySummaryCard';
 import {
   ShieldCheck,
   Smartphone,
@@ -44,6 +45,7 @@ import {
   Copy,
   ExternalLink,
   MessageSquare,
+  ArrowLeftRight,
 } from 'lucide-react';
 
 import { useInventory, useInventorySummary } from '@/hooks/useDashboardQueries';
@@ -144,8 +146,18 @@ export default function BusinessDashboardPage() {
               <span className="whitespace-nowrap">Record Sale</span>
             </Button>
           </Link>
+          {can(storeUser || user, 'sell') && (
+            <Link href="/dashboard/checkout?mode=swap" className="flex-1 sm:flex-none min-w-0">
+              <Button variant="secondary" fullWidth className="sm:w-auto" leftIcon={<ArrowLeftRight className="w-4 h-4" />}>
+                <span className="hidden sm:inline whitespace-nowrap">New Swap</span>
+                <span className="inline sm:hidden whitespace-nowrap">Swap</span>
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
+
+      {showProfit && <TodaySummaryCard storeName={user?.business?.name} />}
 
       {/* ========================================================================= */}
       {/* 2. EXECUTIVE KPI STAT CARDS GRID (6 Cards with Profit Made)               */}

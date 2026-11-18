@@ -104,6 +104,7 @@ export default function InventoryPage() {
       fullImei: item.imei1,
       daysInInv: Math.floor((Date.now() - new Date(item.createdAt).getTime()) / (1000 * 60 * 60 * 24)) || 1,
       warrantyStatus: item.warrantyExpiryDate && new Date(item.warrantyExpiryDate) > new Date() ? 'active' : 'expired',
+      isTradeIn: item.source === 'TRADE_IN',
       branch: (item as any).branch?.name || 'Main branch',
       value: item.sellingPrice ? `₦${item.sellingPrice.toLocaleString()}` : '₦0',
     }));
@@ -419,7 +420,10 @@ export default function InventoryPage() {
                       <Smartphone className="w-4 h-4" />
                     </div>
                     <div>
-                      <h4 className="font-extrabold text-slate-900 text-sm">{item.model}</h4>
+                      <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-1.5">
+                        {item.model}
+                        {item.isTradeIn && <Badge variant="starter" size="sm">Trade-in</Badge>}
+                      </h4>
                       <p className="text-xs text-slate-500 font-medium">{item.brand}</p>
                     </div>
                   </div>
@@ -573,9 +577,12 @@ export default function InventoryPage() {
                     </div>
                   </Td>
                   <Td>
-                    <Badge variant={item.warrantyStatus === 'active' ? 'verified' : 'sold'} size="sm">
-                      {item.warrantyStatus.toUpperCase()}
-                    </Badge>
+                    <div className="flex flex-wrap items-center gap-1">
+                      <Badge variant={item.warrantyStatus === 'active' ? 'verified' : 'sold'} size="sm">
+                        {item.warrantyStatus.toUpperCase()}
+                      </Badge>
+                      {item.isTradeIn && <Badge variant="starter" size="sm">Trade-in</Badge>}
+                    </div>
                   </Td>
                   <Td className="font-semibold text-slate-800">
                     <span className="inline-flex items-center gap-1">

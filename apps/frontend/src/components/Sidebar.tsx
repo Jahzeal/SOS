@@ -30,6 +30,7 @@ import {
   FileSpreadsheet,
   ChevronsLeft,
   ChevronsRight,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
@@ -78,6 +79,11 @@ const menuItems: MenuItem[] = [
       { name: 'Invoices Registry', href: '/dashboard/invoices', icon: FileText },
       { name: 'Receipts Archive', href: '/dashboard/receipts', icon: Receipt },
     ],
+  },
+  {
+    name: 'Swaps',
+    icon: ArrowLeftRight,
+    href: '/dashboard/swaps',
   },
   {
     name: 'Customers',
@@ -228,6 +234,7 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
           const needs: Record<string, Permission> = {
             'Register Phone / Item': 'registerDevices',
             'Sales & Invoices': 'sell',
+            Swaps: 'sell',
             Analytics: 'reports',
             Templates: 'storeSettings',
             'Subscription & Plans': 'billing',

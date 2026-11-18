@@ -35,6 +35,7 @@ import { PaystackCheckoutModal } from '@/components/billing/PaystackCheckoutModa
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { TeamPanel } from '@/components/team/TeamPanel';
 import { BranchesPanel } from '@/components/team/BranchesPanel';
+import { DailySummarySettingsCard } from '@/components/summary/DailySummarySettingsCard';
 import { can } from '@/lib/permissions';
 import { Sun, Moon, Monitor } from 'lucide-react';
 
@@ -760,6 +761,8 @@ export default function RebuiltSettingsPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* Main Form Column */}
           <div className="lg:col-span-2 space-y-6">
+            <DailySummarySettingsCard />
+
             {/* Logo Upload Card */}
             <div className="p-6 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-4">
               <h3 className="text-base font-extrabold text-slate-900">Business Logo</h3>

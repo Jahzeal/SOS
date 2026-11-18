@@ -1,9 +1,17 @@
 import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CheckoutSaleDto, UpdateInvoiceDto } from './dto/checkout-sale.dto';
-import { PhoneStatus, PaymentMethod } from '@prisma/client';
+import { PhoneStatus, PaymentMethod, Prisma } from '@prisma/client';
 import { MailService } from '../mail/mail.service';
 import { generateInvoicePdfBuffer } from './invoice-pdf.generator';
+
+/** The "Trade-in" line printed on a swap receipt, or undefined for a normal sale. */
+function tradeInPdfLine(sale: any): { label: string; value: number } | undefined {
+  const t = sale?.tradeIn;
+  if (!t || !(Number(sale?.tradeInCredit) > 0)) return undefined;
+  const id = t.imei1 || t.serialNumber;
+  return { label: `Trade-in: ${[t.brand, t.model].filter(Boolean).join(' ')}${id ? ` (${id})` : ''}`, value: Number(sale.tradeInCredit) };
+}
 import { DocumentNumberService } from '../common/services/document-number.service';
 
 @Injectable()
@@ -16,7 +24,20 @@ export class SalesService {
     private docNumbers: DocumentNumberService,
   ) {}
 
-  async checkout(businessId: string, userId: string, dto: CheckoutSaleDto) {
+  /**
+   * Swaps use the same checkout. `tradeInCredit` is the value of the device the customer
+   * gave in, and `inTransaction` lets the swap file that device in the same transaction,
+   * so the sale and the trade-in are saved together or not at all.
+   */
+  async checkout(
+    businessId: string,
+    userId: string,
+    dto: CheckoutSaleDto,
+    opts?: {
+      tradeInCredit?: number;
+      inTransaction?: (tx: Prisma.TransactionClient, sale: { id: string; customerId: string | null }) => Promise<void>;
+    },
+  ) {
     if (!dto.items || dto.items.length === 0) {
       throw new BadRequestException('At least one item is required for checkout.');
     }
@@ -135,6 +156,7 @@ export class SalesService {
           invoiceNumber,
           receiptNumber,
           totalAmount,
+          tradeInCredit: opts?.tradeInCredit || 0,
           paymentMethod: dto.paymentMethod || PaymentMethod.CASH,
           paymentStatus: effectivePaymentStatus,
           notes: combinedNotes || null,
@@ -179,11 +201,18 @@ export class SalesService {
               phoneRecord: true,
             },
           },
+          tradeIn: {
+            select: { brand: true, model: true, imei1: true, serialNumber: true, tradeInValue: true, balance: true },
+          },
         },
       });
 
+      if (opts?.inTransaction) {
+        await opts.inTransaction(tx, { id: newSale.id, customerId: newSale.customerId });
+      }
+
       return newSale;
-    });
+    }, { timeout: 20000 });
 
     return sale;
   }
@@ -238,6 +267,9 @@ export class SalesService {
             phoneRecord: true,
           },
         },
+        tradeIn: {
+          select: { brand: true, model: true, imei1: true, serialNumber: true, tradeInValue: true, balance: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -266,6 +298,9 @@ export class SalesService {
           include: {
             phoneRecord: true,
           },
+        },
+        tradeIn: {
+          select: { brand: true, model: true, imei1: true, serialNumber: true, tradeInValue: true, balance: true },
         },
       },
     });
@@ -442,6 +477,9 @@ export class SalesService {
               phoneRecord: true,
             },
           },
+          tradeIn: {
+            select: { brand: true, model: true, imei1: true, serialNumber: true, tradeInValue: true, balance: true },
+          },
           business: true,
         },
       });
@@ -534,6 +572,9 @@ export class SalesService {
               phoneRecord: true,
             },
           },
+          tradeIn: {
+            select: { brand: true, model: true, imei1: true, serialNumber: true, tradeInValue: true, balance: true },
+          },
         },
       });
 
@@ -598,6 +639,9 @@ export class SalesService {
             phoneRecord: true,
           },
         },
+        tradeIn: {
+          select: { brand: true, model: true, imei1: true, serialNumber: true, tradeInValue: true, balance: true },
+        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -626,6 +670,9 @@ export class SalesService {
           include: {
             phoneRecord: true,
           },
+        },
+        tradeIn: {
+          select: { brand: true, model: true, imei1: true, serialNumber: true, tradeInValue: true, balance: true },
         },
       },
     });
@@ -699,6 +746,7 @@ export class SalesService {
       accountNumber: sale.business?.accountNumber,
       accountName: sale.business?.accountName,
       notes: sale.notes,
+      tradeIn: tradeInPdfLine(sale),
       items: sale.items.map((it: any) => ({
         description: it.description,
         imei: it.phoneRecord?.imei1,
@@ -799,6 +847,9 @@ export class SalesService {
             phoneRecord: true,
           },
         },
+        tradeIn: {
+          select: { brand: true, model: true, imei1: true, serialNumber: true, tradeInValue: true, balance: true },
+        },
         business: true,
       },
     });
@@ -845,6 +896,7 @@ export class SalesService {
       accountNumber: sale.business?.accountNumber,
       accountName: sale.business?.accountName,
       notes: sale.notes,
+      tradeIn: tradeInPdfLine(sale),
       items: sale.items.map((it: any) => ({
         description: it.description,
         imei: it.phoneRecord?.imei1,

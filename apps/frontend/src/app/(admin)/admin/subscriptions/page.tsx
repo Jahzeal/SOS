@@ -51,6 +51,7 @@ const PLATFORM_FEATURE_CATALOG: FeatureCategory[] = [
       'Dual IMEI & Laptop Serial Tracking',
       'Condition Grading (A-D / Parts)',
       'Anti-Theft Verification Portal (/verify)',
+      'Swap & Trade-in Records with Stolen Check',
     ],
   },
   {
@@ -68,6 +69,7 @@ const PLATFORM_FEATURE_CATALOG: FeatureCategory[] = [
     items: [
       'Live Profit & Margin Analytics',
       'Excel / CSV Export & Reports',
+      'Daily Sales Summary (Email)',
     ],
   },
   {

@@ -465,6 +465,48 @@ class ApiClient {
     });
   }
 
+  // --- Swaps & Trade-ins ---
+  async checkTradeInDevice(identifier: string, category: 'PHONE' | 'LAPTOP') {
+    return this.request<TradeInCheck>(
+      `/trade-ins/check?identifier=${encodeURIComponent(identifier)}&category=${category}`,
+    );
+  }
+
+  async createTradeIn(payload: CreateTradeInPayload) {
+    return this.request<{ tradeIn: any; sale: any | null }>('/trade-ins', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async getTradeIns(params?: { filter?: string; search?: string }) {
+    const query = new URLSearchParams();
+    if (params?.filter) query.append('filter', params.filter);
+    if (params?.search) query.append('search', params.search);
+    const qs = query.toString() ? `?${query.toString()}` : '';
+    return this.request<{ summary: { count: number; totalValue: number; blocked: number }; tradeIns: any[] }>(`/trade-ins${qs}`);
+  }
+
+  async getTradeIn(id: string) {
+    return this.request<any>(`/trade-ins/${encodeURIComponent(id)}`);
+  }
+
+  // --- Daily summary ---
+  async getDailySummaryToday() {
+    return this.request<{ day: string; dayLabel: string; summary: DailySummaryData }>('/daily-summary/today');
+  }
+
+  async getDailySummarySettings() {
+    return this.request<DailySummarySettings>('/daily-summary/settings');
+  }
+
+  async updateDailySummarySettings(payload: { enabled?: boolean; extraEmails?: string[] }) {
+    return this.request<DailySummarySettings>('/daily-summary/settings', {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
   // --- Commercial Invoices Endpoints ---
   async getInvoices(search?: string, status?: string) {
     const params = new URLSearchParams();
@@ -1121,3 +1163,57 @@ class ApiClient {
 }
 
 export const api = new ApiClient();
+
+export interface TradeInCheck {
+  identifier: string;
+  stolen: boolean;
+  stolenSince: string | null;
+  alreadyInStock: boolean;
+  soldByUsBefore: boolean;
+  ownDevice: { brand: string; model: string; storageCapacity?: string | null; color?: string | null; status: string } | null;
+  otherStore: { name: string; since: string } | null;
+}
+
+export interface CreateTradeInPayload {
+  incoming: {
+    category: 'PHONE' | 'LAPTOP';
+    imei1?: string;
+    imei2?: string;
+    serialNumber?: string;
+    brand: string;
+    model: string;
+    storageCapacity?: string;
+    color?: string;
+    condition: string;
+    tradeInValue: number;
+  };
+  items?: { phoneRecordId?: string; description?: string; price: number; quantity?: number }[];
+  customerName: string;
+  customerPhone: string;
+  customerEmail?: string;
+  idType?: string;
+  idNumber?: string;
+  ownershipConfirmed: boolean;
+  paymentMethod?: string;
+}
+
+export interface DailySummaryData {
+  salesCount: number;
+  revenue: number;
+  profit?: number;
+  itemsWithoutCost?: number;
+  devicesSold: Array<{ description: string; price: number }>;
+  devicesSoldCount: number;
+  tradeInsCount: number;
+  tradeInsValue: number;
+  blockedCount: number;
+  owed: number;
+  topSeller: { name: string; sales: number } | null;
+}
+
+export interface DailySummarySettings {
+  enabled: boolean;
+  extraEmails: string[];
+  includedInPlan: boolean;
+  sendTime: string;
+}

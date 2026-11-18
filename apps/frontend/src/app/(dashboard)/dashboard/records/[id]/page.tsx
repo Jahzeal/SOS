@@ -738,6 +738,20 @@ export default function PhoneRecordDetailPage() {
               <span>Transaction & Service Records</span>
             </h3>
 
+            {Array.isArray(record?.tradeIns) && record.tradeIns.length > 0 && (
+              <div className="p-4 rounded-2xl bg-accent-50 border border-accent-100 space-y-1.5 text-xs">
+                <span className="text-xs font-bold text-accent-700 uppercase block">Trade-in</span>
+                {record.tradeIns.map((t: any) => (
+                  <p key={t.id} className="text-slate-700">
+                    {t.kind === 'BUY' ? 'Bought from' : 'Taken in as a swap from'} <strong>{t.customerName || 'a customer'}</strong> on{' '}
+                    {new Date(t.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                    {t.createdBy?.firstName ? ` by ${t.createdBy.firstName}` : ''}.{' '}
+                    <Link href="/dashboard/swaps" className="text-accent-600 font-bold hover:underline">View swap →</Link>
+                  </p>
+                ))}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               {/* Sales Link */}
               <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-2">

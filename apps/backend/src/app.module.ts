@@ -19,6 +19,8 @@ import { PaymentsModule } from './payments/payments.module';
 import { TheftReportsModule } from './theft-reports/theft-reports.module';
 import { QuotesModule } from './quotes/quotes.module';
 import { DeviceLookupModule } from './device-lookup/device-lookup.module';
+import { TradeInsModule } from './trade-ins/trade-ins.module';
+import { DailySummaryModule } from './daily-summary/daily-summary.module';
 
 import { AppController } from './app.controller';
 
@@ -38,6 +40,8 @@ import { AppController } from './app.controller';
     DeviceLookupModule,
     DashboardModule,
     SalesModule,
+    TradeInsModule,
+    DailySummaryModule,
     QuotesModule,
     CustomersModule,
     RepairsModule,

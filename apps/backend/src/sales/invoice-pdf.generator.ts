@@ -23,6 +23,8 @@ export interface InvoicePdfData {
   accountNumber?: string | null;
   accountName?: string | null;
   notes?: string | null;
+  /** A device the customer swapped in, taken off what they paid. */
+  tradeIn?: { label: string; value: number };
   items: Array<{
     description: string;
     imei?: string | null;
@@ -271,8 +273,15 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
   doc.text('Subtotal:', summaryLeft + 6, finalY + 8);
   doc.text(`NGN ${data.totalAmount.toLocaleString()}`, summaryLeft + summaryWidth - 6, finalY + 8, { align: 'right' });
 
-  doc.text('Tax / VAT (0%):', summaryLeft + 6, finalY + 14);
-  doc.text('NGN 0.00', summaryLeft + summaryWidth - 6, finalY + 14, { align: 'right' });
+  const tradeInValue = data.tradeIn?.value || 0;
+  if (data.tradeIn) {
+    const label = data.tradeIn.label.length > 34 ? `${data.tradeIn.label.slice(0, 33)}…` : data.tradeIn.label;
+    doc.text(label, summaryLeft + 6, finalY + 14);
+    doc.text(`- NGN ${tradeInValue.toLocaleString()}`, summaryLeft + summaryWidth - 6, finalY + 14, { align: 'right' });
+  } else {
+    doc.text('Tax / VAT (0%):', summaryLeft + 6, finalY + 14);
+    doc.text('NGN 0.00', summaryLeft + summaryWidth - 6, finalY + 14, { align: 'right' });
+  }
 
   doc.setDrawColor(203, 213, 225);
   doc.line(summaryLeft + 6, finalY + 18, summaryLeft + summaryWidth - 6, finalY + 18);
@@ -280,8 +289,10 @@ export function generateInvoicePdfBuffer(data: InvoicePdfData): Buffer {
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(10.5);
   doc.setTextColor(data.isInvoice ? 37 : 16, data.isInvoice ? 99 : 149, data.isInvoice ? 235 : 193); // blue-600 or emerald-600
-  doc.text(data.isInvoice ? 'TOTAL DUE:' : 'TOTAL PAID:', summaryLeft + 6, finalY + 25);
-  doc.text(`NGN ${data.totalAmount.toLocaleString()}`, summaryLeft + summaryWidth - 6, finalY + 25, { align: 'right' });
+  const netAmount = data.totalAmount - tradeInValue;
+  const storePaid = netAmount < 0;
+  doc.text(storePaid ? 'STORE PAID CUSTOMER:' : data.isInvoice ? 'TOTAL DUE:' : 'TOTAL PAID:', summaryLeft + 6, finalY + 25);
+  doc.text(`NGN ${Math.abs(netAmount).toLocaleString()}`, summaryLeft + summaryWidth - 6, finalY + 25, { align: 'right' });
 
   // 5. Bottom Verified Stamp & Footer
   const footerY = 275;
