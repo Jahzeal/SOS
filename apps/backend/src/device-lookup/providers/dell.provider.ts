@@ -49,7 +49,7 @@ export class DellProvider implements IDeviceLookupProvider {
               productName: item.productLineDescription.replace(/^Dell\s+/i, ''),
               modelNumber: item.productHeaderDescription || null,
               serialNumber: serviceTag,
-              specs: 'Intel / AMD Architecture • High-Speed DDR RAM • PCIe NVMe SSD Storage',
+              specs: null,
               warrantyStatus: 'unknown',
             },
           };
@@ -59,20 +59,12 @@ export class DellProvider implements IDeviceLookupProvider {
       this.logger.debug(`Dell API lookup failed for ${serviceTag}: ${err?.message}`);
     }
 
+    // No real answer from Dell: say so instead of guessing a model.
     return {
-      status: 'identified',
-      source: 'dell_hardware_registry',
-      confidence: 'medium',
-      device: {
-        deviceType: 'laptop',
-        manufacturer: 'Dell',
-        productName: 'Latitude 7490',
-        modelNumber: null,
-        serialNumber: serviceTag,
-        suggestedModels: ['Latitude 7490', 'Latitude 5490', 'XPS 13', 'Inspiron 15'],
-        specs: 'Dell Service Tag Verified System • High-Speed DDR RAM • NVMe Solid State Storage',
-        warrantyStatus: 'unknown',
-      },
+      status: 'not_found',
+      source: 'dell_live_api',
+      confidence: 'low',
+      message: 'Could not identify this Dell device. Pick the brand and model yourself.',
     };
   }
 }

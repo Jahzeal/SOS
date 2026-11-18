@@ -6,6 +6,8 @@ import { TextInput } from '@/components/ui/Input';
 import { ImeiCameraScanner } from '@/components/scanner/ImeiCameraScanner';
 import { validateLuhnIMEI } from '@/lib/imei-utils';
 import { api, TradeInCheck } from '@/lib/api';
+import { Combobox } from '@/components/ui/Combobox';
+import { brandsFor, modelsFor } from '@/lib/device-catalog';
 
 /** The device the customer is giving the store, as typed at the counter. */
 export interface SwapIncoming {
@@ -62,6 +64,41 @@ export function parseSwapValue(raw: string): number | null {
   if (!cleaned) return null;
   const n = Number(cleaned);
   return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+/** "150000" → "150,000" while typing (whole naira only). */
+export function withCommas(raw: string) {
+  const digits = raw.replace(/\D/g, '').replace(/^0+(?=\d)/, '').slice(0, 12);
+  return digits ? Number(digits).toLocaleString('en-NG') : '';
+}
+
+const ONES = ['', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen', 'fifteen', 'sixteen', 'seventeen', 'eighteen', 'nineteen'];
+const TENS = ['', '', 'twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+
+function underThousand(n: number): string {
+  const h = Math.floor(n / 100);
+  const rest = n % 100;
+  const parts: string[] = [];
+  if (h) parts.push(`${ONES[h]} hundred`);
+  if (rest) {
+    const words = rest < 20 ? ONES[rest] : `${TENS[Math.floor(rest / 10)]}${rest % 10 ? `-${ONES[rest % 10]}` : ''}`;
+    parts.push(h ? `and ${words}` : words);
+  }
+  return parts.join(' ');
+}
+
+/** 150000 → "one hundred and fifty thousand naira", so a wrong number of zeros is easy to spot. */
+export function nairaInWords(amount: number): string {
+  let n = Math.floor(amount);
+  if (n === 0) return 'zero naira';
+  const scales = ['', 'thousand', 'million', 'billion'];
+  const chunks: string[] = [];
+  for (let i = 0; n > 0 && i < scales.length; i++) {
+    const part = n % 1000;
+    if (part) chunks.unshift(`${underThousand(part)}${scales[i] ? ` ${scales[i]}` : ''}`);
+    n = Math.floor(n / 1000);
+  }
+  return `${chunks.join(', ')} naira`;
 }
 
 /** What is still missing before the swap can be completed, or null when it is ready. */
@@ -286,8 +323,28 @@ export function SwapIncomingPanel({ value, onChange, check, onCheckChange }: Pro
       {!stolen && (
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <TextInput label="Brand" value={value.brand} onChange={(e) => set('brand', e.target.value)} placeholder={isPhone ? 'e.g. Apple' : 'e.g. HP'} />
-            <TextInput label="Model" value={value.model} onChange={(e) => set('model', e.target.value)} placeholder={isPhone ? 'e.g. iPhone 11' : 'e.g. EliteBook 840'} />
+            <Combobox
+              label="Brand"
+              value={value.brand}
+              options={brandsFor(value.category)}
+              placeholder={isPhone ? 'Pick or type, e.g. Apple' : 'Pick or type, e.g. HP'}
+              onChange={(brand) =>
+                onChange((prev) => {
+                  // A model from the old brand's list does not belong to the new brand.
+                  const oldList = modelsFor(prev.category, prev.brand);
+                  const keepModel = !oldList.includes(prev.model) || modelsFor(prev.category, brand).includes(prev.model);
+                  return { ...prev, brand, model: keepModel ? prev.model : '' };
+                })
+              }
+            />
+            <Combobox
+              label="Model"
+              value={value.model}
+              options={modelsFor(value.category, value.brand)}
+              placeholder={value.brand ? 'Pick or type the model' : isPhone ? 'e.g. iPhone 11' : 'e.g. EliteBook 840'}
+              allowCustomHint={value.brand ? 'Not listed? Just type it.' : 'Pick a brand to see its models, or just type.'}
+              onChange={(model) => set('model', model)}
+            />
             <TextInput
               label={isPhone ? 'Storage (optional)' : 'Specs (optional)'}
               value={value.storageCapacity}
@@ -322,9 +379,14 @@ export function SwapIncomingPanel({ value, onChange, check, onCheckChange }: Pro
             label="Trade-in value (₦)"
             inputMode="numeric"
             value={value.tradeInValue}
-            onChange={(e) => set('tradeInValue', e.target.value.replace(/[^\d,]/g, ''))}
+            onChange={(e) => set('tradeInValue', withCommas(e.target.value))}
             placeholder="What you are giving the customer for it, e.g. 150,000"
           />
+          {parseSwapValue(value.tradeInValue) ? (
+            <p className="-mt-2 text-xs font-semibold text-slate-600" aria-live="polite">
+              ₦{withCommas(value.tradeInValue)}: {nairaInWords(parseSwapValue(value.tradeInValue) || 0)}
+            </p>
+          ) : null}
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">

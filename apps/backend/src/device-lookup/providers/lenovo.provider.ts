@@ -50,7 +50,7 @@ export class LenovoProvider implements IDeviceLookupProvider {
               productName: model.slice(0, 60),
               modelNumber: data[0]?.MachineType || null,
               serialNumber: id,
-              specs: 'Intel / AMD Architecture • High-Speed DDR RAM • PCIe NVMe SSD Storage',
+              specs: null,
               warrantyStatus: 'unknown',
             },
           };
@@ -60,30 +60,12 @@ export class LenovoProvider implements IDeviceLookupProvider {
       this.logger.debug(`Lenovo API lookup failed for ${id}: ${err?.message}`);
     }
 
-    let line = 'ThinkPad T480';
-    let suggestedModels = ['ThinkPad T480', 'ThinkPad X1 Carbon', 'ThinkPad L480'];
-    if (/^PF/i.test(id) || /^(20|21)/.test(id)) {
-      line = 'ThinkPad X1 Carbon';
-      suggestedModels = ['ThinkPad X1 Carbon', 'ThinkPad T14', 'ThinkPad L14'];
-    } else if (/^(80|81|82|83)/.test(id)) {
-      line = 'IdeaPad 5';
-      suggestedModels = ['IdeaPad 5', 'Legion 5', 'Yoga 7'];
-    }
-
+    // No real answer from Lenovo: say so instead of guessing a model.
     return {
-      status: 'identified',
-      source: 'lenovo_hardware_registry',
-      confidence: 'medium',
-      device: {
-        deviceType: 'laptop',
-        manufacturer: 'Lenovo',
-        productName: line,
-        modelNumber: null,
-        serialNumber: id,
-        suggestedModels,
-        specs: 'Lenovo Commercial Architecture • High-Speed DDR RAM • NVMe Storage',
-        warrantyStatus: 'unknown',
-      },
+      status: 'not_found',
+      source: 'lenovo_live_api',
+      confidence: 'low',
+      message: 'Could not identify this Lenovo device. Pick the brand and model yourself.',
     };
   }
 }

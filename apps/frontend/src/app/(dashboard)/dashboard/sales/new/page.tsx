@@ -567,7 +567,7 @@ function CheckoutPOSContent() {
     <div className="space-y-6 font-sans pb-24 md:pb-8">
 
       {/* Top Header & Multi-Step Progress Tracker */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-1.5 sm:gap-4 border-b border-slate-200/80 pb-3 sm:pb-4">
         <div>
           <h1 className="text-xl sm:text-3xl font-extrabold tracking-tight text-slate-900">
             {checkoutStep === 1 && (isSwap ? 'Swap / Trade-in' : 'Checkout POS Terminal')}
@@ -583,8 +583,11 @@ function CheckoutPOSContent() {
           </p>
         </div>
 
-        {/* Step Indicator Badges */}
-        <div className="flex items-center gap-1.5 text-xs sm:text-xs font-extrabold shrink-0">
+        {/* Step indicator: short on phones, full on bigger screens */}
+        <p className="sm:hidden text-xs font-extrabold text-accent-600">
+          Step {checkoutStep} of 3 · {checkoutStep === 1 ? (isSwap ? 'Devices & customer' : 'Items & customer') : checkoutStep === 2 ? 'Payment' : 'Receipt'}
+        </p>
+        <div className="hidden sm:flex items-center gap-1.5 text-xs sm:text-xs font-extrabold shrink-0">
           <span className={`transition-colors duration-200 ${checkoutStep === 1 ? 'text-accent-600 font-extrabold font-sans' : 'text-slate-400'}`}>
             1. Items & Customer
           </span>
@@ -601,14 +604,14 @@ function CheckoutPOSContent() {
 
       {/* Sale / Swap switch */}
       {checkoutStep === 1 && (
-        <div role="group" aria-label="Checkout type" className="inline-flex rounded-2xl border border-slate-200 bg-slate-100 p-1">
+        <div role="group" aria-label="Checkout type" className="grid grid-cols-2 w-full sm:inline-flex sm:w-auto rounded-2xl border border-slate-200 bg-slate-100 p-1">
           {(['SALE', 'SWAP'] as const).map((m) => (
             <button
               key={m}
               type="button"
               aria-pressed={mode === m}
               onClick={() => setMode(m)}
-              className={`px-4 sm:px-5 py-2 text-sm font-extrabold rounded-xl flex items-center gap-2 transition-colors ${
+              className={`px-4 sm:px-5 py-2 text-sm font-extrabold rounded-xl flex items-center justify-center gap-2 transition-colors ${
                 mode === m ? 'bg-white text-accent-700 shadow-sm' : 'text-slate-500 hover:text-slate-800'
               }`}
             >
