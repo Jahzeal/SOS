@@ -523,20 +523,41 @@ function SalesScreen() {
 
 /* --------------------------------------------------------------- The section */
 
+/** What the workspace covers, shown as short chips under the heading. */
+const SHOWCASE_CHIPS = [
+  { label: 'Register by IMEI or serial', icon: Smartphone },
+  { label: 'Sell at the counter', icon: ShoppingCart },
+  { label: 'Receipts & invoices', icon: Receipt },
+  { label: 'Warranties', icon: ShieldCheck },
+  { label: 'Repairs', icon: Wrench },
+];
+
 export function DashboardShowcase() {
   const [tab, setTab] = useState<TabId>('dashboard');
   const active = TABS.find((t) => t.id === tab)!;
   const glass = GLASS[tab];
 
   return (
-    <section id="solutions" className="relative py-20 px-4 sm:px-6 max-w-7xl mx-auto w-full space-y-8 overflow-hidden scroll-mt-20">
-      <div className="text-center max-w-3xl mx-auto space-y-3">
-        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-          Meet NoxGuarda: One Workspace for Phone, Laptop &amp; Accessory Sellers
+    <section id="solutions" className="relative pt-8 pb-14 sm:pt-12 sm:pb-20 px-4 sm:px-6 max-w-7xl mx-auto w-full space-y-7 overflow-hidden scroll-mt-20">
+      <div className="text-center max-w-2xl mx-auto">
+        <span className="inline-block px-3 py-1 rounded-full bg-teal-50 text-teal-700 text-xs font-semibold uppercase tracking-[0.12em]">
+          Meet NoxGuarda
+        </span>
+        <h2 className="mt-3 text-2xl sm:text-4xl font-bold text-slate-900 tracking-tight leading-[1.15]">
+          One workspace for phone, laptop &amp;{' '}
+          <span className="font-editorial italic font-normal text-teal-600">accessory sellers</span>
         </h2>
-        <p className="text-sm sm:text-base text-slate-600">
-          One workspace to register stock by IMEI or serial number, sell at the counter, issue receipts, invoices and quotations, track warranties, and handle repairs.
-        </p>
+        <ul className="mt-5 flex flex-wrap justify-center gap-2" aria-label="What you can do in NoxGuarda">
+          {SHOWCASE_CHIPS.map(({ label, icon: Icon }) => (
+            <li
+              key={label}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border border-slate-200 text-[13px] font-medium text-slate-700 shadow-sm"
+            >
+              <Icon className="w-3.5 h-3.5 text-teal-600" aria-hidden="true" />
+              {label}
+            </li>
+          ))}
+        </ul>
       </div>
 
       {/* Frosted switcher; the chosen screen is a plain raised white pill in brand teal. */}

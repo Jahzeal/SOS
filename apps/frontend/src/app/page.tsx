@@ -1003,7 +1003,7 @@ export default function PublicLandingPageV2() {
       </header>
 
       {/* SECTION 2 — HERO SECTION (Split Viewport) */}
-      <section className="pt-28 pb-16 md:pt-36 md:pb-24 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[90vh]">
+      <section className="pt-28 pb-10 md:pt-36 md:pb-16 px-6 max-w-7xl mx-auto w-full flex flex-col lg:flex-row items-center justify-between gap-12 min-h-[90vh]">
         {/* Left Side: Business Owner Journey */}
         <div className="lg:w-1/2 space-y-6 text-left">
           <h1 className="font-editorial text-5xl sm:text-6xl lg:text-7xl font-normal text-zinc-900 tracking-tight leading-[1.05]">
