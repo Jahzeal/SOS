@@ -167,6 +167,11 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
   const lookupSeq = React.useRef(0);
   // An IMEI the seller chose to keep even though its check digit does not match.
   const [acceptedOddImei, setAcceptedOddImei] = useState('');
+  // The IMEI whose check digit failed, shown with "Use anyway" until the seller decides.
+  const [oddImeiWarning, setOddImeiWarning] = useState<string | null>(null);
+  React.useEffect(() => {
+    if (oddImeiWarning && imei.trim() !== oddImeiWarning) setOddImeiWarning(null);
+  }, [imei, oddImeiWarning]);
 
   const isPhoneImeiMode = mode === 'PHONE' && deviceCategory === 'PHONE_TABLET';
   const imeiLooksValid = imei.length === 15 && validateLuhnIMEI(imei);
@@ -339,8 +344,9 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
     }
   };
 
-  const handleNextToStep2 = async () => {
+  const handleNextToStep2 = async (opts?: { acceptOddImei?: string }) => {
     setErrorMessage(null);
+    setOddImeiWarning(null);
     if (mode === 'PHONE') {
       let currentCategory = deviceCategory;
       const trimmedImei = imei.trim();
@@ -369,9 +375,8 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
           setErrorMessage('This is not a real IMEI. Please enter the number shown on the phone (dial *#06#).');
           return;
         }
-        if (!validateLuhnIMEI(cleanImei) && acceptedOddImei !== cleanImei) {
-          setAcceptedOddImei(cleanImei);
-          setErrorMessage('This IMEI does not look right: one digit may be wrong. Check it against the phone (dial *#06#). If it is exactly what the phone shows, press Continue again.');
+        if (!validateLuhnIMEI(cleanImei) && acceptedOddImei !== cleanImei && opts?.acceptOddImei !== cleanImei) {
+          setOddImeiWarning(cleanImei);
           return;
         }
       } else {
@@ -1049,12 +1054,45 @@ export default function RegisterPhonePage({ defaultDeviceCategory = 'PHONE_TABLE
                 </div>
               )}
 
+              {/* A mistyped-looking IMEI: advise checking, but let the seller go on. */}
+              {oddImeiWarning && (
+                <div role="alert" className="p-3.5 rounded-xl bg-warning-50 dark:bg-warning-950/40 border border-warning-300 dark:border-warning-800 text-xs space-y-3">
+                  <div className="flex items-start gap-2 text-warning-900 dark:text-warning-200">
+                    <AlertTriangle className="w-4 h-4 text-warning-600 shrink-0 mt-0.5" />
+                    <div className="space-y-1">
+                      <p className="font-extrabold">This IMEI looks mistyped</p>
+                      <p className="font-medium">
+                        One digit may be wrong. Dial <strong>*#06#</strong> on the phone and compare it with{' '}
+                        <span className="font-mono font-bold break-all">{oddImeiWarning}</span>. If it matches exactly, tap Use anyway.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap justify-end gap-2">
+                    <Button variant="secondary" size="sm" type="button" onClick={() => setOddImeiWarning(null)}>
+                      Check again
+                    </Button>
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      type="button"
+                      onClick={() => {
+                        const accepted = oddImeiWarning;
+                        setAcceptedOddImei(accepted);
+                        handleNextToStep2({ acceptOddImei: accepted });
+                      }}
+                    >
+                      Use anyway
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Step 1 Action Bar */}
               <div className="flex justify-end pt-4 border-t border-slate-100">
                 <Button
                   variant="primary"
                   size="md"
-                  onClick={handleNextToStep2}
+                  onClick={() => handleNextToStep2()}
                   rightIcon={<ArrowRight className="w-4 h-4" />}
                   className="shadow-md bg-accent-600 hover:bg-accent-500 border-none font-bold w-full sm:w-auto"
                 >

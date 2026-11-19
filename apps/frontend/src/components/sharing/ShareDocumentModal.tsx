@@ -40,6 +40,9 @@ export interface ShareDocumentData {
     price?: number;
   }>;
   storeName?: string;
+  /** Swaps: value of the device the customer handed in (taken off the total). */
+  tradeInCredit?: number;
+  tradeInLabel?: string;
 }
 
 export interface ShareDocumentModalProps {
@@ -131,6 +134,18 @@ export function ShareDocumentModal({ isOpen, onClose, document: doc }: ShareDocu
   const paidAmount = Number(doc.amountPaid || 0);
   const balanceDue = Number(doc.balanceDue ?? Math.max(0, totalAmount - paidAmount));
   const status = (doc.paymentStatus || (balanceDue <= 0 ? 'PAID' : 'PENDING')).toUpperCase();
+  // Swap: the customer pays the difference (or the store pays them).
+  const tradeInCredit = Number(doc.tradeInCredit || 0);
+  const swapLines =
+    tradeInCredit > 0
+      ? `🔄 *${doc.tradeInLabel || 'Trade-in'}:* -₦${tradeInCredit.toLocaleString()}
+` +
+        (tradeInCredit > totalAmount
+          ? `💵 *Store paid customer:* ₦${(tradeInCredit - totalAmount).toLocaleString()}
+`
+          : `💵 *Customer paid:* ₦${(totalAmount - tradeInCredit).toLocaleString()}
+`)
+      : '';
 
   // Normalize phone for WhatsApp wa.me
   const cleanPhone = phoneInput.replace(/[^0-9]/g, '');
@@ -158,7 +173,7 @@ Please find your official ${docLabel} statement from *${storeName}*:
 
 📄 *${docLabel} #:* ${doc.docNumber}
 💰 *Total Amount:* ₦${totalAmount.toLocaleString()}
-${doc.type === 'INVOICE' && status === 'PARTIALLY_PAID' ? `💳 *Amount Paid:* ₦${paidAmount.toLocaleString()}\n⏳ *Balance Due:* ₦${balanceDue.toLocaleString()}\n` : ''}📊 *Status:* ${status}
+${swapLines}${doc.type === 'INVOICE' && status === 'PARTIALLY_PAID' ? `💳 *Amount Paid:* ₦${paidAmount.toLocaleString()}\n⏳ *Balance Due:* ₦${balanceDue.toLocaleString()}\n` : ''}📊 *Status:* ${status}
 
 📦 *Items Summary:*
 ${itemsList}
@@ -247,7 +262,7 @@ Thank you for your business!`;
 
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-[110] flex items-center justify-center p-3 sm:p-4 bg-slate-950/75 backdrop-blur-sm animate-fade-in font-sans">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden animate-scale-up">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full max-h-[92dvh] overflow-y-auto overscroll-contain animate-scale-up">
         
         {/* Modal Header */}
         <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/60">

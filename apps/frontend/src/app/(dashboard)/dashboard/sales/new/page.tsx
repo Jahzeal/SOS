@@ -15,6 +15,7 @@ import {
   CreditCard,
   CheckCircle2,
   Printer,
+  Share2,
   Mail,
   Banknote,
   Building2,
@@ -41,7 +42,7 @@ import { SearchInput, TextInput } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { useAuthStore } from '@/store/useAuthStore';
 import { can } from '@/lib/permissions';
-import { EmailReceiptModal } from '@/components/sales/EmailReceiptModal';
+import { ShareDocumentModal } from '@/components/sharing/ShareDocumentModal';
 import { A4SalesReceipt } from '@/components/receipt/A4SalesReceipt';
 import { useSubscriptionGuard } from '@/hooks/useSubscriptionGuard';
 import { api } from '@/lib/api';
@@ -179,8 +180,8 @@ function CheckoutPOSContent() {
 
   // Finalized Receipt Data
   const [finalReceipt, setFinalReceipt] = useState<any>(null);
-  const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
-  const [copiedReceiptText, setCopiedReceiptText] = useState(false);
+  // The Share window (PDF on WhatsApp, email, download) opens by itself after a sale.
+  const [isShareOpen, setIsShareOpen] = useState(false);
 
   // Load store profile & business receipt templates
   useEffect(() => {
@@ -498,55 +499,12 @@ function CheckoutPOSContent() {
     }
   };
 
+  useEffect(() => {
+    if (finalReceipt?.rawId && !finalReceipt.isBuyOnly) setIsShareOpen(true);
+  }, [finalReceipt?.rawId, finalReceipt?.isBuyOnly]);
+
   const handlePrintReceipt = () => {
     window.print();
-  };
-
-  const handleEmailReceipt = () => {
-    if (!finalReceipt) return;
-    setIsEmailModalOpen(true);
-  };
-
-  const handleCopyReceiptText = () => {
-    if (!finalReceipt) return;
-    const storeName = storeSettings?.name || 'NoxGuarda Retail Store';
-    const lines = [
-      `========================================`,
-      `*${storeName.toUpperCase()}*`,
-      storeSettings?.storeBranch ? `${storeSettings.storeBranch}` : '',
-      storeSettings?.address ? `${storeSettings.address}` : '',
-      storeSettings?.phone ? `Tel: ${storeSettings.phone}` : '',
-      `========================================`,
-      `*OFFICIAL SALES RECEIPT*`,
-      `Receipt #: ${finalReceipt.receiptNumber || finalReceipt.id}`,
-      `Date: ${finalReceipt.date}`,
-      `Customer: ${finalReceipt.customerName} (${finalReceipt.customerPhone})`,
-      `Payment Method: ${finalReceipt.paymentMethod}`,
-      `----------------------------------------`,
-      `*PURCHASED ITEMS:*`,
-      ...finalReceipt.items.map((it: CartDeviceItem) => 
-        `• ${it.brand} ${it.model}${it.isDevice && it.imei ? `\n  IMEI: ${it.imei}` : ''}\n  Qty: ${it.quantity} x ₦${it.price.toLocaleString()} = ₦${(it.price * it.quantity).toLocaleString()}`
-      ),
-      `----------------------------------------`,
-      ...(finalReceipt.tradeIn
-        ? [
-            `${finalReceipt.tradeIn.label}: -₦${finalReceipt.tradeIn.value.toLocaleString()}`,
-            finalReceipt.storePays > 0
-              ? `*STORE PAID CUSTOMER: ₦${finalReceipt.storePays.toLocaleString()}*`
-              : `*TOTAL PAID: ₦${finalReceipt.netPaid.toLocaleString()}*`,
-          ]
-        : [`*TOTAL PAID: ₦${finalReceipt.total.toLocaleString()}*`]),
-      `========================================`,
-      `${storeSettings?.receiptFooter || 'Thank you for your purchase! 30-Day Store Warranty included. Official IMEI verified on NoxGuarda Registry.'}`,
-      `Official Registry: https://noxguarda.com`,
-    ].filter(Boolean).join('\n');
-
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(lines).then(() => {
-        setCopiedReceiptText(true);
-        setTimeout(() => setCopiedReceiptText(false), 3000);
-      });
-    }
   };
 
   const resetForm = () => {
@@ -1349,7 +1307,6 @@ function CheckoutPOSContent() {
                 customerName: finalReceipt.customerName,
                 customerPhone: finalReceipt.customerPhone,
                 customerEmail: finalReceipt.customerEmail,
-                customerAddress: 'Retail Customer Store Visit',
                 business: {
                   name: storeSettings?.name || storeBankDetails?.accountName,
                   address: storeSettings?.address,
@@ -1380,34 +1337,23 @@ function CheckoutPOSContent() {
           {/* Action Toolbar */}
           <div className="space-y-2.5 pt-1">
             {!finalReceipt.isBuyOnly && (<>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
               <Button
                 variant="primary"
+                size="md"
+                onClick={() => setIsShareOpen(true)}
+                leftIcon={<Share2 className="w-4 h-4" />}
+              >
+                Share receipt
+              </Button>
+
+              <Button
+                variant="secondary"
                 size="md"
                 onClick={handlePrintReceipt}
                 leftIcon={<Printer className="w-4 h-4" />}
               >
-                Print Sales Receipt
-              </Button>
-
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={handleEmailReceipt}
-                leftIcon={<Mail className="w-4 h-4" />}
-              >
-                Email to Customer
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <Button
-                variant="secondary"
-                size="md"
-                onClick={handleCopyReceiptText}
-                leftIcon={copiedReceiptText ? <Check className="w-4 h-4 text-success-600" /> : <Copy className="w-4 h-4" />}
-              >
-                {copiedReceiptText ? 'Copied to Clipboard!' : 'Copy for WhatsApp / SMS'}
+                Print
               </Button>
 
               <Link href="/dashboard/sales/receipts" className="w-full">
@@ -1472,21 +1418,32 @@ function CheckoutPOSContent() {
       )}
 
       {/* Email Receipt Dialog Modal */}
-      <EmailReceiptModal
-        isOpen={isEmailModalOpen}
-        onClose={() => setIsEmailModalOpen(false)}
-        receipt={finalReceipt ? {
-          ...finalReceipt,
-          storeName: storeSettings?.name || storeBankDetails?.accountName,
-          business: {
-            name: storeSettings?.name,
-            address: storeSettings?.address,
-            phone: storeSettings?.phone,
-            email: storeSettings?.email,
-            logoUrl: storeSettings?.logoUrl,
-            receiptFooter: storeSettings?.receiptFooter,
-          },
-        } : null}
+      <ShareDocumentModal
+        isOpen={isShareOpen && !!finalReceipt?.rawId && !finalReceipt?.isBuyOnly}
+        onClose={() => setIsShareOpen(false)}
+        document={
+          finalReceipt?.rawId
+            ? {
+                id: finalReceipt.rawId,
+                type: 'RECEIPT',
+                docNumber: finalReceipt.receiptNumber || finalReceipt.invoiceNumber || finalReceipt.id,
+                customerName: finalReceipt.customerName,
+                customerPhone: finalReceipt.customerPhone && finalReceipt.customerPhone !== 'N/A' ? finalReceipt.customerPhone : '',
+                customerEmail: finalReceipt.customerEmail || '',
+                totalAmount: Number(finalReceipt.total || 0),
+                amountPaid: Number(finalReceipt.total || 0),
+                balanceDue: 0,
+                paymentStatus: 'PAID',
+                items: (finalReceipt.items || []).map((it: CartDeviceItem) => ({
+                  description: `${it.brand ? `${it.brand} ` : ''}${it.model}`,
+                  quantity: it.quantity,
+                })),
+                storeName: storeSettings?.name || storeBankDetails?.accountName,
+                tradeInCredit: finalReceipt.tradeIn?.value || 0,
+                tradeInLabel: finalReceipt.tradeIn?.label,
+              }
+            : null
+        }
       />
 
       {/* "Please add a price" popup for a device with no selling price saved */}

@@ -139,14 +139,17 @@ export default function BusinessDashboardPage() {
           <Link href="/dashboard/register" className="flex-1 sm:flex-none min-w-0">
             <Button variant="primary" fullWidth className="sm:w-auto" leftIcon={<Plus className="w-4 h-4" />}>
               <span className="hidden sm:inline whitespace-nowrap">Register Phone / Item</span>
-              <span className="inline sm:hidden whitespace-nowrap">Register Item</span>
+              <span className="inline sm:hidden whitespace-nowrap text-[11px]">Register Item</span>
             </Button>
           </Link>
-          <Link href="/dashboard/verify" className="flex-1 sm:flex-none min-w-0">
+          {/* Checkout is for people who can sell (technicians cannot). */}
+          {can(storeUser || user, 'sell') && (
+          <Link href="/dashboard/checkout" className="flex-1 sm:flex-none min-w-0">
             <Button variant="secondary" fullWidth className="sm:w-auto" leftIcon={<Receipt className="w-4 h-4" />}>
               <span className="whitespace-nowrap">Record Sale</span>
             </Button>
           </Link>
+          )}
           {can(storeUser || user, 'sell') && (
             <Link href="/dashboard/checkout?mode=swap" className="flex-1 sm:flex-none min-w-0">
               <Button variant="secondary" fullWidth className="sm:w-auto" leftIcon={<ArrowLeftRight className="w-4 h-4" />}>
@@ -593,7 +596,7 @@ export default function BusinessDashboardPage() {
                   <Clock className="w-4 h-4 text-slate-500 shrink-0" />
                   <span>4. Record First Sale & Issue Digital Receipt</span>
                 </div>
-                <Link href="/dashboard/verify" onClick={() => setShowOnboardingModal(false)} className="text-xs font-bold text-accent-600 hover:underline">
+                <Link href="/dashboard/checkout" onClick={() => setShowOnboardingModal(false)} className="text-xs font-bold text-accent-600 hover:underline">
                   Record Sale →
                 </Link>
               </div>

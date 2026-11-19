@@ -18,7 +18,9 @@ export class BusinessService {
         subscriptionPlan: true,
         _count: {
           select: {
-            users: true,
+            // Switched-off staff do not use a seat, so only active people are counted.
+            users: { where: { isActive: true } },
+            branches: { where: { isActive: true } },
             phoneRecords: true,
             customers: true,
             sales: true,

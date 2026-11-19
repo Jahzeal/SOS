@@ -616,6 +616,7 @@ export default function ReceiptsArchivePage() {
                 storeName:
                   summaryData?.business?.name ||
                   receiptForShareModal.business?.name,
+                tradeInCredit: Number(receiptForShareModal.tradeInCredit || 0),
               }
             : null
         }
