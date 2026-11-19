@@ -43,11 +43,11 @@ import { Badge } from '@/components/ui/Badge';
 
 type TabId = 'dashboard' | 'verification' | 'inventory' | 'sales';
 
-const TABS: { id: TabId; label: string; menu: string; path: string }[] = [
-  { id: 'dashboard', label: 'Dashboard', menu: 'Dashboard', path: 'dashboard' },
-  { id: 'verification', label: 'Verification Portal', menu: 'Verify IMEI & QR', path: 'dashboard/verify' },
-  { id: 'inventory', label: 'Inventory', menu: 'Inventory', path: 'dashboard/inventory' },
-  { id: 'sales', label: 'Sales & Receipts', menu: 'Sales & Invoices', path: 'dashboard/sales/receipts' },
+const TABS: { id: TabId; label: string; short: string; menu: string; path: string }[] = [
+  { id: 'dashboard', label: 'Dashboard', short: 'Dashboard', menu: 'Dashboard', path: 'dashboard' },
+  { id: 'verification', label: 'Verification Portal', short: 'Verify', menu: 'Verify IMEI & QR', path: 'dashboard/verify' },
+  { id: 'inventory', label: 'Inventory', short: 'Inventory', menu: 'Inventory', path: 'dashboard/inventory' },
+  { id: 'sales', label: 'Sales & Receipts', short: 'Sales', menu: 'Sales & Invoices', path: 'dashboard/sales/receipts' },
 ];
 
 // Same items, order and icons as the real sidebar (components/Sidebar.tsx), shortened list.
@@ -547,7 +547,7 @@ export function DashboardShowcase() {
           One workspace for phone, laptop &amp;{' '}
           <span className="font-editorial italic font-normal text-teal-600">accessory sellers</span>
         </h2>
-        <ul className="mt-5 flex flex-wrap justify-center gap-2" aria-label="What you can do in NoxGuarda">
+        <ul className="mt-5 hidden sm:flex flex-wrap justify-center gap-2" aria-label="What you can do in NoxGuarda">
           {SHOWCASE_CHIPS.map(({ label, icon: Icon }) => (
             <li
               key={label}
@@ -564,7 +564,7 @@ export function DashboardShowcase() {
       <div
         role="tablist"
         aria-label="App screens"
-        className="relative z-10 flex flex-wrap justify-center gap-1 w-fit max-w-full mx-auto p-1 rounded-2xl bg-white/50 backdrop-blur-md border border-slate-200/70 shadow-sm shadow-slate-900/5 text-xs font-bold"
+        className="relative z-10 flex flex-nowrap sm:flex-wrap justify-center gap-1 w-fit max-w-full mx-auto p-1 rounded-2xl bg-white/50 backdrop-blur-md border border-slate-200/70 shadow-sm shadow-slate-900/5 text-xs font-bold"
       >
         {TABS.map((t) => (
           <button
@@ -573,13 +573,14 @@ export function DashboardShowcase() {
             role="tab"
             aria-selected={tab === t.id}
             onClick={() => setTab(t.id)}
-            className={`px-3.5 sm:px-4 py-2 rounded-xl transition-colors cursor-pointer ${
+            className={`px-3 sm:px-4 py-2 rounded-xl whitespace-nowrap transition-colors cursor-pointer ${
               tab === t.id
                 ? 'bg-white text-accent-700 shadow-sm ring-1 ring-slate-900/5'
                 : 'text-slate-500 hover:text-slate-900 hover:bg-white/60'
             }`}
           >
-            {t.label}
+            <span className="sm:hidden">{t.short}</span>
+            <span className="hidden sm:inline">{t.label}</span>
           </button>
         ))}
       </div>
