@@ -38,6 +38,7 @@ const hasPhone = (b: any) => !!b?.phone && b.phone !== '+15550192834';
 
 /** What the store's subscription looks like right now, in plain words. */
 function statusLabel(b: any): { text: string; tone: string } {
+  if (b?.isMarketerStore) return { text: 'Marketer (free)', tone: 'bg-violet-50 text-violet-700 border-violet-200' };
   switch (String(b?.subscriptionStatus || '').toUpperCase()) {
     case 'ACTIVE':
       return { text: 'Active (Paid)', tone: 'bg-emerald-50 text-emerald-700 border-emerald-200' };

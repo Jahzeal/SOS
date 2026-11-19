@@ -982,6 +982,74 @@ class ApiClient {
     return this.request<{ success: boolean; plans: any[] }>('/plans');
   }
 
+  // --- Marketers ---
+  async adminListMarketers() {
+    return this.request<any[]>('/admin/marketers');
+  }
+
+  async adminGetMarketer(id: string) {
+    return this.request<any>(`/admin/marketers/${encodeURIComponent(id)}`);
+  }
+
+  async adminCreateMarketer(data: { firstName: string; lastName: string; email: string; phone?: string }) {
+    return this.request<{ id: string; email: string; inviteLink: string; emailSent: boolean }>('/admin/marketers', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async adminResendMarketerInvite(id: string) {
+    return this.request<{ id: string; email: string; inviteLink: string; emailSent: boolean }>(
+      `/admin/marketers/${encodeURIComponent(id)}/resend`,
+      { method: 'POST' },
+    );
+  }
+
+  async adminSetMarketerActive(id: string, active: boolean) {
+    return this.request<{ id: string; status: string }>(`/admin/marketers/${encodeURIComponent(id)}/active`, {
+      method: 'PATCH',
+      body: JSON.stringify({ active }),
+    });
+  }
+
+  async adminCancelMarketerInvite(id: string) {
+    return this.request<{ success: boolean }>(`/admin/marketers/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  }
+
+  async adminRemoveMarketerReferral(id: string, referralId: string) {
+    return this.request<{ success: boolean }>(
+      `/admin/marketers/${encodeURIComponent(id)}/referrals/${encodeURIComponent(referralId)}`,
+      { method: 'DELETE' },
+    );
+  }
+
+  async describeMarketerInvite(token: string) {
+    return this.request<{ firstName: string; lastName: string; email: string }>(
+      `/marketer-join/${encodeURIComponent(token)}`,
+      {},
+      null,
+    );
+  }
+
+  async acceptMarketerInvite(token: string, password: string, storeName?: string) {
+    return this.request<{ accessToken: string; user: any }>('/marketer-join', {
+      method: 'POST',
+      body: JSON.stringify({ token, password, storeName }),
+    }, null);
+  }
+
+  async getMyOnboardedBusinesses() {
+    return this.request<{ counts: { added: number; signedUp: number; paid: number }; referrals: any[] }>('/marketer/businesses');
+  }
+
+  async addOnboardedBusiness(data: { email: string; shopName?: string; phone?: string }) {
+    return this.request<any>('/marketer/businesses', { method: 'POST', body: JSON.stringify(data) });
+  }
+
+  async removeOnboardedBusiness(id: string) {
+    return this.request<{ success: boolean }>(`/marketer/businesses/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  }
+
   async adminGetPlans() {
     return this.request<{ success: boolean; plans: any[] }>('/admin/plans');
   }

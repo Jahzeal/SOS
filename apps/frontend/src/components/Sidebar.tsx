@@ -31,6 +31,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
   ArrowLeftRight,
+  Megaphone,
 } from 'lucide-react';
 import { Badge } from './ui/Badge';
 import { Button } from './ui/Button';
@@ -49,6 +50,11 @@ const menuItems: MenuItem[] = [
     name: 'Dashboard',
     icon: LayoutDashboard,
     href: '/dashboard',
+  },
+  {
+    name: 'Onboarded Businesses',
+    icon: Megaphone,
+    href: '/dashboard/onboarded',
   },
   {
     name: 'Register Phone / Item',
@@ -239,6 +245,12 @@ export default function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             Templates: 'storeSettings',
             'Subscription & Plans': 'billing',
           };
+          // Only NoxGuarda marketers (in their own free Gold store) list the businesses they onboarded.
+          if (item.name === 'Onboarded Businesses') {
+            return !!(user as any)?.business?.isMarketerStore && storeRoleOf(user) === 'OWNER';
+          }
+          // A marketer's Gold store is free, so there is nothing to pay for.
+          if (item.name === 'Subscription & Plans' && (user as any)?.business?.isMarketerStore) return false;
           return !needs[item.name] || can(user, needs[item.name]);
         }).map((item) => {
           const Icon = item.icon;

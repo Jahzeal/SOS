@@ -95,7 +95,9 @@ export class StaffAccessService {
       throw new ForbiddenException({
         statusCode: 403,
         code: 'STAFF_DISABLED',
-        message: 'Your account has been switched off by the store owner. Please contact them.',
+        message: (user as any).business?.isMarketerStore
+          ? 'Your marketer account has been switched off. Please contact NoxGuarda.'
+          : 'Your account has been switched off by the store owner. Please contact them.',
       });
     }
 

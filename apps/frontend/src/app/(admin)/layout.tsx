@@ -28,6 +28,7 @@ import {
   ListChecks,
   AlertTriangle,
   BellRing,
+  Megaphone,
 } from 'lucide-react';
 
 interface NavItem {
@@ -40,6 +41,7 @@ interface NavItem {
 const mainNavItems: NavItem[] = [
   { name: 'Overview', href: '/admin/dashboard', icon: LayoutDashboard },
   { name: 'Businesses', href: '/admin/businesses', icon: Building2 },
+  { name: 'Marketers', href: '/admin/marketers', icon: Megaphone },
   { name: 'Subscriptions', href: '/admin/subscriptions', icon: CreditCard },
   { name: 'Transactions', href: '/admin/transactions', icon: Receipt },
 ];

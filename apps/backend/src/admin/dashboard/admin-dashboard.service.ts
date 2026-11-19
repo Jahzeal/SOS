@@ -29,7 +29,8 @@ export class AdminDashboardService {
       this.prisma.user.count(),
       this.prisma.business.groupBy({
         by: ['plan'],
-        where: { subscriptionStatus: 'ACTIVE' },
+        // Marketer stores are free, so they are not recurring revenue.
+        where: { subscriptionStatus: 'ACTIVE', isMarketerStore: false },
         _count: { id: true },
       }),
       this.prisma.subscriptionPlan.findMany(),

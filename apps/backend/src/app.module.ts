@@ -22,6 +22,7 @@ import { DeviceLookupModule } from './device-lookup/device-lookup.module';
 import { TradeInsModule } from './trade-ins/trade-ins.module';
 import { DailySummaryModule } from './daily-summary/daily-summary.module';
 import { PushModule } from './push/push.module';
+import { MarketersModule } from './marketers/marketers.module';
 
 import { AppController } from './app.controller';
 
@@ -50,6 +51,7 @@ import { AppController } from './app.controller';
     AdminModule,
     ContactModule,
     TeamModule,
+    MarketersModule,
   ],
   controllers: [AppController],
 })

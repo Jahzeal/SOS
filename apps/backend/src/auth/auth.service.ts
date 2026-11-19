@@ -116,6 +116,16 @@ export class AuthService {
     throw new ConflictException('We could not set up your store just now. Please try again.');
   }
 
+  /** A shop a marketer added by this email is linked to the new store. Never blocks sign-up. */
+  private async linkMarketerReferral(email: string, businessId: string) {
+    await this.prisma.marketerReferral
+      .updateMany({
+        where: { email: this.normalizeEmail(email), businessId: null, alreadyCustomer: false },
+        data: { businessId, linkedAt: new Date() },
+      })
+      .catch((err) => console.error('Could not link marketer referral:', err?.message));
+  }
+
   /**
    * A paid plan MUST be chosen at signup; there is no free plan and no trial.
    * The store is saved on the chosen plan with status PENDING_PAYMENT, which keeps
@@ -254,6 +264,7 @@ export class AuthService {
       );
 
       const createdUser = business.users[0];
+      await this.linkMarketerReferral(email, business.id);
       const tokens = await this.generateTokens(createdUser.id, createdUser.email, !!dto.rememberMe);
 
       // Asynchronously send welcome email
@@ -328,6 +339,7 @@ export class AuthService {
     );
 
     const user = business.users[0];
+    await this.linkMarketerReferral(email, business.id);
     const tokens = await this.generateTokens(user.id, user.email);
 
     // Send Welcome Email asynchronously in background

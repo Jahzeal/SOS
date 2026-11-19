@@ -8,6 +8,8 @@ export class AdminSubscriptionsService {
   async getSubscriptionAnalytics() {
     const [businesses, dbPlans] = await Promise.all([
       this.prisma.business.findMany({
+        // Marketer stores are free demo stores, not subscribers.
+        where: { isMarketerStore: false },
         select: {
           id: true,
           name: true,

@@ -162,6 +162,12 @@ model Business {
   staffInvites         StaffInvite[]
   tradeIns             TradeIn[]
 
+  /// A free Gold store given to a NoxGuarda marketer to show the app to shops.
+  isMarketerStore   Boolean            @default(false)
+  marketer          Marketer?          @relation("MarketerStore")
+  /// The marketer who brought this store in, if any.
+  marketerReferrals MarketerReferral[] @relation("ReferredStore")
+
   // Daily summary email for the owner (and managers, per branch)
   dailySummaryEnabled Boolean  @default(true)
   dailySummaryHour    Int      @default(21) // Lagos time, 0-23
@@ -937,4 +943,44 @@ model PushLog {
   createdAt  DateTime      @default(now())
 
   @@index([campaignId, createdAt])
+}
+
+/// Someone who markets NoxGuarda. Added by an admin; gets a free Gold store to demo with.
+model Marketer {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  firstName       String
+  lastName        String
+  phone           String?
+  /// INVITED (link sent, password not set yet) | ACTIVE | DISABLED
+  status          String    @default("INVITED")
+  tokenHash       String?   @unique
+  inviteExpiresAt DateTime?
+  businessId      String?   @unique
+  business        Business? @relation("MarketerStore", fields: [businessId], references: [id], onDelete: SetNull)
+  activatedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  referrals MarketerReferral[]
+}
+
+/// A shop a marketer onboarded, by the owner's email. Linked to the store when it signs up.
+model MarketerReferral {
+  id              String    @id @default(uuid())
+  marketerId      String
+  marketer        Marketer  @relation(fields: [marketerId], references: [id], onDelete: Cascade)
+  /// Lower-case. One marketer per shop: the first to add it.
+  email           String    @unique
+  shopName        String?
+  phone           String?
+  businessId      String?
+  business        Business? @relation("ReferredStore", fields: [businessId], references: [id], onDelete: SetNull)
+  /// The email already belonged to a store that had paid before it was added.
+  alreadyCustomer Boolean   @default(false)
+  linkedAt        DateTime?
+  createdAt       DateTime  @default(now())
+
+  @@index([marketerId])
+  @@index([businessId])
 }
