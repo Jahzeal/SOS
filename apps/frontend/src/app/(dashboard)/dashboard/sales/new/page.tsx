@@ -135,6 +135,16 @@ function CheckoutPOSContent() {
   // Step Workflow: 1 = ORDER_BUILDER, 2 = PAYMENT_METHOD, 3 = RECEIPT_PREVIEW
   const [checkoutStep, setCheckoutStep] = useState<1 | 2 | 3>(1);
 
+  // Each step starts at the top. Without this, phones keep the old scroll
+  // position and the shorter Payment step shows as an empty screen.
+  useEffect(() => {
+    window.scrollTo(0, 0);
+    document.querySelectorAll('main').forEach((m) => {
+      const scroller = m.parentElement;
+      if (scroller) scroller.scrollTop = 0;
+    });
+  }, [checkoutStep]);
+
   // Customer Info State
   const [customerName, setCustomerName] = useState<string>('');
   const [customerPhone, setCustomerPhone] = useState<string>('');

@@ -879,6 +879,10 @@ class ApiClient {
     return this.request<any>(`/admin/businesses${qs}`);
   }
 
+  async adminDeleteBusiness(id: string) {
+    return this.request<{ success: boolean; message: string }>(`/admin/businesses/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  }
+
   async adminGetBusiness(id: string) {
     return this.request<any>(`/admin/businesses/${id}`);
   }
@@ -1012,7 +1016,7 @@ class ApiClient {
     });
   }
 
-  async adminCancelMarketerInvite(id: string) {
+  async adminDeleteMarketer(id: string) {
     return this.request<{ success: boolean }>(`/admin/marketers/${encodeURIComponent(id)}`, { method: 'DELETE' });
   }
 

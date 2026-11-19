@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Building2,
+  Megaphone,
   CheckCircle2,
   Smartphone,
   ShieldCheck,
@@ -47,6 +48,7 @@ export default function AdminOverviewDashboard() {
   const currentMetrics = metrics || {
     totalBusinesses: 0,
     activeBusinesses: 0,
+    totalMarketers: 0,
     totalRegisteredPhones: 0,
     calculatedMrr: 0,
     totalRevenue: 0,
@@ -104,7 +106,7 @@ export default function AdminOverviewDashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4">
           {/* KPI 1: Total Businesses */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
             <div className="flex justify-between items-start mb-3">
@@ -154,6 +156,30 @@ export default function AdminOverviewDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Marketers: counted on their own, not as businesses */}
+          <Link href="/admin/marketers" className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-500">
+                Marketers
+              </span>
+              <div className="w-8 h-8 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center">
+                <Megaphone className="w-4 h-4" />
+              </div>
+            </div>
+            <div>
+              {isInitialLoad ? (
+                <div className="h-8 w-16 bg-slate-200 animate-pulse rounded-lg mb-1" />
+              ) : (
+                <div className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-1">
+                  {currentMetrics.totalMarketers ?? 0}
+                </div>
+              )}
+              <div className="flex items-center gap-1 text-xs font-bold text-violet-600">
+                <span>Free demo stores, not counted above</span>
+              </div>
+            </div>
+          </Link>
 
           {/* KPI 3: Registered Devices */}
           <div className="bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 flex flex-col justify-between shadow-subtle hover:border-blue-300 transition-colors">

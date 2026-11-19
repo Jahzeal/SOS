@@ -126,10 +126,20 @@ export class AdminBusinessesService {
     return { success: true, data: updated };
   }
 
+  /**
+   * Total delete: the store and everything in it, plus every login on it (owner and
+   * staff), so the same emails can sign up again. NoxGuarda admin logins are never touched.
+   * If it was a marketer's demo store, the marketer record goes too.
+   */
   async delete(id: string) {
-    await this.prisma.business.delete({
-      where: { id },
+    const business = await this.prisma.business.findUnique({ where: { id }, select: { id: true, name: true } });
+    if (!business) throw new NotFoundException('Business not found.');
+    await this.prisma.$transaction(async (tx) => {
+      const users = await tx.user.findMany({ where: { businessId: id, role: { not: 'ADMIN' } }, select: { id: true } });
+      await tx.marketer.deleteMany({ where: { businessId: id } });
+      await tx.business.delete({ where: { id } });
+      if (users.length) await tx.user.deleteMany({ where: { id: { in: users.map((u) => u.id) } } });
     });
-    return { success: true, message: `Business ${id} successfully removed` };
+    return { success: true, message: `${business.name} was deleted.` };
   }
 }

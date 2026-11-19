@@ -224,12 +224,26 @@ export class MarketersService {
     return { id, status };
   }
 
-  /** Only an invitation nobody has used yet can be withdrawn. */
-  async cancelInvite(id: string) {
-    const m = await this.prisma.marketer.findUnique({ where: { id }, select: { status: true, businessId: true } });
+  /**
+   * Deletes a marketer for good: their record, their list of onboarded businesses,
+   * and (if they joined) their free demo store with its logins. The businesses they
+   * onboarded are real shops and are not touched.
+   */
+  async deleteMarketer(id: string) {
+    const m = await this.prisma.marketer.findUnique({ where: { id }, select: { businessId: true } });
     if (!m) throw new NotFoundException('Marketer not found.');
-    if (m.businessId) throw new BadRequestException('This marketer already has a store. Switch them off instead.');
-    await this.prisma.marketer.delete({ where: { id } });
+    await this.prisma.$transaction(async (tx) => {
+      await tx.marketer.delete({ where: { id } });
+      if (m.businessId) {
+        const store = await tx.business.findUnique({ where: { id: m.businessId }, select: { isMarketerStore: true } });
+        // Safety: only ever delete a store that was created as a marketer demo store.
+        if (store?.isMarketerStore) {
+          const users = await tx.user.findMany({ where: { businessId: m.businessId }, select: { id: true } });
+          await tx.business.delete({ where: { id: m.businessId } });
+          if (users.length) await tx.user.deleteMany({ where: { id: { in: users.map((u) => u.id) } } });
+        }
+      }
+    });
     return { success: true };
   }
 

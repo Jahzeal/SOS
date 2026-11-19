@@ -38,8 +38,8 @@ export class AdminMarketersController {
   }
 
   @Delete(':id')
-  cancel(@Param('id') id: string) {
-    return this.marketers.cancelInvite(id);
+  remove(@Param('id') id: string) {
+    return this.marketers.deleteMarketer(id);
   }
 
   @Delete(':id/referrals/:referralId')

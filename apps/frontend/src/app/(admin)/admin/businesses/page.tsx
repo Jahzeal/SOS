@@ -18,6 +18,7 @@ import {
   Mail,
   Phone,
   MessageCircle,
+  Trash2,
 } from 'lucide-react';
 import { api } from '@/lib/api';
 
@@ -170,6 +171,47 @@ export default function AdminBusinessesManagementPage() {
     }
   };
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  /** Total delete: the store, all its records and every login on it. They can sign up again. */
+  const handleDelete = async (b: any) => {
+    const typed = window.prompt(
+      `Delete "${b.name}" completely?
+
+This removes the store, all its devices, sales and records, and every login on it (owner and staff). It cannot be undone. They can sign up again with the same email.
+
+Type DELETE to confirm.`
+    );
+    if (typed === null) return;
+    if (typed.trim().toUpperCase() !== 'DELETE') {
+      alert('Not deleted. You need to type DELETE to confirm.');
+      return;
+    }
+    setDeletingId(b.id);
+    try {
+      await api.adminDeleteBusiness(b.id);
+      setBusinesses((prev) => prev.filter((x) => x.id !== b.id));
+      setTotalCount((c) => Math.max(0, c - 1));
+    } catch (err: any) {
+      alert(err?.message || 'Could not delete this business.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const DeleteButton = ({ b }: { b: any }) => (
+    <button
+      type="button"
+      onClick={() => handleDelete(b)}
+      disabled={deletingId === b.id}
+      title={`Delete ${b.name}`}
+      aria-label={`Delete ${b.name}`}
+      className="p-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 border border-red-200 transition disabled:opacity-50 cursor-pointer"
+    >
+      {deletingId === b.id ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+    </button>
+  );
+
   return (
     <div className="space-y-6 pb-12 font-sans w-full min-w-0 max-w-full">
       {/* Top Header */}
@@ -259,7 +301,10 @@ export default function AdminBusinessesManagementPage() {
                 <div className="text-slate-500">{hasPhone(b) ? b.phone : 'No phone'}</div>
               </div>
               <div className="flex items-center justify-between gap-3 pt-2 border-t border-slate-100">
-                <ContactButtons b={b} />
+                <div className="flex items-center gap-1.5">
+                  <ContactButtons b={b} />
+                  <DeleteButton b={b} />
+                </div>
                 <span className="text-[11px] text-slate-400">Joined {new Date(b.createdAt).toLocaleDateString()}</span>
               </div>
             </div>
@@ -282,7 +327,8 @@ export default function AdminBusinessesManagementPage() {
                 <th className="px-4 py-3 font-semibold">Plan</th>
                 <th className="px-4 py-3 font-semibold text-center">Devices</th>
                 <th className="px-4 py-3 font-semibold text-center">Contact Store</th>
-                <th className="px-5 py-3 font-semibold text-right">Registered</th>
+                <th className="px-4 py-3 font-semibold text-right">Registered</th>
+                <th className="px-5 py-3 font-semibold text-center">Delete</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
@@ -316,14 +362,19 @@ export default function AdminBusinessesManagementPage() {
                         <ContactButtons b={b} />
                       </div>
                     </td>
-                    <td className="px-5 py-3.5 text-right font-mono text-xs text-slate-400">
+                    <td className="px-4 py-3.5 text-right font-mono text-xs text-slate-400">
                       {new Date(b.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex justify-center">
+                        <DeleteButton b={b} />
+                      </div>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400 text-xs">
+                  <td colSpan={7} className="py-12 text-center text-slate-400 text-xs">
                     {loading ? 'Loading registered merchants...' : 'No businesses found.'}
                   </td>
                 </tr>

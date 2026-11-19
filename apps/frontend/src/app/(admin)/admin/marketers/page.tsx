@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { ChevronRight, Megaphone, Plus, RefreshCw, X } from 'lucide-react';
+import { ChevronRight, Megaphone, Plus, RefreshCw, Trash2, X } from 'lucide-react';
 import { api } from '@/lib/api';
 import { InviteLinkNotice, MarketerStatusBadge } from '@/components/marketers/MarketerBits';
 
@@ -31,6 +31,17 @@ export default function AdminMarketersPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const remove = async (m: any) => {
+    const store = m.status === "INVITED" || m.status === "INVITE_EXPIRED" ? "" : " Their demo store and login will be deleted too.";
+    if (!confirm(`Delete ${m.firstName} ${m.lastName}?${store} This cannot be undone. Businesses they onboarded are not affected.`)) return;
+    try {
+      await api.adminDeleteMarketer(m.id);
+      load();
+    } catch (err: any) {
+      alert(err?.message || "Could not delete this marketer.");
+    }
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -156,7 +167,21 @@ export default function AdminMarketersPage() {
                     <div className="text-xs text-slate-500 break-all">{m.email}</div>
                     {m.phone && <div className="text-xs text-slate-500">{m.phone}</div>}
                   </div>
-                  <MarketerStatusBadge status={m.status} />
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <MarketerStatusBadge status={m.status} />
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        remove(m);
+                      }}
+                      aria-label={`Delete ${m.firstName}`}
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 <div className="grid grid-cols-3 gap-2 text-center">
                   {[
@@ -203,7 +228,15 @@ export default function AdminMarketersPage() {
                     <td className="px-4 py-3.5 text-center font-bold text-amber-700">{m.counts.signedUp}</td>
                     <td className="px-4 py-3.5 text-center font-bold text-emerald-700">{m.counts.paid}</td>
                     <td className="px-4 py-3.5 text-xs text-slate-500">{new Date(m.createdAt).toLocaleDateString()}</td>
-                    <td className="px-4 py-3.5 text-right">
+                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => remove(m)}
+                        aria-label={`Delete ${m.firstName}`}
+                        className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                       <Link href={`/admin/marketers/${m.id}`} aria-label={`Open ${m.firstName}`} className="inline-flex p-1.5 rounded-lg text-slate-400 hover:text-accent-700 hover:bg-accent-50">
                         <ChevronRight className="w-4 h-4" />
                       </Link>

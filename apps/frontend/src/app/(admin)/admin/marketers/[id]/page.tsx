@@ -118,7 +118,7 @@ export default function AdminMarketerDetailPage() {
                 onClick={() => {
                   if (!confirm(`Cancel the invite for ${m.firstName}? Their link will stop working.`)) return;
                   run(async () => {
-                    await api.adminCancelMarketerInvite(m.id);
+                    await api.adminDeleteMarketer(m.id);
                     router.push('/admin/marketers');
                   });
                 }}
@@ -143,6 +143,21 @@ export default function AdminMarketerDetailPage() {
               }`}
             >
               <Power className="w-3.5 h-3.5" /> {m.status === 'DISABLED' ? 'Switch back on' : 'Switch off'}
+            </button>
+          )}
+          {!invited && (
+            <button
+              disabled={busy}
+              onClick={() => {
+                if (!confirm(`Delete ${m.firstName} ${m.lastName}? Their demo store and login will be deleted too. This cannot be undone. Businesses they onboarded are not affected.`)) return;
+                run(async () => {
+                  await api.adminDeleteMarketer(m.id);
+                  router.push('/admin/marketers');
+                });
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-600 text-white text-xs font-bold hover:bg-red-700 disabled:opacity-60 cursor-pointer"
+            >
+              <Trash2 className="w-3.5 h-3.5" /> Delete marketer
             </button>
           )}
         </div>

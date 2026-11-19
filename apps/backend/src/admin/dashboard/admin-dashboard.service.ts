@@ -15,10 +15,12 @@ export class AdminDashboardService {
       totalUsers,
       businessesByPlan,
       dbPlans,
+      totalMarketers,
     ] = await Promise.all([
-      this.prisma.business.count(),
+      // Marketer demo stores are not customers, so they are counted as marketers instead.
+      this.prisma.business.count({ where: { isMarketerStore: false } }),
       this.prisma.business.count({
-        where: { publicVerificationEnabled: true },
+        where: { publicVerificationEnabled: true, isMarketerStore: false },
       }),
       this.prisma.phoneRecord.count(),
       this.prisma.sale.aggregate({
@@ -34,6 +36,7 @@ export class AdminDashboardService {
         _count: { id: true },
       }),
       this.prisma.subscriptionPlan.findMany(),
+      this.prisma.marketer.count(),
     ]);
 
     const totalRevenue = totalSalesAgg._sum.totalAmount || 0;
@@ -57,6 +60,7 @@ export class AdminDashboardService {
       kpis: {
         totalBusinesses,
         activeBusinesses,
+        totalMarketers,
         totalRegisteredPhones: totalPhones,
         totalRevenue,
         calculatedMrr,
@@ -234,7 +238,7 @@ export class AdminDashboardService {
   async getRecentSystemLogs() {
     // Get recent database events to compose live audit trail
     const [recentBusinesses, recentSales, recentRepairs] = await Promise.all([
-      this.prisma.business.findMany({ take: 2, orderBy: { createdAt: 'desc' } }),
+      this.prisma.business.findMany({ where: { isMarketerStore: false }, take: 2, orderBy: { createdAt: 'desc' } }),
       this.prisma.sale.findMany({ take: 2, orderBy: { createdAt: 'desc' }, include: { business: true } }),
       this.prisma.repairTicket.findMany({ take: 2, orderBy: { createdAt: 'desc' }, include: { business: true } }),
     ]);
