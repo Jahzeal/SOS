@@ -21,6 +21,7 @@ export class AdminBusinessesService {
         { slug: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
         { phone: { contains: search, mode: 'insensitive' } },
+        { users: { some: { email: { contains: search, mode: 'insensitive' } } } },
       ];
     }
 

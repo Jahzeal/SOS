@@ -235,6 +235,7 @@ export class AuthService {
         (slug) => ({
           name: storeName,
           slug,
+          email,
           phone: dto.phone,
           plan: signupPlan.planCode,
           planId: signupPlan.planId,
@@ -308,6 +309,7 @@ export class AuthService {
       (slug) => ({
         name: storeName,
         slug,
+        email,
         phone: dto.phone,
         plan: signupPlan.planCode,
         planId: signupPlan.planId,

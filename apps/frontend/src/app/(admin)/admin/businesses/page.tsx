@@ -21,6 +21,19 @@ import {
 } from 'lucide-react';
 import { api } from '@/lib/api';
 
+/** The store's contact email, or its owner's sign-in email when the store has none saved. */
+function contactEmailOf(b: any): string {
+  if (b?.email) return b.email;
+  const owner = (b?.users || []).find((u: any) => u.role !== 'ADMIN') || b?.users?.[0];
+  return owner?.email || '';
+}
+
+/** WhatsApp needs the international form: 0808… becomes 234808…. */
+function whatsappNumber(phone: string): string {
+  const digits = String(phone || '').replace(/\D/g, '');
+  return digits.startsWith('0') ? `234${digits.slice(1)}` : digits;
+}
+
 export default function AdminBusinessesManagementPage() {
   const [businesses, setBusinesses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -167,7 +180,8 @@ export default function AdminBusinessesManagementPage() {
                     </td>
 
                     <td className="px-4 py-3.5">
-                      <div className="text-slate-900 font-semibold">{b.email || '—'}</div>
+                      <div className="text-slate-900 font-semibold">{contactEmailOf(b) || '—'}</div>
+                      {!b.email && contactEmailOf(b) && <div className="text-[11px] text-slate-400">owner&apos;s sign-in email</div>}
                       <div className="text-xs text-slate-400">
                         {b.phone && b.phone !== '+15550192834' ? b.phone : '—'}
                       </div>
@@ -208,10 +222,10 @@ export default function AdminBusinessesManagementPage() {
 
                     <td className="px-4 py-3.5 text-center">
                       <div className="flex items-center justify-center gap-1.5">
-                        {b.email && (
+                        {contactEmailOf(b) && (
                           <a
-                            href={`mailto:${b.email}?subject=NoxGuarda Store Support`}
-                            title={`Email ${b.email}`}
+                            href={`mailto:${contactEmailOf(b)}?subject=NoxGuarda Store Support`}
+                            title={`Email ${contactEmailOf(b)}`}
                             className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 border border-blue-200 transition"
                           >
                             <Mail className="w-3.5 h-3.5" />
@@ -227,7 +241,7 @@ export default function AdminBusinessesManagementPage() {
                               <Phone className="w-3.5 h-3.5" />
                             </a>
                             <a
-                              href={`https://wa.me/${b.phone.replace(/[^0-9]/g, '')}`}
+                              href={`https://wa.me/${whatsappNumber(b.phone)}`}
                               target="_blank"
                               rel="noopener noreferrer"
                               title={`WhatsApp ${b.phone}`}
@@ -237,7 +251,7 @@ export default function AdminBusinessesManagementPage() {
                             </a>
                           </>
                         )}
-                        {!b.email && (!b.phone || b.phone === '+15550192834') && (
+                        {!contactEmailOf(b) && (!b.phone || b.phone === '+15550192834') && (
                           <span className="text-slate-400 text-xs">—</span>
                         )}
                       </div>
