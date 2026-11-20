@@ -300,6 +300,34 @@ export class TeamService {
     });
   }
 
+  /**
+   * Deletes a staff login for good, so that person can use their email elsewhere
+   * (for example to open their own store). The store keeps everything they did:
+   * sales and payments stay, and quotes/invoices they made move to the owner.
+   */
+  async removeMember(actor: Actor, memberId: string) {
+    const businessId = actor.businessId;
+    const member = await this.prisma.user.findFirst({ where: { id: memberId, businessId } });
+    if (!member) throw new NotFoundException('Staff member not found.');
+    if (member.storeRole === 'OWNER') throw new ForbiddenException('The owner account cannot be deleted here.');
+    if (member.id === actor.id) throw new ForbiddenException('You cannot delete your own account here.');
+    if (member.role === 'ADMIN') throw new ForbiddenException('This account cannot be deleted here.');
+    if (!canAssignRole(this.role(actor), member.storeRole as StoreRoleName)) {
+      throw new ForbiddenException('Only the owner can delete a manager.');
+    }
+    const owner = await this.prisma.user.findFirst({
+      where: { businessId, storeRole: 'OWNER' },
+      orderBy: { createdAt: 'asc' },
+      select: { id: true },
+    });
+    if (!owner) throw new ForbiddenException('This store has no owner account, so staff cannot be deleted.');
+    await this.prisma.$transaction(async (tx) => {
+      await tx.quote.updateMany({ where: { createdById: member.id }, data: { createdById: owner.id } });
+      await tx.user.delete({ where: { id: member.id } });
+    });
+    return { success: true };
+  }
+
   async createBranch(actor: Actor, dto: BranchDto) {
     const businessId = actor.businessId;
     const limits = await this.staff.limitsFor(businessId);

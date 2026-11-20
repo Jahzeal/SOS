@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { Copy, Info, Lock, Mail, Plus, RefreshCw, Users, X } from 'lucide-react';
+import { Copy, Info, Lock, Mail, Plus, RefreshCw, Trash2, Users, X } from 'lucide-react';
 import { api } from '@/lib/api';
 import { notify, confirmDialog } from '@/lib/feedback';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -118,6 +118,24 @@ export function TeamPanel() {
       await load();
     } catch (err: any) {
       notify(err?.message || 'Could not update this staff member.', 'error');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const deleteMember = async (m: { id: string; firstName: string; email: string }) => {
+    const ok = await confirmDialog(
+      `Delete ${m.firstName}'s account for good? Their login is removed and they can use ${m.email} to open their own store. Their sales and records stay in your store. This cannot be undone.`,
+      { confirmLabel: 'Delete account', cancelLabel: 'Keep it' },
+    );
+    if (!ok) return;
+    setBusyId(m.id);
+    try {
+      await api.deleteStaffMember(m.id);
+      notify(`${m.firstName}'s account was deleted.`, 'success');
+      await load();
+    } catch (err: any) {
+      notify(err?.message || 'Could not delete this staff member.', 'error');
     } finally {
       setBusyId(null);
     }
@@ -355,6 +373,15 @@ export function TeamPanel() {
                       }
                     >
                       {m.isActive ? 'Switch off' : 'Switch on'}
+                    </Button>
+                    <Button
+                      variant="dangerOutline"
+                      size="sm"
+                      disabled={busyId === m.id}
+                      onClick={() => deleteMember(m)}
+                      leftIcon={<Trash2 className="w-3.5 h-3.5" />}
+                    >
+                      Delete
                     </Button>
                   </div>
                 )}

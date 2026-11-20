@@ -159,6 +159,10 @@ class ApiClient {
     return this.request<{ success: boolean }>(`/team/invites/${encodeURIComponent(id)}`, { method: 'DELETE' });
   }
 
+  async deleteStaffMember(id: string) {
+    return this.request<{ success: boolean }>(`/team/members/${encodeURIComponent(id)}`, { method: 'DELETE' });
+  }
+
   async updateStaffMember(id: string, payload: { storeRole?: string; branchId?: string | null; isActive?: boolean }) {
     return this.request<any>(`/team/members/${encodeURIComponent(id)}`, {
       method: 'PATCH',

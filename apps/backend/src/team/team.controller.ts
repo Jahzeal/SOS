@@ -32,6 +32,11 @@ export class TeamController {
   updateMember(@Request() req, @Param('id') id: string, @Body() dto: UpdateMemberDto) {
     return this.team.updateMember(req.user, id, dto);
   }
+
+  @Delete('members/:id')
+  removeMember(@Request() req, @Param('id') id: string) {
+    return this.team.removeMember(req.user, id);
+  }
 }
 
 /** Branches: everyone can see the list; only the owner adds or changes branches. */
